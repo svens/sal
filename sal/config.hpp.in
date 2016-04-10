@@ -1,0 +1,168 @@
+#pragma once
+
+
+/**
+ * \file sal/config.hpp
+ * SAL library building configuration.
+ *
+ * After inclusion, number of preprocessor symbols are defined that describe
+ * building environment. Also provides constexpr variables for library version
+ * and build type (Debug or Release).
+ */
+
+#include <cstddef>
+#include <cstdint>
+
+
+namespace sal {
+#define sal_api_v __0
+
+#if defined(_MSC_VER)
+
+  #define __sal_warn_disable \
+    __pragma(warning(push)) \
+    __pragma(warning(disable:4100)) \
+    __pragma(warning(disable:4996))
+
+  #define __sal_warn_enable \
+    __pragma(warning(pop))
+
+#elif defined(__GNUC__)
+
+  #define __sal_warn_disable \
+    _Pragma("GCC diagnostic push") \
+    _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")
+
+  #define __sal_warn_enable \
+    _Pragma("GCC diagnostic pop")
+
+#else
+
+  #define __sal_warn_disable /**/
+  #define __sal_warn_enable /**/
+
+#endif
+
+
+#define __sal_hpp_begin \
+  __sal_warn_disable \
+  inline namespace sal_api_v {
+#define __sal_cpp_begin __sal_hpp_begin
+
+#define __sal_hpp_end   \
+  } \
+  __sal_warn_enable
+#define __sal_cpp_end __sal_hpp_end
+
+
+__sal_hpp_begin
+
+
+namespace version {
+
+/// SAL version as C-string
+constexpr const char *c_str = "@version@";
+
+/// Pack \a major, \a minor and \a patch into single integer
+constexpr uint64_t make (uint32_t major, uint16_t minor, uint16_t patch)
+{
+  return (static_cast<uint64_t>(major) << 32) | (minor << 16) | patch;
+}
+
+/**
+ * SAL version as packed integer. It allows easy version comparison:
+ * \code
+ * if (sal::version::number >= sal::version::make(1, 2, 3)) {
+ *      // ...
+ * }
+ * \endcode
+ */
+constexpr uint64_t number = make(@version_major@, @version_minor@, @version_patch@);
+
+} // namespace version
+
+
+
+namespace build {
+
+/// If true, SAL is built with debug info
+constexpr bool is_debug = @SAL_DEBUG@;
+#cmakedefine SAL_DEBUG
+
+/// If true, SAL is built for release (with optimizations)
+constexpr bool is_release = @SAL_RELEASE@;
+#cmakedefine SAL_RELEASE
+
+} // namespace build
+
+
+//
+// SAL_ARCH_IS
+//
+
+#define __sal_arch_unset 0
+#define __sal_arch_x86 1
+#define __sal_arch_x86_64 2
+
+#if defined(__i386__) \
+  || defined(_M_IX86)
+  #define __sal_arch __sal_arch_x86
+#elif defined(__x86_64__) \
+  || defined(_M_X64)
+  #define __sal_arch __sal_arch_x86_64
+#else
+  #define __sal_arch __sal_arch_unset
+#endif
+
+/**
+ * \def SAL_ARCH_IS(arch)
+ * Check if current build architecture is \a arch.
+ *
+ * Possible values:
+ *   - x86
+ *   - x86_64
+ */
+#define SAL_ARCH_IS(arch) (__sal_arch_ ## arch == __sal_arch)
+
+
+//
+// SAL_OS_IS
+//
+
+#define __sal_os_unset 0
+#define __sal_os_darwin 1
+#define __sal_os_linux 2
+#define __sal_os_windows 3
+
+#if defined(__APPLE__)
+  #define __sal_os __sal_os_darwin
+#elif defined(__linux__)
+  #define __sal_os __sal_os_linux
+#elif defined(_WIN32) \
+  || defined(_WIN64)
+  #define __sal_os __sal_os_windows
+#else
+  #define __sal_os __sal_os_unset
+#endif
+
+/**
+ * \def SAL_OS_IS(os)
+ *
+ * Check if current operating system is \a os. Possible values:
+ *   - darwin
+ *   - windows
+ *   - linux
+ */
+#define SAL_OS_IS(os) (__sal_os_ ## os == __sal_os)
+
+
+#define __sal_s(s) #s
+#define __sal_t(s) __sal_s(s)
+
+/// \def SAL_AT
+/// File and line pair as text (file:line)
+#define SAL_AT __FILE__ ":" __sal_t(__LINE__)
+
+
+__sal_hpp_end
+} // namespace sal
