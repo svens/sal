@@ -1,8 +1,8 @@
 # Simple application library
 
-[![Build Status](https://travis-ci.org/svens/sal.svg?branch=wip/logger)](https://travis-ci.org/svens/sal)
-[![Build status](https://ci.appveyor.com/api/projects/status/5x6ye07t28oib574/branch/wip/logger?svg=true)](https://ci.appveyor.com/project/svens/sal/branch/wip/logger)
-[![codecov.io](https://codecov.io/github/svens/sal/coverage.svg?branch=wip/logger)](https://codecov.io/github/svens/sal?branch=wip/logger)
+[![Build Status](https://travis-ci.org/svens/sal.svg?branch=next)](https://travis-ci.org/svens/sal)
+[![Build status](https://ci.appveyor.com/api/projects/status/2kign69ypgoy6pam/branch/next?svg=true)](https://ci.appveyor.com/project/svens/sal/branch/next)
+[![codecov.io](https://codecov.io/github/svens/sal/coverage.svg?branch=next)](https://codecov.io/github/svens/sal?branch=next)
 
 SAL is portable simple application library providing functionality for
 threaded networking applications (configuring, logging, etc). It tries to
