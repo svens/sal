@@ -3,10 +3,14 @@ configuration:
   - Debug
   - Release
 
+build:
+  verbosity: normal
+
 before_build:
   - cmake . -DSAL_UNITTESTS=yes -G "Visual Studio 14 2015 Win64"
 
 build_script:
+  - type sal/config.hpp
   - cmake --build . --config %CONFIGURATION%
 
 test_script:
