@@ -15,6 +15,22 @@ std::string expected_view (const T &value)
 }
 
 
+
+
+template <typename T>
+std::string expected_hex_view (const T &value)
+{
+  // T -> unsigned T (bool as uint8_t)
+  // need this to generate std::hex view using std::ostream
+  using unsigned_t = std::make_unsigned_t<
+    std::conditional_t<std::is_same<bool, T>::value, uint8_t, T>
+  >;
+  std::ostringstream oss;
+  oss << std::hex << static_cast<uint64_t>(static_cast<unsigned_t>(value));
+  return oss.str();
+}
+
+
 template <typename T>
 std::string expected_view (const T *value)
 {
@@ -91,7 +107,7 @@ void load_zero_max (T &value) noexcept
 {
   T zero, max;
   load_zero(zero);
-  load_min(max);
+  load_max(max);
   value = (zero + max)/2;
 }
 
@@ -256,12 +272,30 @@ struct copy_v
   static constexpr size_t view_size = 128;
 
 
+  void test_hex (const T &, std::false_type /*is_integral<T>*/)
+  {
+    // unused
+  }
+
+
+  void test_hex (const T &value, std::true_type /*is_integral<T>*/)
+  {
+    char view[view_size];
+    auto end = sal::copy_v(sal::hex(value), view, view + view_size);
+    EXPECT_EQ(expected_hex_view(value), std::string(view, end));
+  }
+
+
   void test_value (const T &value)
   {
+    // test default view
     char view[view_size];
     auto end = sal::copy_v(value, view, view + view_size);
     EXPECT_GE(view + view_size, end);
     EXPECT_EQ(expected_view(value), std::string(view, end));
+
+    // test hex view (for integral types only)
+    test_hex(value, std::is_integral<T>());
   }
 
 

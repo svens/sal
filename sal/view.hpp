@@ -10,6 +10,7 @@
 #include <sal/config.hpp>
 #include <cstring>
 #include <sstream>
+#include <type_traits>
 
 __sal_warn_disable
 #include <memory>
@@ -112,8 +113,8 @@ inline char *copy_v (uint64_t value, char *first, char *last) noexcept
 {
   // https://www.facebook.com/notes/facebook-engineering/three-optimization-tips-for-c/10151361643253920
 
-  auto *end = first + digit_count(value);
-  if (end <= last)
+  first += digit_count(value);
+  if (first <= last)
   {
     static constexpr char digits[] =
       "0001020304050607080910111213141516171819"
@@ -123,28 +124,28 @@ inline char *copy_v (uint64_t value, char *first, char *last) noexcept
       "8081828384858687888990919293949596979899"
     ;
 
-    auto p = end - 1;
+    last = first;
     while (value > 99)
     {
       const auto i = (value % 100) * 2;
       value /= 100;
-      *p-- = digits[i + 1];
-      *p-- = digits[i];
+      *--last = digits[i + 1];
+      *--last = digits[i];
     }
 
     if (value > 9)
     {
       const auto i = value * 2;
-      *p-- = digits[i + 1];
-      *p = digits[i];
+      *--last = digits[i + 1];
+      *--last = digits[i];
     }
     else
     {
-      *p = static_cast<char>('0' + value);
+      *--last = static_cast<char>('0' + value);
     }
   }
 
-  return end;
+  return first;
 }
 
 
@@ -194,6 +195,47 @@ inline char *copy_v (int16_t value, char *first, char *last) noexcept
 }
 
 
+// wrap T into hex to signal copy_v intention
+template <typename T>
+struct hex
+{
+  static_assert(std::is_integral<T>::value, "expected integral type");
+
+  using type = std::make_unsigned_t<
+    std::conditional_t<std::is_same<bool, T>::value, uint8_t, T>
+  >;
+  type data;
+
+  hex (T data)
+    : data(data)
+  {}
+};
+
+
+template <typename T>
+inline char *copy_v (hex<T> value, char *first, char *last) noexcept
+{
+  auto v = value.data;
+  do
+  {
+    ++first;
+  } while (v >>= 4);
+
+  if (first <= last)
+  {
+    v = value.data;
+    last = first;
+    do
+    {
+      static constexpr char digits[] = "0123456789abcdef";
+      *--last = digits[v & 0xf];
+    } while (v >>= 4);
+  }
+
+  return first;
+}
+
+
 // nullptr
 inline char *copy_v (std::nullptr_t /**/, char *first, char *last) noexcept
 {
@@ -206,24 +248,14 @@ inline char *copy_v (std::nullptr_t /**/, char *first, char *last) noexcept
 template <typename T>
 inline char *copy_v (const T *value, char *first, char *last) noexcept
 {
-  auto v = reinterpret_cast<uintptr_t>(value);
-  char *end = first + 2;
-  do
-  {
-    ++end;
-  } while (v >>= 4);
+  auto end = copy_v(hex<uintptr_t>(reinterpret_cast<uintptr_t>(value)),
+    first + 2, last
+  );
 
   if (end <= last)
   {
-    v = reinterpret_cast<uintptr_t>(value);
-    auto p = end - 1;
-    do
-    {
-      static constexpr char digits[] = "0123456789abcdef";
-      *p-- = digits[v & 0xf];
-    } while (v >>= 4);
-    *p-- = 'x';
-    *p = '0';
+    first[0] = '0';
+    first[1] = 'x';
   }
 
   return end;
@@ -311,6 +343,24 @@ inline char *copy_v (const T &value, char *first, char *last)
   noexcept(noexcept(__bits::copy_v(value, first, last)))
 {
   return __bits::copy_v(value, first, last);
+}
+
+
+/**
+ * View manipulator to copy \a value as hexadecimal human readable
+ * representation. Only integral types are valid for \a T.
+ *
+ * Usage:
+ * \code
+ * auto end = sal::copy_v(sal::hex(42ULL), first, last);
+ * \endcode
+ *
+ * \return Opaque type, do not touch it's internals
+ */
+template <typename T>
+inline __bits::hex<T> hex (T value) noexcept
+{
+  return __bits::hex<T>{value};
 }
 
 
