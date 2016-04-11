@@ -2,8 +2,9 @@
 # GNU G++ options
 #
 
-# all
 set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Weffc++ -Werror -pedantic")
+set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG")
 
 if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
   # Ninja redirects build output and prints it only on error

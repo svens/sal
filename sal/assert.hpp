@@ -44,8 +44,8 @@ namespace __bits {
 
 inline void check (bool cond, char const *msg)
 {
-#if defined(SAL_DEBUG)
-  if (build::is_debug && !cond)
+#if !defined(NDEBUG)
+  if (!cond)
   {
     throw std::logic_error(msg);
   }
@@ -56,8 +56,8 @@ inline void check (bool cond, char const *msg)
 template <typename T>
 inline T *check_ptr (T *ptr, char const *msg)
 {
-#if defined(SAL_DEBUG)
-  if (build::is_debug && !ptr)
+#if !defined(NDEBUG)
+  if (!ptr)
   {
     throw std::logic_error(msg);
   }

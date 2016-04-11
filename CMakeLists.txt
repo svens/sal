@@ -17,20 +17,6 @@ if(CMAKE_BUILD_TYPE MATCHES Coverage)
   set(SAL_BENCH OFF)
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-  set(SAL_DEBUG true)
-  set(SAL_RELEASE false)
-elseif(CMAKE_BUILD_TYPE MATCHES Release)
-  set(SAL_DEBUG false)
-  set(SAL_RELEASE true)
-elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-  set(SAL_DEBUG true)
-  set(SAL_RELEASE true)
-elseif(CMAKE_BUILD_TYPE MATCHES MinSizeRel)
-  set(SAL_DEBUG false)
-  set(SAL_RELEASE true)
-endif()
-
 
 # Version {{{1
 

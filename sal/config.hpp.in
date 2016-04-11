@@ -82,20 +82,6 @@ constexpr uint64_t number = make(@version_major@, @version_minor@, @version_patc
 } // namespace version
 
 
-
-namespace build {
-
-/// If true, SAL is built with debug info
-constexpr bool is_debug = @SAL_DEBUG@;
-#cmakedefine SAL_DEBUG
-
-/// If true, SAL is built for release (with optimizations)
-constexpr bool is_release = @SAL_RELEASE@;
-#cmakedefine SAL_RELEASE
-
-} // namespace build
-
-
 //
 // SAL_ARCH_IS
 //
