@@ -304,7 +304,7 @@ struct copy_v
   void test_hex (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::copy_v(sal::hex(value), view, view + view_size);
+    auto end = sal::copy_v(sal::hex(value), view);
     EXPECT_EQ(expected_hex_view(value), std::string(view, end));
   }
 
@@ -318,7 +318,7 @@ struct copy_v
   void test_oct (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::copy_v(sal::oct(value), view, view + view_size);
+    auto end = sal::copy_v(sal::oct(value), view);
     EXPECT_EQ(expected_oct_view(value), std::string(view, end));
   }
 
@@ -332,7 +332,7 @@ struct copy_v
   void test_bin (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::copy_v(sal::bin(value), view, view + view_size);
+    auto end = sal::copy_v(sal::bin(value), view);
     EXPECT_EQ(expected_bin_view(value), std::string(view, end));
   }
 
@@ -341,7 +341,7 @@ struct copy_v
   {
     // test default view
     char view[view_size];
-    auto end = sal::copy_v(value, view, view + view_size);
+    auto end = sal::copy_v(value, view);
     EXPECT_GE(view + view_size, end);
     EXPECT_EQ(expected_view(value), std::string(view, end));
 

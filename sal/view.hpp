@@ -398,6 +398,20 @@ inline char *copy_v (const T &value, char *first, char *last)
 
 
 /**
+ * Copy \a value human-readable representation to \a buf, not exceeding
+ * \a max_size bytes. Result is not NUL-terminated.
+ *
+ * \see copy_v()
+ */
+template <typename T, size_t max_size>
+inline char *copy_v (const T &value, char (&buf)[max_size])
+  noexcept(noexcept(copy_v(value, buf, buf + max_size)))
+{
+  return copy_v(value, buf, buf + max_size);
+}
+
+
+/**
  * View manipulator to copy \a value as hexadecimal human readable
  * representation. Only integral types are valid for \a T.
  *
