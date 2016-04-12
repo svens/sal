@@ -195,9 +195,9 @@ inline char *copy_v (int16_t value, char *first, char *last) noexcept
 }
 
 
-// wrap T into hex to signal copy_v intention
-template <typename T>
-struct hex
+// wrap T into base_cast to signal copy_v intention
+template <typename T, size_t Base>
+struct base_cast
 {
   static_assert(std::is_integral<T>::value, "expected integral type");
 
@@ -206,10 +206,14 @@ struct hex
   >;
   type data;
 
-  hex (T data)
+  base_cast (T data)
     : data(data)
   {}
 };
+
+
+template <typename T> using hex = base_cast<T, 16>;
+template <typename T> using oct = base_cast<T, 8>;
 
 
 template <typename T>
@@ -230,6 +234,29 @@ inline char *copy_v (hex<T> value, char *first, char *last) noexcept
       static constexpr char digits[] = "0123456789abcdef";
       *--last = digits[v & 0xf];
     } while (v >>= 4);
+  }
+
+  return first;
+}
+
+
+template <typename T>
+inline char *copy_v (oct<T> value, char *first, char *last) noexcept
+{
+  auto v = value.data;
+  do
+  {
+    ++first;
+  } while (v >>= 3);
+
+  if (first <= last)
+  {
+    v = value.data;
+    last = first;
+    do
+    {
+      *--last = (v & 0x7) + '0';
+    } while (v >>= 3);
   }
 
   return first;
@@ -361,6 +388,24 @@ template <typename T>
 inline __bits::hex<T> hex (T value) noexcept
 {
   return __bits::hex<T>{value};
+}
+
+
+/**
+ * View manipulator to copy \a value as octal human readable
+ * representation. Only integral types are valid for \a T.
+ *
+ * Usage:
+ * \code
+ * auto end = sal::copy_v(sal::oct(42ULL), first, last);
+ * \endcode
+ *
+ * \return Opaque type, do not touch it's internals
+ */
+template <typename T>
+inline __bits::oct<T> oct (T value) noexcept
+{
+  return __bits::oct<T>{value};
 }
 
 
