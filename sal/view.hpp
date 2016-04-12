@@ -214,6 +214,7 @@ struct base_cast
 
 template <typename T> using hex = base_cast<T, 16>;
 template <typename T> using oct = base_cast<T, 8>;
+template <typename T> using bin = base_cast<T, 2>;
 
 
 template <typename T>
@@ -255,8 +256,31 @@ inline char *copy_v (oct<T> value, char *first, char *last) noexcept
     last = first;
     do
     {
-      *--last = (v & 0x7) + '0';
+      *--last = (v & 7) + '0';
     } while (v >>= 3);
+  }
+
+  return first;
+}
+
+
+template <typename T>
+inline char *copy_v (bin<T> value, char *first, char *last) noexcept
+{
+  auto v = value.data;
+  do
+  {
+    ++first;
+  } while (v >>= 1);
+
+  if (first <= last)
+  {
+    v = value.data;
+    last = first;
+    do
+    {
+      *--last = (v & 1) + '0';
+    } while (v >>= 1);
   }
 
   return first;
@@ -406,6 +430,24 @@ template <typename T>
 inline __bits::oct<T> oct (T value) noexcept
 {
   return __bits::oct<T>{value};
+}
+
+
+/**
+ * View manipulator to copy \a value as binary human readable
+ * representation. Only integral types are valid for \a T.
+ *
+ * Usage:
+ * \code
+ * auto end = sal::copy_v(sal::bin(42ULL), first, last);
+ * \endcode
+ *
+ * \return Opaque type, do not touch it's internals
+ */
+template <typename T>
+inline __bits::bin<T> bin (T value) noexcept
+{
+  return __bits::bin<T>{value};
 }
 
 
