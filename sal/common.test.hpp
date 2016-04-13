@@ -5,8 +5,9 @@
 
 namespace sal_test {
 
-class test
-  : public testing::Test
+
+class fixture:
+  public testing::Test
 {
 public:
 
@@ -27,5 +28,21 @@ private:
     return "<unknown>";
   }
 };
+
+
+template <typename T>
+class with_type:
+  public fixture
+{
+};
+
+
+template <typename T>
+class with_value:
+  public fixture,
+  public testing::WithParamInterface<T>
+{
+};
+
 
 } // namespace sal_test

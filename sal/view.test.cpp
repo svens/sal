@@ -285,12 +285,9 @@ void load_zero_max (class_with_ostream &) noexcept
 }
 
 
-} // namespace
-
-
 template <typename T>
-struct copy_v
-  : public sal_test::test
+struct copy_v:
+  public sal_test::with_type<T>
 {
   static constexpr size_t view_size = 128;
 
@@ -304,7 +301,7 @@ struct copy_v
   void test_hex (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::copy_v(sal::hex(value), view);
+    auto end = sal::copy_v(sal::hex(value), view, view + view_size);
     EXPECT_EQ(expected_hex_view(value), std::string(view, end));
   }
 
@@ -318,7 +315,7 @@ struct copy_v
   void test_oct (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::copy_v(sal::oct(value), view);
+    auto end = sal::copy_v(sal::oct(value), view, view + view_size);
     EXPECT_EQ(expected_oct_view(value), std::string(view, end));
   }
 
@@ -332,7 +329,7 @@ struct copy_v
   void test_bin (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::copy_v(sal::bin(value), view);
+    auto end = sal::copy_v(sal::bin(value), view, view + view_size);
     EXPECT_EQ(expected_bin_view(value), std::string(view, end));
   }
 
@@ -341,7 +338,7 @@ struct copy_v
   {
     // test default view
     char view[view_size];
-    auto end = sal::copy_v(value, view);
+    auto end = sal::copy_v(value, view, view + view_size);
     EXPECT_GE(view + view_size, end);
     EXPECT_EQ(expected_view(value), std::string(view, end));
 
@@ -468,17 +465,20 @@ REGISTER_TYPED_TEST_CASE_P(copy_v,
 );
 
 
-using types = testing::Types<bool
-  , char, signed char, unsigned char
-  , int16_t, uint16_t
-  , int32_t, uint32_t
-  , int64_t, uint64_t
-  , float, double, long double
-  , const void *, void *
-  , const char *, char *
-  , std::string
-  , class_with_ostream
+using types = testing::Types<bool,
+  char, signed char, unsigned char,
+  int16_t, uint16_t,
+  int32_t, uint32_t,
+  int64_t, uint64_t,
+  float, double, long double,
+  const void *, void *,
+  const char *, char *,
+  std::string,
+  class_with_ostream
 >;
 
 
 INSTANTIATE_TYPED_TEST_CASE_P(view, copy_v, types);
+
+
+} // namespace
