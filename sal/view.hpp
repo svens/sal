@@ -206,8 +206,8 @@ struct base_cast
   >;
   type data;
 
-  base_cast (T data)
-    : data(data)
+  base_cast (T data):
+    data(data)
   {}
 };
 
@@ -360,7 +360,8 @@ inline char *copy_v (const T &value, char *first, char *last)
 
 /**
  * Copy \a value human-readable representation to [\a first, \a last).
- * Result is not NUL-terminated.
+ *
+ * \note Result is not NUL-terminated.
  *
  * - If result fits to specified range, whole text is copied and pointer to
  *   one position past last character written is returned. If caller needs
@@ -398,16 +399,45 @@ inline char *copy_v (const T &value, char *first, char *last)
 
 
 /**
- * Copy \a value human-readable representation to \a buf, not exceeding
- * \a max_size bytes. Result is not NUL-terminated.
+ * Convenience method wrapping \a dest[\a dest_size] ->
+ * [\a dest, \a dest + \a dest_size)
  *
  * \see copy_v()
  */
-template <typename T, size_t max_size>
-inline char *copy_v (const T &value, char (&buf)[max_size])
-  noexcept(noexcept(copy_v(value, buf, buf + max_size)))
+template <typename T, size_t dest_size>
+inline char *copy_v (const T &value, char (&dest)[dest_size])
+  noexcept(noexcept(__bits::copy_v(value, dest, dest + dest_size)))
 {
-  return copy_v(value, buf, buf + max_size);
+  return __bits::copy_v(value, dest, dest + dest_size);
+}
+
+
+/**
+ * Optimized specialization for copying compile-time const \a src[\a src_size]
+ * to [\a first, \a last).
+ *
+ * \see copy_v()
+ */
+template <size_t src_size>
+inline char *copy_v (const char (&src)[src_size], char *first, char *last)
+  noexcept(noexcept(__bits::copy_str(src, src + src_size - 1, first, last)))
+{
+  return __bits::copy_str(src, src + src_size - 1, first, last);
+}
+
+
+/**
+ * Optimized specialization for copying compile-time const \a src[\a src_size]
+ * to \a dest[\a dest_size].
+ *
+ * \see copy_v()
+ */
+template <size_t src_size, size_t dest_size>
+inline char *copy_v (const char (&src)[src_size], char (&dest)[dest_size])
+  noexcept(noexcept(__bits::copy_str(src, src + src_size - 1, dest, dest + dest_size)))
+{
+  static_assert(src_size - 1 <= dest_size, "not enough room");
+  return __bits::copy_str(src, src + src_size - 1, dest, dest + dest_size);
 }
 
 

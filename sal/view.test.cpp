@@ -3,7 +3,7 @@
 #include <limits>
 
 
-namespace {
+namespace dest_is_range {
 
 
 template <typename T>
@@ -380,8 +380,18 @@ struct copy_v:
     const std::string expected = view;
     auto expected_end = sal::copy_v(value, view, view);
     auto expected_size = expected_end - view;
-    EXPECT_EQ(expected_end, sal::copy_v(value, view, view + expected_size));
-    EXPECT_EQ(expected_view(value), std::string(view, expected_size));
+
+    // [first,last)
+    {
+      EXPECT_EQ(expected_end, sal::copy_v(value, view, view + expected_size));
+      EXPECT_EQ(expected_view(value), std::string(view, expected_size));
+    }
+
+    // view[]
+    {
+      EXPECT_EQ(expected_end, sal::copy_v(value, view));
+      EXPECT_EQ(expected_view(value), std::string(view, expected_size));
+    }
   }
 };
 
@@ -481,4 +491,91 @@ using types = testing::Types<bool,
 INSTANTIATE_TYPED_TEST_CASE_P(view, copy_v, types);
 
 
-} // namespace
+} // namespace dest_is_range
+
+
+namespace source_is_const_dest_is_range {
+
+
+using copy_v = sal_test::with_value<bool>;
+
+
+TEST_P(copy_v, empty_array_to_range)
+{
+  char source[] = "", dest[128];
+  auto end = sal::copy_v(source, dest, dest + sizeof(dest));
+  EXPECT_EQ(dest, end);
+}
+
+
+TEST_P(copy_v, array_to_bigger_range)
+{
+  char source[] = "12", dest[] = "abc";
+  auto end = sal::copy_v(source, dest, dest + sizeof(dest) - 1);
+  ASSERT_EQ(dest + sizeof(source) - 1, end);
+  *end = '\0';
+  EXPECT_STREQ("12", dest);
+}
+
+
+TEST_P(copy_v, array_to_equal_range)
+{
+  char source[] = "123", dest[] = "abc";
+  auto end = sal::copy_v(source, dest, dest + sizeof(dest) - 1);
+  ASSERT_EQ(dest + sizeof(source) - 1, end);
+  EXPECT_STREQ("123", dest);
+}
+
+
+TEST_P(copy_v, array_to_smaller_range)
+{
+  char source[] = "123", dest[] = "ab";
+  auto end = sal::copy_v(source, dest, dest + sizeof(dest) - 1);
+  ASSERT_EQ(dest + sizeof(source) - 1, end);
+  EXPECT_STREQ("ab", dest);
+}
+
+
+TEST_P(copy_v, empty_array_to_array)
+{
+  char source[] = "", dest[128];
+  auto end = sal::copy_v(source, dest);
+  EXPECT_EQ(dest, end);
+}
+
+
+TEST_P(copy_v, array_to_bigger_array)
+{
+  char source[] = "12", dest[] = "abc";
+  auto end = sal::copy_v(source, dest);
+  ASSERT_EQ(dest + sizeof(source) - 1, end);
+  *end = '\0';
+  EXPECT_STREQ("12", dest);
+}
+
+
+TEST_P(copy_v, array_to_equal_array)
+{
+  char source[] = "123", dest[] = "abc";
+  auto end = sal::copy_v(source, dest);
+  ASSERT_EQ(dest + sizeof(source) - 1, end);
+  EXPECT_STREQ("123", dest);
+}
+
+
+TEST_P(copy_v, array_to_smaller_array)
+{
+  // dest final NUL will be overwritten by '3'
+  char source[] = "123", dest[] = "ab";
+  auto end = sal::copy_v(source, dest);
+  ASSERT_EQ(dest + sizeof(dest), end);
+  EXPECT_EQ("123", std::string(dest, end));
+
+  // making dest even smaller would trigger static_assert() failure
+}
+
+
+INSTANTIATE_TEST_CASE_P(view, copy_v, testing::Values(true));
+
+
+} // namespace source_and_dest_are_const
