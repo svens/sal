@@ -292,7 +292,7 @@ public:
 
 private:
 
-  char begin_[Size + 1], *end_;
+  char begin_[Size + 1], *end_ = begin_;
 };
 
 

@@ -1,10 +1,10 @@
 #include "bench.hpp"
-#include <sal/config.hpp>
 #include <iostream>
 
 
 bench::func_list bench_func =
 {
+  { "view", &bench::view },
 };
 
 
@@ -37,9 +37,6 @@ int usage (const char *arg0)
 
 int main (int argc, const char *argv[])
 {
-  std::cout << std::hex << sal::version::number << std::endl;
-  std::cout << std::hex << sal::version::c_str << std::endl;
-
   if (argc < 2)
   {
     return usage(argv[0]);

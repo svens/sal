@@ -12,4 +12,7 @@ using arg_list = std::vector<std::string>;
 using func_ptr = int(*)(const arg_list &);
 using func_list = std::unordered_map<std::string, func_ptr>;
 
+// benchmark functions
+int view (const arg_list &args);
+
 } // namespace bench
