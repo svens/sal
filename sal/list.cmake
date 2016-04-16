@@ -2,7 +2,10 @@ list(APPEND sal_sources
   sal/assert.hpp
   sal/builtins.hpp
   sal/fmtval.hpp
-  sal/fmtval.cpp
+  sal/__bits/fmtval.hpp
+
+  # temporary file to let cmake detect library language
+  sal/void.cpp
 )
 
 list(APPEND sal_unittests
