@@ -1,4 +1,4 @@
-#include <sal/view.hpp>
+#include <sal/fmtval.hpp>
 
 
 namespace sal {
@@ -15,7 +15,7 @@ constexpr auto max_float_repr = 26;
 } // namespace
 
 
-char *copy_v (float value, char *first, char *last) noexcept
+char *fmt_v (float value, char *first, char *last) noexcept
 {
   if (last - first > max_float_repr)
   {
@@ -26,11 +26,11 @@ char *copy_v (float value, char *first, char *last) noexcept
   // suspicious, result may fit, go through temporary buffer
   char data[max_float_repr + 1];
   auto end = data + std::snprintf(data, sizeof(data), "%g", value);
-  return copy_str(data, end, first, last);
+  return copy_s(data, end, first, last);
 }
 
 
-char *copy_v (double value, char *first, char *last) noexcept
+char *fmt_v (double value, char *first, char *last) noexcept
 {
   if (last - first > max_float_repr)
   {
@@ -41,11 +41,11 @@ char *copy_v (double value, char *first, char *last) noexcept
   // suspicious, result may fit, go through temporary buffer
   char data[max_float_repr + 1];
   auto end = data + std::snprintf(data, sizeof(data), "%g", value);
-  return copy_str(data, end, first, last);
+  return copy_s(data, end, first, last);
 }
 
 
-char *copy_v (const long double &value, char *first, char *last) noexcept
+char *fmt_v (const long double &value, char *first, char *last) noexcept
 {
   if (last - first > max_float_repr)
   {
@@ -56,7 +56,7 @@ char *copy_v (const long double &value, char *first, char *last) noexcept
   // suspicious, result may fit, go through temporary buffer
   char data[max_float_repr + 1];
   auto end = data + std::snprintf(data, sizeof(data), "%Lg", value);
-  return copy_str(data, end, first, last);
+  return copy_s(data, end, first, last);
 }
 
 

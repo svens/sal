@@ -1,8 +1,8 @@
 #pragma once
 
 /**
- * \file sal/view.hpp
- * To/from text conversions
+ * \file sal/fmtval.hpp
+ * Functions to format value to textual representation.
  */
 
 
@@ -26,7 +26,7 @@ namespace __bits {
 
 // helper: [first,last) -> d_first unless doesn't fit
 template <typename InputIt, typename ForwardIt>
-inline ForwardIt copy_str (InputIt first, InputIt last,
+inline ForwardIt copy_s (InputIt first, InputIt last,
   ForwardIt d_first, ForwardIt d_last) noexcept
 {
   auto end = d_first + (last - first);
@@ -40,37 +40,37 @@ inline ForwardIt copy_str (InputIt first, InputIt last,
 
 
 // bool
-inline char *copy_v (bool value, char *first, char *last) noexcept
+inline char *fmt_v (bool value, char *first, char *last) noexcept
 {
   if (value)
   {
     static constexpr char s[] = "true";
-    return copy_str(s, s + sizeof(s) - 1, first, last);
+    return copy_s(s, s + sizeof(s) - 1, first, last);
   }
 
   static constexpr char s[] = "false";
-  return copy_str(s, s + sizeof(s) - 1, first, last);
+  return copy_s(s, s + sizeof(s) - 1, first, last);
 }
 
 
 // char
-inline char *copy_v (char value, char *first, char *last) noexcept
+inline char *fmt_v (char value, char *first, char *last) noexcept
 {
-  return copy_str(&value, &value + 1, first, last);
+  return copy_s(&value, &value + 1, first, last);
 }
 
 
 // signed char
-inline char *copy_v (signed char value, char *first, char *last) noexcept
+inline char *fmt_v (signed char value, char *first, char *last) noexcept
 {
-  return copy_v(static_cast<char>(value), first, last);
+  return fmt_v(static_cast<char>(value), first, last);
 }
 
 
 // unsigned char
-inline char *copy_v (unsigned char value, char *first, char *last) noexcept
+inline char *fmt_v (unsigned char value, char *first, char *last) noexcept
 {
-  return copy_v(static_cast<char>(value), first, last);
+  return fmt_v(static_cast<char>(value), first, last);
 }
 
 
@@ -109,7 +109,7 @@ inline unsigned digit_count (uint64_t value) noexcept
 
 
 // uint64_t
-inline char *copy_v (uint64_t value, char *first, char *last) noexcept
+inline char *fmt_v (uint64_t value, char *first, char *last) noexcept
 {
   // https://www.facebook.com/notes/facebook-engineering/three-optimization-tips-for-c/10151361643253920
 
@@ -150,14 +150,14 @@ inline char *copy_v (uint64_t value, char *first, char *last) noexcept
 
 
 // int64_t
-inline char *copy_v (int64_t value, char *first, char *last) noexcept
+inline char *fmt_v (int64_t value, char *first, char *last) noexcept
 {
   if (value > -1)
   {
-    return copy_v(static_cast<uint64_t>(value), first, last);
+    return fmt_v(static_cast<uint64_t>(value), first, last);
   }
 
-  auto end = copy_v(0 - static_cast<uint64_t>(value), first + 1, last);
+  auto end = fmt_v(0 - static_cast<uint64_t>(value), first + 1, last);
   if (end <= last)
   {
     *first = '-';
@@ -168,34 +168,34 @@ inline char *copy_v (int64_t value, char *first, char *last) noexcept
 
 
 // uint32_t
-inline char *copy_v (uint32_t value, char *first, char *last) noexcept
+inline char *fmt_v (uint32_t value, char *first, char *last) noexcept
 {
-  return copy_v(static_cast<uint64_t>(value), first, last);
+  return fmt_v(static_cast<uint64_t>(value), first, last);
 }
 
 
 // int32_t
-inline char *copy_v (int32_t value, char *first, char *last) noexcept
+inline char *fmt_v (int32_t value, char *first, char *last) noexcept
 {
-  return copy_v(static_cast<int64_t>(value), first, last);
+  return fmt_v(static_cast<int64_t>(value), first, last);
 }
 
 
 // uint16_t
-inline char *copy_v (uint16_t value, char *first, char *last) noexcept
+inline char *fmt_v (uint16_t value, char *first, char *last) noexcept
 {
-  return copy_v(static_cast<uint64_t>(value), first, last);
+  return fmt_v(static_cast<uint64_t>(value), first, last);
 }
 
 
 // int16_t
-inline char *copy_v (int16_t value, char *first, char *last) noexcept
+inline char *fmt_v (int16_t value, char *first, char *last) noexcept
 {
-  return copy_v(static_cast<int64_t>(value), first, last);
+  return fmt_v(static_cast<int64_t>(value), first, last);
 }
 
 
-// wrap T into base_cast to signal copy_v intention
+// wrap T into base_cast to signal fmt_v intention
 template <typename T, size_t Base>
 struct base_cast
 {
@@ -218,7 +218,7 @@ template <typename T> using bin = base_cast<T, 2>;
 
 
 template <typename T>
-inline char *copy_v (hex<T> value, char *first, char *last) noexcept
+inline char *fmt_v (hex<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -242,7 +242,7 @@ inline char *copy_v (hex<T> value, char *first, char *last) noexcept
 
 
 template <typename T>
-inline char *copy_v (oct<T> value, char *first, char *last) noexcept
+inline char *fmt_v (oct<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -265,7 +265,7 @@ inline char *copy_v (oct<T> value, char *first, char *last) noexcept
 
 
 template <typename T>
-inline char *copy_v (bin<T> value, char *first, char *last) noexcept
+inline char *fmt_v (bin<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -288,18 +288,18 @@ inline char *copy_v (bin<T> value, char *first, char *last) noexcept
 
 
 // nullptr
-inline char *copy_v (std::nullptr_t /**/, char *first, char *last) noexcept
+inline char *fmt_v (std::nullptr_t /**/, char *first, char *last) noexcept
 {
   static constexpr char s[] = "(null)";
-  return copy_str(s, s + sizeof(s) - 1, first, last);
+  return copy_s(s, s + sizeof(s) - 1, first, last);
 }
 
 
 // const T *
 template <typename T>
-inline char *copy_v (const T *value, char *first, char *last) noexcept
+inline char *fmt_v (const T *value, char *first, char *last) noexcept
 {
-  auto end = copy_v(hex<uintptr_t>(reinterpret_cast<uintptr_t>(value)),
+  auto end = fmt_v(hex<uintptr_t>(reinterpret_cast<uintptr_t>(value)),
     first + 2, last
   );
 
@@ -314,44 +314,44 @@ inline char *copy_v (const T *value, char *first, char *last) noexcept
 
 
 // const char *
-inline char *copy_v (const char *value, char *first, char *last) noexcept
+inline char *fmt_v (const char *value, char *first, char *last) noexcept
 {
   return value
-    ? copy_str(value, value + std::strlen(value), first, last)
-    : copy_v(nullptr, first, last)
+    ? copy_s(value, value + std::strlen(value), first, last)
+    : fmt_v(nullptr, first, last)
   ;
 }
 
 
 // T *
 template <typename T>
-inline char *copy_v (T *value, char *first, char *last) noexcept
+inline char *fmt_v (T *value, char *first, char *last) noexcept
 {
-  return copy_v(static_cast<const T *>(value), first, last);
+  return fmt_v(static_cast<const T *>(value), first, last);
 }
 
 
 // std::string
-inline char *copy_v (const std::string &value, char *first, char *last)
+inline char *fmt_v (const std::string &value, char *first, char *last)
   noexcept
 {
-  return copy_str(value.begin(), value.end(), first, last);
+  return copy_s(value.begin(), value.end(), first, last);
 }
 
 
 // float/double/long double
-char *copy_v (float value, char *first, char *last) noexcept;
-char *copy_v (double value, char *first, char *last) noexcept;
-char *copy_v (const long double &value, char *first, char *last) noexcept;
+char *fmt_v (float value, char *first, char *last) noexcept;
+char *fmt_v (double value, char *first, char *last) noexcept;
+char *fmt_v (const long double &value, char *first, char *last) noexcept;
 
 
 // catch-all
 template <typename T>
-inline char *copy_v (const T &value, char *first, char *last)
+inline char *fmt_v (const T &value, char *first, char *last)
 {
   std::ostringstream oss;
   oss << value;
-  return copy_v(oss.str(), first, last);
+  return fmt_v(oss.str(), first, last);
 }
 
 
@@ -369,9 +369,9 @@ inline char *copy_v (const T &value, char *first, char *last)
  * - If \a value representation would not fit into given range, no partial
  *   text will be copied. Function returns same pointer as on success.
  *
- * To check if copy_v() copied text successfully, check:
+ * To check if fmt_v() copied text successfully, check:
  * \code
- * auto end = sal::copy_v(value, first, last);
+ * auto end = sal::fmt_v(value, first, last);
  * if (end <= last)
  * {
  *   // success
@@ -387,14 +387,14 @@ inline char *copy_v (const T &value, char *first, char *last)
  * NUL-terminated string, pointers) plus std::string. For other types, it uses
  * operator<<(std::ostream) to get \a value textual representation. If
  * application-specified type has more optimized means to generate textual
- * representation, it can specialize copy_v() for given type. This way
+ * representation, it can specialize fmt_v() for given type. This way
  * application types plug into SAL logging etc.
  */
 template <typename T>
-inline char *copy_v (const T &value, char *first, char *last)
-  noexcept(noexcept(__bits::copy_v(value, first, last)))
+inline char *fmt_v (const T &value, char *first, char *last)
+  noexcept(noexcept(__bits::fmt_v(value, first, last)))
 {
-  return __bits::copy_v(value, first, last);
+  return __bits::fmt_v(value, first, last);
 }
 
 
@@ -402,13 +402,13 @@ inline char *copy_v (const T &value, char *first, char *last)
  * Convenience method wrapping \a dest[\a dest_size] ->
  * [\a dest, \a dest + \a dest_size)
  *
- * \see copy_v()
+ * \see fmt_v()
  */
 template <typename T, size_t dest_size>
-inline char *copy_v (const T &value, char (&dest)[dest_size])
-  noexcept(noexcept(__bits::copy_v(value, dest, dest + dest_size)))
+inline char *fmt_v (const T &value, char (&dest)[dest_size])
+  noexcept(noexcept(__bits::fmt_v(value, dest, dest + dest_size)))
 {
-  return __bits::copy_v(value, dest, dest + dest_size);
+  return __bits::fmt_v(value, dest, dest + dest_size);
 }
 
 
@@ -416,13 +416,13 @@ inline char *copy_v (const T &value, char (&dest)[dest_size])
  * Optimized specialization for copying compile-time const \a src[\a src_size]
  * to [\a first, \a last).
  *
- * \see copy_v()
+ * \see fmt_v()
  */
 template <size_t src_size>
-inline char *copy_v (const char (&src)[src_size], char *first, char *last)
-  noexcept(noexcept(__bits::copy_str(src, src + src_size - 1, first, last)))
+inline char *fmt_v (const char (&src)[src_size], char *first, char *last)
+  noexcept(noexcept(__bits::copy_s(src, src + src_size - 1, first, last)))
 {
-  return __bits::copy_str(src, src + src_size - 1, first, last);
+  return __bits::copy_s(src, src + src_size - 1, first, last);
 }
 
 
@@ -430,14 +430,14 @@ inline char *copy_v (const char (&src)[src_size], char *first, char *last)
  * Optimized specialization for copying compile-time const \a src[\a src_size]
  * to \a dest[\a dest_size].
  *
- * \see copy_v()
+ * \see fmt_v()
  */
 template <size_t src_size, size_t dest_size>
-inline char *copy_v (const char (&src)[src_size], char (&dest)[dest_size])
-  noexcept(noexcept(__bits::copy_str(src, src + src_size - 1, dest, dest + dest_size)))
+inline char *fmt_v (const char (&src)[src_size], char (&dest)[dest_size])
+  noexcept(noexcept(__bits::copy_s(src, src + src_size - 1, dest, dest + dest_size)))
 {
   static_assert(src_size - 1 <= dest_size, "not enough room");
-  return __bits::copy_str(src, src + src_size - 1, dest, dest + dest_size);
+  return __bits::copy_s(src, src + src_size - 1, dest, dest + dest_size);
 }
 
 
@@ -447,7 +447,7 @@ inline char *copy_v (const char (&src)[src_size], char (&dest)[dest_size])
  *
  * Usage:
  * \code
- * auto end = sal::copy_v(sal::hex(42ULL), first, last);
+ * auto end = sal::fmt_v(sal::hex(42ULL), first, last);
  * \endcode
  *
  * \return Opaque type, do not touch it's internals
@@ -465,7 +465,7 @@ inline __bits::hex<T> hex (T value) noexcept
  *
  * Usage:
  * \code
- * auto end = sal::copy_v(sal::oct(42ULL), first, last);
+ * auto end = sal::fmt_v(sal::oct(42ULL), first, last);
  * \endcode
  *
  * \return Opaque type, do not touch it's internals
@@ -483,7 +483,7 @@ inline __bits::oct<T> oct (T value) noexcept
  *
  * Usage:
  * \code
- * auto end = sal::copy_v(sal::bin(42ULL), first, last);
+ * auto end = sal::fmt_v(sal::bin(42ULL), first, last);
  * \endcode
  *
  * \return Opaque type, do not touch it's internals
