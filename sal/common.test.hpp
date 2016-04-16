@@ -6,8 +6,8 @@
 namespace sal_test {
 
 
-class fixture:
-  public testing::Test
+class fixture
+  : public testing::Test
 {
 public:
 
@@ -31,16 +31,16 @@ private:
 
 
 template <typename T>
-class with_type:
-  public fixture
+class with_type
+  : public fixture
 {
 };
 
 
 template <typename T>
-class with_value:
-  public fixture,
-  public testing::WithParamInterface<T>
+class with_value
+  : public fixture
+  , public testing::WithParamInterface<T>
 {
 };
 

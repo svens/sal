@@ -200,8 +200,8 @@ struct base_cast
   >;
   type data;
 
-  base_cast (T data):
-    data(data)
+  base_cast (T data)
+    : data(data)
   {}
 };
 
@@ -368,12 +368,6 @@ inline char *fmt_v (const std::string &value, char *first, char *last)
 {
   return copy_s(value.begin(), value.end(), first, last);
 }
-
-
-// float/double/long double
-char *fmt_v (float value, char *first, char *last) noexcept;
-char *fmt_v (double value, char *first, char *last) noexcept;
-char *fmt_v (const long double &value, char *first, char *last) noexcept;
 
 
 // catch-all

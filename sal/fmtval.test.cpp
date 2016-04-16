@@ -286,8 +286,8 @@ void load_zero_max (class_with_ostream &) noexcept
 
 
 template <typename T>
-struct fmt_v:
-  public sal_test::with_type<T>
+struct fmt_v
+  : public sal_test::with_type<T>
 {
   static constexpr size_t view_size = 128;
 
