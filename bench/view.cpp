@@ -1,4 +1,5 @@
 #include <bench/bench.hpp>
+#include <sal/fmtval.hpp>
 #include <sal/view.hpp>
 #include <chrono>
 #include <iostream>
@@ -54,28 +55,23 @@ const std::string p_str = "goodbye, world";
 template <typename F>
 int worker (F f)
 {
-  auto start = clock_type::now();
+  size_t current = 0, percent = 0;
 
-  std::cout << "[          ]\r[" << std::flush;
-  auto centile = count/10;
-  for (auto i = count;  i;  --i)
+  auto start = clock_type::now();
+  while (bench::in_progress(current, count, percent))
   {
     f();
-    if (i % centile == 0)
-    {
-      std::cout << '=' << std::flush;
-    }
   }
 
   auto delay = clock_type::now() - start;
-  auto ms = duration_cast<milliseconds>(delay).count();
-  if (!ms)
+  auto msec = duration_cast<milliseconds>(delay).count();
+  if (!msec)
   {
-    ms = 1;
+    msec = 1;
   }
 
-  std::cout << '\n' << ms << " msec"
-    << ", " << count/ms << " count/msec"
+  std::cout << '\n' << msec << " msec"
+    << ", " << count/msec << " count/msec"
     << std::endl;
 
   return EXIT_SUCCESS;
@@ -86,16 +82,43 @@ void use_printf ()
 {
   char buf[1024];
   snprintf(buf, sizeof(buf),
-    "prefix {%s, %c, %c, %c, %hd, %hu, %d, %u, %lld, %llu, %g, %g, %Lg, %p, %s, %s} suffix\n",
+    "bool=%s"
+    "; char=%c"
+    "; schar=%c"
+    "; uchar=%c"
+    "; i16=%hd"
+    "; u16=%hu"
+    "; u16:o=%ho"
+    "; u16:h=%hx"
+    "; i32=%d"
+    "; u32=%u"
+    "; u32:o=%o"
+    "; u32:h=%x"
+    "; i64=%lld"
+    "; u64=%llu"
+    "; u64:o=%llo"
+    "; u64:h=%llx"
+    "; float=%g"
+    "; double=%g"
+    "; ldouble=%Lg"
+    "; ptr=%p"
+    "; c_str='%s'"
+    "; str='%s'",
     (p_bool ? "true" : "false"),
     p_char,
     p_schar,
     p_uchar,
     p_i16,
     p_u16,
+    p_u16,
+    p_u16,
     p_i32,
     p_u32,
+    p_u32,
+    p_u32,
     p_i64,
+    p_u64,
+    p_u64,
     p_u64,
     p_float,
     p_double,
@@ -104,30 +127,45 @@ void use_printf ()
     p_cstr,
     p_str.c_str()
   );
+
+  if (count == 1)
+  {
+    printf("%s\n", buf);
+  }
 }
 
 
 void use_view ()
 {
   sal::view<1024> view;
-  view << "prefix {" << p_bool
-    << ", " << p_char
-    << ", " << p_schar
-    << ", " << p_uchar
-    << ", " << p_i16
-    << ", " << p_u16
-    << ", " << p_i32
-    << ", " << p_u32
-    << ", " << p_i64
-    << ", " << p_u64
-    << ", " << p_float
-    << ", " << p_double
-    << ", " << p_ldouble
-    << ", " << p_ptr
-    << ", " << p_cstr
-    << ", " << p_str
-    << "} suffix\n"
+  view << "bool=" << p_bool
+    << "; char=" << p_char
+    << "; schar=" << p_schar
+    << "; uchar=" << p_uchar
+    << "; i16=" << p_i16
+    << "; u16=" << p_u16
+    << "; u16:o=" << sal::oct(p_u16)
+    << "; u16:h=" << sal::hex(p_u16)
+    << "; i32=" << p_i32
+    << "; u32=" << p_u32
+    << "; u32:o=" << sal::oct(p_u32)
+    << "; u32:h=" << sal::hex(p_u32)
+    << "; i64=" << p_i64
+    << "; u64=" << p_u64
+    << "; u64:o=" << sal::oct(p_u64)
+    << "; u64:h=" << sal::hex(p_u64)
+    << "; float=" << p_float
+    << "; double=" << p_double
+    << "; ldouble=" << p_ldouble
+    << "; ptr=" << p_ptr
+    << "; c_str='" << p_cstr << '\''
+    << "; str='" << p_str << '\''
   ;
+
+  if (count == 1)
+  {
+    printf("%s\n", view.c_str());
+  }
 }
 
 

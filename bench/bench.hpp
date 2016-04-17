@@ -15,4 +15,7 @@ using func_list = std::unordered_map<std::string, func_ptr>;
 // benchmark functions
 int view (const arg_list &args);
 
+// progress printing
+bool in_progress (size_t &current, size_t total, size_t &percent);
+
 } // namespace bench
