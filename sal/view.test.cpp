@@ -1,397 +1,459 @@
 #include <sal/view.hpp>
+#include <sal/fmtval.hpp>
 #include <sal/common.test.hpp>
-#include <limits>
 
 
 namespace {
 
 
-template <typename T>
-std::string expected_view (const T &value)
+using view = sal_test::fixture;
+
+
+constexpr size_t size = 256;
+
+
+TEST_F(view, ctor)
 {
-  std::ostringstream oss;
-  oss << std::boolalpha << value;
-  return oss.str();
+  sal::view<size> view;
+  ASSERT_TRUE(view.good());
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(0U, view.size());
+  EXPECT_EQ(size, view.max_size());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-template <typename T>
-std::string expected_view (const T *value)
+TEST_F(view, copy_ctor_empty)
 {
-  // gcc & msvc formats differ for ptr
-  // need to format as hex uintptr for uniform formatting
-  std::ostringstream oss;
-  oss << "0x" << std::hex << reinterpret_cast<uintptr_t>(value);
-  return oss.str();
+  sal::view<size> expected;
+  ASSERT_TRUE(expected.good());
+  EXPECT_TRUE(expected.empty());
+
+  auto view = expected;
+  ASSERT_TRUE(view.good());
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(expected.size(), view.size());
+  EXPECT_EQ(expected.max_size(), view.max_size());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-template <typename T>
-std::string expected_view (T *value)
+TEST_F(view, copy_ctor_different_size_empty)
 {
-  return expected_view(const_cast<const T *>(value));
+  sal::view<size> expected;
+  ASSERT_TRUE(expected.good());
+  EXPECT_TRUE(expected.empty());
+
+  sal::view<expected.max_size() + 1> view = expected;
+  ASSERT_TRUE(view.good());
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(0U, view.size());
+  EXPECT_EQ(expected.max_size() + 1, view.max_size());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-std::string expected_view (const char *value)
+TEST_F(view, copy_ctor_non_empty)
 {
-  if (value)
+  sal::view<size> expected;
+  expected << case_name;
+  ASSERT_TRUE(expected.good());
+  EXPECT_FALSE(expected.empty());
+
+  auto view = expected;
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(expected.size(), view.size());
+  EXPECT_EQ(expected.max_size(), view.max_size());
+  EXPECT_STREQ(expected.c_str(), view.c_str());
+  EXPECT_EQ('\0', *view.end());
+}
+
+
+TEST_F(view, copy_ctor_different_size_non_empty)
+{
+  sal::view<size> expected;
+  expected << case_name;
+  ASSERT_TRUE(expected.good());
+  EXPECT_FALSE(expected.empty());
+
+  sal::view<expected.max_size() + 1> view = expected;
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(expected.size(), view.size());
+  EXPECT_EQ(expected.max_size() + 1, view.max_size());
+  EXPECT_STREQ(expected.c_str(), view.c_str());
+  EXPECT_EQ('\0', *view.end());
+}
+
+
+TEST_F(view, copy_ctor_invalid)
+{
+  sal::view<4> expected;
+  expected << "1234" << "abcd";
+  EXPECT_FALSE(expected.good());
+  EXPECT_FALSE(expected.empty());
+  EXPECT_EQ(8U, expected.size());
+  EXPECT_STREQ("1234", expected.c_str());
+
+  auto view = expected;
+  EXPECT_FALSE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(8U, view.size());
+  EXPECT_EQ('\0', *view.begin());
+}
+
+
+TEST_F(view, copy_assign_empty)
+{
+  sal::view<size> expected;
+  ASSERT_TRUE(expected.good());
+  EXPECT_TRUE(expected.empty());
+
+  decltype(expected) view;
+  view = expected;
+  ASSERT_TRUE(view.good());
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(expected.size(), view.size());
+  EXPECT_EQ(expected.max_size(), view.max_size());
+  EXPECT_EQ('\0', *view.end());
+}
+
+
+TEST_F(view, copy_assign_different_size_empty)
+{
+  sal::view<size> expected;
+  ASSERT_TRUE(expected.good());
+  EXPECT_TRUE(expected.empty());
+
+  sal::view<expected.max_size() + 1> view;
+  view = expected;
+  ASSERT_TRUE(view.good());
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(expected.size(), view.size());
+  EXPECT_EQ(expected.max_size() + 1, view.max_size());
+  EXPECT_EQ('\0', *view.end());
+}
+
+
+TEST_F(view, copy_assign_non_empty)
+{
+  sal::view<size> expected;
+  expected << case_name;
+  ASSERT_TRUE(expected.good());
+  EXPECT_FALSE(expected.empty());
+
+  decltype(expected) view;
+  view = expected;
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(expected.size(), view.size());
+  EXPECT_EQ(expected.max_size(), view.max_size());
+  EXPECT_STREQ(expected.c_str(), view.c_str());
+  EXPECT_EQ('\0', *view.end());
+}
+
+
+TEST_F(view, copy_assign_different_size_non_empty)
+{
+  sal::view<size> expected;
+  expected << case_name;
+  ASSERT_TRUE(expected.good());
+  EXPECT_FALSE(expected.empty());
+
+  sal::view<expected.max_size() + 1> view;
+  view = expected;
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(expected.size(), view.size());
+  EXPECT_EQ(expected.max_size() + 1, view.max_size());
+  EXPECT_STREQ(expected.c_str(), view.c_str());
+  EXPECT_EQ('\0', *view.end());
+}
+
+
+TEST_F(view, copy_assign_invalid)
+{
+  sal::view<4> expected;
+  expected << "1234" << "abcd";
+  EXPECT_FALSE(expected.good());
+  EXPECT_FALSE(expected.empty());
+  EXPECT_EQ(8U, expected.size());
+  EXPECT_STREQ("1234", expected.c_str());
+
+  decltype(expected) view;
+  view = expected;
+  EXPECT_FALSE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(8U, view.size());
+  EXPECT_EQ('\0', *view.begin());
+}
+
+
+TEST_F(view, iterator)
+{
+  sal::view<size> view;
+  EXPECT_EQ(view.begin(), view.end());
+  EXPECT_EQ(view.cbegin(), view.cend());
+
+  view << case_name;
+  EXPECT_NE(view.begin(), view.end());
+  EXPECT_NE(view.cbegin(), view.cend());
+
+  EXPECT_EQ(view.size(),
+    static_cast<size_t>(std::distance(view.begin(), view.end()))
+  );
+  EXPECT_EQ(view.size(),
+    static_cast<size_t>(std::distance(view.cbegin(), view.cend()))
+  );
+}
+
+
+TEST_F(view, data)
+{
+  sal::view<size> view;
+  EXPECT_EQ(static_cast<void *>(&view), view.data());
+}
+
+
+TEST_F(view, front)
+{
+  sal::view<size> view;
+  view << case_name;
+  EXPECT_EQ(case_name.front(), view.front());
+}
+
+
+TEST_F(view, back)
+{
+  sal::view<size> view;
+  view << case_name;
+  EXPECT_EQ(case_name.back(), view.back());
+}
+
+
+TEST_F(view, index)
+{
+  sal::view<size> view;
+  view << case_name;
+  for (auto i = 0U;  i < case_name.size();  ++i)
   {
-    std::ostringstream oss;
-    oss << value;
-    return oss.str();
+    EXPECT_EQ(case_name[i], view[i]);
   }
-
-  return "(null)";
 }
 
 
-std::string expected_view (char *value)
+TEST_F(view, str)
 {
-  return expected_view(const_cast<const char *>(value));
+  sal::view<size> view;
+  view << case_name;
+  EXPECT_EQ(case_name, view.str());
+  EXPECT_STREQ(case_name.c_str(), view.c_str());
 }
 
 
-// -- integral types --
-
-
-template <typename T>
-void load_min (T &value) noexcept
+TEST_F(view, insert_single)
 {
-  value = std::numeric_limits<T>::min();
+  sal::view<4> view;
+  view << "1234";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("1234", view.c_str());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-template <typename T>
-void load_zero (T &value) noexcept
+TEST_F(view, insert_multiple)
 {
-  value = static_cast<T>(0);
+  sal::view<4> view;
+
+  view << "12";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(2U, view.size());
+  EXPECT_STREQ("12", view.c_str());
+  EXPECT_EQ('\0', *view.end());
+
+  view << "ab";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("12ab", view.c_str());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-template <typename T>
-void load_max (T &value) noexcept
+TEST_F(view, insert_single_overflow)
 {
-  value = std::numeric_limits<T>::max();
+  sal::view<4> view;
+
+  view << "12345";
+  EXPECT_FALSE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(5U, view.size());
+
+  view.restore();
+  ASSERT_TRUE(view.good());
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(0U, view.size());
 }
 
 
-template <typename T>
-void load_min_zero (T &value) noexcept
+TEST_F(view, insert_multiple_overflow)
 {
-  T min, zero;
-  load_min(min);
-  load_zero(zero);
-  value = (min + zero)/2;
+  sal::view<4> view;
+
+  view << "123";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(3U, view.size());
+  EXPECT_STREQ("123", view.c_str());
+  EXPECT_EQ('\0', *view.end());
+
+  view << "4";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("1234", view.c_str());
+  EXPECT_EQ('\0', *view.end());
+
+  view << "56";
+  EXPECT_FALSE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(6U, view.size());
+
+  view.restore();
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("1234", view.c_str());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-template <typename T>
-void load_zero_max (T &value) noexcept
+TEST_F(view, insert_single_clear)
 {
-  T zero, max;
-  load_zero(zero);
-  load_min(max);
-  value = (zero + max)/2;
+  sal::view<4> view;
+
+  view << "1234";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("1234", view.c_str());
+  EXPECT_EQ('\0', *view.end());
+
+  view.reset();
+  ASSERT_TRUE(view.good());
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(0U, view.size());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-void load_min_zero (bool &value) noexcept
+TEST_F(view, insert_multiple_clear)
 {
-  load_min(value);
+  sal::view<4> view;
+
+  view << "123";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(3U, view.size());
+  EXPECT_STREQ("123", view.c_str());
+  EXPECT_EQ('\0', *view.end());
+
+  view << "4";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_EQ('\0', *view.end());
+
+  view << "56";
+  EXPECT_FALSE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(6U, view.size());
+
+  view.reset();
+  ASSERT_TRUE(view.good());
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(0U, view.size());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-void load_zero_max (bool &value) noexcept
+TEST_F(view, insert_view)
 {
-  load_max(value);
+  sal::view<4> view, another;
+  view << "12";
+  another << "34";
+  view << another;
+
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("1234", view.c_str());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-// -- pointer types --
-
-
-template <typename T>
-void load_min (T *&value) noexcept
+TEST_F(view, insert_self)
 {
-  value = nullptr;
+  sal::view<4> view;
+  view << "12";
+  view << view;
+
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("1212", view.c_str());
+  EXPECT_EQ('\0', *view.end());
 }
 
 
-template <typename T>
-void load_zero (T *&value) noexcept
+TEST_F(view, insert_self_overflow)
 {
-  load_min(value);
+  sal::view<4> view;
+  view << "12";
+
+  view << view;
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("1212", view.c_str());
+  EXPECT_EQ('\0', *view.end());
+
+  view << view;
+  EXPECT_FALSE(view.good());
+  EXPECT_EQ(8U, view.size());
+  EXPECT_FALSE(view.empty());
 }
 
 
-template <typename T>
-void load_max (T *&value) noexcept
+TEST_F(view, insert_ostream)
 {
-  value = reinterpret_cast<T *>(std::numeric_limits<uintptr_t>::max());
+  sal::view<4> view;
+  view << "1234";
+  ASSERT_TRUE(view.good());
+  EXPECT_FALSE(view.empty());
+  EXPECT_EQ(4U, view.size());
+  EXPECT_STREQ("1234", view.c_str());
+  EXPECT_EQ('\0', *view.end());
+
+  std::ostringstream oss;
+  oss << view;
+  EXPECT_EQ("1234", oss.str());
 }
 
 
-void load_max (const char *&value) noexcept
+TEST_F(view, fmt_v)
 {
-  static const char *data = "max";
-  value = data;
-}
+  sal::view<4> view;
+  view << "123";
 
-
-void load_max (char *&value) noexcept
-{
-  static char data[] = "max";
-  value = data;
-}
-
-
-void load_min_zero (const char *&value) noexcept
-{
-  static const char *data = "data";
-  value = data;
-}
-
-
-void load_min_zero (char *&value) noexcept
-{
-  static char data[] = "data";
-  value = data;
-}
-
-
-template <typename T>
-void load_min_zero (T *&value) noexcept
-{
-  static int data;
-  value = reinterpret_cast<T *>(&data);
-}
-
-
-template <typename T>
-void load_zero_max (T *&value) noexcept
-{
-  load_min_zero(value);
-}
-
-
-// -- string --
-
-
-void load_min (std::string &value) noexcept
-{
-  value = "";
-}
-
-
-void load_zero (std::string &value) noexcept
-{
-  value = "";
-}
-
-
-void load_max (std::string &value) noexcept
-{
-  value = "max";
-}
-
-
-void load_min_zero (std::string &value) noexcept
-{
-  value = "min_zero";
-}
-
-
-void load_zero_max (std::string &value) noexcept
-{
-  value = "zero_max";
-}
-
-
-// -- class_with_ostream --
-
-
-struct class_with_ostream
-{
-  friend inline
-  std::ostream &operator<< (std::ostream &os, const class_with_ostream &)
-  {
-    return (os << "class_with_ostream");
-  }
-};
-
-
-void load_min (class_with_ostream &) noexcept
-{
-}
-
-
-void load_zero (class_with_ostream &) noexcept
-{
-}
-
-
-void load_max (class_with_ostream &) noexcept
-{
-}
-
-
-void load_min_zero (class_with_ostream &) noexcept
-{
-}
-
-
-void load_zero_max (class_with_ostream &) noexcept
-{
+  char data[8];
+  auto end = sal::fmt_v(view, data);
+  EXPECT_EQ("123", std::string(data, end));
 }
 
 
 } // namespace
-
-
-template <typename T>
-struct copy_v
-  : public sal_test::test
-{
-  static constexpr size_t view_size = 128;
-
-
-  void test_value (const T &value)
-  {
-    char view[view_size];
-    auto end = sal::copy_v(value, view, view + view_size);
-    EXPECT_GE(view + view_size, end);
-    EXPECT_EQ(expected_view(value), std::string(view, end));
-  }
-
-
-  void test_buffer_zero (const T &value)
-  {
-    char view[view_size];
-    *std::fill_n(view, view_size - 1, '.') = '\0';
-    const std::string expected = view;
-    EXPECT_LT(view, sal::copy_v(value, view, view));
-    EXPECT_EQ(expected, view);
-  }
-
-
-  void test_buffer_one_less (const T &value)
-  {
-    char view[view_size];
-    *std::fill_n(view, view_size - 1, '.') = '\0';
-    const std::string expected = view;
-    auto expected_end = sal::copy_v(value, view, view);
-    auto expected_size = expected_end - view;
-    EXPECT_EQ(expected_end,
-      sal::copy_v(value, view, view + expected_size - 1)
-    );
-    EXPECT_EQ(expected, view);
-  }
-
-
-  void test_buffer_exact (const T &value)
-  {
-    char view[view_size];
-    *std::fill_n(view, view_size - 1, '.') = '\0';
-    const std::string expected = view;
-    auto expected_end = sal::copy_v(value, view, view);
-    auto expected_size = expected_end - view;
-    EXPECT_EQ(expected_end, sal::copy_v(value, view, view + expected_size));
-    EXPECT_EQ(expected_view(value), std::string(view, expected_size));
-  }
-};
-
-
-TYPED_TEST_CASE_P(copy_v);
-
-
-TYPED_TEST_P(copy_v, value_min)
-{
-  TypeParam value;
-  load_min(value);
-  this->test_value(value);
-}
-
-
-TYPED_TEST_P(copy_v, value_between_min_zero)
-{
-  TypeParam value;
-  load_min_zero(value);
-  this->test_value(value);
-}
-
-
-TYPED_TEST_P(copy_v, value_zero)
-{
-  TypeParam value;
-  load_zero(value);
-  this->test_value(value);
-}
-
-
-TYPED_TEST_P(copy_v, value_between_zero_max)
-{
-  TypeParam value;
-  load_zero_max(value);
-  this->test_value(value);
-}
-
-
-TYPED_TEST_P(copy_v, value_max)
-{
-  TypeParam value;
-  load_max(value);
-  this->test_value(value);
-}
-
-
-TYPED_TEST_P(copy_v, buffer_zero)
-{
-  TypeParam value;
-  load_zero_max(value);
-  this->test_buffer_zero(value);
-}
-
-
-TYPED_TEST_P(copy_v, buffer_one_less)
-{
-  TypeParam value;
-  load_zero_max(value);
-  this->test_buffer_one_less(value);
-}
-
-
-TYPED_TEST_P(copy_v, buffer_exact)
-{
-  TypeParam value;
-  load_zero_max(value);
-  this->test_buffer_exact(value);
-}
-
-
-REGISTER_TYPED_TEST_CASE_P(copy_v,
-  value_min,
-  value_between_min_zero,
-  value_zero,
-  value_between_zero_max,
-  value_max,
-  buffer_zero,
-  buffer_one_less,
-  buffer_exact
-);
-
-
-using types = testing::Types<bool
-  , char, signed char, unsigned char
-  , int16_t, uint16_t
-  , int32_t, uint32_t
-  , int64_t, uint64_t
-  , float, double, long double
-  , const void *, void *
-  , const char *, char *
-  , std::string
-  , class_with_ostream
->;
-
-
-INSTANTIATE_TYPED_TEST_CASE_P(view, copy_v, types);
