@@ -1,10 +1,11 @@
-#include "bench.hpp"
-#include <sal/config.hpp>
+#include <bench/bench.hpp>
+#include <iomanip>
 #include <iostream>
 
 
 bench::func_list bench_func =
 {
+  { "view", &bench::view },
 };
 
 
@@ -37,9 +38,6 @@ int usage (const char *arg0)
 
 int main (int argc, const char *argv[])
 {
-  std::cout << std::hex << sal::version::number << std::endl;
-  std::cout << std::hex << sal::version::c_str << std::endl;
-
   if (argc < 2)
   {
     return usage(argv[0]);
@@ -53,3 +51,28 @@ int main (int argc, const char *argv[])
 
   return (f->second)({argv + 2, argv + argc});
 }
+
+
+namespace bench {
+
+
+bool in_progress (size_t &current, size_t total, size_t &percent)
+{
+  if (current == total)
+  {
+    return false;
+  }
+
+  current++;
+  auto new_percent = current * 100 / total;
+  if (current == 1 || percent != new_percent)
+  {
+    percent = new_percent;
+    std::cout << "\r[" << std::setw(3) << percent << "%] " << std::flush;
+  }
+
+  return true;
+}
+
+
+} // namespace bench
