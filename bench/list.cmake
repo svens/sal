@@ -4,5 +4,5 @@ list(APPEND sal_bench
   bench/main.cpp
 
   # cases
-  bench/view.cpp
+  bench/c_str.cpp
 )

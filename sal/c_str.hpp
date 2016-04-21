@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/view.hpp
+ * \file sal/c_str.hpp
  * Fixed size char[] to hold formatted text
  */
 
@@ -16,10 +16,10 @@ __sal_begin
 
 
 // fwd
-template <size_t Size> class view;
+template <size_t Size> class c_str;
 namespace __bits {
 template <size_t Size>
-char *fmt_v (const view<Size> &value, char *first, char *last) noexcept;
+char *fmt_v (const c_str<Size> &value, char *first, char *last) noexcept;
 } // namespace __bits
 
 
@@ -49,37 +49,37 @@ char *fmt_v (const view<Size> &value, char *first, char *last) noexcept;
  * non-mutable std::string_view with internal array.
  */
 template <size_t Size>
-class view
+class c_str
 {
 public:
 
-  static_assert(Size > 0, "zero-sized view not allowed");
+  static_assert(Size > 0, "zero-sized c_str not allowed");
 
 
-  /// Construct new empty view
-  view () noexcept
+  /// Construct new empty c_str
+  c_str () noexcept
   {
     reset();
   }
 
 
-  /// Construct new view with content from \a that
-  view (const view &that) noexcept
+  /// Construct new c_str with content from \a that
+  c_str (const c_str &that) noexcept
   {
     operator=(that);
   }
 
 
-  /// \copydoc view(const view &)
+  /// \copydoc c_str(const c_str &)
   template <size_t ThatSize>
-  view (const view<ThatSize> &that) noexcept
+  c_str (const c_str<ThatSize> &that) noexcept
   {
     operator=(that);
   }
 
 
   /// Assign new content to \a this from \a that
-  view &operator= (const view &that) noexcept
+  c_str &operator= (const c_str &that) noexcept
   {
     end_ = fmt_v(that, begin_);
     *(good() ? end_ : begin_) = '\0';
@@ -87,9 +87,9 @@ public:
   }
 
 
-  /// \copydoc operator=(const view &that)
+  /// \copydoc operator=(const c_str &that)
   template <size_t ThatSize>
-  view &operator= (const view<ThatSize> &that) noexcept
+  c_str &operator= (const c_str<ThatSize> &that) noexcept
   {
     static_assert(Size >= ThatSize, "this is smaller than that");
     end_ = fmt_v(that, begin_);
@@ -252,7 +252,7 @@ public:
    * terminator, this call returns always pointer to valid C-string, even if
    * \a this state is not good().
    */
-  constexpr const char *c_str () const noexcept
+  constexpr const char *get () const noexcept
   {
     return begin_;
   }
@@ -274,12 +274,12 @@ public:
 
 
   /**
-   * Insert textual representation of \a value to view \a v. If \a v is not
+   * Insert textual representation of \a value to c_str \a v. If \a v is not
    * good(), end() pointer is still increased but no content is actually
    * added.
    */
   template <typename T>
-  friend view &operator<< (view &v, const T &value) noexcept
+  friend c_str &operator<< (c_str &v, const T &value) noexcept
   {
     v.end_ = __bits::fmt_v(value, v.end_, v.begin_ + Size);
     if (v.good())
@@ -298,9 +298,9 @@ private:
 
 namespace __bits {
 
-// specialization for fmt_v(view)
+// specialization for fmt_v(c_str)
 template <size_t Size>
-inline char *fmt_v (const view<Size> &value, char *first, char *last) noexcept
+inline char *fmt_v (const c_str<Size> &value, char *first, char *last) noexcept
 {
   return __bits::copy_s(value.begin(), value.end(), first, last);
 }
@@ -310,7 +310,7 @@ inline char *fmt_v (const view<Size> &value, char *first, char *last) noexcept
 
 /// Insert content of \a v to \a os. This call is valid only if \a v.good()
 template <size_t Size>
-std::ostream &operator<< (std::ostream &os, const view<Size> &v)
+std::ostream &operator<< (std::ostream &os, const c_str<Size> &v)
 {
   return os.write(v.begin(), v.size());
 }

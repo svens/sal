@@ -22,7 +22,7 @@ namespace __bits {
 
 // helper to silence MSVC 'Checked Iterators' warning
 template <typename It>
-constexpr auto make_iterator (It *it) noexcept
+constexpr inline auto make_iterator (It *it) noexcept
 {
 #if defined(_MSC_VER)
   return stdext::make_unchecked_array_iterator(it);
