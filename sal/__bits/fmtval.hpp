@@ -3,19 +3,33 @@
 #include <sal/builtins.hpp>
 #include <sal/config.hpp>
 #include <cstring>
+#include <memory>
 #include <sstream>
 #include <type_traits>
 
-__sal_warn_disable
-#include <memory>
-__sal_warn_enable
+#if defined(_MSC_VER)
+  // see make_iterator below
+  #include <iterator>
+#endif
 
 
 namespace sal {
-__sal_hpp_begin
+__sal_begin
 
 
 namespace __bits {
+
+
+// helper to silence MSVC 'Checked Iterators' warning
+template <typename It>
+constexpr inline auto make_iterator (It *it) noexcept
+{
+#if defined(_MSC_VER)
+  return stdext::make_unchecked_array_iterator(it);
+#else
+  return it;
+#endif
+}
 
 
 // helper: [first,last) -> d_first unless doesn't fit
@@ -26,7 +40,7 @@ inline ForwardIt copy_s (InputIt first, InputIt last,
   auto end = d_first + (last - first);
   if (end <= d_last)
   {
-    return std::uninitialized_copy(first, last, d_first);
+    std::uninitialized_copy(first, last, make_iterator(d_first));
   }
 
   return end;
@@ -383,5 +397,5 @@ inline char *fmt_v (const T &value, char *first, char *last)
 } // namespace __bits
 
 
-__sal_hpp_end
+__sal_end
 } // namespace sal

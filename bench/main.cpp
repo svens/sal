@@ -5,7 +5,7 @@
 
 bench::func_list bench_func =
 {
-  { "view", &bench::view },
+  { "c_str", &bench::c_str },
 };
 
 
@@ -25,7 +25,7 @@ int usage (const char *arg0)
 
   for (const auto &f: bench_func)
   {
-    std::cerr << " " << f.first << std::endl;
+    std::cerr << "  " << f.first << std::endl;
   }
 
   std::cerr << "\nFor more information, run"

@@ -12,7 +12,7 @@
 
 
 namespace sal {
-__sal_hpp_begin
+__sal_begin
 
 
 /**
@@ -87,5 +87,5 @@ namespace __bits {
 } // namespace __bits
 
 
-__sal_hpp_end
+__sal_end
 } // namespace sal

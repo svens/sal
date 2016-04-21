@@ -1,6 +1,6 @@
 #include <bench/bench.hpp>
+#include <sal/c_str.hpp>
 #include <sal/fmtval.hpp>
-#include <sal/view.hpp>
 #include <chrono>
 #include <iostream>
 
@@ -12,7 +12,7 @@ using namespace std::chrono;
 using clock_type = high_resolution_clock;
 
 
-std::string func = "view";
+std::string func = "c_str";
 size_t count = 10'000'000;
 
 
@@ -23,11 +23,11 @@ int usage (const std::string message="")
     std::cerr << message << '\n' << std::endl;
   }
 
-  std::cerr << "view:"
+  std::cerr << "c_str:"
     << "\n  --help        this page"
     << "\n  --count=int   number of iterations"
     << "\n  --func=Func   function to test"
-    << "\n                possible values: view, printf"
+    << "\n                possible values: c_str, printf"
     << std::endl;
 
   return EXIT_FAILURE;
@@ -135,10 +135,10 @@ void use_printf ()
 }
 
 
-void use_view ()
+void use_c_str ()
 {
-  sal::view<1024> view;
-  view << "bool=" << p_bool
+  sal::c_str<1024> c_str;
+  c_str << "bool=" << p_bool
     << "; char=" << p_char
     << "; schar=" << p_schar
     << "; uchar=" << p_uchar
@@ -164,7 +164,7 @@ void use_view ()
 
   if (count == 1)
   {
-    printf("%s\n", view.c_str());
+    printf("%s\n", c_str.get());
   }
 }
 
@@ -172,7 +172,7 @@ void use_view ()
 } // namespace
 
 
-int bench::view (const arg_list &args)
+int bench::c_str (const arg_list &args)
 {
   for (auto &arg: args)
   {
@@ -194,9 +194,9 @@ int bench::view (const arg_list &args)
     }
   }
 
-  if (func == "view")
+  if (func == "c_str")
   {
-    return worker(use_view);
+    return worker(use_c_str);
   }
   else if (func == "printf")
   {

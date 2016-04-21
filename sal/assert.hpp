@@ -11,7 +11,7 @@
 
 
 namespace sal {
-__sal_hpp_begin
+__sal_begin
 
 
 /**
@@ -19,7 +19,7 @@ __sal_hpp_begin
  * Check pre-condition \a cond to be true. On false, throw std::logic_error
  */
 #define sal_expect(cond) \
-  sal::__bits::check(cond, SAL_AT ": Assertion '" #cond "' failed")
+  sal::__bits::check(cond, __sal_at ": Assertion '" #cond "' failed")
 
 
 /**
@@ -27,7 +27,7 @@ __sal_hpp_begin
  * Check post-condition \a cond to be true. On false, throw std::logic_error
  */
 #define sal_ensure(cond) \
-  sal::__bits::check(cond, SAL_AT ": Assertion '" #cond "' failed")
+  sal::__bits::check(cond, __sal_at ": Assertion '" #cond "' failed")
 
 
 /**
@@ -36,37 +36,42 @@ __sal_hpp_begin
  * std::logic_error
  */
 #define sal_check_ptr(ptr) \
-  sal::__bits::check_ptr(ptr, SAL_AT ": '" #ptr "' is null")
+  sal::__bits::check_ptr(ptr, __sal_at ": '" #ptr "' is null")
 
 
 namespace __bits {
 
 
-inline void check (bool cond, char const *msg)
+inline void check (bool cond, const char *msg)
 {
 #if !defined(NDEBUG)
   if (!cond)
   {
     throw std::logic_error(msg);
   }
+#else
+  (void)cond;
+  (void)msg;
 #endif
 }
 
 
 template <typename T>
-inline T *check_ptr (T *ptr, char const *msg)
+inline T *check_ptr (T *ptr, const char *msg)
 {
 #if !defined(NDEBUG)
   if (!ptr)
   {
     throw std::logic_error(msg);
   }
+#else
+  (void)msg;
 #endif
   return ptr;
 }
 
 
-inline void *check_ptr (std::nullptr_t, char const *msg)
+inline void *check_ptr (std::nullptr_t, const char *msg)
 {
   return check_ptr<void>(nullptr, msg);
 }
@@ -75,5 +80,5 @@ inline void *check_ptr (std::nullptr_t, char const *msg)
 } // namespace __bits
 
 
-__sal_hpp_end
+__sal_end
 } // namespace sal
