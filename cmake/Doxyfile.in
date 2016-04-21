@@ -16,7 +16,7 @@ INPUT += @PROJECT_SOURCE_DIR@/README.md
 USE_MDFILE_AS_MAINPAGE = README.md
 
 FILE_PATTERNS = *.hpp *.md
-EXCLUDE_PATTERNS = *.test.hpp
+EXCLUDE_PATTERNS = *.test.hpp **/__bits/*
 
 EXCLUDE_SYMBOLS = sal::__bits sal::*::__bits __*
 JAVADOC_AUTOBRIEF = YES
@@ -26,8 +26,8 @@ ENABLE_PREPROCESSING = YES
 MACRO_EXPANSION = YES
 EXPAND_ONLY_PREDEF = YES
 PREDEFINED = \
-  __sal_hpp_begin= \
-  __sal_hpp_end=
+  __sal_begin= \
+  __sal_end=
 
 #
 # Output

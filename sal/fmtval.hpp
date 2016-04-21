@@ -11,7 +11,7 @@
 
 
 namespace sal {
-__sal_hpp_begin
+__sal_begin
 
 
 /**
@@ -151,5 +151,5 @@ inline __bits::bin<T> bin (T value) noexcept
 }
 
 
-__sal_hpp_end
+__sal_end
 } // namespace sal

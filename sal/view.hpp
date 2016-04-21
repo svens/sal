@@ -12,7 +12,7 @@
 
 
 namespace sal {
-__sal_hpp_begin
+__sal_begin
 
 
 // fwd
@@ -316,5 +316,5 @@ std::ostream &operator<< (std::ostream &os, const view<Size> &v)
 }
 
 
-__sal_hpp_end
+__sal_end
 } // namespace sal
