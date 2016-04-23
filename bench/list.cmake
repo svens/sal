@@ -5,4 +5,5 @@ list(APPEND sal_bench
 
   # cases
   bench/c_str.cpp
+  bench/spinlock.cpp
 )

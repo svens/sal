@@ -58,7 +58,7 @@ int worker (F f)
   size_t current = 0, percent = 0;
 
   auto start = clock_type::now();
-  while (bench::in_progress(current, count, percent))
+  while (bench::in_progress(++current, count, percent))
   {
     f();
   }
