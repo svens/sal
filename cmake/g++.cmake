@@ -2,7 +2,7 @@
 # GNU G++ options
 #
 
-set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Werror -pedantic -pipe")
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Weffc++ -Werror -pedantic -pipe")
 set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -ggdb -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3")
 
