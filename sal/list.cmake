@@ -1,5 +1,6 @@
 # sources
 list(APPEND sal_sources
+  sal/atomic_queue.hpp
   sal/assert.hpp
   sal/builtins.hpp
   sal/c_str.hpp
@@ -14,6 +15,7 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests
+  sal/atomic_queue.test.cpp
   sal/assert.test.cpp
   sal/builtins.test.cpp
   sal/c_str.test.cpp
