@@ -70,13 +70,7 @@ inline void adaptive_spin (size_t iter_count) noexcept
 
 
 /**
- * Wrapper for platform's provided spinlock or atomic flag if none.
- *
- * Applications should use spinlock only for very short-lived locks because
- * when blocked, calling thread will keep spinning, preventing OS scheduler to
- * suspend thread while waiting.
- *
- * Spinlock is not recursive.
+ * Non-recursive spinlock using std::atomic_flag
  *
  * This API satisfies C++ Lockable concept i.e. it can be used with
  * std::lock_guard and std::unique_lock.
