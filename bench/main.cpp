@@ -6,6 +6,7 @@
 bench::func_list bench_func =
 {
   { "c_str", &bench::c_str },
+  { "spinlock", &bench::spinlock },
 };
 
 
@@ -56,14 +57,13 @@ int main (int argc, const char *argv[])
 namespace bench {
 
 
-bool in_progress (size_t &current, size_t total, size_t &percent)
+bool in_progress (size_t current, size_t total, size_t &percent)
 {
-  if (current == total)
+  if (current > total)
   {
     return false;
   }
 
-  current++;
   auto new_percent = current * 100 / total;
   if (current == 1 || percent != new_percent)
   {

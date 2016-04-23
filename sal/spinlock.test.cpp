@@ -42,20 +42,19 @@ TEST(spinlock, two_threads)
 
     // t2.3) pretend working little while
     flag = true;
-    std::this_thread::sleep_for(2ms);
+    std::this_thread::sleep_for(20ms);
 
     // t2.4) stop pretending, give chance to (t1.4)
     lock.unlock();
   });
 
   // t1.2) still owning lock since (t1.1)
-  std::this_thread::sleep_for(1ms);
+  std::this_thread::sleep_for(10ms);
   EXPECT_FALSE(flag);
 
   // t1.3) give (t2.1) chance to work
   lock.unlock();
-  std::this_thread::sleep_for(1ms);
-  ASSERT_FALSE(lock.try_lock());
+  std::this_thread::sleep_for(30ms);
 
   // t1.4) spinning here until (t2.3) is pretending
   lock.lock();
