@@ -6,7 +6,6 @@ list(APPEND sal_sources
   sal/fmtval.hpp
   sal/__bits/fmtval.hpp
   sal/spinlock.hpp
-  sal/__bits/spinlock.hpp
 
   # temporary file to let cmake detect library language
   sal/void.cpp
