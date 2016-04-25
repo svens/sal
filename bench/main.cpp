@@ -5,6 +5,7 @@
 
 bench::func_list bench_func =
 {
+  { "atomic_queue", &bench::atomic_queue },
   { "c_str", &bench::c_str },
   { "spinlock", &bench::spinlock },
 };
@@ -57,14 +58,37 @@ int main (int argc, const char *argv[])
 namespace bench {
 
 
-bool in_progress (size_t current, size_t total, size_t &percent)
+time_point starting ()
 {
-  if (current > total)
+  return clock_type::now();
+}
+
+
+void stopped (time_point start_time, size_t count)
+{
+  using namespace std::chrono;
+
+  auto delay = clock_type::now() - start_time;
+  auto msec = duration_cast<milliseconds>(delay).count();
+  if (!msec)
+  {
+    msec = 1;
+  }
+
+  std::cout << '\n' << msec << " msec"
+    << ", " << count/msec << " count/msec"
+    << std::endl;
+}
+
+
+bool in_progress (size_t current, size_t count, size_t &percent)
+{
+  if (current > count)
   {
     return false;
   }
 
-  auto new_percent = current * 100 / total;
+  auto new_percent = current * 100 / count;
   if (current == 1 || percent != new_percent)
   {
     percent = new_percent;

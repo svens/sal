@@ -1,16 +1,11 @@
 #include <bench/bench.hpp>
 #include <sal/spinlock.hpp>
-#include <chrono>
 #include <iostream>
 #include <mutex>
 #include <thread>
 
 
 namespace {
-
-
-using namespace std::chrono;
-using clock_type = high_resolution_clock;
 
 
 // configuration
@@ -68,7 +63,7 @@ int worker (Mutex &mutex)
   }
 
   // all workers ready, start timer and let them go
-  auto start = clock_type::now();
+  auto start_time = bench::starting();
   mutex.unlock();
 
   while (bench::in_progress(current, count, percent))
@@ -82,16 +77,7 @@ int worker (Mutex &mutex)
     worker.join();
   }
 
-  auto delay = clock_type::now() - start;
-  auto msec = duration_cast<milliseconds>(delay).count();
-  if (!msec)
-  {
-    msec = 1;
-  }
-
-  std::cout << '\n' << msec << " msec"
-    << ", " << count/msec << " count/msec"
-    << std::endl;
+  bench::stopped(start_time, count);
 
   return EXIT_SUCCESS;
 }
