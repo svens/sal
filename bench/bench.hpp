@@ -30,9 +30,10 @@ int spinlock (const arg_list &args);
 
 using clock_type = std::chrono::high_resolution_clock;
 using time_point = std::chrono::time_point<clock_type>;
+using milliseconds = std::chrono::milliseconds;
 
-time_point starting ();
-void stopped (time_point start_time, size_t total);
+time_point start ();
+milliseconds stop (time_point start_time, size_t total);
 
 bool in_progress (size_t current, size_t total, size_t &percent);
 

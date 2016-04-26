@@ -63,7 +63,7 @@ int worker (Mutex &mutex)
   }
 
   // all workers ready, start timer and let them go
-  auto start_time = bench::starting();
+  auto start_time = bench::start();
   mutex.unlock();
 
   while (bench::in_progress(current, count, percent))
@@ -77,7 +77,7 @@ int worker (Mutex &mutex)
     worker.join();
   }
 
-  bench::stopped(start_time, count);
+  bench::stop(start_time, count);
 
   return EXIT_SUCCESS;
 }

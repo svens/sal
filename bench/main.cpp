@@ -58,36 +58,32 @@ int main (int argc, const char *argv[])
 namespace bench {
 
 
-time_point starting ()
+time_point start ()
 {
   return clock_type::now();
 }
 
 
-void stopped (time_point start_time, size_t count)
+milliseconds stop (time_point start_time, size_t count)
 {
   using namespace std::chrono;
 
-  auto delay = clock_type::now() - start_time;
-  auto msec = duration_cast<milliseconds>(delay).count();
-  if (!msec)
+  auto msec = duration_cast<milliseconds>(clock_type::now() - start_time);
+  if (!msec.count())
   {
-    msec = 1;
+    msec = 1ms;
   }
 
-  std::cout << '\n' << msec << " msec"
-    << ", " << count/msec << " count/msec"
+  std::cout << msec.count() << " msec"
+    << ", " << count/msec.count() << " count/msec"
     << std::endl;
+
+  return msec;
 }
 
 
 bool in_progress (size_t current, size_t count, size_t &percent)
 {
-  if (current > count)
-  {
-    return false;
-  }
-
   auto new_percent = current * 100 / count;
   if (current == 1 || percent != new_percent)
   {
@@ -95,7 +91,7 @@ bool in_progress (size_t current, size_t count, size_t &percent)
     std::cout << "\r[" << std::setw(3) << percent << "%] " << std::flush;
   }
 
-  return true;
+  return current <= count;
 }
 
 

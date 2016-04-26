@@ -52,12 +52,12 @@ int worker (F f)
 {
   size_t current = 0, percent = 0;
 
-  auto start_time = bench::starting();
+  auto start_time = bench::start();
   while (bench::in_progress(++current, count, percent))
   {
     f();
   }
-  bench::stopped(start_time, count);
+  bench::stop(start_time, count);
 
   return EXIT_SUCCESS;
 }
