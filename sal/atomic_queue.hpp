@@ -6,17 +6,9 @@
  *
  * This module provides common API for multiple open-ended queue
  * implementations with different traits.
- *
- * Most generic implementation uses two-lock queue implementation presented in
- * https://www.research.ibm.com/people/m/michael/podc-1996.pdf. If there is no
- * specialisation for queue with specified traits, two-lock queue is used as
- * fallback implementation. Each implementation provides method is_lock_free()
- * indicating whether locks are involved in synchronisation.
  */
 
 #include <sal/config.hpp>
-#include <sal/spinlock.hpp>
-#include <mutex>
 
 
 namespace sal {
@@ -50,7 +42,7 @@ using mpmc = atomic_queue_use_policy<true, true>;
 
 /**
  * Intrusive hook into application provided \a T.
- * \see atomic_queue<T>
+ * \see atomic_queue<T, Hook, UsePolicy>
  */
 template <typename T>
 using atomic_queue_hook = T *;
@@ -87,7 +79,7 @@ using atomic_queue_hook = T *;
  *   sal::atomic_queue_hook<foo> hook;
  * };
  *
- * sal::atomic_queue<foo, &foo::hook> queue;
+ * sal::atomic_queue<foo, &foo::hook, sal::spsc> queue;
  *
  * foo f;
  * queue.push(&f);
@@ -97,7 +89,7 @@ using atomic_queue_hook = T *;
  */
 template <typename T,
   atomic_queue_hook<T> T::*Hook,
-  typename UsePolicy = mpmc
+  typename UsePolicy
 >
 class atomic_queue
 {
@@ -111,10 +103,7 @@ public:
 
 
   /// Return true if no locks are involved in queue operations
-  static constexpr bool is_lock_free () noexcept
-  {
-    return false;
-  }
+  static constexpr bool is_lock_free () noexcept;
 
 
   atomic_queue (const atomic_queue &) = delete;
@@ -122,11 +111,7 @@ public:
 
 
   /// Construct new empty queue
-  atomic_queue () noexcept
-  {
-    head_.ptr = tail_.ptr = reinterpret_cast<T *>(&sentry_);
-    next(head_.ptr) = nullptr;
-  }
+  atomic_queue () noexcept;
 
 
   /**
@@ -138,11 +123,7 @@ public:
    * application responsibility to make sure \a that does not change during
    * move.
    */
-  atomic_queue (atomic_queue &&that) noexcept
-  {
-    head_.ptr = reinterpret_cast<T *>(&sentry_);
-    operator=(std::move(that));
-  }
+  atomic_queue (atomic_queue &&that) noexcept;
 
 
   /**
@@ -151,57 +132,29 @@ public:
    *
    * Elements in \a this are dropped before move. If they are dynamically
    * allocated, it is application's responsibility to release them beforehand.
+   *
+   * \note Moving elements out of \a that and into \a this are not
+   * synchronised. It is application responsibility to make sure neither
+   * change during move.
    */
-  atomic_queue &operator= (atomic_queue &&that) noexcept
-  {
-    next(head_.ptr) = next(that.head_.ptr);
-    next(that.head_.ptr) = nullptr;
-    tail_.ptr = that.tail_.ptr;
-    that.tail_.ptr = nullptr;
-    return *this;
-  }
+  atomic_queue &operator= (atomic_queue &&that) noexcept;
 
 
   /// Push new \a node to \a this queue.
-  void push (T *node) noexcept
-  {
-    next(node) = nullptr;
-    std::lock_guard<spinlock> lock(tail_.mutex);
-    next(tail_.ptr) = node;
-    tail_.ptr = node;
-  }
+  void push (T *node) noexcept;
 
 
   /// Pop next item from queue. If empty, nullptr is returned.
-  T *try_pop () noexcept
-  {
-    std::lock_guard<spinlock> lock(head_.mutex);
-    if (auto node = next(head_.ptr))
-    {
-      next(head_.ptr) = next(node);
-      return node;
-    }
-    return nullptr;
-  }
-
-
-private:
-
-  struct
-  {
-    spinlock mutex;
-    T *ptr;
-  } head_, tail_;
-
-  char sentry_[sizeof(T)];
-
-
-  static T *&next (T *n) noexcept
-  {
-    return n->*Hook;
-  }
+  T *try_pop () noexcept;
 };
 
 
 __sal_end
 } // namespace sal
+
+
+// specializations for different producer/consumer policies
+#include <sal/__bits/atomic_queue_mpmc.hpp>
+#include <sal/__bits/atomic_queue_mpsc.hpp>
+#include <sal/__bits/atomic_queue_spmc.hpp>
+#include <sal/__bits/atomic_queue_spsc.hpp>
