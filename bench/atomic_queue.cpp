@@ -72,17 +72,18 @@ milliseconds single_run ()
     consumer_threads.emplace_back(
       [&]
       {
-        for (;;)
+        for (size_t i = 0;  /**/;  ++i)
         {
-          auto node = queue.try_pop();
-          if (!node)
+          if (auto node = queue.try_pop())
           {
-            std::this_thread::sleep_for(1us);
-            continue;
+            if (node->stop)
+            {
+              break;
+            }
           }
-          if (node->stop)
+          else
           {
-            break;
+            sal::adaptive_spin<100>(i);
           }
         }
       }
