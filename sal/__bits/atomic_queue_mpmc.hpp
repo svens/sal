@@ -8,9 +8,12 @@
 // MPMC is most generic producer/consumer queue and is used as fallback for
 // other queues if more scalable specific implementation is not found.
 
+// For now, MPMC uses MPSC with SC synchronised using spinlock
+
 
 #include <sal/spinlock.hpp>
 #include <mutex>
+#include <utility>
 
 
 namespace sal {
@@ -35,62 +38,39 @@ public:
   atomic_queue &operator= (const atomic_queue &) = delete;
 
 
-  atomic_queue () noexcept
-  {
-    next_(head_) = nullptr;
-  }
+  atomic_queue () = default;
 
 
   atomic_queue (atomic_queue &&that) noexcept
+    : queue_(std::move(that.queue_))
   {
-    operator=(std::move(that));
   }
 
 
   atomic_queue &operator= (atomic_queue &&that) noexcept
   {
-    next_(head_) = next_(that.head_);
-    tail_ = next_(head_) ? that.tail_ : head_;
+    queue_ = std::move(that.queue_);
     return *this;
   }
 
 
   void push (T *node) noexcept
   {
-    next_(node) = nullptr;
-    std::lock_guard<spinlock> lock(mutex_);
-    tail_ = next_(tail_) = node;
+    queue_.push(node);
   }
 
 
   T *try_pop () noexcept
   {
     std::lock_guard<spinlock> lock(mutex_);
-    if (auto node = next_(head_))
-    {
-      next_(head_) = next_(node);
-      if (!next_(head_))
-      {
-        tail_ = head_;
-      }
-      return node;
-    }
-    return nullptr;
+    return queue_.try_pop();
   }
 
 
 private:
 
   spinlock mutex_{};
-
-  char sentry_[sizeof(T)];
-  T * const head_ = reinterpret_cast<T *>(&sentry_);
-  T *tail_ = head_;
-
-  static T *&next_ (T *n) noexcept
-  {
-    return n->*Hook;
-  }
+  atomic_queue<T, Hook, mpsc> queue_{};
 };
 
 

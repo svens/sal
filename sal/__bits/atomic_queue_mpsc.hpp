@@ -40,6 +40,7 @@
 
 
 #include <atomic>
+#include <utility>
 
 
 namespace sal {
@@ -66,13 +67,13 @@ public:
 
   atomic_queue () noexcept
   {
-    next_(tail_) = nullptr;
+    tail_->*Hook = nullptr;
   }
 
 
   atomic_queue (atomic_queue &&that) noexcept
   {
-    next_(tail_) = nullptr;
+    tail_->*Hook = nullptr;
     operator=(std::move(that));
   }
 
@@ -87,7 +88,7 @@ public:
     {
       head_ = that.head_;
       tail_ = sentry_;
-      next_(tail_) = next_(that.tail_);
+      tail_->*Hook = that.tail_->*Hook;
     }
     else
     {
@@ -101,15 +102,16 @@ public:
 
   void push (T *node) noexcept
   {
-    next_(node) = nullptr;
+    node->*Hook = nullptr;
     T *prev = head_.exchange(node, std::memory_order_acq_rel);
-    next_(prev) = node;
+    prev->*Hook = node;
   }
 
 
   T *try_pop () noexcept
   {
-    auto tail = tail_, next = next_(tail);
+    auto tail = tail_;
+    auto next = tail->*Hook;
 
     if (tail == sentry_)
     {
@@ -117,13 +119,13 @@ public:
       {
         return nullptr;
       }
-      tail_ = tail = next;
-      next = next_(next);
+      tail = tail_ = const_cast<T *>(next);
+      next = next->*Hook;
     }
 
     if (next)
     {
-      tail_ = next;
+      tail_ = const_cast<T *>(next);
       return tail;
     }
 
@@ -136,10 +138,10 @@ public:
 
     push(sentry_);
 
-    next = next_(tail);
+    next = tail->*Hook;
     if (next)
     {
-      tail_ = next;
+      tail_ = const_cast<T *>(next);
       return tail;
     }
 
@@ -154,11 +156,6 @@ private:
 
   volatile std::atomic<T *> head_{sentry_};
   T *tail_ = sentry_;
-
-  static T *&next_ (T *n) noexcept
-  {
-    return n->*Hook;
-  }
 };
 
 

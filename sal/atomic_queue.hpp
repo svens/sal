@@ -41,11 +41,11 @@ using mpmc = atomic_queue_use_policy<true, true>;
 
 
 /**
- * Intrusive hook into application provided \a T.
+ * Intrusive hook for application provided type \a T into atomic_queue<T>
  * \see atomic_queue<T, Hook, UsePolicy>
  */
 template <typename T>
-using atomic_queue_hook = T *;
+using atomic_queue_hook = volatile T *;
 
 
 /**
