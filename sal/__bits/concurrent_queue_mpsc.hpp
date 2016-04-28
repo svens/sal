@@ -67,35 +67,35 @@ public:
 
   concurrent_queue () noexcept
   {
-    tail_->*Hook = nullptr;
+    head_->*Hook = nullptr;
   }
 
 
   concurrent_queue (concurrent_queue &&that) noexcept
   {
-    tail_->*Hook = nullptr;
+    head_->*Hook = nullptr;
     operator=(std::move(that));
   }
 
 
   concurrent_queue &operator= (concurrent_queue &&that) noexcept
   {
-    if (that.head_ == that.sentry_)
+    if (that.tail_ == that.sentry_)
     {
-      head_ = tail_ = sentry_;
+      tail_ = head_ = sentry_;
     }
-    else if (that.tail_ == that.sentry_)
+    else if (that.head_ == that.sentry_)
     {
-      head_ = that.head_;
-      tail_ = sentry_;
-      tail_->*Hook = that.tail_->*Hook;
+      tail_ = that.tail_;
+      head_ = sentry_;
+      head_->*Hook = that.head_->*Hook;
     }
     else
     {
-      head_ = that.head_;
       tail_ = that.tail_;
+      head_ = that.head_;
     }
-    that.head_ = that.tail_ = nullptr;
+    that.tail_ = that.head_ = nullptr;
     return *this;
   }
 
@@ -103,34 +103,34 @@ public:
   void push (T *node) noexcept
   {
     node->*Hook = nullptr;
-    T *prev = head_.exchange(node, std::memory_order_acq_rel);
+    T *prev = tail_.exchange(node, std::memory_order_acq_rel);
     prev->*Hook = node;
   }
 
 
   T *try_pop () noexcept
   {
-    auto tail = tail_;
-    auto next = tail->*Hook;
+    auto head = head_;
+    auto next = head->*Hook;
 
-    if (tail == sentry_)
+    if (head == sentry_)
     {
       if (!next)
       {
         return nullptr;
       }
-      tail = tail_ = const_cast<T *>(next);
+      head = head_ = const_cast<T *>(next);
       next = next->*Hook;
     }
 
     if (next)
     {
-      tail_ = const_cast<T *>(next);
-      return tail;
+      head_ = const_cast<T *>(next);
+      return head;
     }
 
-    auto head = head_;
-    if (tail != head)
+    auto tail = tail_;
+    if (head != tail)
     {
       // TODO: can't hit this line with single-threaded unittest
       return nullptr;
@@ -138,11 +138,11 @@ public:
 
     push(sentry_);
 
-    next = tail->*Hook;
+    next = head->*Hook;
     if (next)
     {
-      tail_ = const_cast<T *>(next);
-      return tail;
+      head_ = const_cast<T *>(next);
+      return head;
     }
 
     return nullptr;
@@ -154,8 +154,8 @@ private:
   char stub_[sizeof(T)];
   T * const sentry_ = reinterpret_cast<T *>(&stub_);
 
-  volatile std::atomic<T *> head_{sentry_};
-  T *tail_ = sentry_;
+  volatile std::atomic<T *> tail_{sentry_};
+  T *head_ = sentry_;
 };
 
 
