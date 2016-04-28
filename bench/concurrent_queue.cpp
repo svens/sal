@@ -1,5 +1,5 @@
 #include <bench/bench.hpp>
-#include <sal/atomic_queue.hpp>
+#include <sal/concurrent_queue.hpp>
 #include <iostream>
 #include <set>
 #include <thread>
@@ -31,7 +31,7 @@ int usage (const std::string message="")
     std::cerr << message << '\n' << std::endl;
   }
 
-  std::cerr << "atomic_queue:"
+  std::cerr << "concurrent_queue:"
     << "\n  --help         this page"
     << "\n  --consumers=N  number of consumer threads (default: " << consumers << ')'
     << "\n  --count=int    number of items to push (default: " << count << ')'
@@ -47,12 +47,12 @@ int usage (const std::string message="")
 struct foo
 {
   bool stop = false;
-  sal::atomic_queue_hook<foo> hook{};
+  sal::concurrent_queue_hook<foo> hook{};
 
   using array = std::vector<foo>;
 
   template <typename UsePolicy>
-  using queue = sal::atomic_queue<foo, &foo::hook, UsePolicy>;
+  using queue = sal::concurrent_queue<foo, &foo::hook, UsePolicy>;
 };
 
 
@@ -189,7 +189,7 @@ int worker ()
 } // namespace
 
 
-int bench::atomic_queue (const arg_list &args)
+int bench::concurrent_queue (const arg_list &args)
 {
   for (auto &arg: args)
   {

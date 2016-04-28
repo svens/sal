@@ -2,8 +2,8 @@
 
 // MultiProducer / MultiConsumer queue implementation
 //
-// included by sal/atomic_queue.hpp with necessary types already provided
-// here we specialise atomic_queue<> for mpmc
+// included by sal/concurrent_queue.hpp with necessary types already provided
+// here we specialise concurrent_queue<> for mpmc
 
 // MPMC is most generic producer/consumer queue and is used as fallback for
 // other queues if more scalable specific implementation is not found.
@@ -20,8 +20,8 @@ namespace sal {
 __sal_begin
 
 
-template <typename T, atomic_queue_hook<T> T::*Hook>
-class atomic_queue<T, Hook, mpmc>
+template <typename T, concurrent_queue_hook<T> T::*Hook>
+class concurrent_queue<T, Hook, mpmc>
 {
 public:
 
@@ -34,20 +34,20 @@ public:
   }
 
 
-  atomic_queue (const atomic_queue &) = delete;
-  atomic_queue &operator= (const atomic_queue &) = delete;
+  concurrent_queue (const concurrent_queue &) = delete;
+  concurrent_queue &operator= (const concurrent_queue &) = delete;
 
 
-  atomic_queue () = default;
+  concurrent_queue () = default;
 
 
-  atomic_queue (atomic_queue &&that) noexcept
+  concurrent_queue (concurrent_queue &&that) noexcept
     : queue_(std::move(that.queue_))
   {
   }
 
 
-  atomic_queue &operator= (atomic_queue &&that) noexcept
+  concurrent_queue &operator= (concurrent_queue &&that) noexcept
   {
     queue_ = std::move(that.queue_);
     return *this;
@@ -70,7 +70,7 @@ public:
 private:
 
   spinlock mutex_{};
-  atomic_queue<T, Hook, mpsc> queue_{};
+  concurrent_queue<T, Hook, mpsc> queue_{};
 };
 
 

@@ -5,8 +5,8 @@
 
 bench::func_list bench_func =
 {
-  { "atomic_queue", &bench::atomic_queue },
   { "c_str", &bench::c_str },
+  { "concurrent_queue", &bench::concurrent_queue },
   { "spinlock", &bench::spinlock },
 };
 

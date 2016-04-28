@@ -1,4 +1,4 @@
-#include <sal/atomic_queue.hpp>
+#include <sal/concurrent_queue.hpp>
 #include <sal/common.test.hpp>
 #include <chrono>
 #include <mutex>
@@ -17,10 +17,10 @@ TYPED_TEST_CASE_P(test);
 
 struct foo
 {
-  sal::atomic_queue_hook<foo> hook;
+  sal::concurrent_queue_hook<foo> hook;
 
   template <typename UsePolicy>
-  using queue = sal::atomic_queue<foo, &foo::hook, UsePolicy>;
+  using queue = sal::concurrent_queue<foo, &foo::hook, UsePolicy>;
 };
 
 
@@ -314,7 +314,7 @@ REGISTER_TYPED_TEST_CASE_P(test,
 
 
 using types = testing::Types<sal::spsc, sal::mpsc, sal::spmc, sal::mpmc>;
-INSTANTIATE_TYPED_TEST_CASE_P(atomic_queue, test, types);
+INSTANTIATE_TYPED_TEST_CASE_P(concurrent_queue, test, types);
 
 
 } // namespace

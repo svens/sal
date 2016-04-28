@@ -1,13 +1,13 @@
 # sources
 list(APPEND sal_sources
-  sal/atomic_queue.hpp
-  sal/__bits/atomic_queue_mpmc.hpp
-  sal/__bits/atomic_queue_mpsc.hpp
-  sal/__bits/atomic_queue_spmc.hpp
-  sal/__bits/atomic_queue_spsc.hpp
   sal/assert.hpp
   sal/builtins.hpp
   sal/c_str.hpp
+  sal/concurrent_queue.hpp
+  sal/__bits/concurrent_queue_mpmc.hpp
+  sal/__bits/concurrent_queue_mpsc.hpp
+  sal/__bits/concurrent_queue_spmc.hpp
+  sal/__bits/concurrent_queue_spsc.hpp
   sal/fmtval.hpp
   sal/__bits/fmtval.hpp
   sal/spinlock.hpp
@@ -19,7 +19,7 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests
-  sal/atomic_queue.test.cpp
+  sal/concurrent_queue.test.cpp
   sal/assert.test.cpp
   sal/builtins.test.cpp
   sal/c_str.test.cpp

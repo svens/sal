@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/atomic_queue.hpp
+ * \file sal/concurrent_queue.hpp
  * Synchronised intrusive queues (FIFO)
  *
  * This module provides common API for multiple open-ended queue
@@ -15,37 +15,37 @@ namespace sal {
 __sal_begin
 
 
-/// atomic_queue usage policy
+/// concurrent_queue usage policy
 template <bool MultiProducer, bool MultiConsumer>
-struct atomic_queue_use_policy
+struct concurrent_queue_use_policy
 {
-  /// If true, atomic_queue::push() can be used from multiple threads
+  /// If true, concurrent_queue::push() can be used from multiple threads
   static constexpr bool multi_producer = MultiProducer;
 
-  /// If true, atomic_queue::try_pop() can be used from multiple threads
+  /// If true, concurrent_queue::try_pop() can be used from multiple threads
   static constexpr bool multi_consumer = MultiConsumer;
 };
 
 
 /// Single producer/consumer queue type
-using spsc = atomic_queue_use_policy<false, false>;
+using spsc = concurrent_queue_use_policy<false, false>;
 
 /// Multiple producers, single consumer queue type
-using mpsc = atomic_queue_use_policy<true, false>;
+using mpsc = concurrent_queue_use_policy<true, false>;
 
 /// Single producer, multiple consumers queue type
-using spmc = atomic_queue_use_policy<false, true>;
+using spmc = concurrent_queue_use_policy<false, true>;
 
 /// Multiple producers/consumers queue type
-using mpmc = atomic_queue_use_policy<true, true>;
+using mpmc = concurrent_queue_use_policy<true, true>;
 
 
 /**
- * Intrusive hook for application provided type \a T into atomic_queue<T>
- * \see atomic_queue<T, Hook, UsePolicy>
+ * Intrusive hook for application provided type \a T into concurrent_queue<T>
+ * \see concurrent_queue<T, Hook, UsePolicy>
  */
 template <typename T>
-using atomic_queue_hook = volatile T *;
+using concurrent_queue_hook = volatile T *;
 
 
 /**
@@ -76,10 +76,10 @@ using atomic_queue_hook = volatile T *;
  * \code
  * class foo
  * {
- *   sal::atomic_queue_hook<foo> hook;
+ *   sal::concurrent_queue_hook<foo> hook;
  * };
  *
- * sal::atomic_queue<foo, &foo::hook, sal::spsc> queue;
+ * sal::concurrent_queue<foo, &foo::hook, sal::spsc> queue;
  *
  * foo f;
  * queue.push(&f);
@@ -88,16 +88,16 @@ using atomic_queue_hook = volatile T *;
  * \endcode
  */
 template <typename T,
-  atomic_queue_hook<T> T::*Hook,
+  concurrent_queue_hook<T> T::*Hook,
   typename UsePolicy
 >
-class atomic_queue
+class concurrent_queue
 {
 public:
 
   /**
    * Queue traits
-   * \see atomic_queue_use_policy
+   * \see concurrent_queue_use_policy
    */
   using use_policy = UsePolicy;
 
@@ -106,12 +106,12 @@ public:
   static constexpr bool is_lock_free () noexcept;
 
 
-  atomic_queue (const atomic_queue &) = delete;
-  atomic_queue &operator= (const atomic_queue &) = delete;
+  concurrent_queue (const concurrent_queue &) = delete;
+  concurrent_queue &operator= (const concurrent_queue &) = delete;
 
 
   /// Construct new empty queue
-  atomic_queue () noexcept;
+  concurrent_queue () noexcept;
 
 
   /**
@@ -123,7 +123,7 @@ public:
    * application responsibility to make sure \a that does not change during
    * move.
    */
-  atomic_queue (atomic_queue &&that) noexcept;
+  concurrent_queue (concurrent_queue &&that) noexcept;
 
 
   /**
@@ -137,7 +137,7 @@ public:
    * synchronised. It is application responsibility to make sure neither
    * change during move.
    */
-  atomic_queue &operator= (atomic_queue &&that) noexcept;
+  concurrent_queue &operator= (concurrent_queue &&that) noexcept;
 
 
   /// Push new \a node to \a this queue.
@@ -154,7 +154,7 @@ __sal_end
 
 
 // specializations for different producer/consumer policies
-#include <sal/__bits/atomic_queue_mpmc.hpp>
-#include <sal/__bits/atomic_queue_mpsc.hpp>
-#include <sal/__bits/atomic_queue_spmc.hpp>
-#include <sal/__bits/atomic_queue_spsc.hpp>
+#include <sal/__bits/concurrent_queue_mpmc.hpp>
+#include <sal/__bits/concurrent_queue_mpsc.hpp>
+#include <sal/__bits/concurrent_queue_spmc.hpp>
+#include <sal/__bits/concurrent_queue_spsc.hpp>

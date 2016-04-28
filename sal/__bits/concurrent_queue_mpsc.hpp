@@ -2,8 +2,8 @@
 
 // MultiProducer / SingleConsumer queue implementation
 //
-// included by sal/atomic_queue.hpp with necessary types already provided
-// here we specialise atomic_queue<> for mpsc
+// included by sal/concurrent_queue.hpp with necessary types already provided
+// here we specialise concurrent_queue<> for mpsc
 
 //
 // Contains modified code from:
@@ -47,8 +47,8 @@ namespace sal {
 __sal_begin
 
 
-template <typename T, atomic_queue_hook<T> T::*Hook>
-class atomic_queue<T, Hook, mpsc>
+template <typename T, concurrent_queue_hook<T> T::*Hook>
+class concurrent_queue<T, Hook, mpsc>
 {
 public:
 
@@ -61,24 +61,24 @@ public:
   }
 
 
-  atomic_queue (const atomic_queue &) = delete;
-  atomic_queue &operator= (const atomic_queue &) = delete;
+  concurrent_queue (const concurrent_queue &) = delete;
+  concurrent_queue &operator= (const concurrent_queue &) = delete;
 
 
-  atomic_queue () noexcept
+  concurrent_queue () noexcept
   {
     tail_->*Hook = nullptr;
   }
 
 
-  atomic_queue (atomic_queue &&that) noexcept
+  concurrent_queue (concurrent_queue &&that) noexcept
   {
     tail_->*Hook = nullptr;
     operator=(std::move(that));
   }
 
 
-  atomic_queue &operator= (atomic_queue &&that) noexcept
+  concurrent_queue &operator= (concurrent_queue &&that) noexcept
   {
     if (that.head_ == that.sentry_)
     {
