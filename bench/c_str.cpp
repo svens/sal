@@ -1,6 +1,7 @@
 #include <bench/bench.hpp>
 #include <sal/c_str.hpp>
 #include <sal/fmtval.hpp>
+#include <cinttypes>
 #include <iostream>
 
 
@@ -79,10 +80,10 @@ void use_printf ()
     "; u32=%u"
     "; u32:o=%o"
     "; u32:h=%x"
-    "; i64=%lld"
-    "; u64=%llu"
-    "; u64:o=%llo"
-    "; u64:h=%llx"
+    "; i64=%" PRId64
+    "; u64=%" PRIu64
+    "; u64:o=%" PRIo64
+    "; u64:h=%" PRIx64
     "; float=%g"
     "; double=%g"
     "; ldouble=%Lg"
