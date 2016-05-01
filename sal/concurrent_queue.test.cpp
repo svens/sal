@@ -69,6 +69,7 @@ TYPED_TEST_P(test, move_ctor_empty_1)
   foo f;
   q.push(&f);
   ASSERT_EQ(&f, q.try_pop());
+  f.hook = nullptr;
   ASSERT_EQ(nullptr, q.try_pop());
 
   auto q1 = std::move(q);
@@ -85,6 +86,7 @@ TYPED_TEST_P(test, move_ctor_single)
 
   auto q1 = std::move(q);
   ASSERT_EQ(&f, q1.try_pop());
+  f.hook = nullptr;
   ASSERT_EQ(nullptr, q1.try_pop());
 }
 
@@ -97,6 +99,7 @@ TYPED_TEST_P(test, move_ctor_single_1)
   q.push(&f1);
   q.push(&f2);
   ASSERT_EQ(&f1, q.try_pop());
+  f1.hook = nullptr;
 
   auto q1 = std::move(q);
   ASSERT_EQ(&f2, q1.try_pop());
@@ -114,7 +117,9 @@ TYPED_TEST_P(test, move_ctor_multiple)
 
   auto q1 = std::move(q);
   ASSERT_EQ(&f1, q1.try_pop());
+  f1.hook = nullptr;
   ASSERT_EQ(&f2, q1.try_pop());
+  f2.hook = nullptr;
   ASSERT_EQ(nullptr, q1.try_pop());
 }
 
@@ -128,10 +133,13 @@ TYPED_TEST_P(test, move_ctor_multiple_1)
   q.push(&f2);
   q.push(&f3);
   ASSERT_EQ(&f1, q.try_pop());
+  f1.hook = nullptr;
 
   auto q1 = std::move(q);
   ASSERT_EQ(&f2, q1.try_pop());
+  f2.hook = nullptr;
   ASSERT_EQ(&f3, q1.try_pop());
+  f3.hook = nullptr;
   ASSERT_EQ(nullptr, q1.try_pop());
 }
 
@@ -156,6 +164,7 @@ TYPED_TEST_P(test, move_assign_empty_1)
   foo f;
   q.push(&f);
   ASSERT_EQ(&f, q.try_pop());
+  f.hook = nullptr;
   ASSERT_EQ(nullptr, q.try_pop());
 
   foo::queue<TypeParam> q1;
@@ -177,6 +186,7 @@ TYPED_TEST_P(test, move_assign_single)
   q1 = std::move(q);
 
   ASSERT_EQ(&f, q1.try_pop());
+  f.hook = nullptr;
   ASSERT_EQ(nullptr, q1.try_pop());
 }
 
@@ -189,11 +199,13 @@ TYPED_TEST_P(test, move_assign_single_1)
   q.push(&f1);
   q.push(&f2);
   ASSERT_EQ(&f1, q.try_pop());
+  f1.hook = nullptr;
 
   foo::queue<TypeParam> q1;
   q1 = std::move(q);
 
   ASSERT_EQ(&f2, q1.try_pop());
+  f2.hook = nullptr;
   ASSERT_EQ(nullptr, q1.try_pop());
 }
 
@@ -210,7 +222,9 @@ TYPED_TEST_P(test, move_assign_multiple)
   q1 = std::move(q);
 
   ASSERT_EQ(&f1, q1.try_pop());
+  f1.hook = nullptr;
   ASSERT_EQ(&f2, q1.try_pop());
+  f2.hook = nullptr;
   ASSERT_EQ(nullptr, q1.try_pop());
 }
 
@@ -224,12 +238,15 @@ TYPED_TEST_P(test, move_assign_multiple_1)
   q.push(&f2);
   q.push(&f3);
   ASSERT_EQ(&f1, q.try_pop());
+  f1.hook = nullptr;
 
   foo::queue<TypeParam> q1;
   q1 = std::move(q);
 
   ASSERT_EQ(&f2, q1.try_pop());
+  f2.hook = nullptr;
   ASSERT_EQ(&f3, q1.try_pop());
+  f3.hook = nullptr;
   ASSERT_EQ(nullptr, q1.try_pop());
 }
 
@@ -241,6 +258,7 @@ TYPED_TEST_P(test, single_push_pop)
   foo f;
   q.push(&f);
   ASSERT_EQ(&f, q.try_pop());
+  f.hook = nullptr;
 
   ASSERT_EQ(nullptr, q.try_pop());
 }
@@ -256,8 +274,11 @@ TYPED_TEST_P(test, multiple_push_pop)
   q.push(&f3);
 
   ASSERT_EQ(&f1, q.try_pop());
+  f1.hook = nullptr;
   ASSERT_EQ(&f2, q.try_pop());
+  f2.hook = nullptr;
   ASSERT_EQ(&f3, q.try_pop());
+  f3.hook = nullptr;
 
   ASSERT_EQ(nullptr, q.try_pop());
 }
@@ -278,12 +299,14 @@ TYPED_TEST_P(test, interleaved_push_pop)
   q.push(&f3);
 
   ASSERT_EQ(&f2, q.try_pop());
+  f2.hook = nullptr;
   q.push(&f2);
 
   ASSERT_EQ(&f3, q.try_pop());
   f3.hook = nullptr;
 
   ASSERT_EQ(&f2, q.try_pop());
+  f2.hook = nullptr;
 
   ASSERT_EQ(nullptr, q.try_pop());
 }

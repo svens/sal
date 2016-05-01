@@ -103,7 +103,7 @@ public:
   void push (T *node) noexcept
   {
     node->*Hook = nullptr;
-    T *prev = tail_.exchange(node, std::memory_order_acq_rel);
+    auto prev = tail_.exchange(node, std::memory_order_acq_rel);
     prev->*Hook = node;
   }
 
