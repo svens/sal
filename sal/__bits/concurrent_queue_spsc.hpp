@@ -12,7 +12,7 @@ __sal_begin
 
 template <typename T, concurrent_queue_hook<T> T::*Hook>
 class concurrent_queue<T, Hook, spsc>
-  : public concurrent_queue<T, Hook, mpmc>
+  : public concurrent_queue<T, Hook, mpsc>
 {
 };
 

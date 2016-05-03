@@ -38,6 +38,13 @@ constexpr bool is_lock_free<sal::mpsc> () noexcept
 }
 
 
+template <>
+constexpr bool is_lock_free<sal::spsc> () noexcept
+{
+  return true;
+}
+
+
 TYPED_TEST_P(test, lock_free)
 {
   foo::queue<TypeParam> q;
