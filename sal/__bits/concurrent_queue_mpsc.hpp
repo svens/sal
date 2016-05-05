@@ -54,8 +54,21 @@ public:
 
   using use_policy = mpsc;
 
-  using impl = concurrent_queue<T, spsc>;
-  using node = typename impl::node;
+
+  struct node
+  {
+    volatile node *next{};
+    T data{};
+
+    node (const T &data)
+      : data(data)
+    {}
+
+    template <typename... Args>
+    node (Args &&...args)
+      : data(std::forward<Args>(args)...)
+    {}
+  };
 
 
   concurrent_queue () = delete;
@@ -64,51 +77,65 @@ public:
 
 
   concurrent_queue (node *stub) noexcept
-    : impl_(stub)
-  {}
+    : head_(stub)
+    , tail_(stub)
+  {
+    stub->next = nullptr;
+  }
 
 
   concurrent_queue (concurrent_queue &&that) noexcept
-    : impl_(std::move(that.impl_))
-  {}
+  {
+    operator=(std::move(that));
+  }
 
 
   concurrent_queue &operator= (concurrent_queue &&that) noexcept
   {
-    impl_ = std::move(that.impl_);
+    head_ = that.head_;
+    tail_ = that.tail_.load(std::memory_order_relaxed);
+    that.head_ = that.tail_ = nullptr;
     return *this;
   }
 
 
   bool is_lock_free () noexcept
   {
-    return false;
+    return true;
   }
 
 
   node *stub () const noexcept
   {
-    return impl_.stub();
+    return head_;
   }
 
 
   void push (node *n) noexcept
   {
-    std::lock_guard<spinlock> lock(mutex_);
-    impl_.push(n);
+    n->next = nullptr;
+    auto back = tail_.exchange(n, std::memory_order_acq_rel);
+    back->next = n;
   }
 
 
   node *try_pop () noexcept(std::is_nothrow_move_assignable<T>::value)
   {
-    return impl_.try_pop();
+    auto front = head_;
+    if (auto next = front->next)
+    {
+      head_ = const_cast<node *>(next);
+      front->data = std::move(next->data);
+      return front;
+    }
+    return nullptr;
   }
 
 
 private:
 
-  spinlock mutex_{};
-  impl impl_;
+  node *head_;
+  volatile std::atomic<node *> tail_;
 };
 
 

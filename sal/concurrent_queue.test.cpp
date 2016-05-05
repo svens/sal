@@ -33,6 +33,13 @@ constexpr bool is_lock_free<sal::spsc> () noexcept
 }
 
 
+template <>
+constexpr bool is_lock_free<sal::mpsc> () noexcept
+{
+  return true;
+}
+
+
 TYPED_TEST_P(test, lock_free)
 {
   typename queue<TypeParam>::node stub;
