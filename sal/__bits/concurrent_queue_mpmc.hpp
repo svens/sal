@@ -20,57 +20,99 @@ namespace sal {
 __sal_begin
 
 
-template <typename T, concurrent_queue_hook<T> T::*Hook>
-class concurrent_queue<T, Hook, mpmc>
+template <typename T>
+class concurrent_queue<T, mpmc>
 {
 public:
 
   using use_policy = mpmc;
 
 
-  static constexpr bool is_lock_free () noexcept
+  struct node
   {
-    return false;
-  }
+    node *next = nullptr;
+    T data{};
+
+    node (const T &data)
+      : data(data)
+    {}
+
+    template <typename... Args>
+    node (Args &&...args)
+      : data(std::forward<Args>(args)...)
+    {}
+  };
 
 
+  concurrent_queue () = delete;
   concurrent_queue (const concurrent_queue &) = delete;
   concurrent_queue &operator= (const concurrent_queue &) = delete;
 
 
-  concurrent_queue () = default;
+  concurrent_queue (node *stub) noexcept
+  {
+    stub->next = nullptr;
+    head_.ptr = tail_.ptr = stub;
+  }
 
 
   concurrent_queue (concurrent_queue &&that) noexcept
-    : queue_(std::move(that.queue_))
   {
+    operator=(std::move(that));
   }
 
 
   concurrent_queue &operator= (concurrent_queue &&that) noexcept
   {
-    queue_ = std::move(that.queue_);
+    head_.ptr = that.head_.ptr;
+    tail_.ptr = that.tail_.ptr;
+    that.head_.ptr = that.tail_.ptr = nullptr;
     return *this;
   }
 
 
-  void push (T *node) noexcept
+  bool is_lock_free () const noexcept
   {
-    queue_.push(node);
+    return false;
   }
 
 
-  T *try_pop () noexcept
+  node *stub () const noexcept
   {
-    std::lock_guard<spinlock> lock(mutex_);
-    return queue_.try_pop();
+    return head_.ptr;
+  }
+
+
+  void push (node *n) noexcept
+  {
+    n->next = nullptr;
+    std::lock_guard<spinlock> lock(tail_.mutex);
+    tail_.ptr = tail_.ptr->next = n;
+  }
+
+
+  node *try_pop () noexcept(std::is_nothrow_move_assignable<T>::value)
+  {
+    std::lock_guard<spinlock> lock(head_.mutex);
+    if (auto next = head_.ptr->next)
+    {
+      auto front = head_.ptr;
+      front->data = std::move(next->data);
+      head_.ptr = next;
+      return front;
+    }
+    return nullptr;
   }
 
 
 private:
 
-  spinlock mutex_{};
-  concurrent_queue<T, Hook, mpsc> queue_{};
+  struct
+  {
+    spinlock mutex{};
+    node *ptr;
+    char pad[64 - sizeof(spinlock) - sizeof(node *)];
+  } head_{}, tail_{};
 };
 
 

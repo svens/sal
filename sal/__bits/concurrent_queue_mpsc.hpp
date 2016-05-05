@@ -39,123 +39,76 @@
 // policies, either expressed or implied, of Dmitry Vyukov.
 
 
-#include <atomic>
-#include <utility>
+#include <sal/spinlock.hpp>
+#include <mutex>
 
 
 namespace sal {
 __sal_begin
 
 
-template <typename T, concurrent_queue_hook<T> T::*Hook>
-class concurrent_queue<T, Hook, mpsc>
+template <typename T>
+class concurrent_queue<T, mpsc>
 {
 public:
 
   using use_policy = mpsc;
 
-
-  static constexpr bool is_lock_free () noexcept
-  {
-    return true;
-  }
+  using impl = concurrent_queue<T, spsc>;
+  using node = typename impl::node;
 
 
+  concurrent_queue () = delete;
   concurrent_queue (const concurrent_queue &) = delete;
   concurrent_queue &operator= (const concurrent_queue &) = delete;
 
 
-  concurrent_queue () noexcept
-  {
-    head_->*Hook = nullptr;
-  }
+  concurrent_queue (node *stub) noexcept
+    : impl_(stub)
+  {}
 
 
   concurrent_queue (concurrent_queue &&that) noexcept
-  {
-    head_->*Hook = nullptr;
-    operator=(std::move(that));
-  }
+    : impl_(std::move(that.impl_))
+  {}
 
 
   concurrent_queue &operator= (concurrent_queue &&that) noexcept
   {
-    if (that.tail_ == that.sentry_)
-    {
-      tail_ = head_ = sentry_;
-    }
-    else if (that.head_ == that.sentry_)
-    {
-      tail_ = that.tail_;
-      head_ = sentry_;
-      head_->*Hook = that.head_->*Hook;
-    }
-    else
-    {
-      tail_ = that.tail_;
-      head_ = that.head_;
-    }
-    that.tail_ = that.head_ = nullptr;
+    impl_ = std::move(that.impl_);
     return *this;
   }
 
 
-  void push (T *node) noexcept
+  bool is_lock_free () noexcept
   {
-    node->*Hook = nullptr;
-    auto prev = tail_.exchange(node, std::memory_order_acq_rel);
-    prev->*Hook = node;
+    return false;
   }
 
 
-  T *try_pop () noexcept
+  node *stub () const noexcept
   {
-    auto head = head_;
-    auto next = head->*Hook;
+    return impl_.stub();
+  }
 
-    if (head == sentry_)
-    {
-      if (!next)
-      {
-        return nullptr;
-      }
-      head = head_ = const_cast<T *>(next);
-      next = next->*Hook;
-    }
 
-    if (next)
-    {
-      head_ = const_cast<T *>(next);
-      return head;
-    }
+  void push (node *n) noexcept
+  {
+    std::lock_guard<spinlock> lock(mutex_);
+    impl_.push(n);
+  }
 
-    auto tail = tail_;
-    if (head != tail)
-    {
-      // TODO: can't hit this line with single-threaded unittest
-      return nullptr;
-    }
 
-    push(sentry_);
-
-    next = head->*Hook;
-    if (next)
-    {
-      head_ = const_cast<T *>(next);
-      return head;
-    }
-
-    return nullptr;
+  node *try_pop () noexcept(std::is_nothrow_move_assignable<T>::value)
+  {
+    return impl_.try_pop();
   }
 
 
 private:
 
-  char stub_[sizeof(T)];
-  T * const sentry_ = reinterpret_cast<T *>(&stub_);
-
-  volatile std::atomic<T *> tail_{sentry_};
-  T *head_ = sentry_;
+  spinlock mutex_{};
+  impl impl_;
 };
 
 

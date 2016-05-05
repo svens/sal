@@ -44,24 +44,16 @@ int usage (const std::string message="")
 }
 
 
-struct foo
-{
-  bool stop = false;
-  sal::concurrent_queue_hook<foo> hook{};
-
-  using array = std::vector<foo>;
-
-  template <typename UsePolicy>
-  using queue = sal::concurrent_queue<foo, &foo::hook, UsePolicy>;
-};
-
-
 template <typename QueueType>
 milliseconds single_run ()
 {
+  using queue = sal::concurrent_queue<int, QueueType>;
+  using node = typename queue::node;
+
   // preallocate items and create queue
-  foo::array array(count);
-  foo::queue<QueueType> queue;
+  std::vector<node> nodes(count);
+  node stub;
+  queue q(&stub);
 
   std::vector<std::thread> consumer_threads, producer_threads;
   auto start_time = bench::start();
@@ -74,9 +66,9 @@ milliseconds single_run ()
       {
         for (size_t i = 0;  /**/;  ++i)
         {
-          if (auto node = queue.try_pop())
+          if (auto n = q.try_pop())
           {
-            if (node->stop)
+            if (n->data == 1)
             {
               break;
             }
@@ -102,7 +94,7 @@ milliseconds single_run ()
           auto x = current++;
           if (x < count)
           {
-            queue.push(&array[x]);
+            q.push(&nodes[x]);
           }
           else
           {
@@ -113,11 +105,13 @@ milliseconds single_run ()
     );
   }
 
+  /* showing progress has too much overhead
   size_t percent = 0;
   while (bench::in_progress(current, count, percent))
   {
     ;
   }
+  */
 
   // wait producers to finish
   for (auto &thread: producer_threads)
@@ -126,11 +120,11 @@ milliseconds single_run ()
   }
 
   // send stop signal to consumers
-  foo::array stop_array(consumers);
+  std::vector<node> stop_nodes(consumers);
   for (size_t i = 0;  i != consumers;  ++i)
   {
-    stop_array[i].stop = true;
-    queue.push(&stop_array[i]);
+    stop_nodes[i].data = 1;
+    q.push(&stop_nodes[i]);
   }
 
   // wait consumers to finish
