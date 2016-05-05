@@ -6,6 +6,7 @@
 bench::func_list bench_func =
 {
   { "c_str", &bench::c_str },
+  { "concurrent_queue", &bench::concurrent_queue },
   { "spinlock", &bench::spinlock },
 };
 
@@ -57,21 +58,40 @@ int main (int argc, const char *argv[])
 namespace bench {
 
 
-bool in_progress (size_t current, size_t total, size_t &percent)
+time_point start ()
 {
-  if (current > total)
+  return clock_type::now();
+}
+
+
+milliseconds stop (time_point start_time, size_t count)
+{
+  using namespace std::chrono;
+
+  auto msec = duration_cast<milliseconds>(clock_type::now() - start_time);
+  if (!msec.count())
   {
-    return false;
+    msec = 1ms;
   }
 
-  auto new_percent = current * 100 / total;
+  std::cout << msec.count() << " msec"
+    << ", " << count/msec.count() << " count/msec"
+    << std::endl;
+
+  return msec;
+}
+
+
+bool in_progress (size_t current, size_t count, size_t &percent)
+{
+  auto new_percent = current * 100 / count;
   if (current == 1 || percent != new_percent)
   {
     percent = new_percent;
     std::cout << "\r[" << std::setw(3) << percent << "%] " << std::flush;
   }
 
-  return true;
+  return current <= count;
 }
 
 

@@ -57,14 +57,17 @@ inline void yield_spin (size_t iter_count) noexcept
 template <size_t BusySpinCount>
 inline void adaptive_spin (size_t iter_count) noexcept
 {
-  if (iter_count > 2 * BusySpinCount)
+  if (iter_count < BusySpinCount)
+  {
+  }
+  else if (iter_count < 2 * BusySpinCount)
+  {
+    std::this_thread::yield();
+  }
+  else
   {
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(iter_count > 1000 ? 1ms : iter_count * 1us);
-  }
-  else if (iter_count > BusySpinCount)
-  {
-    std::this_thread::yield();
   }
 }
 

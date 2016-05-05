@@ -5,5 +5,6 @@ list(APPEND sal_bench
 
   # cases
   bench/c_str.cpp
+  bench/concurrent_queue.cpp
   bench/spinlock.cpp
 )

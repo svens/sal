@@ -1,15 +1,11 @@
 #include <bench/bench.hpp>
 #include <sal/c_str.hpp>
 #include <sal/fmtval.hpp>
-#include <chrono>
+#include <cinttypes>
 #include <iostream>
 
 
 namespace {
-
-
-using namespace std::chrono;
-using clock_type = high_resolution_clock;
 
 
 std::string func = "c_str";
@@ -57,22 +53,12 @@ int worker (F f)
 {
   size_t current = 0, percent = 0;
 
-  auto start = clock_type::now();
+  auto start_time = bench::start();
   while (bench::in_progress(++current, count, percent))
   {
     f();
   }
-
-  auto delay = clock_type::now() - start;
-  auto msec = duration_cast<milliseconds>(delay).count();
-  if (!msec)
-  {
-    msec = 1;
-  }
-
-  std::cout << '\n' << msec << " msec"
-    << ", " << count/msec << " count/msec"
-    << std::endl;
+  bench::stop(start_time, count);
 
   return EXIT_SUCCESS;
 }
@@ -94,10 +80,10 @@ void use_printf ()
     "; u32=%u"
     "; u32:o=%o"
     "; u32:h=%x"
-    "; i64=%lld"
-    "; u64=%llu"
-    "; u64:o=%llo"
-    "; u64:h=%llx"
+    "; i64=%" PRId64
+    "; u64=%" PRIu64
+    "; u64:o=%" PRIo64
+    "; u64:h=%" PRIx64
     "; float=%g"
     "; double=%g"
     "; ldouble=%Lg"
