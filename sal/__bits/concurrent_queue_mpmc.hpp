@@ -5,11 +5,6 @@
 // included by sal/concurrent_queue.hpp with necessary types already provided
 // here we specialise concurrent_queue<> for mpmc
 
-// MPMC is most generic producer/consumer queue and is used as fallback for
-// other queues if more scalable specific implementation is not found.
-
-// For now, MPMC uses MPSC with SC synchronised using spinlock
-
 
 #include <sal/spinlock.hpp>
 #include <mutex>
@@ -27,21 +22,8 @@ public:
 
   using use_policy = mpmc;
 
-
-  struct node
-  {
-    node *next = nullptr;
-    T data{};
-
-    node (const T &data)
-      : data(data)
-    {}
-
-    template <typename... Args>
-    node (Args &&...args)
-      : data(std::forward<Args>(args)...)
-    {}
-  };
+  using impl = concurrent_queue<T, mpsc>;
+  using node = typename impl::node;
 
 
   concurrent_queue () = delete;
@@ -50,28 +32,23 @@ public:
 
 
   concurrent_queue (node *stub) noexcept
-  {
-    stub->next = nullptr;
-    head_.ptr = tail_.ptr = stub;
-  }
+    : impl_(stub)
+  {}
 
 
   concurrent_queue (concurrent_queue &&that) noexcept
-  {
-    operator=(std::move(that));
-  }
+    : impl_(std::move(that.impl_))
+  {}
 
 
   concurrent_queue &operator= (concurrent_queue &&that) noexcept
   {
-    head_.ptr = that.head_.ptr;
-    tail_.ptr = that.tail_.ptr;
-    that.head_.ptr = that.tail_.ptr = nullptr;
+    impl_ = std::move(that.impl_);
     return *this;
   }
 
 
-  bool is_lock_free () const noexcept
+  bool is_lock_free () noexcept
   {
     return false;
   }
@@ -79,40 +56,28 @@ public:
 
   node *stub () const noexcept
   {
-    return head_.ptr;
+    return impl_.stub();
   }
 
 
   void push (node *n) noexcept
   {
-    n->next = nullptr;
-    std::lock_guard<spinlock> lock(tail_.mutex);
-    tail_.ptr = tail_.ptr->next = n;
+    impl_.push(n);
   }
 
 
   node *try_pop () noexcept(std::is_nothrow_move_assignable<T>::value)
   {
-    std::lock_guard<spinlock> lock(head_.mutex);
-    if (auto next = head_.ptr->next)
-    {
-      auto front = head_.ptr;
-      front->data = std::move(next->data);
-      head_.ptr = next;
-      return front;
-    }
-    return nullptr;
+    std::lock_guard<spinlock> lock(mutex_);
+    return impl_.try_pop();
   }
 
 
 private:
 
-  struct
-  {
-    spinlock mutex{};
-    node *ptr;
-    char pad[64 - sizeof(spinlock) - sizeof(node *)];
-  } head_{}, tail_{};
+  spinlock mutex_{};
+  char pad_[64 - sizeof(spinlock)];
+  impl impl_;
 };
 
 
