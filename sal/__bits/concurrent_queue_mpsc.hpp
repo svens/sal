@@ -135,6 +135,7 @@ public:
 private:
 
   node *head_;
+  char pad[64 - sizeof(node *)];
   volatile std::atomic<node *> tail_;
 };
 
