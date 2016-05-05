@@ -124,6 +124,7 @@ if(SAL_UNITTESTS)
     sal
     ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
+    ${SAL_DEP_LIBS}
   )
   add_test(unittests unittests)
 endif()
@@ -143,6 +144,7 @@ if(SAL_BENCH)
   target_link_libraries(bench
     sal
     ${CMAKE_THREAD_LIBS_INIT}
+    ${SAL_DEP_LIBS}
   )
 endif()
 
