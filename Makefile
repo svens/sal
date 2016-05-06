@@ -37,7 +37,6 @@ work:
 	        tmux new-session -s "sal/work" -n main -d \
 	        && tmux new-window -n work \
 	        && tmux new-window -n bench \
-	        && tmux new-window -n build -c $${PWD}/build \
 	        && tmux new-window -n gcc/debug -c $${PWD}/build/gcc-debug \
 	        && tmux new-window -n gcc/release -c $${PWD}/build/gcc-release \
 	        && tmux new-window -n clang/debug -c $${PWD}/build/clang-debug \
