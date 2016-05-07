@@ -105,9 +105,8 @@ public:
 
 private:
 
-  std::atomic<node *> head_;
-  char pad_[64 - sizeof(std::atomic<node *>)];
-  std::atomic<node *> tail_;
+  alignas(64) std::atomic<node *> head_;
+  alignas(64) std::atomic<node *> tail_;
 };
 
 
