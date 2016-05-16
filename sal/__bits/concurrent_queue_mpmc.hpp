@@ -75,8 +75,9 @@ public:
 
 private:
 
-  alignas(64) spinlock mutex_{};
-  alignas(64) impl impl_;
+  spinlock mutex_{};
+  char pad0_[64 - sizeof(decltype(mutex_))];
+  impl impl_;
 };
 
 

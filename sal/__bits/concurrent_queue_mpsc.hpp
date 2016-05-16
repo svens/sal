@@ -134,8 +134,9 @@ public:
 
 private:
 
-  alignas(64) node *head_;
-  alignas(64) volatile std::atomic<node *> tail_;
+  node *head_;
+  char pad0_[64 - sizeof(decltype(head_))];
+  volatile std::atomic<node *> tail_;
 };
 
 
