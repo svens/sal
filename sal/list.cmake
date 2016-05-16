@@ -13,6 +13,7 @@ list(APPEND sal_sources
   sal/spinlock.hpp
   sal/thread.hpp
   sal/thread.cpp
+  sal/time.hpp
 )
 
 
@@ -26,4 +27,5 @@ list(APPEND sal_unittests
   sal/fmtval.test.cpp
   sal/spinlock.test.cpp
   sal/thread.test.cpp
+  sal/time.test.cpp
 )
