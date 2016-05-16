@@ -76,7 +76,7 @@ public:
 private:
 
   spinlock mutex_{};
-  char pad_[64 - sizeof(spinlock)];
+  char pad0_[64 - sizeof(decltype(mutex_))];
   impl impl_;
 };
 

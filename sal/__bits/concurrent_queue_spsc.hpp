@@ -106,7 +106,7 @@ public:
 private:
 
   std::atomic<node *> head_;
-  char pad_[64 - sizeof(std::atomic<node *>)];
+  char pad0_[64 - sizeof(decltype(head_))];
   std::atomic<node *> tail_;
 };
 
