@@ -1,7 +1,8 @@
 #include <bench/bench.hpp>
 #include <sal/concurrent_queue.hpp>
+#include <algorithm>
+#include <atomic>
 #include <iostream>
-#include <set>
 #include <thread>
 #include <vector>
 
@@ -16,12 +17,6 @@ using namespace std::chrono;
 size_t count = 10'000'000;
 size_t producers = 1, consumers = 1;
 size_t run = 10;
-std::string type = "mpmc";
-
-const std::set<std::string> allowed_types =
-{
-  "mpmc", "mpsc", "spmc", "spsc"
-};
 
 
 int usage (const std::string message="")
@@ -33,27 +28,29 @@ int usage (const std::string message="")
 
   std::cerr << "concurrent_queue:"
     << "\n  --help         this page"
-    << "\n  --consumers=N  number of consumer threads (default: " << consumers << ')'
     << "\n  --count=int    number of items to push (default: " << count << ')'
+    << "\n  --consumers=N  number of consumer threads (default: " << consumers << ')'
     << "\n  --producers=N  number of producer threads (default: " << producers << ')'
-    << "\n  --type=Type    queue type (default: " << type << ')'
-    << "\n                 possible values: mpmc, mpsc, spmc, spsc"
     << std::endl;
 
   return EXIT_FAILURE;
 }
 
 
-template <typename QueueType>
+struct foo
+{
+  sal::concurrent_queue_hook hook{};
+  bool stop = false;
+};
+
+
 milliseconds single_run ()
 {
-  using queue = sal::concurrent_queue<int, QueueType>;
-  using node = typename queue::node;
+  using queue = sal::concurrent_queue<foo, &foo::hook>;
 
   // preallocate items and create queue
-  std::vector<node> nodes(count);
-  node stub;
-  queue q(&stub);
+  std::vector<foo> nodes(count);
+  queue q;
 
   std::vector<std::thread> consumer_threads, producer_threads;
   auto start_time = bench::start();
@@ -68,7 +65,7 @@ milliseconds single_run ()
         {
           if (auto n = q.try_pop())
           {
-            if (n->data == 1)
+            if (n->stop)
             {
               break;
             }
@@ -105,14 +102,6 @@ milliseconds single_run ()
     );
   }
 
-  /* showing progress has too much overhead
-  size_t percent = 0;
-  while (bench::in_progress(current, count, percent))
-  {
-    ;
-  }
-  */
-
   // wait producers to finish
   for (auto &thread: producer_threads)
   {
@@ -120,10 +109,10 @@ milliseconds single_run ()
   }
 
   // send stop signal to consumers
-  std::vector<node> stop_nodes(consumers);
+  std::vector<foo> stop_nodes(consumers);
   for (size_t i = 0;  i != consumers;  ++i)
   {
-    stop_nodes[i].data = 1;
+    stop_nodes[i].stop = true;
     q.push(&stop_nodes[i]);
   }
 
@@ -139,41 +128,18 @@ milliseconds single_run ()
 
 int worker ()
 {
-  milliseconds min(milliseconds::max()), max(milliseconds::min());
+  std::vector<milliseconds> times;
 
   for (size_t i = 0;  i != run;  ++i)
   {
-    milliseconds current{};
-
-    if (type == "mpmc")
-    {
-      current = single_run<sal::mpmc>();
-    }
-    else if (type == "mpsc")
-    {
-      current = single_run<sal::mpsc>();
-    }
-    else if (type == "spmc")
-    {
-      current = single_run<sal::spmc>();
-    }
-    else if (type == "spsc")
-    {
-      current = single_run<sal::spsc>();
-    }
-
-    if (current < min)
-    {
-      min = current;
-    }
-    if (current > max)
-    {
-      max = current;
-    }
+    times.emplace_back(single_run());
   }
 
-  std::cout << "\nmin " << min.count() << "ms"
-    ", max " << max.count() << "ms"
+  std::sort(times.begin(), times.end());
+
+  std::cout << "\nmin " << times.front().count() << "ms"
+    ", max " << times.back().count() << "ms"
+    ", median " << times[times.size()/2].count() << "ms"
     << std::endl;
 
   return EXIT_SUCCESS;
@@ -206,15 +172,6 @@ int bench::concurrent_queue (const arg_list &args)
     else if (arg.find("--run=") != arg.npos)
     {
       run = std::stoul(arg.substr(sizeof("--run=") - 1));
-    }
-    else if (arg.find("--type=") != arg.npos)
-    {
-      auto tmp = arg.substr(sizeof("--type=") - 1);
-      if (!allowed_types.count(tmp))
-      {
-        return usage("unknown type: " + tmp);
-      }
-      type = tmp;
     }
     else
     {
