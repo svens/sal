@@ -4,6 +4,7 @@ list(APPEND sal_sources
   sal/builtins.hpp
   sal/c_str.hpp
   sal/concurrent_queue.hpp
+  sal/error.hpp
   sal/fmtval.hpp
   sal/__bits/fmtval.hpp
   sal/spinlock.hpp
@@ -20,6 +21,7 @@ list(APPEND sal_unittests
   sal/builtins.test.cpp
   sal/c_str.test.cpp
   sal/common.test.hpp
+  sal/error.test.cpp
   sal/fmtval.test.cpp
   sal/spinlock.test.cpp
   sal/thread.test.cpp
