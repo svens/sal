@@ -81,7 +81,7 @@ public:
   /// Assign new content to \a this from \a that
   c_str &operator= (const c_str &that) noexcept
   {
-    end_ = fmt_v(that, begin_);
+    end_ = __bits::fmt_v(that, begin_, begin_ + Size);
     *(good() ? end_ : begin_) = '\0';
     return *this;
   }
@@ -92,7 +92,7 @@ public:
   c_str &operator= (const c_str<ThatSize> &that) noexcept
   {
     static_assert(Size >= ThatSize, "this is smaller than that");
-    end_ = fmt_v(that, begin_);
+    end_ = __bits::fmt_v(that, begin_, begin_ + Size);
     *(good() ? end_ : begin_) = '\0';
     return *this;
   }
@@ -306,6 +306,19 @@ inline char *fmt_v (const c_str<Size> &value, char *first, char *last) noexcept
 }
 
 } // namespace __bits
+
+
+/**
+ * Insert textual representations of all \a args into \a v. If \a v is not
+ * good(), end() pointer is still increased but no content is actually added.
+ */
+template <size_t Size, typename... Args>
+c_str<Size> &print (c_str<Size> &v, Args &&...args) noexcept
+{
+  bool unused[] = { false, (v << args, false)... };
+  (void)unused;
+  return v;
+}
 
 
 /// Insert content of \a v to \a os. This call is valid only if \a v.good()

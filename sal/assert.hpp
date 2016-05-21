@@ -7,7 +7,7 @@
  */
 
 #include <sal/config.hpp>
-#include <stdexcept>
+#include <sal/error.hpp>
 
 
 namespace sal {
@@ -42,12 +42,13 @@ __sal_begin
 namespace __bits {
 
 
-inline void check (bool cond, const char *msg)
+template <size_t Size>
+inline void check (bool cond, const char (&msg)[Size])
 {
 #if !defined(NDEBUG)
   if (!cond)
   {
-    throw std::logic_error(msg);
+    throw_logic_error(msg);
   }
 #else
   (void)cond;
@@ -56,13 +57,13 @@ inline void check (bool cond, const char *msg)
 }
 
 
-template <typename T>
-inline T *check_ptr (T *ptr, const char *msg)
+template <typename T, size_t Size>
+inline T *check_ptr (T *ptr, const char (&msg)[Size])
 {
 #if !defined(NDEBUG)
   if (!ptr)
   {
-    throw std::logic_error(msg);
+    throw_logic_error(msg);
   }
 #else
   (void)msg;
@@ -71,7 +72,8 @@ inline T *check_ptr (T *ptr, const char *msg)
 }
 
 
-inline void *check_ptr (std::nullptr_t, const char *msg)
+template <size_t Size>
+inline void *check_ptr (std::nullptr_t, const char (&msg)[Size])
 {
   return check_ptr<void>(nullptr, msg);
 }
