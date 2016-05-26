@@ -118,7 +118,7 @@ public:
   void push (T *node) noexcept
   {
     next_(node) = nullptr;
-    auto back = tail_.exchange(node);
+    auto back = tail_.exchange(node, std::memory_order_release);
     next_(back) = node;
   }
 
@@ -145,7 +145,7 @@ public:
       return front;
     }
 
-    if (front != tail_.load())
+    if (front != tail_.load(std::memory_order_acquire))
     {
       return nullptr;
     }
