@@ -10,9 +10,7 @@ list(APPEND sal_sources
   sal/__bits/fmtval.hpp
   sal/queue.hpp
   sal/__bits/queue_intrusive.hpp
-  sal/__bits/queue_mpmc.hpp
   sal/__bits/queue_mpsc.hpp
-  sal/__bits/queue_spmc.hpp
   sal/__bits/queue_spsc.hpp
   sal/spinlock.hpp
   sal/thread.hpp
