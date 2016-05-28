@@ -1,25 +1,27 @@
 #pragma once
 
-// Specialisation for queue<spsc>. Do not include directly
+// DO NOT INCLUDE DIRECTLY: included from sal/queue.hpp
 
 #include <sal/config.hpp>
-#include <atomic>
+#include <utility>
 
 
 namespace sal {
 __sal_begin
 
 
-template <>
-struct queue_hook<concurrent_usage::spsc>
+struct queue_spsc_hook
 {
-  volatile void *next;
-  volatile uint32_t seq;
+  volatile void *hook_next;
+  volatile uint32_t hook_seq;
+
+  template <typename T, queue_spsc_hook T::*Hook>
+  class queue;
 };
 
 
-template <typename T, queue_hook<concurrent_usage::spsc> T::*Hook>
-class queue<concurrent_usage::spsc, T, Hook>
+template <typename T, queue_spsc_hook T::*Hook>
+class queue_spsc_hook::queue
 {
 public:
 
@@ -93,13 +95,13 @@ private:
 
   static volatile uint32_t &seq_of (T *node) noexcept
   {
-    return (node->*Hook).seq;
+    return (node->*Hook).hook_seq;
   }
 
 
   static volatile T *&next_of (T *node) noexcept
   {
-    return reinterpret_cast<volatile T *&>((node->*Hook).next);
+    return reinterpret_cast<volatile T *&>((node->*Hook).hook_next);
   }
 
 

@@ -13,27 +13,14 @@ namespace sal {
 __sal_begin
 
 
-/**
- * Concurrent usage policy. Values are ordered from strongest promises to
- * weaker but better performing.
- */
-enum class concurrent_usage
-{
-  mpmc, ///< Multiple producers, multiple consumers
-  mpsc, ///< Multiple producers, single consumer
-  spmc, ///< Single producer, multiple consumers
-  spsc, ///< Single producer, single consumer
-  none, ///< Single-threaded, must be externally synchronised
-};
+/// Intrusive unsynchronised queue
+struct queue_intrusive_hook;
 
+/// Multiple producers, single consumer concurrent queue
+struct queue_mpsc_hook;
 
-/// Opaque intrusive data to hook class into queue
-template <concurrent_usage ConcurrentUsage>
-struct queue_hook
-{
-  /// Internal opaque data
-  void *next;
-};
+/// Single producer, single consumer concurrent queue
+struct queue_spsc_hook;
 
 
 /**
@@ -56,12 +43,12 @@ struct queue_hook
  * \code
  * class foo
  * {
- *   sal::queue_hook<sal::concurrent_usage::none> hook;
+ *   sal::queue_mpsc_hook hook;
  *   int a;
  *   char b;
  * };
  *
- * sal::queue<sal::concurrent_usage::none, foo, &foo::hook> queue;
+ * sal::queue<foo, sal::queue_mpsc_hook, &foo::hook> queue;
  *
  * foo f;
  * queue.push(&f);
@@ -69,10 +56,7 @@ struct queue_hook
  * auto fp = queue.try_pop(); // fp == &f
  * \endcode
  */
-template <concurrent_usage ConcurrentUsage,
-  typename T,
-  queue_hook<ConcurrentUsage> T::*Hook
->
+template <typename T, typename QueueHook, QueueHook T::*Hook>
 class queue
 {
 public:
@@ -81,11 +65,7 @@ public:
   queue &operator= (const queue &) = delete;
 
 
-  /// Construct new empty queue
-  queue () noexcept
-  {
-    next_of(head_) = nullptr;
-  }
+  queue () noexcept = default;
 
 
   /**
@@ -96,8 +76,8 @@ public:
    * \note Moving elements out of \a that is not thread-safe.
    */
   queue (queue &&that) noexcept
+    : queue_(std::move(that.queue_))
   {
-    operator=(std::move(that));
   }
 
 
@@ -113,9 +93,7 @@ public:
    */
   queue &operator= (queue &&that) noexcept
   {
-    next_of(head_) = next_of(that.head_);
-    tail_ = that.tail_ == that.head_ ? head_ : that.tail_;
-    next_of(that.head_) = that.tail_ = nullptr;
+    queue_ = std::move(that.queue_);
     return *this;
   }
 
@@ -123,37 +101,20 @@ public:
   /// Push new \a node into \a this
   void push (T *node) noexcept
   {
-    next_of(node) = nullptr;
-    tail_ = next_of(tail_) = node;
+    queue_.push(node);
   }
 
 
   /// Pop next element from queue. If empty, return nullptr
   T *try_pop () noexcept
   {
-    if (auto node = next_of(head_))
-    {
-      next_of(head_) = next_of(node);
-      if (next_of(head_) == nullptr)
-      {
-        tail_ = head_;
-      }
-      return node;
-    }
-    return nullptr;
+    return queue_.try_pop();
   }
 
 
 private:
 
-  char sentry_[sizeof(T)];
-  T * const head_ = reinterpret_cast<T *>(&sentry_);
-  T *tail_ = head_;
-
-  static T *&next_of (T *node) noexcept
-  {
-    return reinterpret_cast<T *&>((node->*Hook).next);
-  }
+  typename QueueHook::template queue<T, Hook> queue_{};
 };
 
 
@@ -161,7 +122,6 @@ __sal_end
 } // namespace sal
 
 
-#include <sal/__bits/queue_mpmc.hpp>
+#include <sal/__bits/queue_intrusive.hpp>
 #include <sal/__bits/queue_mpsc.hpp>
-#include <sal/__bits/queue_spmc.hpp>
 #include <sal/__bits/queue_spsc.hpp>

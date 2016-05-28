@@ -1,24 +1,27 @@
 #pragma once
 
-// Specialisation for queue<mpsc>. Do not include directly
+// DO NOT INCLUDE DIRECTLY: included from sal/queue.hpp
 
 #include <sal/config.hpp>
 #include <atomic>
+#include <utility>
 
 
 namespace sal {
 __sal_begin
 
 
-template <>
-struct queue_hook<concurrent_usage::mpsc>
+struct queue_mpsc_hook
 {
-  volatile void *next;
+  volatile void *hook_next;
+
+  template <typename T, queue_mpsc_hook T::*Hook>
+  class queue;
 };
 
 
-template <typename T, queue_hook<concurrent_usage::mpsc> T::*Hook>
-class queue<concurrent_usage::mpsc, T, Hook>
+template <typename T, queue_mpsc_hook T::*Hook>
+class queue_mpsc_hook::queue
 {
 public:
 
@@ -127,7 +130,7 @@ private:
   static T *&next_of (T *node) noexcept
   {
     return reinterpret_cast<T *&>(
-      const_cast<void *&>((node->*Hook).next)
+      const_cast<void *&>((node->*Hook).hook_next)
     );
   }
 };

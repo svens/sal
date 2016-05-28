@@ -1,5 +1,6 @@
 #include <bench/bench.hpp>
 #include <sal/queue.hpp>
+#include <sal/spinlock.hpp>
 #include <algorithm>
 #include <atomic>
 #include <iostream>
@@ -20,9 +21,7 @@ size_t producers = 1, consumers = 1;
 std::string type = "mpmc";
 
 const std::set<std::string> valid_types{
-  "mpmc",
   "mpsc",
-  "spmc",
   "spsc",
 };
 
@@ -40,28 +39,29 @@ int usage (const std::string message="")
     << "\n  --consumers=N  number of consumer threads (default: " << consumers << ')'
     << "\n  --producers=N  number of producer threads (default: " << producers << ')'
     << "\n  --type=S       queue concurrency usage type (default: " << type << ')'
-    << "\n                 valid values are mpmc, mpsc, spmc, spsc"
+    << "\n                 valid values are mpsc, spsc"
     << std::endl;
 
   return EXIT_FAILURE;
 }
 
 
-template <sal::concurrent_usage ConcurrentUsage>
+template <typename QueueHook>
 struct foo
 {
   bool stop = false;
-  sal::queue_hook<ConcurrentUsage> hook{};
-  using queue = sal::queue<ConcurrentUsage, foo, &foo::hook>;
+  QueueHook hook{};
+  using queue = sal::queue<foo, QueueHook, &foo::hook>;
 };
 
 
-template <sal::concurrent_usage ConcurrentUsage>
+
+template <typename QueueHook>
 milliseconds single_run ()
 {
   // preallocate items and create queue
-  std::vector<foo<ConcurrentUsage>> nodes(count);
-  typename foo<ConcurrentUsage>::queue q;
+  std::vector<foo<QueueHook>> nodes(count);
+  typename foo<QueueHook>::queue q;
 
   std::vector<std::thread> consumer_threads, producer_threads;
   auto start_time = bench::start();
@@ -120,7 +120,7 @@ milliseconds single_run ()
   }
 
   // send stop signal to consumers
-  std::vector<foo<ConcurrentUsage>> stop_nodes(consumers);
+  std::vector<foo<QueueHook>> stop_nodes(consumers);
   for (size_t i = 0;  i != consumers;  ++i)
   {
     stop_nodes[i].stop = true;
@@ -143,21 +143,13 @@ int worker ()
 
   for (size_t i = 0;  i != run;  ++i)
   {
-    if (type == "mpmc")
+    if (type == "mpsc")
     {
-      times.emplace_back(single_run<sal::concurrent_usage::mpmc>());
-    }
-    else if (type == "mpsc")
-    {
-      times.emplace_back(single_run<sal::concurrent_usage::mpsc>());
-    }
-    else if (type == "spmc")
-    {
-      times.emplace_back(single_run<sal::concurrent_usage::spmc>());
+      times.emplace_back(single_run<sal::queue_mpsc_hook>());
     }
     else if (type == "spsc")
     {
-      times.emplace_back(single_run<sal::concurrent_usage::spsc>());
+      times.emplace_back(single_run<sal::queue_spsc_hook>());
     }
   }
 

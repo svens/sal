@@ -2,27 +2,25 @@
 #include <sal/common.test.hpp>
 
 
-//namespace {
+namespace {
 
 
-template <typename ConcurrentUsage>
+template <typename QueueHook>
 struct test
-  : public sal_test::with_type<ConcurrentUsage>
+  : public sal_test::with_type<QueueHook>
 {
   struct foo
   {
-    sal::queue_hook<ConcurrentUsage::value> hook;
+    QueueHook hook;
   };
-  using queue = sal::queue<ConcurrentUsage::value, foo, &foo::hook>;
+  using queue = sal::queue<foo, QueueHook, &foo::hook>;
 };
 
 
 using types = testing::Types<
-  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::none>,
-  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::mpmc>,
-  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::mpsc>,
-  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::spmc>,
-  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::spsc>
+  sal::queue_intrusive_hook,
+  sal::queue_mpsc_hook,
+  sal::queue_spsc_hook
 >;
 
 
@@ -285,4 +283,4 @@ REGISTER_TYPED_TEST_CASE_P(test,
 INSTANTIATE_TYPED_TEST_CASE_P(queue, test, types);
 
 
-//} // namespace
+} // namespace
