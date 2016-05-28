@@ -1,9 +1,12 @@
 This library contains following third party sources
 
 
-== sal/concurrent_queue.hpp {{{1
+== sal/__bits/queue_*.hpp {{{1
 
-http://www.1024cores.net/home/lock-free-algorithms/queues/non-intrusive-mpsc-node-based-queue
+* Intrusive MPSC queue
+  http://www.1024cores.net/home/lock-free-algorithms/queues/non-intrusive-mpsc-node-based-queue
+* Intrusive SPSC queue
+  https://groups.google.com/d/msg/comp.programming.threads/AsNwCD5lgAA/1l63qBiRX3cJ
 
 Copyright (c) 2010-2011 Dmitry Vyukov. All rights reserved.
 

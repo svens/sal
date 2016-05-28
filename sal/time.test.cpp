@@ -39,8 +39,8 @@ TEST(time, local_offset)
   for (int h = -12;  h <= 14;  ++h)
   {
     char zone[sizeof("TZ=GMT+HH")];
-    std::snprintf(zone, sizeof(zone), "TZ=GMT%+02d", h);
-    putenv(zone);
+    (void)std::snprintf(zone, sizeof(zone), "TZ=GMT%+02d", h);
+    (void)putenv(zone);
     tzset();
 
     auto offset = sal::local_offset(sal::now());

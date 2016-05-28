@@ -388,8 +388,10 @@ inline char *fmt_v (const std::string &value, char *first, char *last)
 template <typename T>
 inline char *fmt_v (const T &value, char *first, char *last)
 {
+  // LCOV_EXCL_BR_START
   std::ostringstream oss;
   oss << value;
+  // LCOV_EXCL_BR_STOP
   return fmt_v(oss.str(), first, last);
 }
 

@@ -448,13 +448,9 @@ TEST_F(c_str, insert_ostream)
 TEST_F(c_str, print)
 {
   sal::c_str<32> c_str;
-  /*
   sal::print(c_str, case_name, 12, 34);
   ASSERT_TRUE(c_str.good());
   EXPECT_EQ(case_name + "1234", c_str.get());
-  */
-  sal::print(c_str);
-  std::cout << c_str << std::endl;
 }
 
 
