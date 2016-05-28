@@ -21,7 +21,7 @@ inline void throw_logic_error [[noreturn]] (Args &&...args)
 {
   c_str<128*sizeof...(Args)> what;
   print(what, std::forward<Args>(args)...);
-  throw std::logic_error(what.get());
+  throw std::logic_error(what.get()); // LCOV_EXCL_BR_LINE
 }
 
 
@@ -31,7 +31,7 @@ inline void throw_runtime_error [[noreturn]] (Args &&...args)
 {
   c_str<128*sizeof...(Args)> what;
   print(what, std::forward<Args>(args)...);
-  throw std::runtime_error(what.get());
+  throw std::runtime_error(what.get()); // LCOV_EXCL_BR_LINE
 }
 
 
@@ -42,7 +42,7 @@ inline void throw_system_error [[noreturn]] (const std::error_code &error,
 {
   c_str<128*sizeof...(Args)> what;
   print(what, std::forward<Args>(args)...);
-  throw std::system_error(error, what.get());
+  throw std::system_error(error, what.get()); // LCOV_EXCL_BR_LINE
 }
 
 

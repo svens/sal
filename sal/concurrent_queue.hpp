@@ -2,25 +2,42 @@
 
 /**
  * \file sal/concurrent_queue.hpp
- * Intrusive concurrent queue (FIFO)
+ * Intrusive queue (FIFO) with possible concurrent usage
  */
 
 #include <sal/config.hpp>
-#include <sal/spinlock.hpp>
-#include <atomic>
-#include <mutex>
+#include <utility>
 
 
 namespace sal {
 __sal_begin
 
 
-/// Opaque intrusive data to hook class into concurrent_queue
-using concurrent_queue_hook = volatile void *;
+/**
+ * Concurrent usage policy. Values are ordered from strongest promises to
+ * weaker but better performing.
+ */
+enum class concurrent_usage
+{
+  mpmc, ///< Multiple producers, multiple consumers
+  mpsc, ///< Multiple producers, single consumer
+  spmc, ///< Single producer, multiple consumers
+  spsc, ///< Single producer, single consumer
+  none, ///< Single-threaded, must be externally synchronised
+};
+
+
+/// Opaque intrusive data to hook class into queue
+template <concurrent_usage ConcurrentUsage>
+struct queue_hook
+{
+  /// Internal opaque data
+  void *next;
+};
 
 
 /**
- * Intrusive concurrent queue (FIFO).
+ * Intrusive queue (FIFO) with possible concurrent usage.
  *
  * Queue elements of type \a T must provide \a Hook that stores opaque data
  * managed by owning queue. Any given time specific hook can be used only to
@@ -39,12 +56,12 @@ using concurrent_queue_hook = volatile void *;
  * \code
  * class foo
  * {
- *   sal::concurrent_queue_hook hook;
+ *   sal::queue_hook<sal::concurrent_usage::none> hook;
  *   int a;
  *   char b;
  * };
  *
- * sal::concurrent_queue<foo, &foo::hook> queue;
+ * sal::queue<sal::concurrent_usage::none, foo, &foo::hook> queue;
  *
  * foo f;
  * queue.push(&f);
@@ -52,19 +69,22 @@ using concurrent_queue_hook = volatile void *;
  * auto fp = queue.try_pop(); // fp == &f
  * \endcode
  */
-template <typename T, concurrent_queue_hook T::*Hook>
-class concurrent_queue
+template <concurrent_usage ConcurrentUsage,
+  typename T,
+  queue_hook<ConcurrentUsage> T::*Hook
+>
+class queue
 {
 public:
 
-  concurrent_queue (const concurrent_queue &) = delete;
-  concurrent_queue &operator= (const concurrent_queue &) = delete;
+  queue (const queue &) = delete;
+  queue &operator= (const queue &) = delete;
 
 
   /// Construct new empty queue
-  concurrent_queue () noexcept
+  queue () noexcept
   {
-    next_(sentry_) = nullptr;
+    next_of(head_) = nullptr;
   }
 
 
@@ -75,9 +95,8 @@ public:
    *
    * \note Moving elements out of \a that is not thread-safe.
    */
-  concurrent_queue (concurrent_queue &&that) noexcept
+  queue (queue &&that) noexcept
   {
-    next_(sentry_) = nullptr;
     operator=(std::move(that));
   }
 
@@ -92,24 +111,11 @@ public:
    *
    * \note Moving elements out of \a that is not thread-safe.
    */
-  concurrent_queue &operator= (concurrent_queue &&that) noexcept
+  queue &operator= (queue &&that) noexcept
   {
-    if (that.tail_ == that.sentry_)
-    {
-      tail_ = head_ = sentry_;
-    }
-    else if (that.head_ == that.sentry_)
-    {
-      tail_ = that.tail_.load(std::memory_order_relaxed);
-      head_ = sentry_;
-      next_(head_) = next_(that.head_);
-    }
-    else
-    {
-      tail_ = that.tail_.load(std::memory_order_relaxed);
-      head_ = that.head_;
-    }
-    that.head_ = that.tail_ = nullptr;
+    next_of(head_) = next_of(that.head_);
+    tail_ = that.tail_ == that.head_ ? head_ : that.tail_;
+    next_of(that.head_) = that.tail_ = nullptr;
     return *this;
   }
 
@@ -117,77 +123,45 @@ public:
   /// Push new \a node into \a this
   void push (T *node) noexcept
   {
-    next_(node) = nullptr;
-    auto back = tail_.exchange(node, std::memory_order_release);
-    next_(back) = node;
+    next_of(node) = nullptr;
+    tail_ = next_of(tail_) = node;
   }
 
 
   /// Pop next element from queue. If empty, return nullptr
   T *try_pop () noexcept
   {
-    std::lock_guard<sal::spinlock> lock(mutex_);
-
-    auto front = head_, next = next_(front);
-    if (front == sentry_)
+    if (auto node = next_of(head_))
     {
-      if (!next)
+      next_of(head_) = next_of(node);
+      if (next_of(head_) == nullptr)
       {
-        return nullptr;
+        tail_ = head_;
       }
-      front = head_ = next;
-      next = next_(next);
+      return node;
     }
-
-    if (next)
-    {
-      head_ = next;
-      return front;
-    }
-
-    if (front != tail_.load(std::memory_order_acquire))
-    {
-      return nullptr;
-    }
-
-    push(sentry_);
-
-    next = next_(front);
-    if (next)
-    {
-      head_ = next;
-      return front;
-    }
-
     return nullptr;
   }
 
 
 private:
 
-  // TODO: std::hardware_destructive_interference_size
-  static constexpr size_t cache_line = 64;
+  char sentry_[sizeof(T)];
+  T * const head_ = reinterpret_cast<T *>(&sentry_);
+  T *tail_ = head_;
 
-  // using pad0_ also as sentry_
-  T * const sentry_ = reinterpret_cast<T *>(&pad0_);
-  char pad0_[sizeof(T) < cache_line - sizeof(decltype(sentry_))
-    ? cache_line - sizeof(decltype(sentry_))
-    : sizeof(T)
-  ];
-
-  alignas(cache_line) std::atomic<T *> tail_{sentry_};
-  char pad1_[cache_line - sizeof(decltype(tail_))];
-
-  sal::spinlock mutex_{};
-  T *head_ = sentry_;
-
-
-  static T *&next_ (T *node) noexcept
+  static T *&next_of (T *node) noexcept
   {
-    return reinterpret_cast<T *&>(const_cast<void *&>(node->*Hook));
+    return reinterpret_cast<T *&>((node->*Hook).next);
   }
 };
 
 
 __sal_end
 } // namespace sal
+
+
+#include <sal/__bits/queue_mpmc.hpp>
+#include <sal/__bits/queue_mpsc.hpp>
+#include <sal/__bits/queue_spmc.hpp>
+#include <sal/__bits/queue_spsc.hpp>

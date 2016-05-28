@@ -4,6 +4,10 @@ list(APPEND sal_sources
   sal/builtins.hpp
   sal/c_str.hpp
   sal/concurrent_queue.hpp
+  sal/__bits/queue_mpmc.hpp
+  sal/__bits/queue_mpsc.hpp
+  sal/__bits/queue_spmc.hpp
+  sal/__bits/queue_spsc.hpp
   sal/error.hpp
   sal/file.hpp
   sal/file.cpp

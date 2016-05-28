@@ -5,18 +5,26 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <set>
 
 
 namespace {
-
 
 using namespace std::chrono;
 
 
 // configuration
+size_t run = 10;
 size_t count = 10'000'000;
 size_t producers = 1, consumers = 1;
-size_t run = 10;
+std::string type = "mpmc";
+
+const std::set<std::string> valid_types{
+  "mpmc",
+  "mpsc",
+  "spmc",
+  "spsc",
+};
 
 
 int usage (const std::string message="")
@@ -28,29 +36,32 @@ int usage (const std::string message="")
 
   std::cerr << "concurrent_queue:"
     << "\n  --help         this page"
-    << "\n  --count=int    number of items to push (default: " << count << ')'
+    << "\n  --count=N      number of items to push (default: " << count << ')'
     << "\n  --consumers=N  number of consumer threads (default: " << consumers << ')'
     << "\n  --producers=N  number of producer threads (default: " << producers << ')'
+    << "\n  --type=S       queue concurrency usage type (default: " << type << ')'
+    << "\n                 valid values are mpmc, mpsc, spmc, spsc"
     << std::endl;
 
   return EXIT_FAILURE;
 }
 
 
+template <sal::concurrent_usage ConcurrentUsage>
 struct foo
 {
-  sal::concurrent_queue_hook hook{};
   bool stop = false;
+  sal::queue_hook<ConcurrentUsage> hook{};
+  using queue = sal::queue<ConcurrentUsage, foo, &foo::hook>;
 };
 
 
+template <sal::concurrent_usage ConcurrentUsage>
 milliseconds single_run ()
 {
-  using queue = sal::concurrent_queue<foo, &foo::hook>;
-
   // preallocate items and create queue
-  std::vector<foo> nodes(count);
-  queue q;
+  std::vector<foo<ConcurrentUsage>> nodes(count);
+  typename foo<ConcurrentUsage>::queue q;
 
   std::vector<std::thread> consumer_threads, producer_threads;
   auto start_time = bench::start();
@@ -109,7 +120,7 @@ milliseconds single_run ()
   }
 
   // send stop signal to consumers
-  std::vector<foo> stop_nodes(consumers);
+  std::vector<foo<ConcurrentUsage>> stop_nodes(consumers);
   for (size_t i = 0;  i != consumers;  ++i)
   {
     stop_nodes[i].stop = true;
@@ -132,7 +143,22 @@ int worker ()
 
   for (size_t i = 0;  i != run;  ++i)
   {
-    times.emplace_back(single_run());
+    if (type == "mpmc")
+    {
+      times.emplace_back(single_run<sal::concurrent_usage::mpmc>());
+    }
+    else if (type == "mpsc")
+    {
+      times.emplace_back(single_run<sal::concurrent_usage::mpsc>());
+    }
+    else if (type == "spmc")
+    {
+      times.emplace_back(single_run<sal::concurrent_usage::spmc>());
+    }
+    else if (type == "spsc")
+    {
+      times.emplace_back(single_run<sal::concurrent_usage::spsc>());
+    }
   }
 
   std::sort(times.begin(), times.end());
@@ -172,6 +198,15 @@ int bench::concurrent_queue (const arg_list &args)
     else if (arg.find("--run=") != arg.npos)
     {
       run = std::stoul(arg.substr(sizeof("--run=") - 1));
+    }
+    else if (arg.find("--type=") != arg.npos)
+    {
+      auto tmp = arg.substr(sizeof("--type=") - 1);
+      if (!valid_types.count(tmp))
+      {
+        return usage("unknown type: " + tmp);
+      }
+      type = tmp;
     }
     else
     {

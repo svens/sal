@@ -1,33 +1,44 @@
 #include <sal/concurrent_queue.hpp>
 #include <sal/common.test.hpp>
-#include <chrono>
-#include <mutex>
-#include <thread>
 
 
-namespace {
+//namespace {
 
 
-using concurrent_queue = sal_test::fixture;
-
-
-struct foo
+template <typename ConcurrentUsage>
+struct test
+  : public sal_test::with_type<ConcurrentUsage>
 {
-  sal::concurrent_queue_hook hook;
-  using queue = sal::concurrent_queue<foo, &foo::hook>;
+  struct foo
+  {
+    sal::queue_hook<ConcurrentUsage::value> hook;
+  };
+  using queue = sal::queue<ConcurrentUsage::value, foo, &foo::hook>;
 };
 
 
-TEST_F(concurrent_queue, ctor)
+using types = testing::Types<
+  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::none>,
+  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::mpmc>,
+  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::mpsc>,
+  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::spmc>,
+  std::integral_constant<sal::concurrent_usage, sal::concurrent_usage::spsc>
+>;
+
+
+TYPED_TEST_CASE_P(test);
+
+
+TYPED_TEST_P(test, ctor)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
   ASSERT_EQ(nullptr, q.try_pop());
 }
 
 
-TEST_F(concurrent_queue, move_ctor_empty)
+TYPED_TEST_P(test, move_ctor_empty)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
   ASSERT_EQ(nullptr, q.try_pop());
 
   auto q1 = std::move(q);
@@ -35,11 +46,11 @@ TEST_F(concurrent_queue, move_ctor_empty)
 }
 
 
-TEST_F(concurrent_queue, move_ctor_empty_1)
+TYPED_TEST_P(test, move_ctor_empty_1)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
 
-  foo f;
+  typename TestFixture::foo f;
   q.push(&f);
   ASSERT_EQ(&f, q.try_pop());
 
@@ -48,11 +59,11 @@ TEST_F(concurrent_queue, move_ctor_empty_1)
 }
 
 
-TEST_F(concurrent_queue, move_ctor_single)
+TYPED_TEST_P(test, move_ctor_single)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
 
-  foo f;
+  typename TestFixture::foo f;
   q.push(&f);
 
   auto q1 = std::move(q);
@@ -61,11 +72,11 @@ TEST_F(concurrent_queue, move_ctor_single)
 }
 
 
-TEST_F(concurrent_queue, move_ctor_single_1)
+TYPED_TEST_P(test, move_ctor_single_1)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
 
-  foo f1, f2;
+  typename TestFixture::foo f1, f2;
   q.push(&f1);
   q.push(&f2);
   ASSERT_EQ(&f1, q.try_pop());
@@ -76,11 +87,11 @@ TEST_F(concurrent_queue, move_ctor_single_1)
 }
 
 
-TEST_F(concurrent_queue, move_ctor_multiple)
+TYPED_TEST_P(test, move_ctor_multiple)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
 
-  foo f1, f2;
+  typename TestFixture::foo f1, f2;
   q.push(&f1);
   q.push(&f2);
 
@@ -91,11 +102,11 @@ TEST_F(concurrent_queue, move_ctor_multiple)
 }
 
 
-TEST_F(concurrent_queue, move_ctor_multiple_1)
+TYPED_TEST_P(test, move_ctor_multiple_1)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
 
-  foo f1, f2, f3;
+  typename TestFixture::foo f1, f2, f3;
   q.push(&f1);
   q.push(&f2);
   q.push(&f3);
@@ -108,19 +119,19 @@ TEST_F(concurrent_queue, move_ctor_multiple_1)
 }
 
 
-TEST_F(concurrent_queue, move_assign_empty)
+TYPED_TEST_P(test, move_assign_empty)
 {
-  foo::queue q1, q2;
+  typename TestFixture::queue q1, q2;
   q2 = std::move(q1);
   ASSERT_EQ(nullptr, q2.try_pop());
 }
 
 
-TEST_F(concurrent_queue, move_assign_empty_1)
+TYPED_TEST_P(test, move_assign_empty_1)
 {
-  foo::queue q1, q2;
+  typename TestFixture::queue q1, q2;
 
-  foo f1;
+  typename TestFixture::foo f1;
   q1.push(&f1);
   ASSERT_EQ(&f1, q1.try_pop());
 
@@ -129,11 +140,11 @@ TEST_F(concurrent_queue, move_assign_empty_1)
 }
 
 
-TEST_F(concurrent_queue, move_assign_single)
+TYPED_TEST_P(test, move_assign_single)
 {
-  foo::queue q1, q2;
+  typename TestFixture::queue q1, q2;
 
-  foo f1;
+  typename TestFixture::foo f1;
   q1.push(&f1);
 
   q2 = std::move(q1);
@@ -142,11 +153,11 @@ TEST_F(concurrent_queue, move_assign_single)
 }
 
 
-TEST_F(concurrent_queue, move_assign_single_1)
+TYPED_TEST_P(test, move_assign_single_1)
 {
-  foo::queue q1, q2;
+  typename TestFixture::queue q1, q2;
 
-  foo f1, f2;
+  typename TestFixture::foo f1, f2;
   q1.push(&f1);
   q1.push(&f2);
   ASSERT_EQ(&f1, q1.try_pop());
@@ -157,11 +168,11 @@ TEST_F(concurrent_queue, move_assign_single_1)
 }
 
 
-TEST_F(concurrent_queue, move_assign_multiple)
+TYPED_TEST_P(test, move_assign_multiple)
 {
-  foo::queue q1, q2;
+  typename TestFixture::queue q1, q2;
 
-  foo f1, f2;
+  typename TestFixture::foo f1, f2;
   q1.push(&f1);
   q1.push(&f2);
 
@@ -172,11 +183,11 @@ TEST_F(concurrent_queue, move_assign_multiple)
 }
 
 
-TEST_F(concurrent_queue, move_assign_multiple_1)
+TYPED_TEST_P(test, move_assign_multiple_1)
 {
-  foo::queue q1, q2;
+  typename TestFixture::queue q1, q2;
 
-  foo f1, f2, f3;
+  typename TestFixture::foo f1, f2, f3;
   q1.push(&f1);
   q1.push(&f2);
   q1.push(&f3);
@@ -189,11 +200,11 @@ TEST_F(concurrent_queue, move_assign_multiple_1)
 }
 
 
-TEST_F(concurrent_queue, single_push_pop)
+TYPED_TEST_P(test, single_push_pop)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
 
-  foo f;
+  typename TestFixture::foo f;
   q.push(&f);
   ASSERT_EQ(&f, q.try_pop());
 
@@ -201,11 +212,11 @@ TEST_F(concurrent_queue, single_push_pop)
 }
 
 
-TEST_F(concurrent_queue, multiple_push_pop)
+TYPED_TEST_P(test, multiple_push_pop)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
 
-  foo f1, f2, f3;
+  typename TestFixture::foo f1, f2, f3;
   q.push(&f1);
   q.push(&f2);
   q.push(&f3);
@@ -217,12 +228,12 @@ TEST_F(concurrent_queue, multiple_push_pop)
 }
 
 
-TEST_F(concurrent_queue, interleaved_push_pop)
+TYPED_TEST_P(test, interleaved_push_pop)
 {
-  foo::queue q;
+  typename TestFixture::queue q;
 
   // push 1, 2
-  foo f1, f2;
+  typename TestFixture::foo f1, f2;
   q.push(&f1);
   q.push(&f2);
 
@@ -230,7 +241,7 @@ TEST_F(concurrent_queue, interleaved_push_pop)
   ASSERT_EQ(&f1, q.try_pop());
 
   // push 3
-  foo f3;
+  typename TestFixture::foo f3;
   q.push(&f3);
 
   // pop 2, push 2
@@ -248,4 +259,30 @@ TEST_F(concurrent_queue, interleaved_push_pop)
 }
 
 
-} // namespace
+REGISTER_TYPED_TEST_CASE_P(test,
+  ctor,
+
+  move_ctor_empty,
+  move_ctor_empty_1,
+  move_ctor_single,
+  move_ctor_single_1,
+  move_ctor_multiple,
+  move_ctor_multiple_1,
+
+  move_assign_empty,
+  move_assign_empty_1,
+  move_assign_single,
+  move_assign_single_1,
+  move_assign_multiple,
+  move_assign_multiple_1,
+
+  single_push_pop,
+  multiple_push_pop,
+  interleaved_push_pop
+);
+
+
+INSTANTIATE_TYPED_TEST_CASE_P(queue, test, types);
+
+
+//} // namespace
