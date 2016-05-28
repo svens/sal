@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/concurrent_queue.hpp
+ * \file sal/queue.hpp
  * Intrusive queue (FIFO) with possible concurrent usage
  */
 

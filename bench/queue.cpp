@@ -1,5 +1,5 @@
 #include <bench/bench.hpp>
-#include <sal/concurrent_queue.hpp>
+#include <sal/queue.hpp>
 #include <algorithm>
 #include <atomic>
 #include <iostream>
@@ -34,7 +34,7 @@ int usage (const std::string message="")
     std::cerr << message << '\n' << std::endl;
   }
 
-  std::cerr << "concurrent_queue:"
+  std::cerr << "queue:"
     << "\n  --help         this page"
     << "\n  --count=N      number of items to push (default: " << count << ')'
     << "\n  --consumers=N  number of consumer threads (default: " << consumers << ')'
@@ -175,7 +175,7 @@ int worker ()
 } // namespace
 
 
-int bench::concurrent_queue (const arg_list &args)
+int bench::queue (const arg_list &args)
 {
   for (auto &arg: args)
   {
