@@ -20,7 +20,7 @@ using func_list = std::unordered_map<std::string, func_ptr>;
 //
 
 int c_str (const arg_list &args);
-int concurrent_queue (const arg_list &args);
+int queue (const arg_list &args);
 int spinlock (const arg_list &args);
 
 
