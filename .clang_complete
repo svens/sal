@@ -1,0 +1,4 @@
+-D _DEBUG
+-I .
+-I ../build/clang-debug
+-I ../build/clang-debug/gtest-1.7.0/src/gtest/include
