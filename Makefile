@@ -1,10 +1,6 @@
 # Variables that select action if defined {{{1
 #
 
-
-# if has value, then tmux with given window
-session :=
-
 # if has value, edit module
 edit :=
 
@@ -13,9 +9,7 @@ edit :=
 #
 
 
-ifneq ($(session),)
-all: .session-$(session)
-else ifneq ($(edit),)
+ifneq ($(edit),)
 all: .edit
 else
 all: .build
@@ -26,7 +20,7 @@ endif
 #
 
 
-.session-edit:
+session-edit:
 	tmux has-session -t "sal/edit" >/dev/null 2>&1 \
 	  && ( tmux detach-client -s "sal/edit" || true ) \
 	  || ( \
@@ -38,7 +32,7 @@ endif
 	tmux attach-session -t "sal/edit"
 
 
-.session-work:
+session-work:
 	tmux has-session -t "sal/work" >/dev/null 2>&1 \
 	  && ( tmux detach-client -s "sal/work" || true ) \
 	  || ( \
