@@ -25,9 +25,7 @@ session-edit:
 	  && ( tmux detach-client -s "sal/edit" || true ) \
 	  || ( \
 	    tmux new-session -s "sal/edit" -n main -d \
-	    && tmux new-window -n edit \
-	    && tmux new-window -n bench \
-	    && tmux select-window -t "sal/edit:edit" \
+	    && tmux select-window -t "sal/edit:main" \
 	  )
 	tmux attach-session -t "sal/edit"
 
@@ -37,14 +35,12 @@ session-work:
 	  && ( tmux detach-client -s "sal/work" || true ) \
 	  || ( \
 	    tmux new-session -s "sal/work" -n main -d \
-	    && tmux new-window -n work \
-	    && tmux new-window -n bench \
 	    && tmux new-window -n gcc/debug -c $${PWD}/../build/gcc-debug \
 	    && tmux new-window -n gcc/release -c $${PWD}/../build/gcc-release \
 	    && tmux new-window -n clang/debug -c $${PWD}/../build/clang-debug \
 	    && tmux new-window -n clang/release -c $${PWD}/../build/clang-release \
 	    && tmux new-window -n infra -c $${PWD}/../build/infra \
-	    && tmux select-window -t "sal/work:work" \
+	    && tmux select-window -t "sal/work:main" \
 	  )
 	tmux attach-session -t "sal/work"
 
