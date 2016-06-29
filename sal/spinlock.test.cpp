@@ -7,7 +7,7 @@
 
 TEST(spinlock, single_thread)
 {
-  sal::spinlock lock;
+  sal::spinlock_t lock;
 
   lock.lock();
   EXPECT_FALSE(lock.try_lock());
@@ -23,7 +23,7 @@ TEST(spinlock, two_threads)
 {
   using namespace std::chrono_literals;
 
-  sal::spinlock lock;
+  sal::spinlock_t lock;
 
   // t1.1) keep lock initially locked
   lock.lock();
@@ -67,10 +67,10 @@ TEST(spinlock, two_threads)
 
 TEST(spinlock, unique_lock_guard)
 {
-  sal::spinlock lock;
+  sal::spinlock_t lock;
 
   {
-    std::unique_lock<sal::spinlock> guard(lock);
+    std::unique_lock<sal::spinlock_t> guard(lock);
     EXPECT_FALSE(lock.try_lock());
 
     EXPECT_TRUE(guard.owns_lock());

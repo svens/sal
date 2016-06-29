@@ -15,16 +15,16 @@ __sal_begin
 
 
 /// System clock
-using system_clock = std::chrono::system_clock;
+using clock_t = std::chrono::system_clock;
 
 /// System clock timestamp
-using system_time = system_clock::time_point;
+using time_t = clock_t::time_point;
 
 
 /// Return system clock's current time
-inline system_time now () noexcept
+inline time_t now () noexcept
 {
-  return system_clock::now();
+  return clock_t::now();
 }
 
 
@@ -52,9 +52,9 @@ inline std::tm local_time (const std::time_t &time) noexcept
  *
  * \returns Broken down std::tm structure for \a time
  */
-inline std::tm local_time (const system_time &time) noexcept
+inline std::tm local_time (const time_t &time) noexcept
 {
-  return local_time(system_clock::to_time_t(time));
+  return local_time(clock_t::to_time_t(time));
 }
 
 
@@ -94,9 +94,9 @@ inline std::tm utc_time (const std::time_t &time) noexcept
  *
  * \returns Broken down std::tm structure for \a time
  */
-inline std::tm utc_time (const system_time &time) noexcept
+inline std::tm utc_time (const time_t &time) noexcept
 {
-  return utc_time(system_clock::to_time_t(time));
+  return utc_time(clock_t::to_time_t(time));
 }
 
 
@@ -116,13 +116,13 @@ inline std::tm utc_time () noexcept
  * Return offset between UTC and local time at \a time. This function takes
  * into account timezone and possible daylight savings.
  */
-inline std::chrono::seconds local_offset (const system_time &time) noexcept
+inline std::chrono::seconds local_offset (const time_t &time) noexcept
 {
   std::tm local = local_time(time);
 #if __sal_os_windows
   std::tm utc = utc_time(time);
   utc.tm_isdst = local.tm_isdst;
-  return std::chrono::seconds(system_clock::to_time_t(time) - mktime(&utc));
+  return std::chrono::seconds(clock_t::to_time_t(time) - mktime(&utc));
 #else
   return std::chrono::seconds(local.tm_gmtoff);
 #endif

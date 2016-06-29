@@ -14,7 +14,7 @@ namespace {
 
 TEST(time, local_time)
 {
-  std::time_t now = sal::system_clock::to_time_t(sal::now());
+  std::time_t now = sal::clock_t::to_time_t(sal::now());
   std::tm tm = sal::local_time(now);
   EXPECT_NE(0, tm.tm_mday);
 
@@ -25,7 +25,7 @@ TEST(time, local_time)
 
 TEST(time, utc_time)
 {
-  std::time_t now = sal::system_clock::to_time_t(sal::now());
+  std::time_t now = sal::clock_t::to_time_t(sal::now());
   std::tm tm = sal::utc_time(now);
   EXPECT_NE(0, tm.tm_mday);
 

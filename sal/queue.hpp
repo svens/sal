@@ -14,13 +14,13 @@ __sal_begin
 
 
 /// Intrusive unsynchronised queue
-struct queue_intrusive_hook;
+struct intrusive_t;
 
 /// Multiple producers, single consumer concurrent queue
-struct queue_mpsc_hook;
+struct mpsc_t;
 
 /// Single producer, single consumer concurrent queue
-struct queue_spsc_hook;
+struct spsc_t;
 
 
 /**
@@ -43,12 +43,12 @@ struct queue_spsc_hook;
  * \code
  * class foo
  * {
- *   sal::queue_mpsc_hook hook;
+ *   sal::mpsc_t hook;
  *   int a;
  *   char b;
  * };
  *
- * sal::queue<foo, sal::queue_mpsc_hook, &foo::hook> queue;
+ * sal::queue_t<foo, sal::mpsc_t, &foo::hook> queue;
  *
  * foo f;
  * queue.push(&f);
@@ -57,15 +57,15 @@ struct queue_spsc_hook;
  * \endcode
  */
 template <typename T, typename QueueHook, QueueHook T::*Hook>
-class queue
+class queue_t
 {
 public:
 
-  queue (const queue &) = delete;
-  queue &operator= (const queue &) = delete;
+  queue_t (const queue_t &) = delete;
+  queue_t &operator= (const queue_t &) = delete;
 
 
-  queue () noexcept = default;
+  queue_t () noexcept = default;
 
 
   /**
@@ -75,7 +75,7 @@ public:
    *
    * \note Moving elements out of \a that is not thread-safe.
    */
-  queue (queue &&that) noexcept
+  queue_t (queue_t &&that) noexcept
     : queue_(std::move(that.queue_))
   {
   }
@@ -91,7 +91,7 @@ public:
    *
    * \note Moving elements out of \a that is not thread-safe.
    */
-  queue &operator= (queue &&that) noexcept
+  queue_t &operator= (queue_t &&that) noexcept
   {
     queue_ = std::move(that.queue_);
     return *this;
@@ -114,7 +114,7 @@ public:
 
 private:
 
-  typename QueueHook::template queue<T, Hook> queue_{};
+  typename QueueHook::template queue_t<T, Hook> queue_{};
 };
 
 

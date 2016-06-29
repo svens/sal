@@ -14,7 +14,7 @@ __sal_begin
 
 namespace {
 
-constexpr inline bool is_set (file::open_mode mode, file::open_mode mask)
+constexpr inline bool is_set (file_t::open_mode mode, file_t::open_mode mask)
   noexcept
 {
   return (mode & mask) == mask;
@@ -23,7 +23,7 @@ constexpr inline bool is_set (file::open_mode mode, file::open_mode mask)
 
 #if __sal_os_windows
 
-void to_lib_mode (file::open_mode mode, int *access_mode, int *share_mode)
+void to_lib_mode (file_t::open_mode mode, int *access_mode, int *share_mode)
   noexcept
 {
   // std::ios::trunc is handled in caller
@@ -50,15 +50,15 @@ void to_lib_mode (file::open_mode mode, int *access_mode, int *share_mode)
 }
 
 
-file::native_handle open_impl (const std::string &name,
-  file::open_mode open_mode,
+file_t::native_handle open_impl (const std::string &name,
+  file_t::open_mode open_mode,
   int create_disposition,
   std::error_code &error) noexcept
 {
   int access_mode, share_mode;
   to_lib_mode(open_mode, &access_mode, &share_mode);
 
-  auto handle = reinterpret_cast<file::native_handle>(
+  auto handle = reinterpret_cast<file_t::native_handle>(
     ::CreateFile(name.c_str(),
       access_mode,
       share_mode,
@@ -68,7 +68,7 @@ file::native_handle open_impl (const std::string &name,
       nullptr
     )
   );
-  if (handle == file::null)
+  if (handle == file_t::null)
   {
     error.assign(::GetLastError(), std::system_category());
   }
@@ -77,7 +77,7 @@ file::native_handle open_impl (const std::string &name,
 
 #else
 
-constexpr int to_lib_mode (file::open_mode mode) noexcept
+constexpr int to_lib_mode (file_t::open_mode mode) noexcept
 {
   int rv = 0;
 
@@ -108,12 +108,12 @@ constexpr int to_lib_mode (file::open_mode mode) noexcept
 }
 
 
-inline file::native_handle open_impl (const std::string &name,
+inline file_t::native_handle open_impl (const std::string &name,
   int open_mode,
   std::error_code &error) noexcept
 {
-  file::native_handle handle = ::open(name.c_str(), open_mode, 0600);
-  if (handle == file::null)
+  file_t::native_handle handle = ::open(name.c_str(), open_mode, 0600);
+  if (handle == file_t::null)
   {
     error.assign(errno, std::generic_category());
   }
@@ -125,7 +125,7 @@ inline file::native_handle open_impl (const std::string &name,
 } // namespace
 
 
-file file::create (const std::string &name, open_mode mode,
+file_t file_t::create (const std::string &name, open_mode mode,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -141,7 +141,7 @@ file file::create (const std::string &name, open_mode mode,
 }
 
 
-file file::open (const std::string &name, open_mode mode,
+file_t file_t::open (const std::string &name, open_mode mode,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -159,7 +159,7 @@ file file::open (const std::string &name, open_mode mode,
 }
 
 
-file file::open_or_create (const std::string &name, open_mode mode,
+file_t file_t::open_or_create (const std::string &name, open_mode mode,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -178,7 +178,7 @@ file file::open_or_create (const std::string &name, open_mode mode,
 }
 
 
-file file::unique (std::string &name, std::error_code &error) noexcept
+file_t file_t::unique (std::string &name, std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
@@ -235,7 +235,7 @@ file file::unique (std::string &name, std::error_code &error) noexcept
 }
 
 
-void file::close (std::error_code &error) noexcept
+void file_t::close (std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
@@ -272,7 +272,7 @@ void file::close (std::error_code &error) noexcept
 }
 
 
-size_t file::write (const char *data, size_t size, std::error_code &error)
+size_t file_t::write (const char *data, size_t size, std::error_code &error)
   noexcept
 {
 #if __sal_os_windows
@@ -289,7 +289,7 @@ size_t file::write (const char *data, size_t size, std::error_code &error)
 
 #else
 
-  auto p = static_cast<char const *>(data);
+  auto p = static_cast<const char *>(data);
   auto left = size;
 
   for (errno = EINTR;  left && errno == EINTR;  /**/)
@@ -313,7 +313,7 @@ size_t file::write (const char *data, size_t size, std::error_code &error)
 }
 
 
-size_t file::read (char *data, size_t size, std::error_code &error) noexcept
+size_t file_t::read (char *data, size_t size, std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
@@ -345,7 +345,7 @@ size_t file::read (char *data, size_t size, std::error_code &error) noexcept
 }
 
 
-int64_t file::seek (int64_t offset, seek_dir whence, std::error_code &error)
+int64_t file_t::seek (int64_t offset, seek_dir whence, std::error_code &error)
   noexcept
 {
 #if __sal_os_windows

@@ -11,10 +11,10 @@
  *
  * If for specific situation spinlock still makes sense, this implementation
  * allows to customize loop while waiting by using callable yielding policy as
- * parameter for spinlock::lock(SpinYield). There are some pre-implemented
+ * parameter for spinlock_t::lock(SpinYield). There are some pre-implemented
  * policies (busy_spin, yield_spin, adaptive_spin).
  *
- * \note Before deciding whether to use spinlock or std::mutex do profiling.
+ * \note Before deciding whether to use spinlock_t or std::mutex do profiling.
  */
 
 #include <sal/config.hpp>
@@ -27,14 +27,14 @@ namespace sal {
 __sal_begin
 
 
-/// Busy spinning policy for spinlock::lock(SpinYield)
+/// Busy spinning policy for spinlock_t::lock(SpinYield)
 inline void busy_spin (size_t iter_count) noexcept
 {
   (void)iter_count;
 }
 
 
-/// Remaining timeslice yielding policy for spinlock::lock(SpinYield)
+/// Remaining timeslice yielding policy for spinlock_t::lock(SpinYield)
 inline void yield_spin (size_t iter_count) noexcept
 {
   (void)iter_count;
@@ -43,9 +43,9 @@ inline void yield_spin (size_t iter_count) noexcept
 
 
 /**
- * Adaptive remaining timeslice yielding policy for spinlock::lock(SpinYield).
+ * Adaptive remaining timeslice yielding policy for spinlock_t::lock(SpinYield).
  *
- * Depending on how many times spinlock::lock() has spinned, it yields
+ * Depending on how many times spinlock_t::lock() has spinned, it yields
  * differently:
  *   - \a iter_count <= \a BusySpinCount
  *     Busy spinning
@@ -80,14 +80,14 @@ inline void adaptive_spin (size_t iter_count) noexcept
  * This API satisfies C++ Lockable concept i.e. it can be used with
  * std::lock_guard and std::unique_lock.
  */
-class spinlock
+class spinlock_t
 {
 public:
 
-  spinlock () = default;
+  spinlock_t () = default;
 
-  spinlock (const spinlock &) = delete;
-  spinlock &operator= (const spinlock &) = delete;
+  spinlock_t (const spinlock_t &) = delete;
+  spinlock_t &operator= (const spinlock_t &) = delete;
 
 
   /// Try to lock. Returns true if succeeds immediately, false otherwise.

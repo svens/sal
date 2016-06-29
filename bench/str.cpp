@@ -1,6 +1,6 @@
 #include <bench/bench.hpp>
-#include <sal/c_str.hpp>
-#include <sal/fmtval.hpp>
+#include <sal/fmt.hpp>
+#include <sal/str.hpp>
 #include <cinttypes>
 #include <iostream>
 
@@ -8,7 +8,7 @@
 namespace {
 
 
-std::string func = "c_str";
+std::string func = "str";
 size_t count = 10'000'000;
 
 
@@ -19,11 +19,11 @@ int usage (const std::string message="")
     std::cerr << message << '\n' << std::endl;
   }
 
-  std::cerr << "c_str:"
+  std::cerr << "str:"
     << "\n  --help        this page"
     << "\n  --count=int   number of iterations"
     << "\n  --func=Func   function to test"
-    << "\n                possible values: c_str, printf"
+    << "\n                possible values: str, printf"
     << std::endl;
 
   return EXIT_FAILURE;
@@ -88,7 +88,7 @@ void use_printf ()
     "; double=%g"
     "; ldouble=%Lg"
     "; ptr=%p"
-    "; c_str='%s'"
+    "; str='%s'"
     "; str='%s'",
     (p_bool ? "true" : "false"),
     p_char,
@@ -121,10 +121,10 @@ void use_printf ()
 }
 
 
-void use_c_str ()
+void use_str ()
 {
-  sal::c_str<1024> c_str;
-  c_str << "bool=" << p_bool
+  sal::str_t<1024> str;
+  str << "bool=" << p_bool
     << "; char=" << p_char
     << "; schar=" << p_schar
     << "; uchar=" << p_uchar
@@ -144,13 +144,13 @@ void use_c_str ()
     << "; double=" << p_double
     << "; ldouble=" << p_ldouble
     << "; ptr=" << p_ptr
-    << "; c_str='" << p_cstr << '\''
+    << "; str='" << p_cstr << '\''
     << "; str='" << p_str << '\''
   ;
 
   if (count == 1)
   {
-    printf("%s\n", c_str.get());
+    printf("%s\n", str.get());
   }
 }
 
@@ -158,7 +158,7 @@ void use_c_str ()
 } // namespace
 
 
-int bench::c_str (const arg_list &args)
+int bench::str (const arg_list &args)
 {
   for (auto &arg: args)
   {
@@ -180,9 +180,9 @@ int bench::c_str (const arg_list &args)
     }
   }
 
-  if (func == "c_str")
+  if (func == "str")
   {
-    return worker(use_c_str);
+    return worker(use_str);
   }
   else if (func == "printf")
   {
