@@ -28,7 +28,8 @@ if(SAL_COVERAGE)
   endif()
   set(LCOV_ARGS
     --quiet
-    --directory ${PROJECT_SOURCE_DIR}
+    --base-directory ${PROJECT_SOURCE_DIR}
+    --directory ${CMAKE_BINARY_DIR}
     --rc lcov_branch_coverage=1
   )
 
