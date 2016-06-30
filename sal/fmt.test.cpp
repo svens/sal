@@ -1,4 +1,4 @@
-#include <sal/fmtval.hpp>
+#include <sal/fmt.hpp>
 #include <sal/common.test.hpp>
 #include <limits>
 
@@ -286,7 +286,7 @@ void load_zero_max (class_with_ostream &) noexcept
 
 
 template <typename T>
-struct fmt_v
+struct fmt
   : public sal_test::with_type<T>
 {
   static constexpr size_t view_size = 128;
@@ -301,7 +301,7 @@ struct fmt_v
   void test_hex (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::fmt_v(sal::hex(value), view, view + view_size);
+    auto end = sal::fmt(sal::hex(value), view, view + view_size);
     EXPECT_EQ(expected_hex(value), std::string(view, end));
   }
 
@@ -315,7 +315,7 @@ struct fmt_v
   void test_oct (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::fmt_v(sal::oct(value), view, view + view_size);
+    auto end = sal::fmt(sal::oct(value), view, view + view_size);
     EXPECT_EQ(expected_oct(value), std::string(view, end));
   }
 
@@ -329,7 +329,7 @@ struct fmt_v
   void test_bin (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::fmt_v(sal::bin(value), view, view + view_size);
+    auto end = sal::fmt(sal::bin(value), view, view + view_size);
     EXPECT_EQ(expected_bin(value), std::string(view, end));
   }
 
@@ -338,7 +338,7 @@ struct fmt_v
   {
     // test default view
     char view[view_size];
-    auto end = sal::fmt_v(value, view, view + view_size);
+    auto end = sal::fmt(value, view, view + view_size);
     EXPECT_GE(view + view_size, end);
     EXPECT_EQ(expected(value), std::string(view, end));
 
@@ -354,7 +354,7 @@ struct fmt_v
     char view[view_size];
     *std::fill_n(view, view_size - 1, '.') = '\0';
     const std::string original = view;
-    EXPECT_LT(view, sal::fmt_v(value, view, view));
+    EXPECT_LT(view, sal::fmt(value, view, view));
     EXPECT_EQ(original, view);
   }
 
@@ -364,10 +364,10 @@ struct fmt_v
     char view[view_size];
     *std::fill_n(view, view_size - 1, '.') = '\0';
     const std::string original = view;
-    auto original_end = sal::fmt_v(value, view, view);
+    auto original_end = sal::fmt(value, view, view);
     auto original_size = original_end - view;
     EXPECT_EQ(original_end,
-      sal::fmt_v(value, view, view + original_size - 1)
+      sal::fmt(value, view, view + original_size - 1)
     );
     EXPECT_EQ(original, view);
   }
@@ -378,28 +378,28 @@ struct fmt_v
     char view[view_size];
     *std::fill_n(view, view_size - 1, '.') = '\0';
     const std::string original = view;
-    auto original_end = sal::fmt_v(value, view, view);
+    auto original_end = sal::fmt(value, view, view);
     auto original_size = original_end - view;
 
     // [first,last)
     {
-      EXPECT_EQ(original_end, sal::fmt_v(value, view, view + original_size));
+      EXPECT_EQ(original_end, sal::fmt(value, view, view + original_size));
       EXPECT_EQ(expected(value), std::string(view, original_size));
     }
 
     // view[]
     {
-      EXPECT_EQ(original_end, sal::fmt_v(value, view));
+      EXPECT_EQ(original_end, sal::fmt(value, view));
       EXPECT_EQ(expected(value), std::string(view, original_size));
     }
   }
 };
 
 
-TYPED_TEST_CASE_P(fmt_v);
+TYPED_TEST_CASE_P(fmt);
 
 
-TYPED_TEST_P(fmt_v, value_min)
+TYPED_TEST_P(fmt, value_min)
 {
   TypeParam value;
   load_min(value);
@@ -407,7 +407,7 @@ TYPED_TEST_P(fmt_v, value_min)
 }
 
 
-TYPED_TEST_P(fmt_v, value_between_min_zero)
+TYPED_TEST_P(fmt, value_between_min_zero)
 {
   TypeParam value;
   load_min_zero(value);
@@ -415,7 +415,7 @@ TYPED_TEST_P(fmt_v, value_between_min_zero)
 }
 
 
-TYPED_TEST_P(fmt_v, value_zero)
+TYPED_TEST_P(fmt, value_zero)
 {
   TypeParam value;
   load_zero(value);
@@ -423,7 +423,7 @@ TYPED_TEST_P(fmt_v, value_zero)
 }
 
 
-TYPED_TEST_P(fmt_v, value_between_zero_max)
+TYPED_TEST_P(fmt, value_between_zero_max)
 {
   TypeParam value;
   load_zero_max(value);
@@ -431,7 +431,7 @@ TYPED_TEST_P(fmt_v, value_between_zero_max)
 }
 
 
-TYPED_TEST_P(fmt_v, value_max)
+TYPED_TEST_P(fmt, value_max)
 {
   TypeParam value;
   load_max(value);
@@ -439,7 +439,7 @@ TYPED_TEST_P(fmt_v, value_max)
 }
 
 
-TYPED_TEST_P(fmt_v, buffer_zero)
+TYPED_TEST_P(fmt, buffer_zero)
 {
   TypeParam value;
   load_zero_max(value);
@@ -447,7 +447,7 @@ TYPED_TEST_P(fmt_v, buffer_zero)
 }
 
 
-TYPED_TEST_P(fmt_v, buffer_one_less)
+TYPED_TEST_P(fmt, buffer_one_less)
 {
   TypeParam value;
   load_zero_max(value);
@@ -455,7 +455,7 @@ TYPED_TEST_P(fmt_v, buffer_one_less)
 }
 
 
-TYPED_TEST_P(fmt_v, buffer_exact)
+TYPED_TEST_P(fmt, buffer_exact)
 {
   TypeParam value;
   load_zero_max(value);
@@ -463,7 +463,7 @@ TYPED_TEST_P(fmt_v, buffer_exact)
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(fmt_v,
+REGISTER_TYPED_TEST_CASE_P(fmt,
   value_min,
   value_between_min_zero,
   value_zero,
@@ -488,7 +488,7 @@ using types = testing::Types<bool,
 >;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(fmtval, fmt_v, types);
+INSTANTIATE_TYPED_TEST_CASE_P(fmt, fmt, types);
 
 
 } // namespace dest_is_range
@@ -497,77 +497,77 @@ INSTANTIATE_TYPED_TEST_CASE_P(fmtval, fmt_v, types);
 namespace mix_array_and_range {
 
 
-using fmt_v = sal_test::with_value<bool>;
+using fmt = sal_test::with_value<bool>;
 
 
-TEST_P(fmt_v, empty_array_to_range)
+TEST_P(fmt, empty_array_to_range)
 {
   char source[] = "", dest[128];
-  auto end = sal::fmt_v(source, dest, dest + sizeof(dest));
+  auto end = sal::fmt(source, dest, dest + sizeof(dest));
   EXPECT_EQ(dest, end);
 }
 
 
-TEST_P(fmt_v, array_to_bigger_range)
+TEST_P(fmt, array_to_bigger_range)
 {
   char source[] = "12", dest[] = "abc";
-  auto end = sal::fmt_v(source, dest, dest + sizeof(dest) - 1);
+  auto end = sal::fmt(source, dest, dest + sizeof(dest) - 1);
   ASSERT_EQ(dest + sizeof(source) - 1, end);
   *end = '\0';
   EXPECT_STREQ("12", dest);
 }
 
 
-TEST_P(fmt_v, array_to_equal_range)
+TEST_P(fmt, array_to_equal_range)
 {
   char source[] = "123", dest[] = "abc";
-  auto end = sal::fmt_v(source, dest, dest + sizeof(dest) - 1);
+  auto end = sal::fmt(source, dest, dest + sizeof(dest) - 1);
   ASSERT_EQ(dest + sizeof(source) - 1, end);
   EXPECT_STREQ("123", dest);
 }
 
 
-TEST_P(fmt_v, array_to_smaller_range)
+TEST_P(fmt, array_to_smaller_range)
 {
   char source[] = "123", dest[] = "ab";
-  auto end = sal::fmt_v(source, dest, dest + sizeof(dest) - 1);
+  auto end = sal::fmt(source, dest, dest + sizeof(dest) - 1);
   ASSERT_EQ(dest + sizeof(source) - 1, end);
   EXPECT_STREQ("ab", dest);
 }
 
 
-TEST_P(fmt_v, empty_array_to_array)
+TEST_P(fmt, empty_array_to_array)
 {
   char source[] = "", dest[128];
-  auto end = sal::fmt_v(source, dest);
+  auto end = sal::fmt(source, dest);
   EXPECT_EQ(dest, end);
 }
 
 
-TEST_P(fmt_v, array_to_bigger_array)
+TEST_P(fmt, array_to_bigger_array)
 {
   char source[] = "12", dest[] = "abc";
-  auto end = sal::fmt_v(source, dest);
+  auto end = sal::fmt(source, dest);
   ASSERT_EQ(dest + sizeof(source) - 1, end);
   *end = '\0';
   EXPECT_STREQ("12", dest);
 }
 
 
-TEST_P(fmt_v, array_to_equal_array)
+TEST_P(fmt, array_to_equal_array)
 {
   char source[] = "123", dest[] = "abc";
-  auto end = sal::fmt_v(source, dest);
+  auto end = sal::fmt(source, dest);
   ASSERT_EQ(dest + sizeof(source) - 1, end);
   EXPECT_STREQ("123", dest);
 }
 
 
-TEST_P(fmt_v, array_to_smaller_array)
+TEST_P(fmt, array_to_smaller_array)
 {
   // dest final NUL will be overwritten by '3'
   char source[] = "123", dest[] = "ab";
-  auto end = sal::fmt_v(source, dest);
+  auto end = sal::fmt(source, dest);
   ASSERT_EQ(dest + sizeof(dest), end);
   EXPECT_EQ("123", std::string(dest, end));
 
@@ -575,7 +575,7 @@ TEST_P(fmt_v, array_to_smaller_array)
 }
 
 
-INSTANTIATE_TEST_CASE_P(fmtval, fmt_v, testing::Values(true));
+INSTANTIATE_TEST_CASE_P(fmt, fmt, testing::Values(true));
 
 
 } // namespace mix_array_and_range

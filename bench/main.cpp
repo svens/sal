@@ -5,7 +5,7 @@
 
 bench::func_list bench_func =
 {
-  { "c_str", &bench::c_str },
+  { "str", &bench::str },
   { "queue", &bench::queue },
   { "spinlock", &bench::spinlock },
 };

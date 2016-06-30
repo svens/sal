@@ -23,8 +23,8 @@ std::string create_random_file (const std::string &test_name)
 {
   std::string name = "sal_test." + test_name + ".XXXXXX";
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::unique(name));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::unique(name));
   EXPECT_TRUE(file.is_open());
 
   return name;
@@ -33,7 +33,7 @@ std::string create_random_file (const std::string &test_name)
 
 TEST_F(file, ctor)
 {
-  sal::file file;
+  sal::file_t file;
   EXPECT_FALSE(file.is_open());
 }
 
@@ -43,8 +43,8 @@ TEST_F(file, create_success)
   auto name = create_random_file(case_name);
   std::remove(name.c_str());
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::create(name, in_out));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::create(name, in_out));
   EXPECT_TRUE(file.is_open());
   file.close();
 
@@ -56,8 +56,8 @@ TEST_F(file, create_fail)
 {
   auto name = create_random_file(case_name);
 
-  sal::file file;
-  EXPECT_THROW(file = sal::file::create(name, in_out), std::system_error);
+  sal::file_t file;
+  EXPECT_THROW(file = sal::file_t::create(name, in_out), std::system_error);
   EXPECT_FALSE(file.is_open());
 
   std::remove(name.c_str());
@@ -70,7 +70,7 @@ TEST_F(file, create_no_mode)
   std::remove(name.c_str());
 
   std::ios::openmode no_mode{};
-  auto file = sal::file::create(name, no_mode);
+  auto file = sal::file_t::create(name, no_mode);
   EXPECT_TRUE(file.is_open());
 
   std::remove(name.c_str());
@@ -81,8 +81,8 @@ TEST_F(file, open_success)
 {
   auto name = create_random_file(case_name);
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, in_out));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, in_out));
   EXPECT_TRUE(file.is_open());
   file.close();
 
@@ -95,8 +95,8 @@ TEST_F(file, open_fail)
   auto name = create_random_file(case_name);
   std::remove(name.c_str());
 
-  sal::file file;
-  EXPECT_THROW(file = sal::file::open(name, in_out), std::system_error);
+  sal::file_t file;
+  EXPECT_THROW(file = sal::file_t::open(name, in_out), std::system_error);
   EXPECT_FALSE(file.is_open());
 }
 
@@ -105,8 +105,8 @@ TEST_F(file, open_or_create_success_open)
 {
   auto name = create_random_file(case_name);
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open_or_create(name, in_out));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open_or_create(name, in_out));
   EXPECT_TRUE(file.is_open());
   file.close();
 
@@ -119,8 +119,8 @@ TEST_F(file, open_or_create_success_create)
   auto name = create_random_file(case_name);
   std::remove(name.c_str());
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open_or_create(name, in_out));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open_or_create(name, in_out));
   EXPECT_TRUE(file.is_open());
   file.close();
 
@@ -130,9 +130,9 @@ TEST_F(file, open_or_create_success_create)
 
 TEST_F(file, open_or_create_fail_permission_denied)
 {
-  sal::file file;
+  sal::file_t file;
   EXPECT_THROW(
-    file = sal::file::open_or_create(inaccessible_file_name, in_out);
+    file = sal::file_t::open_or_create(inaccessible_file_name, in_out);
     , std::system_error
   );
   EXPECT_FALSE(file.is_open());
@@ -143,8 +143,8 @@ TEST_F(file, unique_success)
 {
   std::string name = "sal_test." + case_name + ".XXXXXX";
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::unique(name));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::unique(name));
   EXPECT_TRUE(file.is_open());
   file.close();
 
@@ -159,8 +159,8 @@ TEST_F(file, unique_missing_pattern_success)
 {
   std::string name = "sal_test." + case_name;
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::unique(name));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::unique(name));
   EXPECT_TRUE(file.is_open());
   file.close();
 
@@ -172,9 +172,9 @@ TEST_F(file, unique_missing_pattern_success)
 
 TEST_F(file, unique_fail_permission_denied)
 {
-  sal::file file;
+  sal::file_t file;
   auto name = inaccessible_file_name;
-  EXPECT_THROW(file = sal::file::unique(name), std::system_error);
+  EXPECT_THROW(file = sal::file_t::unique(name), std::system_error);
   EXPECT_FALSE(file.is_open());
 }
 
@@ -182,8 +182,8 @@ TEST_F(file, unique_fail_permission_denied)
 TEST_F(file, close_success)
 {
   std::string name = "sal_test." + case_name + ".XXXXXX";
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::unique(name));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::unique(name));
   EXPECT_TRUE(file.is_open());
   file.close();
   EXPECT_FALSE(file.is_open());
@@ -194,7 +194,7 @@ TEST_F(file, close_success)
 
 TEST_F(file, close_fail)
 {
-  sal::file file;
+  sal::file_t file;
   EXPECT_THROW(file.close(), std::system_error);
   EXPECT_FALSE(file.is_open());
 }
@@ -204,11 +204,11 @@ TEST_F(file, swap)
 {
   auto name = create_random_file(case_name);
 
-  auto a = sal::file::open(name, in_out);
+  auto a = sal::file_t::open(name, in_out);
   EXPECT_TRUE(a.is_open());
 
   using std::swap;
-  sal::file b;
+  sal::file_t b;
   swap(a, b);
 
   EXPECT_FALSE(a.is_open());
@@ -223,7 +223,7 @@ TEST_F(file, move_to_closed)
 {
   auto name = create_random_file(case_name);
 
-  auto a = sal::file::open(name, in_out);
+  auto a = sal::file_t::open(name, in_out);
   EXPECT_TRUE(a.is_open());
 
   auto b = std::move(a);
@@ -239,11 +239,11 @@ TEST_F(file, move_to_closed)
 TEST_F(file, move_to_opened)
 {
   auto a_name = create_random_file(case_name);
-  auto a = sal::file::open(a_name, in_out);
+  auto a = sal::file_t::open(a_name, in_out);
   EXPECT_TRUE(a.is_open());
 
   auto b_name = create_random_file(case_name);
-  auto b = sal::file::open(a_name, in_out);
+  auto b = sal::file_t::open(a_name, in_out);
   EXPECT_TRUE(b.is_open());
 
   b = std::move(a);
@@ -266,8 +266,8 @@ TEST_F(file, write_out_success)
   second += '\n';
 
   {
-    sal::file file;
-    EXPECT_NO_THROW(file = sal::file::open(name, std::ios::out));
+    sal::file_t file;
+    EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
     EXPECT_TRUE(file.is_open());
     EXPECT_EQ(first.size(), file.write(first.c_str(), first.size()));
     EXPECT_EQ(second.size(), file.write(second.c_str(), second.size()));
@@ -289,8 +289,8 @@ TEST_F(file, write_trunc_success)
   auto name = create_random_file(case_name);
 
   {
-    sal::file file;
-    EXPECT_NO_THROW(file = sal::file::open(name, std::ios::out));
+    sal::file_t file;
+    EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
     EXPECT_TRUE(file.is_open());
     auto d = case_name + "first\n";
     EXPECT_EQ(d.size(), file.write(d.data(), d.size()));
@@ -304,9 +304,9 @@ TEST_F(file, write_trunc_success)
   fin.close();
 
   {
-    sal::file file;
+    sal::file_t file;
     EXPECT_NO_THROW(
-      file = sal::file::open(name, std::ios::out | std::ios::trunc)
+      file = sal::file_t::open(name, std::ios::out | std::ios::trunc)
     );
     EXPECT_TRUE(file.is_open());
     auto d = case_name + "second\n";
@@ -328,8 +328,8 @@ TEST_F(file, write_append_success)
   auto name = create_random_file(case_name);
 
   {
-    sal::file file;
-    EXPECT_NO_THROW(file = sal::file::open(name, std::ios::out));
+    sal::file_t file;
+    EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
     EXPECT_TRUE(file.is_open());
     auto d = case_name + "first\n";
     EXPECT_EQ(d.size(), file.write(d.data(), d.size()));
@@ -342,9 +342,9 @@ TEST_F(file, write_append_success)
   fin.close();
 
   {
-    sal::file file;
+    sal::file_t file;
     EXPECT_NO_THROW(
-      file = sal::file::open(name, std::ios::out | std::ios::app)
+      file = sal::file_t::open(name, std::ios::out | std::ios::app)
     );
     EXPECT_TRUE(file.is_open());
     auto d = case_name + "second\n";
@@ -367,8 +367,8 @@ TEST_F(file, write_in_fail)
 {
   auto name = create_random_file(case_name);
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, std::ios::in));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::in));
   EXPECT_TRUE(file.is_open());
   EXPECT_THROW(file.write(case_name.data(), case_name.size()),
     std::system_error
@@ -383,8 +383,8 @@ TEST_F(file, write_closed_fail)
 {
   auto name = create_random_file(case_name);
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, std::ios::out));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
   EXPECT_TRUE(file.is_open());
   file.close();
   EXPECT_FALSE(file.is_open());
@@ -402,8 +402,8 @@ TEST_F(file, read_in_success)
   auto name = create_random_file(case_name);
   std::ofstream(name) << case_name;
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, std::ios::in));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::in));
   EXPECT_TRUE(file.is_open());
 
   char line[1024];
@@ -420,8 +420,8 @@ TEST_F(file, read_eof_success)
   auto name = create_random_file(case_name);
   std::ofstream(name) << case_name;
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, std::ios::in));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::in));
   EXPECT_TRUE(file.is_open());
 
   char line[1024];
@@ -443,8 +443,8 @@ TEST_F(file, read_out_fail)
   auto name = create_random_file(case_name);
   std::ofstream(name) << case_name;
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, std::ios::out));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
   EXPECT_TRUE(file.is_open());
 
   char line[1024];
@@ -460,8 +460,8 @@ TEST_F(file, seek_success)
   auto name = create_random_file(case_name);
   std::ofstream(name, std::ios::binary) << "xxxx\n";
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, std::ios::out));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
   EXPECT_TRUE(file.is_open());
 
   int64_t file_pos;
@@ -494,8 +494,8 @@ TEST_F(file, seek_past_end_success)
   auto name = create_random_file(case_name);
   std::ofstream(name) << "te";
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, in_out));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, in_out));
   EXPECT_TRUE(file.is_open());
 
   int64_t file_pos;
@@ -528,8 +528,8 @@ TEST_F(file, seek_before_beg_fails)
 {
   auto name = create_random_file(case_name);
 
-  sal::file file;
-  EXPECT_NO_THROW(file = sal::file::open(name, std::ios::in));
+  sal::file_t file;
+  EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::in));
   EXPECT_TRUE(file.is_open());
 
   int64_t file_pos;

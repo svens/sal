@@ -10,35 +10,35 @@ namespace sal {
 __sal_begin
 
 
-struct queue_spsc_hook
+struct spsc_t
 {
   volatile void *hook_next;
   volatile uint32_t hook_seq;
 
-  template <typename T, queue_spsc_hook T::*Hook>
-  class queue;
+  template <typename T, spsc_t T::*Hook>
+  class queue_t;
 };
 
 
-template <typename T, queue_spsc_hook T::*Hook>
-class queue_spsc_hook::queue
+template <typename T, spsc_t T::*Hook>
+class spsc_t::queue_t
 {
 public:
 
-  queue (const queue &) = delete;
-  queue &operator= (const queue &) = delete;
+  queue_t (const queue_t &) = delete;
+  queue_t &operator= (const queue_t &) = delete;
 
 
-  queue () noexcept = default;
+  queue_t () noexcept = default;
 
 
-  queue (queue &&that) noexcept
+  queue_t (queue_t &&that) noexcept
   {
     operator=(std::move(that));
   }
 
 
-  queue &operator= (queue &&that) noexcept
+  queue_t &operator= (queue_t &&that) noexcept
   {
     tail_ = that.tail_;
     head_ = that.head_;

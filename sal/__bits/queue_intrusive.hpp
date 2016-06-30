@@ -10,37 +10,37 @@ namespace sal {
 __sal_begin
 
 
-struct queue_intrusive_hook
+struct intrusive_t
 {
   void *next;
 
-  template <typename T, queue_intrusive_hook T::*Hook>
-  class queue;
+  template <typename T, intrusive_t T::*Hook>
+  class queue_t;
 };
 
 
-template <typename T, queue_intrusive_hook T::*Hook>
-class queue_intrusive_hook::queue
+template <typename T, intrusive_t T::*Hook>
+class intrusive_t::queue_t
 {
 public:
 
-  queue (const queue &) = delete;
-  queue &operator= (const queue &) = delete;
+  queue_t (const queue_t &) = delete;
+  queue_t &operator= (const queue_t &) = delete;
 
 
-  queue () noexcept
+  queue_t () noexcept
   {
     next_of(head_) = nullptr;
   }
 
 
-  queue (queue &&that) noexcept
+  queue_t (queue_t &&that) noexcept
   {
     operator=(std::move(that));
   }
 
 
-  queue &operator= (queue &&that) noexcept
+  queue_t &operator= (queue_t &&that) noexcept
   {
     next_of(head_) = next_of(that.head_);
     tail_ = that.tail_ == that.head_ ? head_ : that.tail_;

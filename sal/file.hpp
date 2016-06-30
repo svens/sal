@@ -23,7 +23,7 @@ __sal_begin
  *
  * There can be only single owner for each file (like std::unique_ptr).
  */
-class file
+class file_t
 {
 public:
 
@@ -42,61 +42,61 @@ public:
 
   /// Create new file with \a name. Must not exist before call.
   /// On failure \a error has reason and file with null is returned
-  static file create (std::string const &name, open_mode mode,
+  static file_t create (const std::string &name, open_mode mode,
     std::error_code &error
   ) noexcept;
 
 
   /// \copybrief create
   /// \throws std::system_error on error
-  static file create (std::string const &name, open_mode mode)
+  static file_t create (const std::string &name, open_mode mode)
   {
     std::error_code error;
     if (auto f = create(name, mode, error))
     {
       return f;
     }
-    throw_system_error(error, "file::create: ", name);
+    throw_system_error(error, "file_t::create: ", name);
   }
 
 
   /// Open file with \a name. File must exist
   /// On failure \a error has reason and file with null is returned
-  static file open (std::string const &name, open_mode mode,
+  static file_t open (const std::string &name, open_mode mode,
     std::error_code &error
   ) noexcept;
 
 
   /// \copybrief open
   /// \throws std::system_error on error
-  static file open (std::string const &name, open_mode mode)
+  static file_t open (const std::string &name, open_mode mode)
   {
     std::error_code error;
     if (auto f = open(name, mode, error))
     {
       return f;
     }
-    throw_system_error(error, "file::open: ", name);
+    throw_system_error(error, "file_t::open: ", name);
   }
 
 
   /// Open file with \a name. If it does not exist, it will be created.
   /// On failure \a error has reason and file with null is returned
-  static file open_or_create (std::string const &name, open_mode mode,
+  static file_t open_or_create (const std::string &name, open_mode mode,
     std::error_code &error
   ) noexcept;
 
 
   /// \copybrief open_or_create
   /// \throws std::system_error on error
-  static file open_or_create (std::string const &name, open_mode mode)
+  static file_t open_or_create (const std::string &name, open_mode mode)
   {
     std::error_code error;
     if (auto f = open_or_create(name, mode, error))
     {
       return f;
     }
-    throw_system_error(error, "file::open_or_create: ", name);
+    throw_system_error(error, "file_t::open_or_create: ", name);
   }
 
 
@@ -106,27 +106,26 @@ public:
   /// of returned \a name (even having prefix specified by original \a
   /// name). File can be created in different directory than current, if
   /// \a name has path on entry.
-  static file unique (std::string &name, std::error_code &error) noexcept;
+  static file_t unique (std::string &name, std::error_code &error) noexcept;
 
 
   /// \copydoc unique
   /// \throws std::system_error on error
-  static file unique (std::string &name)
+  static file_t unique (std::string &name)
   {
     std::error_code error;
     if (auto f = unique(name, error))
     {
       return f;
     }
-    throw_system_error(error, "file::unique: ", name);
+    throw_system_error(error, "file_t::unique: ", name);
   }
 
 
-  file ()
-  {}
+  file_t () noexcept = default;
 
 
-  ~file () noexcept
+  ~file_t () noexcept
   {
     ensure_closed();
   }
@@ -134,7 +133,7 @@ public:
 
   /// Create new file from \a that. Ownership of file handle in \a that
   /// moves to \a this
-  file (file &&that) noexcept
+  file_t (file_t &&that) noexcept
     : handle_(that.handle_)
   {
     that.handle_ = null;
@@ -142,7 +141,7 @@ public:
 
 
   /// Move ownerhsip of \a that to \a this.
-  file &operator= (file &&that) noexcept
+  file_t &operator= (file_t &&that) noexcept
   {
     ensure_closed();
     swap(*this, that);
@@ -151,7 +150,7 @@ public:
 
 
   /// Swap handles of \a a and \a b
-  friend inline void swap (file &a, file &b) noexcept
+  friend inline void swap (file_t &a, file_t &b) noexcept
   {
     using std::swap;
     swap(a.handle_, b.handle_);
@@ -170,7 +169,7 @@ public:
     close(error);
     if (error)
     {
-      throw_system_error(error, "file::close");
+      throw_system_error(error, "file_t::close");
     }
   }
 
@@ -203,7 +202,7 @@ public:
     auto result = write(data, size, error);
     if (error)
     {
-      throw_system_error(error, "file::write");
+      throw_system_error(error, "file_t::write");
     }
     return result;
   }
@@ -223,7 +222,7 @@ public:
     auto result = read(data, size, error);
     if (error)
     {
-      throw_system_error(error, "file::read");
+      throw_system_error(error, "file_t::read");
     }
     return result;
   }
@@ -247,7 +246,7 @@ public:
     auto result = seek(offset, whence, error);
     if (error)
     {
-      throw_system_error(error, "file::seek");
+      throw_system_error(error, "file_t::seek");
     }
     return result;
   }
@@ -257,12 +256,12 @@ private:
 
     native_handle handle_ = null;
 
-    file (native_handle handle)
+    file_t (native_handle handle)
         : handle_(handle)
     {}
 
-    file (file const &) = delete;
-    file &operator= (file const &) = delete;
+    file_t (const file_t &) = delete;
+    file_t &operator= (const file_t &) = delete;
 
     void ensure_closed () noexcept
     {

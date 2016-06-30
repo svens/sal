@@ -13,14 +13,14 @@ struct test
   {
     QueueHook hook;
   };
-  using queue = sal::queue<foo, QueueHook, &foo::hook>;
+  using queue = sal::queue_t<foo, QueueHook, &foo::hook>;
 };
 
 
 using types = testing::Types<
-  sal::queue_intrusive_hook,
-  sal::queue_mpsc_hook,
-  sal::queue_spsc_hook
+  sal::intrusive_t,
+  sal::mpsc_t,
+  sal::spsc_t
 >;
 
 

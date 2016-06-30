@@ -34,7 +34,7 @@ constexpr inline auto make_iterator (It *it) noexcept
 
 // helper: [first,last) -> d_first unless doesn't fit
 template <typename InputIt, typename ForwardIt>
-inline ForwardIt copy_s (InputIt first, InputIt last,
+inline ForwardIt copy (InputIt first, InputIt last,
   ForwardIt d_first, ForwardIt d_last) noexcept
 {
   auto end = d_first + (last - first);
@@ -48,37 +48,37 @@ inline ForwardIt copy_s (InputIt first, InputIt last,
 
 
 // bool
-inline char *fmt_v (bool value, char *first, char *last) noexcept
+inline char *fmt (bool value, char *first, char *last) noexcept
 {
   if (value)
   {
     static constexpr char s[] = "true";
-    return copy_s(s, s + sizeof(s) - 1, first, last);
+    return copy(s, s + sizeof(s) - 1, first, last);
   }
 
   static constexpr char s[] = "false";
-  return copy_s(s, s + sizeof(s) - 1, first, last);
+  return copy(s, s + sizeof(s) - 1, first, last);
 }
 
 
 // char
-inline char *fmt_v (char value, char *first, char *last) noexcept
+inline char *fmt (char value, char *first, char *last) noexcept
 {
-  return copy_s(&value, &value + 1, first, last);
+  return copy(&value, &value + 1, first, last);
 }
 
 
 // signed char
-inline char *fmt_v (signed char value, char *first, char *last) noexcept
+inline char *fmt (signed char value, char *first, char *last) noexcept
 {
-  return fmt_v(static_cast<char>(value), first, last);
+  return fmt(static_cast<char>(value), first, last);
 }
 
 
 // unsigned char
-inline char *fmt_v (unsigned char value, char *first, char *last) noexcept
+inline char *fmt (unsigned char value, char *first, char *last) noexcept
 {
-  return fmt_v(static_cast<char>(value), first, last);
+  return fmt(static_cast<char>(value), first, last);
 }
 
 
@@ -117,7 +117,7 @@ inline unsigned digit_count (uint64_t value) noexcept
 
 
 // uint64_t
-inline char *fmt_v (uint64_t value, char *first, char *last) noexcept
+inline char *fmt (uint64_t value, char *first, char *last) noexcept
 {
   // https://www.facebook.com/notes/facebook-engineering/three-optimization-tips-for-c/10151361643253920
 
@@ -158,14 +158,14 @@ inline char *fmt_v (uint64_t value, char *first, char *last) noexcept
 
 
 // int64_t
-inline char *fmt_v (int64_t value, char *first, char *last) noexcept
+inline char *fmt (int64_t value, char *first, char *last) noexcept
 {
   if (value > -1)
   {
-    return fmt_v(static_cast<uint64_t>(value), first, last);
+    return fmt(static_cast<uint64_t>(value), first, last);
   }
 
-  auto end = fmt_v(0 - static_cast<uint64_t>(value), first + 1, last);
+  auto end = fmt(0 - static_cast<uint64_t>(value), first + 1, last);
   if (end <= last)
   {
     *first = '-';
@@ -176,34 +176,34 @@ inline char *fmt_v (int64_t value, char *first, char *last) noexcept
 
 
 // uint32_t
-inline char *fmt_v (uint32_t value, char *first, char *last) noexcept
+inline char *fmt (uint32_t value, char *first, char *last) noexcept
 {
-  return fmt_v(static_cast<uint64_t>(value), first, last);
+  return fmt(static_cast<uint64_t>(value), first, last);
 }
 
 
 // int32_t
-inline char *fmt_v (int32_t value, char *first, char *last) noexcept
+inline char *fmt (int32_t value, char *first, char *last) noexcept
 {
-  return fmt_v(static_cast<int64_t>(value), first, last);
+  return fmt(static_cast<int64_t>(value), first, last);
 }
 
 
 // uint16_t
-inline char *fmt_v (uint16_t value, char *first, char *last) noexcept
+inline char *fmt (uint16_t value, char *first, char *last) noexcept
 {
-  return fmt_v(static_cast<uint64_t>(value), first, last);
+  return fmt(static_cast<uint64_t>(value), first, last);
 }
 
 
 // int16_t
-inline char *fmt_v (int16_t value, char *first, char *last) noexcept
+inline char *fmt (int16_t value, char *first, char *last) noexcept
 {
-  return fmt_v(static_cast<int64_t>(value), first, last);
+  return fmt(static_cast<int64_t>(value), first, last);
 }
 
 
-// wrap T into base_cast to signal fmt_v intention
+// wrap T into base_cast to signal fmt intention
 template <typename T, size_t Base>
 struct base_cast
 {
@@ -226,7 +226,7 @@ template <typename T> using bin = base_cast<T, 2>;
 
 
 template <typename T>
-inline char *fmt_v (hex<T> value, char *first, char *last) noexcept
+inline char *fmt (hex<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -250,7 +250,7 @@ inline char *fmt_v (hex<T> value, char *first, char *last) noexcept
 
 
 template <typename T>
-inline char *fmt_v (oct<T> value, char *first, char *last) noexcept
+inline char *fmt (oct<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -273,7 +273,7 @@ inline char *fmt_v (oct<T> value, char *first, char *last) noexcept
 
 
 template <typename T>
-inline char *fmt_v (bin<T> value, char *first, char *last) noexcept
+inline char *fmt (bin<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -309,23 +309,23 @@ inline char *fmt_g (const T &value, const char (&fmt)[FmtSize],
   // result might not fit into specified range, go through temporary buffer
   char data[max_result_size + 1];
   auto end = data + std::snprintf(data, sizeof(data), fmt, value);
-  return copy_s(data, end, first, last);
+  return copy(data, end, first, last);
 }
 
 
-inline char *fmt_v (float value, char *first, char *last) noexcept
+inline char *fmt (float value, char *first, char *last) noexcept
 {
   return fmt_g(value, "%g", first, last);
 }
 
 
-inline char *fmt_v (double value, char *first, char *last) noexcept
+inline char *fmt (double value, char *first, char *last) noexcept
 {
   return fmt_g(value, "%g", first, last);
 }
 
 
-inline char *fmt_v (const long double &value, char *first, char *last)
+inline char *fmt (const long double &value, char *first, char *last)
   noexcept
 {
   return fmt_g(value, "%Lg", first, last);
@@ -333,18 +333,18 @@ inline char *fmt_v (const long double &value, char *first, char *last)
 
 
 // nullptr
-inline char *fmt_v (std::nullptr_t /**/, char *first, char *last) noexcept
+inline char *fmt (std::nullptr_t /**/, char *first, char *last) noexcept
 {
   static constexpr char s[] = "(null)";
-  return copy_s(s, s + sizeof(s) - 1, first, last);
+  return copy(s, s + sizeof(s) - 1, first, last);
 }
 
 
 // const T *
 template <typename T>
-inline char *fmt_v (const T *value, char *first, char *last) noexcept
+inline char *fmt (const T *value, char *first, char *last) noexcept
 {
-  auto end = fmt_v(hex<uintptr_t>(reinterpret_cast<uintptr_t>(value)),
+  auto end = fmt(hex<uintptr_t>(reinterpret_cast<uintptr_t>(value)),
     first + 2, last
   );
 
@@ -359,40 +359,40 @@ inline char *fmt_v (const T *value, char *first, char *last) noexcept
 
 
 // const char *
-inline char *fmt_v (const char *value, char *first, char *last) noexcept
+inline char *fmt (const char *value, char *first, char *last) noexcept
 {
   return value
-    ? copy_s(value, value + std::strlen(value), first, last)
-    : fmt_v(nullptr, first, last)
+    ? copy(value, value + std::strlen(value), first, last)
+    : fmt(nullptr, first, last)
   ;
 }
 
 
 // T *
 template <typename T>
-inline char *fmt_v (T *value, char *first, char *last) noexcept
+inline char *fmt (T *value, char *first, char *last) noexcept
 {
-  return fmt_v(static_cast<const T *>(value), first, last);
+  return fmt(static_cast<const T *>(value), first, last);
 }
 
 
 // std::string
-inline char *fmt_v (const std::string &value, char *first, char *last)
+inline char *fmt (const std::string &value, char *first, char *last)
   noexcept
 {
-  return copy_s(value.begin(), value.end(), first, last);
+  return copy(value.begin(), value.end(), first, last);
 }
 
 
 // catch-all
 template <typename T>
-inline char *fmt_v (const T &value, char *first, char *last)
+inline char *fmt (const T &value, char *first, char *last)
 {
   // LCOV_EXCL_BR_START
   std::ostringstream oss;
   oss << value;
   // LCOV_EXCL_BR_STOP
-  return fmt_v(oss.str(), first, last);
+  return fmt(oss.str(), first, last);
 }
 
 
