@@ -51,7 +51,7 @@ struct foo
 {
   bool stop = false;
   QueueHook hook{};
-  using queue = sal::queue<foo, QueueHook, &foo::hook>;
+  using queue = sal::queue_t<foo, QueueHook, &foo::hook>;
 };
 
 
@@ -145,11 +145,11 @@ int worker ()
   {
     if (type == "mpsc")
     {
-      times.emplace_back(single_run<sal::queue_mpsc_hook>());
+      times.emplace_back(single_run<sal::mpsc_t>());
     }
     else if (type == "spsc")
     {
-      times.emplace_back(single_run<sal::queue_spsc_hook>());
+      times.emplace_back(single_run<sal::spsc_t>());
     }
   }
 

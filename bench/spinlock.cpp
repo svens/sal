@@ -118,7 +118,7 @@ int bench::spinlock (const arg_list &args)
 
   if (lock == "spinlock")
   {
-    sal::spinlock mutex;
+    sal::spinlock_t mutex;
     return worker(mutex);
   }
   else if (lock == "mutex")
