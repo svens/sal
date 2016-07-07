@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/logger/fwd.hpp>
+#include <sal/logger/event.hpp>
 
 
 namespace sal { namespace logger {
