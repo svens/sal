@@ -92,8 +92,7 @@ constexpr bool is_enabled (level_t level) noexcept
 #if defined(SAL_LOGGER_THRESHOLD)
   return static_cast<level_t>(SAL_LOGGER_THRESHOLD) >= level;
 #else
-  (void)level;
-  return true;
+  return static_cast<int>(level) != SAL_LOGGER_LEVEL_OFF;
 #endif
 }
 

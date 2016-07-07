@@ -19,13 +19,19 @@ class threshold_t;
 struct event_t;
 using event_ptr = std::unique_ptr<event_t, void(*)(event_t *)>;
 
-// sal/logger/logger.hpp
-template <typename Worker> class logger_t;
-template <typename Worker> class basic_worker_t;
-
 // sal/logger/sink.hpp
 class sink_base_t;
 using sink_ptr = std::shared_ptr<sink_base_t>;
+
+// sal/logger/logger.hpp
+template <typename Worker> class logger_t;
+
+// sal/logger/worker.hpp
+template <typename Worker> class basic_worker_t;
+class worker_t;
+
+// sal/logger/async_worker.hpp
+class async_worker_t;
 
 
 __sal_end
