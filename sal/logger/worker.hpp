@@ -169,8 +169,8 @@ public:
 
 private:
 
-  event_t *alloc_and_init (level_t level, const logger_type &logger) noexcept;
-  static void write_and_release (event_t *event) noexcept;
+  event_t *alloc_and_init (level_t level, const logger_type &logger);
+  static void write_and_release (event_t *event);
 
   friend class logger_t<worker_t>;
 };

@@ -81,7 +81,7 @@ public:
    * \note Event creation is unconditional, even if is_enabled(\a level)
    * returns false. Use logging macros that do this checking
    */
-  event_ptr make_event (level_t level) const noexcept
+  event_ptr make_event (level_t level) const
   {
     return event_ptr{
       impl_.worker.alloc_and_init(level, *this),
