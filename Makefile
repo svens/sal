@@ -35,11 +35,11 @@ session-work:
 	  && ( tmux detach-client -s "sal/work" || true ) \
 	  || ( \
 	    tmux new-session -s "sal/work" -n main -d \
-	    && tmux new-window -n gcc/debug -c $${PWD}/../build/gcc-debug \
-	    && tmux new-window -n gcc/release -c $${PWD}/../build/gcc-release \
-	    && tmux new-window -n clang/debug -c $${PWD}/../build/clang-debug \
-	    && tmux new-window -n clang/release -c $${PWD}/../build/clang-release \
-	    && tmux new-window -n infra -c $${PWD}/../build/infra \
+	    && tmux new-window -n gcc/debug -c $${PWD}/.work/gcc-debug \
+	    && tmux new-window -n gcc/release -c $${PWD}/.work/gcc-release \
+	    && tmux new-window -n clang/debug -c $${PWD}/.work/clang-debug \
+	    && tmux new-window -n clang/release -c $${PWD}/.work/clang-release \
+	    && tmux new-window -n infra -c $${PWD}/.work/infra \
 	    && tmux select-window -t "sal/work:main" \
 	  )
 	tmux attach-session -t "sal/work"
@@ -53,8 +53,9 @@ session-work:
 	$(EDITOR) $(EDITORFLAGS) $(edit)/list.cmake $$(grep "$(edit)/" $(edit)/list.cmake)
 
 tags:
-	cscope -bkR -I . -I ../build/clang-debug -f ../cscope.out
-	ctags -R -f ../tags --excmd=pattern --file-scope=no --if0 --tag-relative
+	find sal bench -name '*pp' > .work/sources.txt
+	cscope -bckR -I. -I.work/clang-debug/sal -f.work/cscope.out -i.work/sources.txt
+	ctags -R -f .work/tags --excmd=pattern --file-scope=no --if0 --tag-relative -L.work/sources.txt
 
 
 # Building targets {{{1
@@ -63,7 +64,7 @@ tags:
 
 .cmake:
 	printf "\033[1;36m$(build)\033[m\n"
-	cmake --build ../build/$(build)
+	cmake --build .work/$(build)
 
 gcc-debug:
 	$(MAKE) .cmake build=$@
@@ -88,7 +89,7 @@ clang-release:
 
 .ctest:
 	printf "\033[1;36m$(build)\033[m\n"
-	cd ../build/$(build) && ctest --output-on-failure
+	cd .work/$(build) && ctest --output-on-failure
 
 gcc-debug-test:
 	$(MAKE) .ctest build=gcc-debug
@@ -113,9 +114,9 @@ test:: clang-release-test
 
 .init_cmake:
 	printf "\033[1;36m$(config)\033[m\n"
-	mkdir -p ../build/$(config) \
-	  && cd ../build/$(config) \
-	  && cmake ../../sal -G Ninja $(CMAKE_OPTS) -DSAL_BENCH=yes -DCMAKE_BUILD_TYPE=$(config.type)
+	mkdir -p .work/$(config) \
+	  && cd .work/$(config) \
+	  && cmake ../.. -G Ninja $(CMAKE_OPTS) -DSAL_BENCH=yes -DCMAKE_BUILD_TYPE=$(config.type)
 
 .init_cmake_gcc_debug:
 	$(MAKE) .init_cmake config=gcc-debug config.type=Debug CXX=g++-6 CC=gcc-6

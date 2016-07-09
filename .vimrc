@@ -1,3 +1,3 @@
-set makeprg=ninja\ -C\ ../build/clang-debug
-set tags=../tags
-cscope add ..
+set makeprg=ninja\ -C\ .work/clang-debug
+set tags=.work/tags
+cscope add .work
