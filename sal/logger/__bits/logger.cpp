@@ -18,7 +18,7 @@ level_t logger_base_t::default_threshold () noexcept
 
 sink_ptr logger_base_t::default_sink () noexcept
 {
-  struct default_sink_t
+  struct default_sink_t final
     : public sink_base_t
   {
     void event_write (event_t &event) final override

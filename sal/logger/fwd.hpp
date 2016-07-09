@@ -17,10 +17,18 @@ class threshold_t;
 
 // sal/logger/event.hpp
 struct event_t;
+
+/**
+ * Pointer to current event logging data
+ */
 using event_ptr = std::unique_ptr<event_t, void(*)(event_t *)>;
 
 // sal/logger/sink.hpp
 class sink_base_t;
+
+/**
+ * Pointer to sink where event logging data is sent.
+ */
 using sink_ptr = std::shared_ptr<sink_base_t>;
 
 // sal/logger/logger.hpp

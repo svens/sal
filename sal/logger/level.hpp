@@ -13,10 +13,15 @@ namespace sal { namespace logger {
 __sal_begin
 
 
+/// Turn off logging
 #define SAL_LOGGER_LEVEL_OFF 0
+/// Error level event
 #define SAL_LOGGER_LEVEL_ERROR 1
+/// Warning level event
 #define SAL_LOGGER_LEVEL_WARN 2
+/// Information level event
 #define SAL_LOGGER_LEVEL_INFO 3
+/// Debug level event
 #define SAL_LOGGER_LEVEL_DEBUG 4
 
 

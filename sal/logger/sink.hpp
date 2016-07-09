@@ -65,11 +65,13 @@ public:
 
 protected:
 
+  /// \see init
   virtual void event_init (event_t &event)
   {
     (void)event;
   }
 
+  /// \see write
   virtual void event_write (event_t &event) = 0;
 };
 
