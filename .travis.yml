@@ -24,11 +24,11 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.8
+      - llvm-toolchain-precise-3.9
       - kubuntu-backports
     packages:
-      - g++-5
-      - clang-3.8
+      - g++-6
+      - clang-3.9
       - cmake
 
 install:
