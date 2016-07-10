@@ -2,53 +2,73 @@
 #include <sal/common.test.hpp>
 
 
-TEST(expect, true)
+TEST(assert, true)
+{
+  EXPECT_NO_THROW(sal_assert(true));
+}
+
+
+TEST(assert, false)
 {
 #if !defined(NDEBUG)
-  EXPECT_NO_THROW(sal_expect(true));
+  EXPECT_THROW(sal_assert(false), std::logic_error);
+#else
+  EXPECT_NO_THROW(sal_assert(false));
 #endif
 }
 
 
-TEST(expect, false)
+TEST(verify, true)
 {
-#if !defined(NDEBUG)
-  EXPECT_THROW(sal_expect(false), std::logic_error);
-#endif
+  auto value = false;
+  EXPECT_NO_THROW(sal_verify(value = true));
+  EXPECT_TRUE(value);
 }
 
 
-TEST(ensure, true)
+TEST(verify, false)
 {
+  auto value = true;
 #if !defined(NDEBUG)
-  EXPECT_NO_THROW(sal_ensure(true));
+  EXPECT_THROW(sal_verify(value = false), std::logic_error);
+#else
+  EXPECT_NO_THROW(sal_verify(value = false));
 #endif
+  EXPECT_FALSE(value);
 }
 
 
-TEST(ensure, false)
+TEST(check_ptr, non_nullptr)
 {
-#if !defined(NDEBUG)
-  EXPECT_THROW(sal_ensure(false), std::logic_error);
-#endif
-}
-
-
-TEST(check_ptr, true)
-{
-#if !defined(NDEBUG)
   const char *ptr = "test";
   EXPECT_EQ(ptr, sal_check_ptr(ptr));
+}
+
+
+TEST(check_ptr, nullptr)
+{
+  const char *ptr = nullptr, *checked_ptr = "test";
+
+#if !defined(NDEBUG)
+  EXPECT_THROW(checked_ptr = sal_check_ptr(ptr), std::logic_error);
+  EXPECT_NE(nullptr, checked_ptr);
+#else
+  EXPECT_NO_THROW(checked_ptr = sal_check_ptr(ptr));
+  EXPECT_EQ(nullptr, checked_ptr);
 #endif
 }
 
 
-TEST(check_ptr, false)
+TEST(check_ptr, nullptr_t)
 {
-#if !defined(NDEBUG)
-  EXPECT_THROW(sal_check_ptr(nullptr), std::logic_error);
+  int dummy;
+  auto *p = static_cast<void *>(&dummy);
 
-  const char *ptr = nullptr;
-  EXPECT_THROW(sal_check_ptr(ptr), std::logic_error);
+#if !defined(NDEBUG)
+  EXPECT_THROW(p = sal_check_ptr(nullptr), std::logic_error);
+  EXPECT_NE(nullptr, p);
+#else
+  EXPECT_NO_THROW(p = sal_check_ptr(nullptr));
+  EXPECT_EQ(nullptr, p);
 #endif
 }
