@@ -167,13 +167,52 @@ public:
   {}
 
 
+  /**
+   * Create global default logger worker with \a options. This worker is used
+   * by logging macros that do not specify destination logger explicitly.
+   *
+   * \note This method can be called only once.
+   */
+  template <typename... Options>
+  static worker_t &make_default (Options &&...options)
+  {
+    sal_assert(default_ == nullptr);
+    default_ = std::make_unique<worker_t>(std::forward<Options>(options)...);
+    return *sal_check_ptr(default_.get());
+  }
+
+
+  /**
+   * Return global default logger worker. If not created yet, it will
+   * internally call worker_t::make_default() with no arguments i.e. using
+   * default settings.
+   */
+  static worker_t &get_default ()
+  {
+    static auto &worker_(default_ ? *default_ : make_default());
+    return worker_;
+  }
+
+
 private:
 
   event_t *alloc_and_init (level_t level, const logger_type &logger);
   static void write_and_release (event_t *event);
 
+  static std::unique_ptr<worker_t> default_;
+
   friend class logger_t<worker_t>;
 };
+
+
+/**
+ * Return global default logger for worker_t::get_default() worker.
+ */
+inline const logger_t<worker_t> &default_logger ()
+{
+  static auto logger_(worker_t::get_default().default_logger());
+  return logger_;
+}
 
 
 __sal_end

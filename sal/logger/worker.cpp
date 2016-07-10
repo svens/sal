@@ -8,6 +8,9 @@ namespace sal { namespace logger {
 __sal_begin
 
 
+std::unique_ptr<worker_t> worker_t::default_{};
+
+
 namespace {
 
 
@@ -31,7 +34,7 @@ inline event_t *this_thread_event_alloc ()
 
 inline void this_thread_event_release (event_t *event)
 {
-  sal_expect(this_thread_event_ == event);
+  sal_assert(this_thread_event_ == event);
   this_thread_event_ptr_ = event;
 }
 
@@ -52,7 +55,7 @@ inline void this_thread_event_release (event_t *event)
   // note: this function is called from unique_ptr custom deleter that's not
   // supposed to throw exception but we have no choice, let's rather fail
   // quickly than allow to mess with contract
-  sal_expect(&this_thread_event_ == event);
+  sal_assert(&this_thread_event_ == event);
   this_thread_event_ptr_ = event;
 }
 
