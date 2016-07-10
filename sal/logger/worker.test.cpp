@@ -15,38 +15,6 @@ struct worker
 };
 
 
-struct sink_t final
-  : public sal::logger::sink_base_t
-{
-  bool init_called = false, write_called = false;
-  bool throw_init = false, throw_write = false;
-  std::string last_message;
-
-  void event_init (sal::logger::event_t &event) override
-  {
-    sink_base_t::event_init(event);
-
-    init_called = true;
-    if (throw_init)
-    {
-      throw_init = false;
-      throw false;
-    }
-  }
-
-  void event_write (sal::logger::event_t &event) override
-  {
-    write_called = true;
-    if (throw_write)
-    {
-      throw_write = false;
-      throw false;
-    }
-    last_message = sal::to_string(event.message);
-  }
-};
-
-
 TYPED_TEST_CASE_P(worker);
 
 
@@ -78,7 +46,7 @@ TYPED_TEST_P(worker, default_logger_sink)
 {
   using namespace sal::logger;
 
-  auto sink = std::make_shared<sink_t>();
+  auto sink = std::make_shared<sal_test::sink_t>();
 
   TypeParam worker{
     set_sink(sink),
@@ -109,7 +77,7 @@ TYPED_TEST_P(worker, make_logger)
 {
   using namespace sal::logger;
 
-  auto sink = std::make_shared<sink_t>();
+  auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
 
   auto returned_logger = worker.make_logger(this->case_name);
@@ -124,7 +92,7 @@ TYPED_TEST_P(worker, sink_throwing_event_init)
 {
   using namespace sal::logger;
 
-  auto sink = std::make_shared<sink_t>();
+  auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
 
   auto logger = worker.default_logger();
@@ -139,7 +107,7 @@ TYPED_TEST_P(worker, sink_throwing_event_write)
 {
   using namespace sal::logger;
 
-  auto sink = std::make_shared<sink_t>();
+  auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
 
   {
