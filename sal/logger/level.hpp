@@ -89,8 +89,6 @@ private:
  * \note Setting SAL_LOGGER_THRESHOLD in compilation unit affects only given
  * unit. To change threshold for whole project, specify it's value in
  * buildsystem for all sources.
- *
- * \see SAL_LOGGER_ENABLED(level)
  */
 constexpr bool is_enabled (level_t level) noexcept
 {
@@ -100,19 +98,6 @@ constexpr bool is_enabled (level_t level) noexcept
   return static_cast<int>(level) != SAL_LOGGER_LEVEL_OFF;
 #endif
 }
-
-
-/**
- * Macro wrapper for sal::logger::is_enabled()
- *
- * Possible \a level values are:
- *  - ERROR
- *  - WARN
- *  - INFO
- *  - DEBUG
- */
-#define SAL_LOGGER_ENABLED(level) \
-  (sal::logger::is_enabled(sal::logger::level_t::level))
 
 
 __sal_end

@@ -12,7 +12,7 @@ namespace __bits {
 
 level_t logger_base_t::default_threshold () noexcept
 {
-  return level_t::INFO;
+  return level_t::DEBUG;
 }
 
 
