@@ -59,7 +59,7 @@ TYPED_TEST_P(worker, default_logger_sink)
   logger.make_event(level_t::INFO)->message << this->case_name;
   EXPECT_TRUE(sink->init_called);
   EXPECT_TRUE(sink->write_called);
-  EXPECT_EQ(this->case_name, sink->last_message);
+  EXPECT_TRUE(sink->last_message_contains(this->case_name));
 }
 
 

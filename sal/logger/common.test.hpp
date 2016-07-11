@@ -34,7 +34,7 @@ inline sal::logger::level_t less_verbose (sal::logger::level_t level) noexcept
 
 
 struct sink_t final
-  : public sal::logger::sink_base_t
+  : public sal::logger::sink_t
 {
   bool init_called, write_called;
   bool throw_init, throw_write;
@@ -55,7 +55,7 @@ struct sink_t final
 
   void event_init (sal::logger::event_t &event) override
   {
-    sink_base_t::event_init(event);
+    sal::logger::sink_t::event_init(event);
 
     init_called = true;
     if (throw_init)
@@ -75,6 +75,11 @@ struct sink_t final
     }
     last_message = sal::to_string(event.message);
     last_level = event.level;
+  }
+
+  bool last_message_contains (const std::string &value)
+  {
+    return last_message.find(value) != last_message.npos;
   }
 };
 

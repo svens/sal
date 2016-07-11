@@ -102,7 +102,7 @@ TEST_P(logger, log)
     << get_param(case_name, is_called);
 
   ASSERT_TRUE(is_called);
-  EXPECT_EQ(case_name, sink->last_message);
+  EXPECT_TRUE(sink->last_message_contains(case_name));
   EXPECT_EQ(GetParam(), sink->last_level);
 }
 
@@ -119,7 +119,7 @@ TEST_P(logger, log_disabled)
     << get_param(case_name, is_called);
 
   ASSERT_FALSE(is_called);
-  EXPECT_NE(case_name, sink->last_message);
+  EXPECT_FALSE(sink->last_message_contains(case_name));
   EXPECT_NE(GetParam(), sink->last_level);
 }
 
@@ -136,7 +136,7 @@ TEST_P(logger, log_if_true)
     << get_param(case_name, is_called);
 
   ASSERT_TRUE(is_called);
-  EXPECT_EQ(case_name, sink->last_message);
+  EXPECT_TRUE(sink->last_message_contains(case_name));
   EXPECT_EQ(GetParam(), sink->last_level);
 }
 
@@ -153,7 +153,7 @@ TEST_P(logger, log_if_true_disabled)
     << get_param(case_name, is_called);
 
   ASSERT_FALSE(is_called);
-  EXPECT_NE(case_name, sink->last_message);
+  EXPECT_FALSE(sink->last_message_contains(case_name));
   EXPECT_NE(GetParam(), sink->last_level);
 }
 
@@ -170,7 +170,7 @@ TEST_P(logger, log_if_false)
     << get_param(case_name, is_called);
 
   ASSERT_FALSE(is_called);
-  EXPECT_NE(case_name, sink->last_message);
+  EXPECT_FALSE(sink->last_message_contains(case_name));
   EXPECT_NE(GetParam(), sink->last_level);
 }
 
@@ -187,7 +187,7 @@ TEST_P(logger, log_if_false_disabled)
     << get_param(case_name, is_called);
 
   ASSERT_FALSE(is_called);
-  EXPECT_NE(case_name, sink->last_message);
+  EXPECT_FALSE(sink->last_message_contains(case_name));
   EXPECT_NE(GetParam(), sink->last_level);
 }
 

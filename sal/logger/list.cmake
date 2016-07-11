@@ -9,6 +9,7 @@ list(APPEND sal_sources
   sal/logger/level.hpp
   sal/logger/logger.hpp
   sal/logger/sink.hpp
+  sal/logger/sink.cpp
   sal/logger/worker.hpp
   sal/logger/worker.cpp
 )

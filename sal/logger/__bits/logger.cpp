@@ -1,5 +1,4 @@
 #include <sal/logger/__bits/logger.hpp>
-#include <sal/logger/event.hpp>
 #include <sal/logger/sink.hpp>
 
 
@@ -18,25 +17,7 @@ level_t logger_base_t::default_threshold () noexcept
 
 sink_ptr logger_base_t::default_sink () noexcept
 {
-  struct default_sink_t final
-    : public sink_base_t
-  {
-    void event_write (event_t &event) final override
-    {
-      if (event.message.good())
-      {
-        printf("%s\n", event.message.get());
-      }
-      else
-      {
-        // message is truncated, append marker
-        // (message itself is always NUL-terminated)
-        printf("%s<...>\n", event.message.get());
-      }
-    }
-  };
-
-  static auto sink_ = std::make_shared<default_sink_t>();
+  static auto sink_ = std::make_shared<sink_t>();
   return sink_;
 }
 

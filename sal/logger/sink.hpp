@@ -15,11 +15,21 @@ __sal_begin
 
 
 /**
- * Base class for all sinks. Actual sink should implement at least
- * event_write() that takes care of final formatting and writing logging event
- * to destination. Optionally event_init() can be also implemented which is
- * called by logger immediately after new event is created. There initial
- * formatting can be done, etc. Default implementation does nothing.
+ * Base class for all sinks. Default implementation formats message prefix as:
+ * \code{.txt}
+ * L,HH:MM:SS,MSEC,THREAD\t[module]
+ * \endcode
+ * where:
+ *   - L: logging verbosity level character
+ *   - HH:MM:SS,MSEC: current timestamp in GMT
+ *   - THREAD: logging thread id
+ *   - [module]: logger name (if empty, then not printed)
+ * and prints message using printf().
+ *
+ * Application sink could override methods:
+ *   - event_init(): do initial formatting. Called immediately after event is
+ *     created
+ *   - event_write(): do final formatting and write message to destination
  *
  * Thread-safety: sinks can be shared between multiple loggers with following
  * rules:
@@ -32,19 +42,17 @@ __sal_begin
  *    threads, in which case is implementation reponsibility to handle
  *    synchronisation
  */
-class sink_base_t
+class sink_t
 {
 public:
 
-  virtual ~sink_base_t () = default;
+  virtual ~sink_t () = default;
 
 
   /**
    * Invoke virtual event_init() to initialise logger \a event. This method
    * is called immediately after logger has created \a event. New
    * implementation can do initial formatting (date/time, logger name, etc).
-   *
-   * Default implementation does nothing.
    */
   void init (event_t &event)
   {
@@ -66,12 +74,10 @@ public:
 protected:
 
   /// \see init
-  virtual void event_init (event_t &)
-  {
-  }
+  virtual void event_init (event_t &event);
 
   /// \see write
-  virtual void event_write (event_t &) = 0;
+  virtual void event_write (event_t &event);
 };
 
 

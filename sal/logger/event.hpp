@@ -29,7 +29,7 @@ struct event_t
     - sizeof(level_t)
     - sizeof(time_t)
     - sizeof(thread_id)
-    - sizeof(sink_base_t *)
+    - sizeof(sink_t *)
     - sizeof(const std::string *)
     - sizeof(str_t<1>) - 1
   ;
@@ -44,7 +44,7 @@ struct event_t
   thread_id thread{};
 
   /// Final sink where event will be sent to
-  sink_base_t *sink{};
+  sink_t *sink{};
 
   /// Name of logger that created this event
   const std::string *logger_name{};
