@@ -2,9 +2,11 @@
 
 /**
  * \file sal/logger/event.hpp
- * Logging event
+ * Logging event information (timestamp, thread, message etc)
+ *
+ * \addtogroup logger
+ * \{
  */
-
 
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
@@ -26,16 +28,12 @@ struct event_t
 {
   /// Maximum message length
   static constexpr size_t max_message_size = 4000
-    - sizeof(level_t)
     - sizeof(time_t)
     - sizeof(thread_id)
     - sizeof(sink_t *)
     - sizeof(const std::string *)
     - sizeof(str_t<1>) - 1
   ;
-
-  /// Event level
-  level_t level{};
 
   /// Event time
   time_t time{};
@@ -64,3 +62,5 @@ private:
 
 __sal_end
 }} // namespace sal::logger
+
+/// \}

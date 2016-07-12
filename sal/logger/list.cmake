@@ -6,7 +6,6 @@ list(APPEND sal_sources
   sal/logger/async_worker.cpp
   sal/logger/event.hpp
   sal/logger/fwd.hpp
-  sal/logger/level.hpp
   sal/logger/logger.hpp
   sal/logger/sink.hpp
   sal/logger/sink.cpp
@@ -18,7 +17,6 @@ list(APPEND sal_sources
 # unittests
 list(APPEND sal_unittests
   sal/logger/common.test.hpp
-  sal/logger/level.test.cpp
   sal/logger/logger.test.cpp
   sal/logger/worker.test.cpp
 )

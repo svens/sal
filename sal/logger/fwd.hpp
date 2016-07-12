@@ -2,6 +2,10 @@
 
 /**
  * \file sal/logger/fwd.hpp
+ * Forward declarations
+ *
+ * \addtogroup logger
+ * \{
  */
 
 #include <memory>
@@ -10,10 +14,6 @@
 namespace sal { namespace logger {
 __sal_begin
 
-
-// sal/logger/level.hpp
-enum class level_t: uint8_t;
-class threshold_t;
 
 // sal/logger/event.hpp
 struct event_t;
@@ -44,3 +44,5 @@ class async_worker_t;
 
 __sal_end
 }} // namespace sal::logger
+
+/// \}

@@ -7,14 +7,12 @@ namespace sal { namespace logger {
 __sal_begin
 
 
-event_t *async_worker_t::alloc_and_init (level_t level,
-  const logger_type &logger) noexcept
+event_t *async_worker_t::alloc_and_init (const logger_type &logger) noexcept
 {
   if (auto event = new (std::nothrow) event_t)
   {
     try
     {
-      event->level = level;
       event->time = now();
       event->thread = this_thread::get_id();
       event->message.reset();

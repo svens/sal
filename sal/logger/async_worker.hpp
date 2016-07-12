@@ -2,8 +2,11 @@
 
 /**
  * \file sal/logger/async_worker.hpp
+ * \todo docs
+ *
+ * \addtogroup logger
+ * \{
  */
-
 
 #include <sal/config.hpp>
 #include <sal/logger/worker.hpp>
@@ -30,7 +33,7 @@ public:
 
 private:
 
-  event_t *alloc_and_init (level_t level, const logger_type &logger) noexcept;
+  event_t *alloc_and_init (const logger_type &logger) noexcept;
   static void write_and_release (event_t *event) noexcept;
 
   friend class logger_t<async_worker_t>;
@@ -39,3 +42,5 @@ private:
 
 __sal_end
 }} // namespace sal::logger
+
+/// \}

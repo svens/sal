@@ -65,11 +65,10 @@ inline void this_thread_event_release (event_t *event)
 } // namespace
 
 
-event_t *worker_t::alloc_and_init (level_t level, const logger_type &logger)
+event_t *worker_t::alloc_and_init (const logger_type &logger)
 {
   auto event = sal_check_ptr(this_thread_event_alloc());
 
-  event->level = level;
   event->time = now();
   event->thread = this_thread::get_id();
   event->message.reset();

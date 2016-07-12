@@ -2,6 +2,9 @@
 
 /**
  * \file sal/logger/worker.hpp
+ *
+ * \addtogroup logger
+ * \{
  */
 
 
@@ -14,15 +17,6 @@
 
 namespace sal { namespace logger {
 __sal_begin
-
-
-/**
- * Return option to configure logger's threshold.
- */
-inline auto set_threshold (level_t level) noexcept
-{
-  return __bits::option_t<threshold_t>(level);
-}
 
 
 /**
@@ -39,7 +33,7 @@ inline auto set_sink (const sink_ptr &sink) noexcept
  * Base class for different worker implementations. This class provides
  * functionality to create, configure and query loggers. Each logger is
  * identified by name (e.g. module names that use it to log events etc).
- * Worker remains owner throughout whole lifetime.
+ * Worker remains owner of logger throughout whole lifetime.
  *
  * Each worker owns default logger that is created and configured during
  * worker construction. It's attributes are used as defaults when adding
@@ -48,7 +42,7 @@ inline auto set_sink (const sink_ptr &sink) noexcept
  *
  * Inherited classes should provide two methods that are used by logger to
  * handle events:
- *   - event_t *alloc_and_init (level_t level, const logger_t<Worker> &logger)
+ *   - event_t *alloc_and_init (const logger_t<Worker> &logger)
  *     Create new event (or fetch from pool) and initialize it's members.
  *     Return raw pointer to logger that will wrap it into unique_ptr,
  *     specifiying write_and_release() as custom deleter.
@@ -78,7 +72,6 @@ public:
    * \note Specified options become default values for new loggers if their
    * own options are not set or set partially.
    *
-   * \see set_threshold
    * \see set_sink
    */
   template <typename... Options>
@@ -120,7 +113,6 @@ public:
    * options are specified, corresponding defaults are taken from
    * default_logger()
    *
-   * \see set_threshold
    * \see set_sink
    */
   template <typename... Options>
@@ -130,11 +122,20 @@ public:
       std::forward_as_tuple(name),
       std::forward_as_tuple(name,
         static_cast<Worker &>(*this),
-        default_logger_.threshold,
         default_logger_.sink,
         std::forward<Options>(options)...
       )
     ).first->second;
+  }
+
+
+  /**
+   * Enable/disable logging events using \a logger
+   */
+  void set_enabled (const logger_type &logger, bool enabled) noexcept
+  {
+    // it is ok to blow const here, this is owner of impl_
+    const_cast<__bits::logger_t<Worker> &>(logger.impl_).is_enabled = enabled;
   }
 
 
@@ -196,7 +197,7 @@ public:
 
 private:
 
-  event_t *alloc_and_init (level_t level, const logger_type &logger);
+  event_t *alloc_and_init (const logger_type &logger);
   static void write_and_release (event_t *event);
 
   static std::unique_ptr<worker_t> default_;
@@ -217,3 +218,5 @@ inline const logger_t<worker_t> &default_logger ()
 
 __sal_end
 }} // namespace sal::logger
+
+/// \}

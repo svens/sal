@@ -2,7 +2,6 @@
 
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
-#include <sal/logger/level.hpp>
 #include <string>
 
 
@@ -28,7 +27,7 @@ struct option_t
 struct logger_base_t
 {
   const std::string name;
-  threshold_t threshold = default_threshold();
+  volatile bool is_enabled = true;
   sink_ptr sink = default_sink();
 
 
@@ -44,15 +43,7 @@ struct logger_base_t
   logger_base_t &operator= (logger_base_t &&) = delete;
 
 
-  static level_t default_threshold () noexcept;
   static sink_ptr default_sink () noexcept;
-
-
-  bool set_option (const option_t<threshold_t> &option) noexcept
-  {
-    threshold = option.value;
-    return true;
-  }
 
 
   bool set_option (const option_t<sink_ptr> &option) noexcept

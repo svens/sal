@@ -1,5 +1,3 @@
-#include <sal/logger/event.hpp>
-#include <sal/logger/sink.hpp>
 #include <sal/logger/logger.hpp>
 #include <sal/logger/worker.hpp>
 #include <sal/logger/common.test.hpp>
@@ -11,21 +9,32 @@ using namespace sal_test;
 
 
 struct logger
-  : public with_value<sal::logger::level_t>
+  : public fixture
 {
   static std::shared_ptr<sal_test::sink_t> sink;
 
-  static void SetUpTestCase ()
-  {
-    sal::logger::worker_t::make_default(
-      sal::logger::set_threshold(sal::logger::level_t::DEBUG),
-      sal::logger::set_sink(sink)
-    );
-  }
+  sal::logger::worker_t worker_;
+  sal::logger::logger_t<sal::logger::worker_t> logger_;
 
-  void SetUp () final override
+
+  logger ()
+    : worker_(sal::logger::set_sink(sink))
+    , logger_(worker_.make_logger(case_name))
   {
     sink->reset();
+  }
+
+
+  static void SetUpTestCase ()
+  {
+    static bool done = false;
+    if (!done)
+    {
+      sal::logger::worker_t::make_default(
+        sal::logger::set_sink(sink)
+      );
+      done = true;
+    }
   }
 };
 
@@ -34,47 +43,34 @@ std::shared_ptr<sal_test::sink_t> logger::sink{
 };
 
 
-TEST_P(logger, name)
+TEST_F(logger, name)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(GetParam())
-  };
-  auto logger = worker.make_logger(case_name);
-
-  EXPECT_EQ(case_name, logger.name());
+  EXPECT_EQ(case_name, logger_.name());
 }
 
 
-TEST_P(logger, is_enabled)
+TEST_F(logger, is_enabled)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(GetParam())
-  };
-  auto logger = worker.make_logger(case_name);
+  EXPECT_TRUE(logger_.is_enabled());
 
-  EXPECT_TRUE(logger.is_enabled(less_verbose(GetParam())));
-  EXPECT_TRUE(logger.is_enabled(GetParam()));
-  EXPECT_FALSE(logger.is_enabled(more_verbose(GetParam())));
+  worker_.set_enabled(logger_, false);
+  EXPECT_FALSE(logger_.is_enabled());
+
+  worker_.set_enabled(logger_, true);
+  EXPECT_TRUE(logger_.is_enabled());
 }
 
 
-TEST_P(logger, make_event)
+TEST_F(logger, make_event)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(GetParam()),
-    sal::logger::set_sink(sink),
-  };
-  auto logger = worker.make_logger(case_name);
-
   EXPECT_FALSE(sink->init_called);
   EXPECT_FALSE(sink->write_called);
   {
-    auto event = logger.make_event(GetParam());
+    auto event = logger_.make_event();
     EXPECT_TRUE(sink->init_called);
     sink->init_called = false;
     EXPECT_FALSE(sink->write_called);
 
-    EXPECT_EQ(GetParam(), event->level);
     EXPECT_EQ(sal::this_thread::get_id(), event->thread);
     EXPECT_EQ(case_name, *event->logger_name);
   }
@@ -90,109 +86,70 @@ std::string get_param (const std::string &param, bool &is_called)
 }
 
 
-TEST_P(logger, log)
+TEST_F(logger, log)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(GetParam()),
-    sal::logger::set_sink(sink),
-  };
-
   bool is_called = false;
-  sal_log(worker.default_logger(), GetParam())
-    << get_param(case_name, is_called);
+  sal_log(logger_) << get_param(case_name, is_called);
 
   ASSERT_TRUE(is_called);
   EXPECT_TRUE(sink->last_message_contains(case_name));
-  EXPECT_EQ(GetParam(), sink->last_level);
 }
 
 
-TEST_P(logger, log_disabled)
+TEST_F(logger, log_disabled)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(less_verbose(GetParam())),
-    sal::logger::set_sink(sink),
-  };
+  worker_.set_enabled(logger_, false);
 
   bool is_called = false;
-  sal_log(worker.default_logger(), GetParam())
-    << get_param(case_name, is_called);
+  sal_log(logger_) << get_param(case_name, is_called);
 
   ASSERT_FALSE(is_called);
   EXPECT_FALSE(sink->last_message_contains(case_name));
-  EXPECT_NE(GetParam(), sink->last_level);
 }
 
 
-TEST_P(logger, log_if_true)
+TEST_F(logger, log_if_true)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(GetParam()),
-    sal::logger::set_sink(sink),
-  };
-
   bool is_called = false;
-  sal_log_if(worker.default_logger(), GetParam(), true)
-    << get_param(case_name, is_called);
+  sal_log_if(logger_, true) << get_param(case_name, is_called);
 
   ASSERT_TRUE(is_called);
   EXPECT_TRUE(sink->last_message_contains(case_name));
-  EXPECT_EQ(GetParam(), sink->last_level);
 }
 
 
-TEST_P(logger, log_if_true_disabled)
+TEST_F(logger, log_if_true_disabled)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(less_verbose(GetParam())),
-    sal::logger::set_sink(sink),
-  };
+  worker_.set_enabled(logger_, false);
 
   bool is_called = false;
-  sal_log_if(worker.default_logger(), GetParam(), true)
-    << get_param(case_name, is_called);
+  sal_log_if(logger_, true) << get_param(case_name, is_called);
 
   ASSERT_FALSE(is_called);
   EXPECT_FALSE(sink->last_message_contains(case_name));
-  EXPECT_NE(GetParam(), sink->last_level);
 }
 
 
-TEST_P(logger, log_if_false)
+TEST_F(logger, log_if_false)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(GetParam()),
-    sal::logger::set_sink(sink),
-  };
-
   bool is_called = false;
-  sal_log_if(worker.default_logger(), GetParam(), false)
-    << get_param(case_name, is_called);
+  sal_log_if(logger_, false) << get_param(case_name, is_called);
 
   ASSERT_FALSE(is_called);
   EXPECT_FALSE(sink->last_message_contains(case_name));
-  EXPECT_NE(GetParam(), sink->last_level);
 }
 
 
-TEST_P(logger, log_if_false_disabled)
+TEST_F(logger, log_if_false_disabled)
 {
-  sal::logger::worker_t worker{
-    sal::logger::set_threshold(less_verbose(GetParam())),
-    sal::logger::set_sink(sink),
-  };
+  worker_.set_enabled(logger_, false);
 
   bool is_called = false;
-  sal_log_if(worker.default_logger(), GetParam(), false)
-    << get_param(case_name, is_called);
+  sal_log_if(logger_, false) << get_param(case_name, is_called);
 
   ASSERT_FALSE(is_called);
   EXPECT_FALSE(sink->last_message_contains(case_name));
-  EXPECT_NE(GetParam(), sink->last_level);
 }
-
-
-INSTANTIATE_TEST_CASE_P(logger, logger, logger_levels);
 
 
 } // namespace

@@ -8,6 +8,9 @@
 namespace {
 
 
+using namespace sal::logger;
+
+
 template <typename Worker>
 struct worker
   : public sal_test::with_type<Worker>
@@ -20,43 +23,36 @@ TYPED_TEST_CASE_P(worker);
 
 TYPED_TEST_P(worker, default_logger_name)
 {
-  using namespace sal::logger;
-
   TypeParam worker;
   auto logger = worker.default_logger();
   EXPECT_EQ("", logger.name());
 }
 
 
-TYPED_TEST_P(worker, default_logger_level)
+TYPED_TEST_P(worker, default_logger_is_enabled)
 {
-  using namespace sal::logger;
-
-  TypeParam worker{
-    set_threshold(level_t::WARN),
-  };
+  TypeParam worker;
 
   auto logger = worker.default_logger();
-  EXPECT_TRUE(logger.is_enabled(level_t::WARN));
-  EXPECT_FALSE(logger.is_enabled(level_t::INFO));
+  EXPECT_TRUE(logger.is_enabled());
+
+  worker.set_enabled(logger, false);
+  EXPECT_FALSE(logger.is_enabled());
+
+  worker.set_enabled(logger, true);
+  EXPECT_TRUE(logger.is_enabled());
 }
 
 
 TYPED_TEST_P(worker, default_logger_sink)
 {
-  using namespace sal::logger;
-
   auto sink = std::make_shared<sal_test::sink_t>();
-
-  TypeParam worker{
-    set_sink(sink),
-  };
-
+  TypeParam worker{set_sink(sink)};
   auto logger = worker.default_logger();
 
   EXPECT_FALSE(sink->init_called);
   EXPECT_FALSE(sink->write_called);
-  logger.make_event(level_t::INFO)->message << this->case_name;
+  logger.make_event()->message << this->case_name;
   EXPECT_TRUE(sink->init_called);
   EXPECT_TRUE(sink->write_called);
   EXPECT_TRUE(sink->last_message_contains(this->case_name));
@@ -65,8 +61,6 @@ TYPED_TEST_P(worker, default_logger_sink)
 
 TYPED_TEST_P(worker, get_logger_default)
 {
-  using namespace sal::logger;
-
   TypeParam worker;
   auto logger = worker.get_logger(this->case_name);
   EXPECT_EQ("", logger.name());
@@ -75,8 +69,6 @@ TYPED_TEST_P(worker, get_logger_default)
 
 TYPED_TEST_P(worker, make_logger)
 {
-  using namespace sal::logger;
-
   auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
 
@@ -90,14 +82,12 @@ TYPED_TEST_P(worker, make_logger)
 
 TYPED_TEST_P(worker, sink_throwing_event_init)
 {
-  using namespace sal::logger;
-
   auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
-
   auto logger = worker.default_logger();
+
   sink->throw_init = true;
-  EXPECT_EQ(nullptr, logger.make_event(level_t::INFO));
+  EXPECT_EQ(nullptr, logger.make_event());
   EXPECT_TRUE(sink->init_called);
   EXPECT_FALSE(sink->write_called);
 }
@@ -105,16 +95,14 @@ TYPED_TEST_P(worker, sink_throwing_event_init)
 
 TYPED_TEST_P(worker, sink_throwing_event_write)
 {
-  using namespace sal::logger;
-
   auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
 
   {
     auto logger = worker.default_logger();
     sink->throw_write = true;
-    auto event = logger.make_event(level_t::INFO);
-    EXPECT_NE(nullptr, event);
+    auto event = logger.make_event();
+    ASSERT_NE(nullptr, event);
     event->message << this->case_name;
   }
   EXPECT_TRUE(sink->init_called);
@@ -125,7 +113,7 @@ TYPED_TEST_P(worker, sink_throwing_event_write)
 
 REGISTER_TYPED_TEST_CASE_P(worker,
   default_logger_name,
-  default_logger_level,
+  default_logger_is_enabled,
   default_logger_sink,
   get_logger_default,
   make_logger,

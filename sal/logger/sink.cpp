@@ -1,5 +1,5 @@
 #include <sal/logger/sink.hpp>
-#include <sal/logger/level.hpp>
+#include <sal/logger/event.hpp>
 #include <sal/assert.hpp>
 #include <chrono>
 #include <cstdio>
@@ -10,33 +10,6 @@ __sal_begin
 
 
 namespace {
-
-
-inline constexpr char level_char (level_t level)
-{
-#if _MSC_VER
-  // TODO: drop once MSVC supports C++14 constexpr
-
-  return level == level_t::INFO ? 'i'
-    : level == level_t::ERROR ? 'e'
-    : level == level_t::WARN ? 'w'
-    : level == level_t::DEBUG ? 'd'
-    : '?'
-  ;
-
-#else
-
-  switch (level)
-  {
-    case level_t::ERROR: return 'e';
-    case level_t::WARN: return 'w';
-    case level_t::INFO: return 'i';
-    case level_t::DEBUG: return 'd';
-  }
-  return '?';
-
-#endif
-}
 
 
 void split_time (event_t &event,
@@ -83,7 +56,7 @@ auto &insert_time (event_t &event) noexcept
 
   // seconds.
   if (s < 10) event.message << '0';     // LCOV_EXCL_LINE
-  event.message << s << '.';
+  event.message << s << ',';
 
   // milliseoconds
   if (ms < 100) event.message << '0';   // LCOV_EXCL_LINE
@@ -99,11 +72,8 @@ auto &insert_time (event_t &event) noexcept
 
 void sink_t::event_init (event_t &event)
 {
-  // level,
-  event.message << level_char(event.level) << ',';
-
-  // hh:mm:ss.msec,
-  insert_time(event) << ',';
+  // hh:mm:ss.msec\t
+  insert_time(event) << '\t';
 
   // thread\t
   event.message << event.thread << '\t';
