@@ -1,3 +1,6 @@
+project = sal
+
+
 # Variables that select action if defined {{{1
 #
 
@@ -12,37 +15,30 @@ edit :=
 ifneq ($(edit),)
 all: .edit
 else
-all: .build
+all: ide
 endif
 
 
-# Session launching targets (tmux) {{{1
+# tmux "IDE" {{{1
 #
 
-
-session-edit:
-	tmux has-session -t "sal/edit" >/dev/null 2>&1 \
-	  && ( tmux detach-client -s "sal/edit" || true ) \
-	  || ( \
-	    tmux new-session -s "sal/edit" -n main -d \
-	    && tmux select-window -t "sal/edit:main" \
+ide:
+	tmux has-session -t "$(project)" >/dev/null 2>&1 \
+	  && ( tmux detach-client -s "$(project)" || true ) \
+	  || ( tmux new-session -s "$(project)" -n main -d \; \
+	    split-window \; \
+	    select-layout main-vertical \; \
+	    select-pane -L \; \
+	    new-window -n root \; \
+	    new-window -n gcc-debug -c .work/gcc-debug \; \
+	    new-window -n gcc-release -c .work/gcc-release \; \
+	    new-window -n clang-debug -c .work/clang-debug \; \
+	    new-window -n clang-release -c .work/clang-release \; \
+	    new-window -n infra -c .work/infra \; \
+	    select-window -t "$(project):main" \; \
+	    bind-key . choose-window 'swap-pane -t main.1 -s 1.0; swap-window -d -t 1 -s %%; swap-pane -t main.1 -s 1.0; select-window -t main.1' \
 	  )
-	tmux attach-session -t "sal/edit"
-
-
-session-work:
-	tmux has-session -t "sal/work" >/dev/null 2>&1 \
-	  && ( tmux detach-client -s "sal/work" || true ) \
-	  || ( \
-	    tmux new-session -s "sal/work" -n main -d \
-	    && tmux new-window -n gcc/debug -c $${PWD}/.work/gcc-debug \
-	    && tmux new-window -n gcc/release -c $${PWD}/.work/gcc-release \
-	    && tmux new-window -n clang/debug -c $${PWD}/.work/clang-debug \
-	    && tmux new-window -n clang/release -c $${PWD}/.work/clang-release \
-	    && tmux new-window -n infra -c $${PWD}/.work/infra \
-	    && tmux select-window -t "sal/work:main" \
-	  )
-	tmux attach-session -t "sal/work"
+	tmux attach-session -t "$(project)"
 
 
 # Generic editing target {{{1
@@ -106,6 +102,22 @@ test:: clang-debug-test
 clang-release-test:
 	$(MAKE) .ctest build=clang-release
 test:: clang-release-test
+
+
+# Coverage target {{{1
+#
+
+cov:
+	ninja -C .work/infra gen-cov
+	open .work/infra/cov/index.html
+
+
+# Documentation target {{{1
+#
+
+doc:
+	ninja -C .work/infra gen-doc
+	open .work/infra/docs/index.html
 
 
 # Buildsystem(s) initialisation {{{1
