@@ -15,7 +15,7 @@ edit :=
 ifneq ($(edit),)
 all: .edit
 else
-all: ide
+all: .build
 endif
 
 
