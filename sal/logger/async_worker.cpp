@@ -7,7 +7,7 @@ namespace sal { namespace logger {
 __sal_begin
 
 
-event_t *async_worker_t::alloc_and_init (const logger_type &logger) noexcept
+event_t *async_worker_t::alloc_and_init (const channel_type &channel) noexcept
 {
   if (auto event = new (std::nothrow) event_t)
   {
@@ -16,8 +16,8 @@ event_t *async_worker_t::alloc_and_init (const logger_type &logger) noexcept
       event->time = now();
       event->thread = this_thread::get_id();
       event->message.reset();
-      event->logger_name = &logger.name();
-      event->sink = logger.impl_.sink.get();
+      event->channel_name = &channel.name();
+      event->sink = channel.impl_.sink.get();
       event->sink->init(*event);
       return event;
     }

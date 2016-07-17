@@ -1,5 +1,5 @@
 #include <sal/logger/async_worker.hpp>
-#include <sal/logger/logger.hpp>
+#include <sal/logger/channel.hpp>
 #include <sal/logger/sink.hpp>
 #include <sal/logger/worker.hpp>
 #include <sal/logger/common.test.hpp>
@@ -21,62 +21,62 @@ struct worker
 TYPED_TEST_CASE_P(worker);
 
 
-TYPED_TEST_P(worker, default_logger_name)
+TYPED_TEST_P(worker, default_channel_name)
 {
   TypeParam worker;
-  auto logger = worker.default_logger();
-  EXPECT_EQ("", logger.name());
+  auto channel = worker.default_channel();
+  EXPECT_EQ("", channel.name());
 }
 
 
-TYPED_TEST_P(worker, default_logger_is_enabled)
+TYPED_TEST_P(worker, default_channel_is_enabled)
 {
   TypeParam worker;
 
-  auto logger = worker.default_logger();
-  EXPECT_TRUE(logger.is_enabled());
+  auto channel = worker.default_channel();
+  EXPECT_TRUE(channel.is_enabled());
 
-  worker.set_enabled(logger, false);
-  EXPECT_FALSE(logger.is_enabled());
+  worker.set_enabled(channel, false);
+  EXPECT_FALSE(channel.is_enabled());
 
-  worker.set_enabled(logger, true);
-  EXPECT_TRUE(logger.is_enabled());
+  worker.set_enabled(channel, true);
+  EXPECT_TRUE(channel.is_enabled());
 }
 
 
-TYPED_TEST_P(worker, default_logger_sink)
+TYPED_TEST_P(worker, default_channel_sink)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
-  auto logger = worker.default_logger();
+  auto channel = worker.default_channel();
 
   EXPECT_FALSE(sink->init_called);
   EXPECT_FALSE(sink->write_called);
-  logger.make_event()->message << this->case_name;
+  channel.make_event()->message << this->case_name;
   EXPECT_TRUE(sink->init_called);
   EXPECT_TRUE(sink->write_called);
   EXPECT_TRUE(sink->last_message_contains(this->case_name));
 }
 
 
-TYPED_TEST_P(worker, get_logger_default)
+TYPED_TEST_P(worker, get_channel_default)
 {
   TypeParam worker;
-  auto logger = worker.get_logger(this->case_name);
-  EXPECT_EQ("", logger.name());
+  auto channel = worker.get_channel(this->case_name);
+  EXPECT_EQ("", channel.name());
 }
 
 
-TYPED_TEST_P(worker, make_logger)
+TYPED_TEST_P(worker, make_channel)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
 
-  auto returned_logger = worker.make_logger(this->case_name);
-  EXPECT_EQ(this->case_name, returned_logger.name());
+  auto returned_channel = worker.make_channel(this->case_name);
+  EXPECT_EQ(this->case_name, returned_channel.name());
 
-  auto got_logger = worker.get_logger(this->case_name);
-  EXPECT_EQ(this->case_name, got_logger.name());
+  auto got_channel = worker.get_channel(this->case_name);
+  EXPECT_EQ(this->case_name, got_channel.name());
 }
 
 
@@ -84,10 +84,10 @@ TYPED_TEST_P(worker, sink_throwing_event_init)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_sink(sink)};
-  auto logger = worker.default_logger();
+  auto channel = worker.default_channel();
 
   sink->throw_init = true;
-  EXPECT_EQ(nullptr, logger.make_event());
+  EXPECT_EQ(nullptr, channel.make_event());
   EXPECT_TRUE(sink->init_called);
   EXPECT_FALSE(sink->write_called);
 }
@@ -99,9 +99,9 @@ TYPED_TEST_P(worker, sink_throwing_event_write)
   TypeParam worker{set_sink(sink)};
 
   {
-    auto logger = worker.default_logger();
+    auto channel = worker.default_channel();
     sink->throw_write = true;
-    auto event = logger.make_event();
+    auto event = channel.make_event();
     ASSERT_NE(nullptr, event);
     event->message << this->case_name;
   }
@@ -112,11 +112,11 @@ TYPED_TEST_P(worker, sink_throwing_event_write)
 
 
 REGISTER_TYPED_TEST_CASE_P(worker,
-  default_logger_name,
-  default_logger_is_enabled,
-  default_logger_sink,
-  get_logger_default,
-  make_logger,
+  default_channel_name,
+  default_channel_is_enabled,
+  default_channel_sink,
+  get_channel_default,
+  make_channel,
   sink_throwing_event_init,
   sink_throwing_event_write
 );
@@ -128,7 +128,7 @@ using worker_types = testing::Types<
 >;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(logger, worker, worker_types);
+INSTANTIATE_TYPED_TEST_CASE_P(channel, worker, worker_types);
 
 
 } // namespace

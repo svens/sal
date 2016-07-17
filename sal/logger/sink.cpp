@@ -79,9 +79,9 @@ void sink_t::event_init (event_t &event)
   event.message << event.thread << '\t';
 
   // '[module] '
-  if (event.logger_name && !event.logger_name->empty())
+  if (event.channel_name && !event.channel_name->empty())
   {
-    event.message << '[' << *event.logger_name << "] ";
+    event.message << '[' << *event.channel_name << "] ";
   }
 }
 

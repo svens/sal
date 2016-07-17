@@ -23,24 +23,24 @@ struct option_t
 };
 
 
-// Common logger data
-struct logger_base_t
+// Common channel data
+struct channel_base_t
 {
   const std::string name;
   volatile bool is_enabled = true;
   sink_ptr sink = default_sink();
 
 
-  logger_base_t (const std::string &name)
+  channel_base_t (const std::string &name)
     : name(name)
   {}
 
 
-  logger_base_t () = delete;
-  logger_base_t (const logger_base_t &) = delete;
-  logger_base_t (logger_base_t &&) = delete;
-  logger_base_t &operator= (const logger_base_t &) = delete;
-  logger_base_t &operator= (logger_base_t &&) = delete;
+  channel_base_t () = delete;
+  channel_base_t (const channel_base_t &) = delete;
+  channel_base_t (channel_base_t &&) = delete;
+  channel_base_t &operator= (const channel_base_t &) = delete;
+  channel_base_t &operator= (channel_base_t &&) = delete;
 
 
   static sink_ptr default_sink () noexcept;
@@ -54,22 +54,22 @@ struct logger_base_t
 };
 
 
-// Worker-specific logger data
-// (stored in map, ref owned by public logger, not inherited)
+// Worker-specific channel data
+// (stored in map, ref owned by public channel, not inherited)
 template <typename Worker>
-struct logger_t final
-  : public logger_base_t
+struct channel_t final
+  : public channel_base_t
 {
   // ref to Worker that owns this
   Worker &worker;
 
 
   template <typename... Options>
-  logger_t (const std::string &name, Worker &worker, Options &&...options)
-    : logger_base_t(name)
+  channel_t (const std::string &name, Worker &worker, Options &&...options)
+    : channel_base_t(name)
     , worker(worker)
   {
-    bool unused[] = { logger_base_t::set_option(options)..., false };
+    bool unused[] = { channel_base_t::set_option(options)..., false };
     (void)unused;
   }
 };

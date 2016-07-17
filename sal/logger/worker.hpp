@@ -9,8 +9,8 @@
 
 
 #include <sal/config.hpp>
-#include <sal/logger/__bits/logger.hpp>
-#include <sal/logger/logger.hpp>
+#include <sal/logger/__bits/channel.hpp>
+#include <sal/logger/channel.hpp>
 #include <sal/assert.hpp>
 #include <unordered_map>
 
@@ -20,7 +20,7 @@ __sal_begin
 
 
 /**
- * Return option to configure logger's sink.
+ * Return option to configure channel's sink.
  */
 inline auto set_sink (const sink_ptr &sink) noexcept
 {
@@ -31,20 +31,20 @@ inline auto set_sink (const sink_ptr &sink) noexcept
 
 /**
  * Base class for different worker implementations. This class provides
- * functionality to create, configure and query loggers. Each logger is
+ * functionality to create, configure and query channels. Each channel is
  * identified by name (e.g. module names that use it to log events etc).
- * Worker remains owner of logger throughout whole lifetime.
+ * Worker remains owner of channel throughout whole lifetime.
  *
- * Each worker owns default logger that is created and configured during
+ * Each worker owns default channel that is created and configured during
  * worker construction. It's attributes are used as defaults when adding
- * new loggers. Also, when querying for non-existing logger, default one
+ * new channels. Also, when querying for non-existing channel, default one
  * is returned.
  *
- * Inherited classes should provide two methods that are used by logger to
+ * Inherited classes should provide two methods that are used by channel to
  * handle events:
- *   - event_t *alloc_and_init (const logger_t<Worker> &logger)
+ *   - event_t *alloc_and_init (const channel_t<Worker> &channel)
  *     Create new event (or fetch from pool) and initialize it's members.
- *     Return raw pointer to logger that will wrap it into unique_ptr,
+ *     Return raw pointer to channel that will wrap it into unique_ptr,
  *     specifiying write_and_release() as custom deleter.
  *   - static void write_and_release (event_t &event);
  *     After application layer has filled event message, this method delivers
@@ -54,7 +54,7 @@ inline auto set_sink (const sink_ptr &sink) noexcept
  * \see worker_t
  * \see async_worker_t
  *
- * \note After creation, logger remains unmutable until worker itself is
+ * \note After creation, channel remains unmutable until worker itself is
  * destructed. This approach prevents threading issues.
  */
 template <typename Worker>
@@ -62,22 +62,22 @@ class basic_worker_t
 {
 public:
 
-  /// Logger type for specified \a Worker
-  using logger_type = logger_t<Worker>;
+  /// Channel type for specified \a Worker
+  using channel_type = channel_t<Worker>;
 
 
   /**
-   * Construct worker: create and configure default logger using \a options
+   * Construct worker: create and configure default channel using \a options
    *
-   * \note Specified options become default values for new loggers if their
+   * \note Specified options become default values for new channels if their
    * own options are not set or set partially.
    *
    * \see set_sink
    */
   template <typename... Options>
   basic_worker_t (Options &&...options)
-    : default_logger_(
-        loggers_.emplace(std::piecewise_construct,
+    : default_channel_(
+        channels_.emplace(std::piecewise_construct,
           std::forward_as_tuple(""),
           std::forward_as_tuple("",
             static_cast<Worker &>(*this),
@@ -89,40 +89,40 @@ public:
 
 
   /**
-   * Return reference to default logger created during worker construction
+   * Return reference to default channel created during worker construction
    */
-  logger_type default_logger () const noexcept
+  channel_type default_channel () const noexcept
   {
-    return default_logger_;
+    return default_channel_;
   }
 
 
   /**
-   * Return previously created logger with \a name or default logger if not
+   * Return previously created channel with \a name or default channel if not
    * found.
    */
-  logger_type get_logger (const std::string &name) const noexcept
+  channel_type get_channel (const std::string &name) const noexcept
   {
-    auto it = loggers_.find(name);
-    return it != loggers_.end() ? it->second : default_logger_;
+    auto it = channels_.find(name);
+    return it != channels_.end() ? it->second : default_channel_;
   }
 
 
   /**
-   * Create new logger \a with name, using \a options. If some or none of
+   * Create new channel \a with name, using \a options. If some or none of
    * options are specified, corresponding defaults are taken from
-   * default_logger()
+   * default_channel()
    *
    * \see set_sink
    */
   template <typename... Options>
-  logger_type make_logger (const std::string &name, Options &&...options)
+  channel_type make_channel (const std::string &name, Options &&...options)
   {
-    return loggers_.emplace(std::piecewise_construct,
+    return channels_.emplace(std::piecewise_construct,
       std::forward_as_tuple(name),
       std::forward_as_tuple(name,
         static_cast<Worker &>(*this),
-        default_logger_.sink,
+        default_channel_.sink,
         std::forward<Options>(options)...
       )
     ).first->second;
@@ -130,19 +130,19 @@ public:
 
 
   /**
-   * Enable/disable logging events using \a logger
+   * Enable/disable logging events using \a channel
    */
-  void set_enabled (const logger_type &logger, bool enabled) noexcept
+  void set_enabled (const channel_type &channel, bool enabled) noexcept
   {
     // it is ok to blow const here, this is owner of impl_
-    const_cast<__bits::logger_t<Worker> &>(logger.impl_).is_enabled = enabled;
+    const_cast<__bits::channel_t<Worker> &>(channel.impl_).is_enabled = enabled;
   }
 
 
 private:
 
-  std::unordered_map<std::string, __bits::logger_t<Worker>> loggers_{};
-  const __bits::logger_t<Worker> &default_logger_;
+  std::unordered_map<std::string, __bits::channel_t<Worker>> channels_{};
+  const __bits::channel_t<Worker> &default_channel_;
 };
 
 
@@ -169,8 +169,8 @@ public:
 
 
   /**
-   * Create global default logger worker with \a options. This worker is used
-   * by logging macros that do not specify destination logger explicitly.
+   * Create global default logging worker with \a options. This worker is used
+   * by logging macros that do not specify channel explicitly.
    *
    * \note This method can be called only once.
    */
@@ -197,22 +197,22 @@ public:
 
 private:
 
-  event_t *alloc_and_init (const logger_type &logger);
+  event_t *alloc_and_init (const channel_type &channel);
   static void write_and_release (event_t *event);
 
   static std::unique_ptr<worker_t> default_;
 
-  friend class logger_t<worker_t>;
+  friend class channel_t<worker_t>;
 };
 
 
 /**
- * Return global default logger for worker_t::get_default() worker.
+ * Return global default channel for worker_t::get_default() worker.
  */
-inline const logger_t<worker_t> &default_logger ()
+inline const channel_t<worker_t> &default_channel ()
 {
-  static auto logger_(worker_t::get_default().default_logger());
-  return logger_;
+  static auto channel_(worker_t::get_default().default_channel());
+  return channel_;
 }
 
 

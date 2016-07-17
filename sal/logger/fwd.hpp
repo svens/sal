@@ -31,8 +31,8 @@ class sink_t;
  */
 using sink_ptr = std::shared_ptr<sink_t>;
 
-// sal/logger/logger.hpp
-template <typename Worker> class logger_t;
+// sal/logger/channel.hpp
+template <typename Worker> class channel_t;
 
 // sal/logger/worker.hpp
 template <typename Worker> class basic_worker_t;

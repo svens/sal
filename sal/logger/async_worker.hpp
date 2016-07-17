@@ -33,10 +33,10 @@ public:
 
 private:
 
-  event_t *alloc_and_init (const logger_type &logger) noexcept;
+  event_t *alloc_and_init (const channel_type &channel) noexcept;
   static void write_and_release (event_t *event) noexcept;
 
-  friend class logger_t<async_worker_t>;
+  friend class channel_t<async_worker_t>;
 };
 
 

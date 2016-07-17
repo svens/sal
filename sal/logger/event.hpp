@@ -22,7 +22,7 @@ __sal_begin
 
 /**
  * Logging event. This class shouldn't be instantiated directly but through
- * logger that handles event lifecycle etc.
+ * channel that handles event lifecycle etc.
  */
 struct event_t
 {
@@ -44,8 +44,8 @@ struct event_t
   /// Final sink where event will be sent to
   sink_t *sink{};
 
-  /// Name of logger that created this event
-  const std::string *logger_name{};
+  /// Name of channel that created this event
+  const std::string *channel_name{};
 
   /// Event message
   str_t<max_message_size> message{};

@@ -65,15 +65,15 @@ inline void this_thread_event_release (event_t *event)
 } // namespace
 
 
-event_t *worker_t::alloc_and_init (const logger_type &logger)
+event_t *worker_t::alloc_and_init (const channel_type &channel)
 {
   auto event = sal_check_ptr(this_thread_event_alloc());
 
   event->time = now();
   event->thread = this_thread::get_id();
   event->message.reset();
-  event->logger_name = &logger.name();
-  event->sink = logger.impl_.sink.get();
+  event->channel_name = &channel.name();
+  event->sink = channel.impl_.sink.get();
 
   try
   {
