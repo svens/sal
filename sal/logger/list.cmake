@@ -7,6 +7,7 @@ list(APPEND sal_sources
   sal/logger/channel.hpp
   sal/logger/event.hpp
   sal/logger/fwd.hpp
+  sal/logger/logger.hpp
   sal/logger/sink.hpp
   sal/logger/sink.cpp
   sal/logger/worker.hpp
@@ -18,5 +19,6 @@ list(APPEND sal_sources
 list(APPEND sal_unittests
   sal/logger/common.test.hpp
   sal/logger/channel.test.cpp
+  sal/logger/logger.test.cpp
   sal/logger/worker.test.cpp
 )

@@ -128,7 +128,7 @@ using worker_types = testing::Types<
 >;
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(channel, worker, worker_types);
+INSTANTIATE_TYPED_TEST_CASE_P(logger, worker, worker_types);
 
 
 } // namespace

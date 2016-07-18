@@ -207,11 +207,32 @@ private:
 
 
 /**
+ * Create global default logging worker with \a options
+ * \see worker_t::make_default()
+ */
+template <typename... Options>
+inline worker_t &make_default_worker (Options &&...options)
+{
+  return worker_t::make_default(std::forward<Options>(options)...);
+}
+
+
+/**
+ * Return global default logger worker.
+ * \see worker_t::get_default()
+ */
+inline worker_t &default_worker ()
+{
+  return worker_t::get_default();
+}
+
+
+/**
  * Return global default channel for worker_t::get_default() worker.
  */
 inline const channel_t<worker_t> &default_channel ()
 {
-  static auto channel_(worker_t::get_default().default_channel());
+  static auto channel_(default_worker().default_channel());
   return channel_;
 }
 
