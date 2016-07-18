@@ -107,7 +107,7 @@ test:: clang-release-test
 # Coverage target {{{1
 #
 
-cov:
+gen-cov:
 	ninja -C .work/infra gen-cov
 	open .work/infra/cov/index.html
 
@@ -115,7 +115,7 @@ cov:
 # Documentation target {{{1
 #
 
-doc:
+gen-doc:
 	ninja -C .work/infra gen-doc
 	open .work/infra/docs/index.html
 
