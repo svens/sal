@@ -80,6 +80,37 @@ TYPED_TEST_P(worker, make_channel)
 }
 
 
+inline bool ends_with (const std::string &name, const std::string &suffix)
+{
+  if (suffix.size() > name.size())
+  {
+    return false;
+  }
+  return std::equal(suffix.rbegin(), suffix.rend(), name.rbegin());
+}
+
+
+TYPED_TEST_P(worker, set_enabled_if)
+{
+  TypeParam worker;
+
+  auto info = worker.make_channel(this->case_name);
+  EXPECT_TRUE(info.is_enabled());
+  auto debug = worker.make_channel(this->case_name + ".debug");
+  EXPECT_TRUE(debug.is_enabled());
+
+  worker.set_enabled_if(false,
+    [](auto channel_name)
+    {
+      return ends_with(channel_name, ".debug");
+    }
+  );
+
+  EXPECT_TRUE(info.is_enabled());
+  EXPECT_FALSE(debug.is_enabled());
+}
+
+
 TYPED_TEST_P(worker, sink_throwing_event_init)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
@@ -117,6 +148,7 @@ REGISTER_TYPED_TEST_CASE_P(worker,
   default_channel_sink,
   get_channel_default,
   make_channel,
+  set_enabled_if,
   sink_throwing_event_init,
   sink_throwing_event_write
 );

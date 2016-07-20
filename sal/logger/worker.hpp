@@ -2,6 +2,7 @@
 
 /**
  * \file sal/logger/worker.hpp
+ * Logging channels' worker, marshalling event records from channels to sinks.
  *
  * \addtogroup logger
  * \{
@@ -54,8 +55,8 @@ inline auto set_sink (const sink_ptr &sink) noexcept
  * \see worker_t
  * \see async_worker_t
  *
- * \note After creation, channel remains unmutable until worker itself is
- * destructed. This approach prevents threading issues.
+ * \note After creation, channel remains immutable (except enabled/disabled
+ * flag) until worker is destructed. This approach prevents threading issues.
  */
 template <typename Worker>
 class basic_worker_t
@@ -126,6 +127,37 @@ public:
         std::forward<Options>(options)...
       )
     ).first->second;
+  }
+
+
+  /**
+   * Visit each channel and set it's \a enabled state if \a filter predicate
+   * returns true. Signature of the \a filter should be equivalent of:
+   * \code{.cpp}
+   * bool filter (const std::string &channel_name);
+   * \endcode
+   *
+   * This method help to turn on/off group of channels. Example, turn off all
+   * channels that has suffix '.debug' in their name:
+   * \code
+   * worker.set_enabled_if(false,
+   *   [](auto channel_name)
+   *   {
+   *     return ends_with(channel_name, ".debug");
+   *   }
+   * )
+   * \endcode
+   */
+  template <typename Filter>
+  void set_enabled_if (bool enabled, Filter filter)
+  {
+    for (auto &channel: channels_)
+    {
+      if (filter(channel.second.name))
+      {
+        channel.second.is_enabled = enabled;
+      }
+    }
   }
 
 
