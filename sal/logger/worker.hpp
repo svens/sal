@@ -91,7 +91,7 @@ public:
   /**
    * Return reference to default channel created during worker construction
    */
-  channel_type default_channel () const noexcept
+  channel_type default_channel () noexcept
   {
     return default_channel_;
   }
@@ -101,7 +101,7 @@ public:
    * Return previously created channel with \a name or default channel if not
    * found.
    */
-  channel_type get_channel (const std::string &name) const noexcept
+  channel_type get_channel (const std::string &name) noexcept
   {
     auto it = channels_.find(name);
     return it != channels_.end() ? it->second : default_channel_;
@@ -129,20 +129,10 @@ public:
   }
 
 
-  /**
-   * Enable/disable logging events using \a channel
-   */
-  void set_enabled (const channel_type &channel, bool enabled) noexcept
-  {
-    // it is ok to blow const here, this is owner of impl_
-    const_cast<__bits::channel_t<Worker> &>(channel.impl_).is_enabled = enabled;
-  }
-
-
 private:
 
   std::unordered_map<std::string, __bits::channel_t<Worker>> channels_{};
-  const __bits::channel_t<Worker> &default_channel_;
+  __bits::channel_t<Worker> &default_channel_;
 };
 
 
@@ -230,7 +220,7 @@ inline worker_t &default_worker ()
 /**
  * Return global default channel for worker_t::get_default() worker.
  */
-inline const channel_t<worker_t> &default_channel ()
+inline channel_t<worker_t> &default_channel ()
 {
   static auto channel_(default_worker().default_channel());
   return channel_;

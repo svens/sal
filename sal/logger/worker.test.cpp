@@ -36,10 +36,10 @@ TYPED_TEST_P(worker, default_channel_is_enabled)
   auto channel = worker.default_channel();
   EXPECT_TRUE(channel.is_enabled());
 
-  worker.set_enabled(channel, false);
+  channel.set_enabled(false);
   EXPECT_FALSE(channel.is_enabled());
 
-  worker.set_enabled(channel, true);
+  channel.set_enabled(true);
   EXPECT_TRUE(channel.is_enabled());
 }
 

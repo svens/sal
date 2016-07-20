@@ -11,8 +11,8 @@
  *     destination(s).
  *
  * Each channel is owned by worker. When application layer queries channel_t
- * from worker, it'll receive const reference to it that remains valid until
- * worker object itself is destructed.
+ * from worker, it'll receive reference to it that remains valid until worker
+ * object itself is destructed.
  *
  * Recommended usage at application layer:
  *   - during startup, add and configure all necessary channels
@@ -35,9 +35,9 @@ __sal_begin
 
 
 /**
- * Main event logging API. It provides only const methods to check if logging
- * is enabled and event factory method. This API is intentionally limited to
- * separate channel creation and configuring from logging events.
+ * Main event logging API. It provides only limited methods to check if
+ * logging is enabled and event factory method. This API is intentionally
+ * limited to separate channel creation and configuring from logging events.
  *
  * \a Worker owns channel_t instances and manages their lifecycle. Possible
  * implementations provided by this library are worker_t (synchronous logging)
@@ -74,6 +74,15 @@ public:
 
 
   /**
+   * Set \a enabled state for this channel.
+   */
+  void set_enabled (bool enabled) noexcept
+  {
+    impl_.is_enabled = enabled;
+  }
+
+
+  /**
    * Create and return new logging event.
    *
    * \note Event creation is unconditional, even if is_enabled() returns
@@ -91,9 +100,9 @@ public:
 private:
 
   using impl_t = __bits::channel_t<Worker>;
-  const impl_t &impl_;
+  impl_t &impl_;
 
-  channel_t (const impl_t &impl)
+  channel_t (impl_t &impl)
     : impl_(impl)
   {}
 

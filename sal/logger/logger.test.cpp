@@ -40,10 +40,7 @@ struct logger
 
   void set_enabled_default_channel (bool enable)
   {
-    sal::logger::default_worker().set_enabled(
-      sal::logger::default_channel(),
-      enable
-    );
+    sal::logger::default_channel().set_enabled(enable);
   }
 };
 
@@ -71,7 +68,7 @@ TEST_F(logger, log)
 
 TEST_F(logger, log_disabled)
 {
-  worker_.set_enabled(channel_, false);
+  channel_.set_enabled(false);
 
   bool is_called = false;
   sal_log(channel_) << get_param(case_name, is_called);
@@ -93,7 +90,7 @@ TEST_F(logger, log_if_true)
 
 TEST_F(logger, log_if_true_disabled)
 {
-  worker_.set_enabled(channel_, false);
+  channel_.set_enabled(false);
 
   bool is_called = false;
   sal_log_if(channel_, true) << get_param(case_name, is_called);
@@ -115,7 +112,7 @@ TEST_F(logger, log_if_false)
 
 TEST_F(logger, log_if_false_disabled)
 {
-  worker_.set_enabled(channel_, false);
+  channel_.set_enabled(false);
 
   bool is_called = false;
   sal_log_if(channel_, false) << get_param(case_name, is_called);
