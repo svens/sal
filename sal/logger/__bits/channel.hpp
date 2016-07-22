@@ -14,11 +14,11 @@ namespace __bits {
 
 
 template <typename T>
-struct option_t
+struct channel_option_t
 {
   T value;
 
-  option_t (const T &value)
+  channel_option_t (const T &value)
     : value(value)
   {}
 };
@@ -44,7 +44,7 @@ struct channel_base_t
   channel_base_t &operator= (channel_base_t &&) = delete;
 
 
-  bool set_option (const option_t<sink_ptr> &option) noexcept
+  bool set_option (const channel_option_t<sink_ptr> &option) noexcept
   {
     sink = option.value;
     return true;

@@ -17,7 +17,7 @@ struct logger
 
 
   logger ()
-    : worker_(sal::logger::set_sink(sink))
+    : worker_(sal::logger::set_channel_sink(sink))
     , channel_(worker_.make_channel(case_name))
   {
     sink->reset();
@@ -31,7 +31,7 @@ struct logger
     if (!done)
     {
       sal::logger::make_default_worker(
-        sal::logger::set_sink(sink)
+        sal::logger::set_channel_sink(sink)
       );
       done = true;
     }

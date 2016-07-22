@@ -47,7 +47,7 @@ TYPED_TEST_P(worker, default_channel_is_enabled)
 TYPED_TEST_P(worker, default_channel_sink)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
-  TypeParam worker{set_sink(sink)};
+  TypeParam worker{set_channel_sink(sink)};
   auto channel = worker.default_channel();
 
   EXPECT_FALSE(sink->init_called);
@@ -70,7 +70,7 @@ TYPED_TEST_P(worker, get_channel_default)
 TYPED_TEST_P(worker, make_channel)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
-  TypeParam worker{set_sink(sink)};
+  TypeParam worker{set_channel_sink(sink)};
 
   auto returned_channel = worker.make_channel(this->case_name);
   EXPECT_EQ(this->case_name, returned_channel.name());
@@ -114,7 +114,7 @@ TYPED_TEST_P(worker, set_enabled_if)
 TYPED_TEST_P(worker, sink_throwing_event_init)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
-  TypeParam worker{set_sink(sink)};
+  TypeParam worker{set_channel_sink(sink)};
   auto channel = worker.default_channel();
 
   sink->throw_init = true;
@@ -127,7 +127,7 @@ TYPED_TEST_P(worker, sink_throwing_event_init)
 TYPED_TEST_P(worker, sink_throwing_event_write)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
-  TypeParam worker{set_sink(sink)};
+  TypeParam worker{set_channel_sink(sink)};
 
   {
     auto channel = worker.default_channel();

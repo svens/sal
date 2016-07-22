@@ -17,7 +17,7 @@ struct channel
 
   channel ()
     : sink_(std::make_shared<sal_test::sink_t>())
-    , worker_(sal::logger::set_sink(sink_))
+    , worker_(sal::logger::set_channel_sink(sink_))
     , channel_(worker_.make_channel(this->case_name))
   {}
 };

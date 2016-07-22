@@ -23,10 +23,10 @@ __sal_begin
 /**
  * Return option to configure channel's sink.
  */
-inline auto set_sink (const sink_ptr &sink) noexcept
+inline auto set_channel_sink (const sink_ptr &sink) noexcept
 {
   sal_check_ptr(sink.get());
-  return __bits::option_t<sink_ptr>(sink);
+  return __bits::channel_option_t<sink_ptr>(sink);
 }
 
 
@@ -73,7 +73,7 @@ public:
    * \note Specified options become default values for new channels if their
    * own options are not set or set partially.
    *
-   * \see set_sink
+   * \see set_channel_sink
    */
   template <typename... Options>
   basic_worker_t (Options &&...options)
@@ -114,7 +114,7 @@ public:
    * options are specified, corresponding defaults are taken from
    * default_channel()
    *
-   * \see set_sink
+   * \see set_channel_sink
    */
   template <typename... Options>
   channel_type make_channel (const std::string &name, Options &&...options)
