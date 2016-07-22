@@ -242,6 +242,21 @@ public:
   }
 
 
+  /**
+   * Move the end of str_t backward by \a n characters (but not before begin).
+   * Calling this method while instance is not good() is undefined behaviour.
+   */
+  void remove_suffix (size_t n) noexcept
+  {
+    end_ -= n;
+    if (end_ < begin_)
+    {
+      end_ = begin_;
+    }
+    *end_ = '\0';
+  }
+
+
   //
   // operations
   //
