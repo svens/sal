@@ -149,11 +149,11 @@ public:
    * \endcode
    */
   template <typename Filter>
-  void set_enabled_if (bool enabled, Filter filter)
+  void set_enabled_if (bool enabled, Filter &&filter)
   {
     for (auto &channel: channels_)
     {
-      if (filter(channel.second.name))
+      if (std::forward<Filter>(filter)(channel.second.name))
       {
         channel.second.is_enabled = enabled;
       }
