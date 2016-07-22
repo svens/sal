@@ -18,7 +18,9 @@ __sal_begin
 
 
 /**
- * Base class for all sinks. Default implementation formats message prefix as:
+ * Base class for all sinks.
+ *
+ * Default implementation formats message prefix as:
  * \code{.txt}
  * HH:MM:SS,MSEC\tTHREAD\t[channel]
  * \endcode
@@ -26,11 +28,12 @@ __sal_begin
  *   - HH:MM:SS,MSEC: current timestamp in GMT
  *   - THREAD: logging thread id
  *   - [channel]: channel name (if empty, then not printed)
- * and prints message using printf().
  *
- * Inherited sink could override methods:
- *   - event_init(): do initial formatting. Called after event is created
- *   - event_write(): do final formatting and write message to destination
+ * Inherited sink could override method(s):
+ *   - event_init(): do initial formatting. Called after event is created.
+ *     Default implementation formats message as described above.
+ *   - event_write(): do final formatting and write message to destination.
+ *     There is no default implementation (pure virtual method)
  *
  * Thread-safety: sinks can be shared between multiple channels and/or workers
  * with following rules:
@@ -79,8 +82,20 @@ protected:
   virtual void event_init (event_t &event);
 
   /// \see write
-  virtual void event_write (event_t &event);
+  virtual void event_write (event_t &event) = 0;
 };
+
+
+/**
+ * Create new sink that prints event messages into stdout
+ */
+sink_ptr stdout_sink ();
+
+
+/**
+ * Create new sink that prints event messages into stderr
+ */
+sink_ptr stderr_sink ();
 
 
 __sal_end

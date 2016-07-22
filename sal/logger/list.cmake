@@ -1,7 +1,6 @@
 # sources
 list(APPEND sal_sources
   sal/logger/__bits/channel.hpp
-  sal/logger/__bits/channel.cpp
   sal/logger/async_worker.hpp
   sal/logger/async_worker.cpp
   sal/logger/channel.hpp

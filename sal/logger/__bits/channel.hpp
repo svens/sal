@@ -2,6 +2,7 @@
 
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
+#include <sal/logger/sink.hpp>
 #include <string>
 
 
@@ -28,7 +29,7 @@ struct channel_base_t
 {
   const std::string name;
   volatile bool is_enabled = true;
-  sink_ptr sink = default_sink();
+  sink_ptr sink = stdout_sink();
 
 
   channel_base_t (const std::string &name)
@@ -41,9 +42,6 @@ struct channel_base_t
   channel_base_t (channel_base_t &&) = delete;
   channel_base_t &operator= (const channel_base_t &) = delete;
   channel_base_t &operator= (channel_base_t &&) = delete;
-
-
-  static sink_ptr default_sink () noexcept;
 
 
   bool set_option (const option_t<sink_ptr> &option) noexcept

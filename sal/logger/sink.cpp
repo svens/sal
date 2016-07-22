@@ -86,18 +86,55 @@ void sink_t::event_init (event_t &event)
 }
 
 
-void sink_t::event_write (event_t &event)
+namespace {
+
+
+struct FILE_sink_t final
+  : public sink_t
 {
-  if (event.message.good())
+  FILE *file_{};
+
+
+  FILE_sink_t () = default;
+  FILE_sink_t (const FILE_sink_t &) = default;
+  FILE_sink_t &operator= (const FILE_sink_t &) = default;
+
+
+  FILE_sink_t (FILE *file)
+    : file_(sal_check_ptr(file))
+  {}
+
+
+  void event_write (event_t &event) final override
   {
-    printf("%s\n", event.message.get());
+    if (event.message.good())
+    {
+      fprintf(file_, "%s\n", event.message.get());
+    }
+    else
+    {
+      // message is truncated, append marker
+      // (message itself is always NUL-terminated)
+      fprintf(file_, "%s<...>\n", event.message.get());
+    }
   }
-  else
-  {
-    // message is truncated, append marker
-    // (message itself is always NUL-terminated)
-    printf("%s<...>\n", event.message.get());
-  }
+};
+
+
+} // namespace
+
+
+sink_ptr stdout_sink ()
+{
+  static auto sink_ = std::make_shared<FILE_sink_t>(stdout);
+  return sink_;
+}
+
+
+sink_ptr stderr_sink ()
+{
+  static auto sink_ = std::make_shared<FILE_sink_t>(stderr);
+  return sink_;
 }
 
 
