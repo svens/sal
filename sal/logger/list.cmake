@@ -1,10 +1,13 @@
 # sources
 list(APPEND sal_sources
   sal/logger/__bits/channel.hpp
+  sal/logger/__bits/file_sink.hpp
+  sal/logger/__bits/file_sink.cpp
   sal/logger/async_worker.hpp
   sal/logger/async_worker.cpp
   sal/logger/channel.hpp
   sal/logger/event.hpp
+  sal/logger/file_sink.hpp
   sal/logger/fwd.hpp
   sal/logger/logger.hpp
   sal/logger/sink.hpp
@@ -18,6 +21,7 @@ list(APPEND sal_sources
 list(APPEND sal_unittests
   sal/logger/common.test.hpp
   sal/logger/channel.test.cpp
+  sal/logger/file_sink.test.cpp
   sal/logger/logger.test.cpp
   sal/logger/worker.test.cpp
 )

@@ -44,10 +44,10 @@ struct channel_base_t
   channel_base_t &operator= (channel_base_t &&) = delete;
 
 
-  bool set_option (const channel_option_t<sink_ptr> &option) noexcept
+  bool set_option (channel_option_t<sink_ptr> &&option) noexcept
   {
     sink = option.value;
-    return true;
+    return false;
   }
 };
 
@@ -67,7 +67,7 @@ struct channel_t final
     : channel_base_t(name)
     , worker(worker)
   {
-    bool unused[] = { channel_base_t::set_option(options)..., false };
+    bool unused[] = { set_option(std::forward<Options>(options))..., false };
     (void)unused;
   }
 };
