@@ -28,9 +28,8 @@ constexpr char dir_sep = '/';
     return ::GetCurrentProcessId();
   }
 
-  inline int mkdir (const char *dirname, int mode) noexcept
+  inline int mkdir (const char *dirname, int /*mode*/) noexcept
   {
-    (void)mode;
     return ::_mkdir(dirname);
   }
 
@@ -45,9 +44,8 @@ constexpr char dir_sep = '/';
     return ch == '/';
   }
 
-  inline constexpr bool is_drive_sep (char ch) noexcept
+  inline constexpr bool is_drive_sep (char /*ch*/) noexcept
   {
-    (void)ch;
     return false;
   }
 
@@ -71,7 +69,10 @@ namespace __bits {
 namespace {
 
 
-void create_directories (std::string dir, str_t<1024> &path)
+using path_t = str_t<1024>;
+
+
+void create_directories (std::string dir, path_t &path)
 {
   if (!is_dir_sep(dir.back()))
   {
@@ -90,6 +91,73 @@ void create_directories (std::string dir, str_t<1024> &path)
     }
     path << ch;
   }
+}
+
+
+void make_filename (path_t &filename, const std::string &suffix) noexcept
+{
+  const auto now = utc_time();
+
+  // {yyyy}-
+  filename << now.tm_year + 1900 << '-';
+
+  // {mm}-
+  if (now.tm_mon + 1 < 10) filename << '0';
+  filename << now.tm_mon + 1 << '-';
+
+  // {dd}T
+  if (now.tm_mday < 10) filename << '0';
+  filename << now.tm_mday << 'T';
+
+  // {HH}
+  if (now.tm_hour < 10) filename << '0';
+  filename << now.tm_hour;
+
+  // {MM}
+  if (now.tm_min < 10) filename << '0';
+  filename << now.tm_min;
+
+  // {SS}
+  if (now.tm_sec < 10) filename << '0';
+  filename << now.tm_sec;
+
+  // _{label}.log
+  filename << suffix;
+}
+
+
+size_t get_size_and_filename (path_t &filename, size_t max_size) noexcept
+{
+  // check up to 1000 files
+  for (size_t i = 0;  i < 1000;  ++i)
+  {
+    struct stat st;
+    if (::stat(filename.data(), &st) == 0)
+    {
+      if (st.st_size + event_t::max_message_size < max_size)
+      {
+        // exists and has room for at least one maximum size message
+        return st.st_size;
+      }
+    }
+    else if (errno == ENOENT)
+    {
+      // does not exist
+      return 0;
+    }
+    // else: existing file size exceeds max_size already
+
+    // add/replace index in current filename and try again
+    if (i > 100) filename.remove_suffix(4);
+    else if (i > 10) filename.remove_suffix(3);
+    else if (i > 0) filename.remove_suffix(2);
+    filename << '.' << i;
+  }
+
+  // couldn't find any file in current second that can fit more messages
+  // nothing we can do, keep appending to last file (and lie about size to
+  // postpone next size check into next second hopefully)
+  return 0;
 }
 
 
@@ -120,8 +188,7 @@ void finish (str_t<event_t::max_message_size> &message) noexcept
 
 file_t file_sink_t::make_file ()
 {
-  auto now = utc_time();
-  str_t<1024> filename;
+  path_t filename;
 
   // dir
   if (!dir_.empty() && dir_ != ".")
@@ -129,27 +196,14 @@ file_t file_sink_t::make_file ()
     create_directories(dir_, filename);
   }
 
-  // {yyyy}-
-  filename << now.tm_year + 1900 << '-';
+  // filename
+  make_filename(filename, suffix_);
 
-  // {mm}-
-  if (now.tm_mon + 1 < 10) filename << '0';
-  filename << now.tm_mon + 1 << '-';
-
-  // {dd}T
-  if (now.tm_mday < 10) filename << '0';
-  filename << now.tm_mday << 'T';
-
-  // {HH}
-  if (now.tm_hour < 10) filename << '0';
-  filename << now.tm_hour;
-
-  // {MM}
-  if (now.tm_min < 10) filename << '0';
-  filename << now.tm_min;
-
-  // _{label}.log
-  filename << suffix_;
+  // next filename index which size < max_size
+  if (max_size_)
+  {
+    size_ = get_size_and_filename(filename, max_size_);
+  }
 
   auto file = file_t::open_or_create(filename.data(),
     std::ios::out | std::ios::app
@@ -170,8 +224,12 @@ file_t file_sink_t::make_file ()
 
 void file_sink_t::event_write (event_t &event)
 {
+  // rotate at change of day
+  // TODO
+
   finish(event.message);
 
+  // write (or buffer/flush)
   if (buffer_)
   {
     if (buffer_->size() + event.message.size() > buffer_->capacity())
@@ -183,6 +241,12 @@ void file_sink_t::event_write (event_t &event)
   else
   {
     file_.write(event.message.data(), event.message.size());
+  }
+
+  // rotate if max size is exceeded
+  if (max_size_ && (size_ += event.message.size()) >= max_size_)
+  {
+    // TODO
   }
 }
 

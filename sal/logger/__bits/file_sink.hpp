@@ -61,7 +61,7 @@ private:
 
   const std::string suffix_;
   std::string dir_ = ".";
-  size_t max_size_ = 0;
+  size_t max_size_ = 0, size_ = 0;
   std::unique_ptr<std::string> buffer_{};
 
 
