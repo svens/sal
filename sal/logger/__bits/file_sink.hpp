@@ -44,7 +44,7 @@ public:
     bool unused[] = { set_option(std::forward<Options>(options))..., false };
     (void)unused;
 
-    file_t file = make_file();
+    auto file = make_file();
     swap_file(file);
   }
 

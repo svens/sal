@@ -34,9 +34,12 @@ TYPED_TEST_CASE_P(file_sink);
 
 TYPED_TEST_P(file_sink, test)
 {
-  sal_log(this->channel_) << "yks";
-  sal_log(this->channel_) << "teine";
-  sal_log(this->channel_) << "kolmas";
+  for (auto i = 0;  i < 10;  ++i)
+  {
+    sal_log(this->channel_) << i << " - yks";
+    sal_log(this->channel_) << i << " - teine";
+    sal_log(this->channel_) << i << " - kolmas";
+  }
 }
 
 

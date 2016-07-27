@@ -157,7 +157,7 @@ size_t get_size_and_filename (path_t &filename, size_t max_size) noexcept
   // couldn't find any file in current second that can fit more messages
   // nothing we can do, keep appending to last file (and lie about size to
   // postpone next size check into next second hopefully)
-  return 0;
+  return max_size / 2;
 }
 
 
@@ -216,7 +216,7 @@ file_t file_sink_t::make_file ()
     << "\n# log=" << filename << ';'
     << "\n# pid=" << get_this_process_id() << ';'
     << "\n#\n\n";
-  file.write(header.data(), header.size());
+  size_ += file.write(header.data(), header.size());
 
   return file;
 }
@@ -228,6 +228,20 @@ void file_sink_t::event_write (event_t &event)
   // TODO
 
   finish(event.message);
+
+  // rotate file if writing new message would exceed max size
+  if (max_size_)
+  {
+    if (size_ + event.message.size() > max_size_)
+    {
+      if (auto file = make_file())
+      {
+        flush();
+        swap_file(file);
+      }
+    }
+    size_ += event.message.size();
+  }
 
   // write (or buffer/flush)
   if (buffer_)
@@ -241,12 +255,6 @@ void file_sink_t::event_write (event_t &event)
   else
   {
     file_.write(event.message.data(), event.message.size());
-  }
-
-  // rotate if max size is exceeded
-  if (max_size_ && (size_ += event.message.size()) >= max_size_)
-  {
-    // TODO
   }
 }
 
