@@ -32,7 +32,7 @@ struct channel_base_t
 {
   const std::string name;
   volatile bool is_enabled = true;
-  sink_ptr sink = cout_sink();
+  sink_ptr sink = cout();
 
 
   channel_base_t (const std::string &name)

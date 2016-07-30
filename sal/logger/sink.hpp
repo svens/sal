@@ -12,6 +12,7 @@
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
 #include <sal/logger/event.hpp>
+#include <iostream>
 
 
 namespace sal { namespace logger {
@@ -91,17 +92,32 @@ protected:
 
 
 /**
+ * Return sink that prints event messages into \a os, using default layout
+ * implemented by sink_t.
+ */
+sink_ptr ostream_sink (std::ostream &os);
+
+
+/**
  * Return sink that prints event messages into std::cout, using default layout
  * implemented by sink_t.
  */
-sink_ptr cout_sink ();
+inline sink_ptr cout ()
+{
+  static auto sink = ostream_sink(std::cout);
+  return sink;
+}
 
 
 /**
  * Return sink that prints event messages into std::cerr, using default layout
  * implemented by sink_t.
  */
-sink_ptr cerr_sink ();
+inline sink_ptr cerr ()
+{
+  static auto sink = ostream_sink(std::cerr);
+  return sink;
+}
 
 
 __sal_end

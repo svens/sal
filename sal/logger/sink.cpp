@@ -128,11 +128,9 @@ struct ostream_sink_t final
 {
   std::ostream &ostream;
 
-
   ostream_sink_t (std::ostream &ostream)
     : ostream(ostream)
   {}
-
 
   void sink_event_write (event_t &event) final override
   {
@@ -153,17 +151,9 @@ struct ostream_sink_t final
 } // namespace
 
 
-sink_ptr cout_sink ()
+sink_ptr ostream_sink (std::ostream &os)
 {
-  static auto sink_ = std::make_shared<ostream_sink_t>(std::cout);
-  return sink_;
-}
-
-
-sink_ptr cerr_sink ()
-{
-  static auto sink_ = std::make_shared<ostream_sink_t>(std::cerr);
-  return sink_;
+  return std::make_shared<ostream_sink_t>(os);
 }
 
 

@@ -22,6 +22,7 @@ list(APPEND sal_unittests
   sal/logger/common.test.hpp
   sal/logger/channel.test.cpp
   sal/logger/file_sink.test.cpp
+  sal/logger/ostream_sink.test.cpp
   sal/logger/logger.test.cpp
   sal/logger/worker.test.cpp
 )
