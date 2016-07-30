@@ -59,12 +59,13 @@ public:
 private:
 
   file_t file_;
-
   const std::string suffix_;
   std::string dir_ = ".";
-  size_t max_size_ = 0, size_ = 0;
   std::unique_ptr<std::string> buffer_{};
   bool utc_time_ = true;
+
+  // if max_size_ == 0, size_ has undefined value
+  size_t max_size_ = 0, size_ = 0;
 
 
   file_t make_file ();
@@ -134,6 +135,16 @@ private:
   void swap_file (file_t &file)
   {
     swap(file_, file);
+  }
+
+
+  void rotate ()
+  {
+    if (auto file = make_file())
+    {
+      flush();
+      swap_file(file);
+    }
   }
 };
 

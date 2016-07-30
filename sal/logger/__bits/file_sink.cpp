@@ -1,6 +1,8 @@
 #include <sal/logger/__bits/file_sink.hpp>
 #include <sal/str.hpp>
+#include <sal/spinlock.hpp>
 #include <sal/time.hpp>
+#include <mutex>
 
 
 namespace {
@@ -183,6 +185,44 @@ void finish (str_t<event_t::max_message_size> &message) noexcept
 }
 
 
+inline uint8_t today (time_t time) noexcept
+{
+  // time is UTC or local
+  // doing utc_time on top of that does not affect it
+  return utc_time(time).tm_mday;
+}
+
+
+bool new_day_started (time_t time) noexcept
+{
+  using namespace std::chrono_literals;
+
+  constexpr auto interval = 1s;
+  static auto next_check = time + interval;
+  static uint8_t day = today(time);
+
+  if (sal_unlikely(time >= next_check))
+  {
+    static spinlock_t mutex;
+    std::lock_guard<spinlock_t> lock(mutex);
+
+    if (time >= next_check)
+    {
+      next_check += interval;
+
+      const auto new_day = today(time);
+      if (day != new_day)
+      {
+        day = new_day;
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+
 } // namespace
 
 
@@ -225,21 +265,18 @@ file_t file_sink_t::make_file ()
 
 void file_sink_t::sink_event_write (event_t &event)
 {
-  // rotate at change of day
-  // TODO
-
   finish(event.message);
 
-  // rotate file if writing new message would exceed max size
-  if (max_size_)
+  // rotate file if necessary
+  if (new_day_started(event.time))
+  {
+    rotate();
+  }
+  else if (max_size_)
   {
     if (size_ + event.message.size() > max_size_)
     {
-      if (auto file = make_file())
-      {
-        flush();
-        swap_file(file);
-      }
+      rotate();
     }
     size_ += event.message.size();
   }
