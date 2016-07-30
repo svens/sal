@@ -11,6 +11,7 @@
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
 #include <sal/str.hpp>
+#include <sal/time.hpp>
 
 
 namespace sal { namespace logger {
@@ -25,10 +26,14 @@ struct event_t
 {
   /// Maximum message length
   static constexpr size_t max_message_size = 4000
+    - sizeof(time_t)
     - sizeof(sink_t *)
     - sizeof(void *)
     - sizeof(str_t<1>) - 1
   ;
+
+  /// Event creation time
+  time_t time{};
 
   /// Final sink where event will be sent to
   sink_t *sink{};

@@ -20,7 +20,7 @@ struct logger
     : worker_(sal::logger::set_channel_sink(sink))
     , channel_(worker_.make_channel(case_name))
   {
-    sink->reset();
+    sink->clear();
     set_enabled_default_channel(true);
   }
 

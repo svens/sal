@@ -17,10 +17,10 @@ struct sink_t final
 
   sink_t ()
   {
-    reset();
+    clear();
   }
 
-  void reset ()
+  void clear ()
   {
     init_called = write_called = throw_init = throw_write = false;
     last_message = "";

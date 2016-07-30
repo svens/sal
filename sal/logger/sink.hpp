@@ -11,6 +11,7 @@
 
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
+#include <sal/logger/event.hpp>
 
 
 namespace sal { namespace logger {
@@ -31,7 +32,8 @@ __sal_begin
  *
  * Inherited sink could override method(s):
  *   - sink_event_init(): do initial event formatting. Called after event is
- *     created. Default implementation formats message as described above.
+ *     created. Default implementation formats message as described above,
+ *     using local time.
  *   - sink_event_write(): do final event formatting and write message to
  *     destination. There is no default implementation (pure virtual method)
  *
@@ -59,8 +61,11 @@ public:
    * formatting (date/time, channel name, etc).
    */
   virtual void sink_event_init (event_t &event,
-    const std::string &channel_name
-  );
+    const std::string &channel_name)
+  {
+    event.time = local_now();
+    init(event, channel_name);
+  }
 
 
   /**
@@ -68,19 +73,27 @@ public:
    * implementation can also do final formatting if necessary.
    */
   virtual void sink_event_write (event_t &event) = 0;
+
+
+protected:
+
+  static time_t local_now () noexcept;
+  void init (event_t &event, const std::string &channel_name) noexcept;
 };
 
 
 /**
- * Create new sink that prints event messages into stdout
+ * Return sink that prints event messages into std::cout, using default layout
+ * implemented by sink_t.
  */
-sink_ptr stdout_sink ();
+sink_ptr cout_sink ();
 
 
 /**
- * Create new sink that prints event messages into stderr
+ * Return sink that prints event messages into std::cerr, using default layout
+ * implemented by sink_t.
  */
-sink_ptr stderr_sink ();
+sink_ptr cerr_sink ();
 
 
 __sal_end
