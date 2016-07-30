@@ -46,7 +46,7 @@ ide:
 
 
 .edit:
-	$(EDITOR) $(EDITORFLAGS) $(edit)/list.cmake $$(grep "$(edit)/" $(edit)/list.cmake)
+	$(EDITOR) $(EDITORFLAGS) $(edit)/list.cmake $$(grep "^[[:space:]]*$(edit)/" $(edit)/list.cmake)
 
 tags:
 	find sal bench -name '*pp' > .work/sources.txt
