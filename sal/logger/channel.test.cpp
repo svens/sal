@@ -52,9 +52,6 @@ TYPED_TEST_P(channel, make_event)
     EXPECT_TRUE(this->sink_->init_called);
     this->sink_->init_called = false;
     EXPECT_FALSE(this->sink_->write_called);
-
-    EXPECT_EQ(sal::this_thread::get_id(), event->thread);
-    EXPECT_EQ(this->case_name, *event->channel_name);
   }
   EXPECT_FALSE(this->sink_->init_called);
   EXPECT_TRUE(this->sink_->write_called);

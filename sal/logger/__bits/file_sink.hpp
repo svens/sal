@@ -21,15 +21,15 @@ struct file_sink_option_t
 {
   T value;
 
-  file_sink_option_t (const T &value)
+  explicit file_sink_option_t (const T &value)
     : value(value)
   {}
 };
 
 
 using file_dir = file_sink_option_t<1, std::string>;
-using file_max_size = file_sink_option_t<3, size_t>;
-using file_buffer_size = file_sink_option_t<2, size_t>;
+using file_max_size = file_sink_option_t<2, size_t>;
+using file_buffer_size = file_sink_option_t<3, size_t>;
 
 
 class file_sink_t final
@@ -68,7 +68,7 @@ private:
   file_t make_file ();
 
 
-  void event_write (event_t &event) final override;
+  void sink_event_write (event_t &event) final override;
 
 
   bool set_option (file_dir &&option)

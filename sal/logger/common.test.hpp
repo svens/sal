@@ -26,9 +26,10 @@ struct sink_t final
     last_message = "";
   }
 
-  void event_init (sal::logger::event_t &event) override
+  void sink_event_init (sal::logger::event_t &event,
+    const std::string &channel_name) override
   {
-    sal::logger::sink_t::event_init(event);
+    sal::logger::sink_t::sink_event_init(event, channel_name);
 
     init_called = true;
     if (throw_init)
@@ -38,7 +39,7 @@ struct sink_t final
     }
   }
 
-  void event_write (sal::logger::event_t &event) override
+  void sink_event_write (sal::logger::event_t &event) override
   {
     write_called = true;
     if (throw_write)

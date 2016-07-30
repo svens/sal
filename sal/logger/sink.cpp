@@ -1,7 +1,8 @@
 #include <sal/logger/sink.hpp>
 #include <sal/logger/event.hpp>
 #include <sal/assert.hpp>
-#include <chrono>
+#include <sal/thread.hpp>
+#include <sal/time.hpp>
 #include <cstdio>
 
 
@@ -12,15 +13,14 @@ __sal_begin
 namespace {
 
 
-void split_time (event_t &event,
-  unsigned &h, unsigned &m, unsigned &s, unsigned &ms)
+void split_now (unsigned &h, unsigned &m, unsigned &s, unsigned &ms)
 {
   using namespace std;
   using namespace std::chrono;
   using days = duration<int, ratio_multiply<hours::period, ratio<24>>::type>;
 
   // skip days, leaving timestamp since 00:00:00.000
-  clock_t::duration t = event.time.time_since_epoch();
+  auto t = now().time_since_epoch();
   t -= duration_cast<days>(t);
 
   auto hh = duration_cast<hours>(t);
@@ -44,7 +44,7 @@ void split_time (event_t &event,
 auto &insert_time (event_t &event) noexcept
 {
   unsigned h, m, s, ms;
-  split_time(event, h, m, s, ms);
+  split_now(h, m, s, ms);
 
   // hour:
   if (h < 10) event.message << '0';     // LCOV_EXCL_LINE
@@ -70,18 +70,18 @@ auto &insert_time (event_t &event) noexcept
 } // namespace
 
 
-void sink_t::event_init (event_t &event)
+void sink_t::sink_event_init (event_t &event, const std::string &channel_name)
 {
   // hh:mm:ss.msec\t
   insert_time(event) << '\t';
 
   // thread\t
-  event.message << event.thread << '\t';
+  event.message << this_thread::get_id() << '\t';
 
   // '[module] '
-  if (event.channel_name && !event.channel_name->empty())
+  if (!channel_name.empty())
   {
-    event.message << '[' << *event.channel_name << "] ";
+    event.message << '[' << channel_name << "] ";
   }
 }
 
@@ -105,7 +105,7 @@ struct FILE_sink_t final
   {}
 
 
-  void event_write (event_t &event) final override
+  void sink_event_write (event_t &event) final override
   {
     if (event.message.good())
     {

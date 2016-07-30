@@ -222,7 +222,7 @@ file_t file_sink_t::make_file ()
 }
 
 
-void file_sink_t::event_write (event_t &event)
+void file_sink_t::sink_event_write (event_t &event)
 {
   // rotate at change of day
   // TODO

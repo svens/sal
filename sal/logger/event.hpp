@@ -2,7 +2,7 @@
 
 /**
  * \file sal/logger/event.hpp
- * Logging event information (timestamp, thread, message etc)
+ * Logging event information
  *
  * \addtogroup logger
  * \{
@@ -11,9 +11,6 @@
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
 #include <sal/str.hpp>
-#include <sal/thread.hpp>
-#include <sal/time.hpp>
-#include <string>
 
 
 namespace sal { namespace logger {
@@ -28,24 +25,16 @@ struct event_t
 {
   /// Maximum message length
   static constexpr size_t max_message_size = 4000
-    - sizeof(time_t)
-    - sizeof(thread_id)
     - sizeof(sink_t *)
-    - sizeof(const std::string *)
+    - sizeof(void *)
     - sizeof(str_t<1>) - 1
   ;
-
-  /// Event time
-  time_t time{};
-
-  /// Event logging thread
-  thread_id thread{};
 
   /// Final sink where event will be sent to
   sink_t *sink{};
 
-  /// Name of channel that created this event
-  const std::string *channel_name{};
+  /// Opaque sink-specific data (should be used only by sink)
+  void *sink_data{};
 
   /// Event message
   str_t<max_message_size> message{};

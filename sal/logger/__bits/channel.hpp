@@ -13,15 +13,18 @@ __sal_begin
 namespace __bits {
 
 
-template <typename T>
+template <int Tag, typename T>
 struct channel_option_t
 {
   T value;
 
-  channel_option_t (const T &value)
+  explicit channel_option_t (const T &value)
     : value(value)
   {}
 };
+
+
+using channel_sink = channel_option_t<1, sink_ptr>;
 
 
 // Common channel data
@@ -44,7 +47,7 @@ struct channel_base_t
   channel_base_t &operator= (channel_base_t &&) = delete;
 
 
-  bool set_option (channel_option_t<sink_ptr> &&option) noexcept
+  bool set_option (channel_sink &&option) noexcept
   {
     sink = option.value;
     return false;

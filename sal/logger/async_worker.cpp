@@ -13,12 +13,9 @@ event_t *async_worker_t::alloc_and_init (const channel_type &channel) noexcept
   {
     try
     {
-      event->time = now();
-      event->thread = this_thread::get_id();
       event->message.reset();
-      event->channel_name = &channel.name();
       event->sink = channel.impl_.sink.get();
-      event->sink->init(*event);
+      event->sink->sink_event_init(*event, channel.name());
       return event;
     }
     catch (...)
@@ -35,7 +32,7 @@ void async_worker_t::write_and_release (event_t *event) noexcept
 {
   try
   {
-    event->sink->write(*event);
+    event->sink->sink_event_write(*event);
   }
   catch (...)
   {}

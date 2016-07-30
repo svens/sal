@@ -69,15 +69,11 @@ event_t *worker_t::alloc_and_init (const channel_type &channel)
 {
   auto event = sal_check_ptr(this_thread_event_alloc());
 
-  event->time = now();
-  event->thread = this_thread::get_id();
-  event->message.reset();
-  event->channel_name = &channel.name();
-  event->sink = channel.impl_.sink.get();
-
   try
   {
-    event->sink->init(*event);
+    event->message.reset();
+    event->sink = channel.impl_.sink.get();
+    event->sink->sink_event_init(*event, channel.name());
     return event;
   }
   catch (...)
@@ -96,7 +92,7 @@ void worker_t::write_and_release (event_t *event)
 
   try
   {
-    event->sink->write(*event);
+    event->sink->sink_event_write(*event);
   }
   catch (...)
   {

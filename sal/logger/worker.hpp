@@ -26,7 +26,7 @@ __sal_begin
 inline auto set_channel_sink (const sink_ptr &sink) noexcept
 {
   sal_check_ptr(sink.get());
-  return __bits::channel_option_t<sink_ptr>(sink);
+  return __bits::channel_sink(sink);
 }
 
 
@@ -123,7 +123,7 @@ public:
       std::forward_as_tuple(name),
       std::forward_as_tuple(name,
         static_cast<Worker &>(*this),
-        default_channel_.sink,
+        set_channel_sink(default_channel_.sink),
         std::forward<Options>(options)...
       )
     ).first->second;
