@@ -30,6 +30,7 @@ struct file_sink_option_t
 using file_dir = file_sink_option_t<1, std::string>;
 using file_max_size = file_sink_option_t<2, size_t>;
 using file_buffer_size = file_sink_option_t<3, size_t>;
+using file_utc_time = file_sink_option_t<4, bool>;
 
 
 class file_sink_t final
@@ -63,10 +64,18 @@ private:
   std::string dir_ = ".";
   size_t max_size_ = 0, size_ = 0;
   std::unique_ptr<std::string> buffer_{};
+  bool utc_time_ = true;
 
 
   file_t make_file ();
 
+
+  void sink_event_init (event_t &event, const std::string &channel_name)
+    final override
+  {
+    event.time = utc_time_ ? now() : sink_t::local_now();
+    sink_t::init(event, channel_name);
+  }
 
   void sink_event_write (event_t &event) final override;
 
@@ -81,6 +90,13 @@ private:
   bool set_option (file_max_size &&option)
   {
     max_size_ = option.value;
+    return false;
+  }
+
+
+  bool set_option (file_utc_time &&option)
+  {
+    utc_time_ = option.value;
     return false;
   }
 

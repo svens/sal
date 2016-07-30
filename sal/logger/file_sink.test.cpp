@@ -21,7 +21,8 @@ struct file_sink
         sal::logger::file("app",
           sal::logger::set_file_dir("test_logs"),
           sal::logger::set_file_buffer_size_kb(1),
-          sal::logger::set_file_max_size_mb(1)
+          sal::logger::set_file_max_size_mb(1),
+          sal::logger::set_file_utc_time(false)
         )
       )
     , worker_(sal::logger::set_channel_sink(sink_))

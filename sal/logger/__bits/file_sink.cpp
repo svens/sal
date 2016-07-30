@@ -94,32 +94,32 @@ void create_directories (std::string dir, path_t &path)
 }
 
 
-void make_filename (path_t &filename, const std::string &suffix) noexcept
+void make_filename (path_t &filename,
+  const std::tm &tm,
+  const std::string &suffix) noexcept
 {
-  const auto now = utc_time();
-
   // {yyyy}-
-  filename << now.tm_year + 1900 << '-';
+  filename << tm.tm_year + 1900 << '-';
 
   // {mm}-
-  if (now.tm_mon + 1 < 10) filename << '0';
-  filename << now.tm_mon + 1 << '-';
+  if (tm.tm_mon + 1 < 10) filename << '0';
+  filename << tm.tm_mon + 1 << '-';
 
   // {dd}T
-  if (now.tm_mday < 10) filename << '0';
-  filename << now.tm_mday << 'T';
+  if (tm.tm_mday < 10) filename << '0';
+  filename << tm.tm_mday << 'T';
 
   // {HH}
-  if (now.tm_hour < 10) filename << '0';
-  filename << now.tm_hour;
+  if (tm.tm_hour < 10) filename << '0';
+  filename << tm.tm_hour;
 
   // {MM}
-  if (now.tm_min < 10) filename << '0';
-  filename << now.tm_min;
+  if (tm.tm_min < 10) filename << '0';
+  filename << tm.tm_min;
 
   // {SS}
-  if (now.tm_sec < 10) filename << '0';
-  filename << now.tm_sec;
+  if (tm.tm_sec < 10) filename << '0';
+  filename << tm.tm_sec;
 
   // _{label}.log
   filename << suffix;
@@ -197,7 +197,8 @@ file_t file_sink_t::make_file ()
   }
 
   // filename
-  make_filename(filename, suffix_);
+  auto tm = utc_time_ ? utc_time() : local_time();
+  make_filename(filename, tm, suffix_);
 
   // next filename index which size < max_size
   if (max_size_)

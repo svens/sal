@@ -58,6 +58,16 @@ inline auto set_file_buffer_size_kb (size_t size) noexcept
 
 
 /**
+ * Return option to configure whether file sink uses local or UTC time. If not
+ * set, UTC time is used.
+ */
+inline auto set_file_utc_time (bool on) noexcept
+{
+  return __bits::file_utc_time(on);
+}
+
+
+/**
  * Create new file sink with \a label and \a options.
  *
  * Argument \a label is used to create actual logfile name (in directory
@@ -70,6 +80,7 @@ inline auto set_file_buffer_size_kb (size_t size) noexcept
  *   - set_file_dir(): set directory where logfiles are created
  *   - set_file_max_size_mb(): maximum single file size (in kB)
  *   - set_file_buffer_size_kb(): configure file buffering
+ *   - set_file_utc_time(): configure whether to use UTC or local time
  *
  * Logfile is closed and new is started whenever current size reaches
  * configured maximum size. If file already exists with given name and size
@@ -77,7 +88,7 @@ inline auto set_file_buffer_size_kb (size_t size) noexcept
  * .0 - .999). If sizes of all those files exceed maximum size, filename with
  * index .999 will be forced to use (regardless of it's size)
  *
- * Also, log file is rotated every midnight (0:00 UTC)
+ * Also, log file is rotated every midnight.
  */
 template <typename... Options>
 sink_ptr file (const std::string &label, Options &&...options)
