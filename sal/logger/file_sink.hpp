@@ -45,11 +45,14 @@ inline auto set_file_max_size_mb (size_t size) noexcept
  * temporarily gathered into buffer with \a size kB and written only when
  * buffer is full.
  *
- * Buffering improves performance but has disadvantages:
+ * Buffering improves performance but has certain disadvantages:
  *   - performance boost is penalised during buffer flushing
  *   - when application crashes, buffer remains unflushed
  *
- * Choose appropriate buffering strategy as required by application.
+ * Choose appropriate buffering strategy as required by application. If not
+ * set, default is not to buffer.
+ *
+ * \todo Catch crash signals and flush buffers.
  */
 inline auto set_file_buffer_size_kb (size_t size) noexcept
 {
@@ -88,7 +91,8 @@ inline auto set_file_utc_time (bool on) noexcept
  * .0 - .999). If sizes of all those files exceed maximum size, filename with
  * index .999 will be forced to use (regardless of it's size)
  *
- * Also, log file is rotated every midnight.
+ * Also, log file is rotated every midnight (using UTC or local time,
+ * depending on how set_file_utc_time() is set).
  */
 template <typename... Options>
 sink_ptr file (const std::string &label, Options &&...options)

@@ -6,6 +6,8 @@
 #include <sal/logger/sink.hpp>
 #include <sal/assert.hpp>
 #include <sal/file.hpp>
+#include <sal/spinlock.hpp>
+#include <mutex>
 #include <string>
 
 
@@ -58,6 +60,10 @@ public:
 
 private:
 
+  using mutex_t = spinlock_t;
+  using lock_t = std::lock_guard<mutex_t>;
+  mutex_t mutex_;
+
   file_t file_;
   const std::string suffix_;
   std::string dir_ = ".";
@@ -77,6 +83,7 @@ private:
     event.time = utc_time_ ? now() : sink_t::local_now();
     sink_t::init(event, channel_name);
   }
+
 
   void sink_event_write (event_t &event) final override;
 

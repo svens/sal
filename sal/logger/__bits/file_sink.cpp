@@ -1,8 +1,5 @@
 #include <sal/logger/__bits/file_sink.hpp>
-#include <sal/str.hpp>
-#include <sal/spinlock.hpp>
 #include <sal/time.hpp>
-#include <mutex>
 
 
 namespace {
@@ -189,7 +186,7 @@ inline uint8_t today (time_t time) noexcept
 {
   // time is UTC or local
   // doing utc_time on top of that does not affect it
-  return utc_time(time).tm_mday;
+  return static_cast<uint8_t>(utc_time(time).tm_mday);
 }
 
 
@@ -199,7 +196,7 @@ bool new_day_started (time_t time) noexcept
 
   constexpr auto interval = 1s;
   static auto next_check = time + interval;
-  static uint8_t day = today(time);
+  static auto day = today(time);
 
   if (sal_unlikely(time >= next_check))
   {
@@ -266,6 +263,8 @@ file_t file_sink_t::make_file ()
 void file_sink_t::sink_event_write (event_t &event)
 {
   finish(event.message);
+
+  lock_t lock(mutex_);
 
   // rotate file if necessary
   if (new_day_started(event.time))

@@ -77,7 +77,15 @@ public:
 
 protected:
 
+  /**
+   * Return time_t, converted to local timezone with DST if turned on
+   */
   static time_t local_now () noexcept;
+
+  /**
+   * Default implementation for \a sink_event_init() that expect \a event.time
+   * being already initialised.
+   */
   void init (event_t &event, const std::string &channel_name) noexcept;
 };
 
