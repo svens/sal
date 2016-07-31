@@ -84,8 +84,10 @@ void create_directories (std::string dir, path_t &path)
     {
       if (mkdir(path.data(), 0700) == -1 && errno != EEXIST)
       {
-        std::error_code error(errno, std::system_category());
-        throw_system_error(error, "create_directories: ", path);
+        throw_system_error(std::error_code(errno, std::system_category()),
+          "create_directories: ",
+          path
+        );
       }
     }
     path << ch;
@@ -99,6 +101,8 @@ void make_filename (path_t &filename,
 {
   // {yyyy}-
   filename << tm.tm_year + 1900 << '-';
+
+  // LCOV_EXCL_BR_START
 
   // {mm}-
   if (tm.tm_mon + 1 < 10) filename << '0';
@@ -119,6 +123,8 @@ void make_filename (path_t &filename,
   // {SS}
   if (tm.tm_sec < 10) filename << '0';
   filename << tm.tm_sec;
+
+  // LCOV_EXCL_BR_STOP
 
   // _{label}.log
   filename << suffix;
@@ -147,16 +153,18 @@ size_t get_size_and_filename (path_t &filename, size_t max_size) noexcept
     // else: existing file size exceeds max_size already
 
     // add/replace index in current filename and try again
+    // LCOV_EXCL_BR_START
     if (i > 100) filename.remove_suffix(4);
     else if (i > 10) filename.remove_suffix(3);
     else if (i > 0) filename.remove_suffix(2);
+    // LCOV_EXCL_BR_STOP
     filename << '.' << i;
   }
 
   // couldn't find any file in current second that can fit more messages
   // nothing we can do, keep appending to last file (and lie about size to
-  // postpone next size check into next second hopefully)
-  return max_size / 2;
+  // postpone next size check into next second hopefully; 10% of max size)
+  return max_size / 10;
 }
 
 
