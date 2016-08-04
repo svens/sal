@@ -90,10 +90,7 @@ public:
    */
   event_ptr make_event () const
   {
-    return event_ptr{
-      impl_.worker.alloc_and_init(*this),
-      &Worker::write_and_release
-    };
+    return impl_.worker.make_event(*this);
   }
 
 

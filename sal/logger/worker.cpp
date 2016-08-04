@@ -62,30 +62,7 @@ inline void this_thread_event_release (event_t *event)
 #endif // else __apple_build_version__
 
 
-} // namespace
-
-
-event_t *worker_t::alloc_and_init (const channel_type &channel)
-{
-  auto event = sal_check_ptr(this_thread_event_alloc());
-
-  try
-  {
-    event->message.reset();
-    event->sink = channel.impl_.sink.get();
-    event->sink->sink_event_init(*event, channel.name());
-    return event;
-  }
-  catch (...)
-  {
-    this_thread_event_release(event);
-  }
-
-  return nullptr;
-}
-
-
-void worker_t::write_and_release (event_t *event)
+void write_and_release (event_t *event)
 {
   // here it's ok to release event and still keep using it
   this_thread_event_release(event);
@@ -97,6 +74,28 @@ void worker_t::write_and_release (event_t *event)
   catch (...)
   {
   }
+}
+
+
+} // namespace
+
+
+event_ptr worker_t::make_event (const channel_type &channel)
+{
+  event_ptr event(sal_check_ptr(this_thread_event_alloc()), &write_and_release);
+
+  try
+  {
+    event->message.reset();
+    event->sink = channel.impl_.sink.get();
+    event->sink->sink_event_init(*event, channel.name());
+  }
+  catch (...)
+  {
+    this_thread_event_release(event.release());
+  }
+
+  return event;
 }
 
 

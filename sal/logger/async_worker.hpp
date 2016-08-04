@@ -33,9 +33,7 @@ public:
 
 private:
 
-  event_t *alloc_and_init (const channel_type &channel) noexcept;
-  static void write_and_release (event_t *event) noexcept;
-
+  event_ptr make_event (const channel_type &channel) noexcept;
   friend class channel_t<async_worker_t>;
 };
 

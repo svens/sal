@@ -41,16 +41,14 @@ inline auto set_channel_sink (const sink_ptr &sink) noexcept
  * new channels. Also, when querying for non-existing channel, default one
  * is returned.
  *
- * Inherited classes should provide two methods that are used by channel to
- * handle events:
- *   - event_t *alloc_and_init (const channel_t<Worker> &channel)
- *     Create new event (or fetch from pool) and initialize it's members.
- *     Return raw pointer to channel that will wrap it into unique_ptr,
- *     specifiying write_and_release() as custom deleter.
- *   - static void write_and_release (event_t &event);
- *     After application layer has filled event message, this method delivers
- *     event to final destination (sink) and after that releases event (or
- *     returns to pool)
+ * Inherited classes should provide method to allocate and initialise event:
+ * \code
+ * event_ptr make_event (const channel_t<Worker> &channel);
+ * \endcode
+ * Create new event (or fetch from pool) and initialize it's members.
+ * Inherited implementation should also provide custom deleter that writes
+ * event message to final destination and releases (or returns to poool) used
+ * event.
  *
  * \see worker_t
  * \see async_worker_t
@@ -219,12 +217,10 @@ public:
 
 private:
 
-  event_t *alloc_and_init (const channel_type &channel);
-  static void write_and_release (event_t *event);
+  event_ptr make_event (const channel_type &channel);
+  friend class channel_t<worker_t>;
 
   static std::unique_ptr<worker_t> default_;
-
-  friend class channel_t<worker_t>;
 };
 
 

@@ -7,9 +7,30 @@ namespace sal { namespace logger {
 __sal_begin
 
 
-event_t *async_worker_t::alloc_and_init (const channel_type &channel) noexcept
+namespace {
+
+
+void write_and_release (event_t *event) noexcept
 {
-  if (auto event = new (std::nothrow) event_t)
+  try
+  {
+    event->sink->sink_event_write(*event);
+  }
+  catch (...)
+  {}
+
+  delete event;
+}
+
+
+} // namespace
+
+
+event_ptr async_worker_t::make_event (const channel_type &channel) noexcept
+{
+  event_ptr event(new (std::nothrow) event_t, &write_and_release);
+
+  if (event)
   {
     try
     {
@@ -20,24 +41,11 @@ event_t *async_worker_t::alloc_and_init (const channel_type &channel) noexcept
     }
     catch (...)
     {
-      delete event;
+      delete event.release();
     }
   }
 
-  return nullptr;
-}
-
-
-void async_worker_t::write_and_release (event_t *event) noexcept
-{
-  try
-  {
-    event->sink->sink_event_write(*event);
-  }
-  catch (...)
-  {}
-
-  delete event;
+  return event;
 }
 
 
