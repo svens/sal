@@ -13,24 +13,18 @@ template <typename Worker>
 struct ostream_sink
   : public sal_test::with_type<Worker>
 {
-  Worker worker_;
-
-
-  ostream_sink ()
-    : worker_()
-  {}
-
-
   void test_ostream (sal::logger::sink_ptr sink, std::ostream &stream)
   {
-    auto channel = worker_.make_channel("test_channel",
-      sal::logger::set_channel_sink(sink)
-    );
-
-    // redirect logging to oss, log and reset back
+    // redirect output to oss, log and restore
     std::ostringstream oss;
     auto rdbuf = stream.rdbuf(oss.rdbuf());
-    sal_log(channel) << this->case_name;
+    {
+      Worker worker;
+      auto channel = worker.make_channel("test_channel",
+        sal::logger::set_channel_sink(sink)
+      );
+      sal_log(channel) << this->case_name;
+    }
     stream.rdbuf(rdbuf);
 
     // check content
@@ -42,15 +36,17 @@ struct ostream_sink
 
   void test_ostream_overflow (sal::logger::sink_ptr sink, std::ostream &stream)
   {
-    auto channel = worker_.make_channel("test_channel",
-      sal::logger::set_channel_sink(sink)
-    );
-
-    // redirect logging to oss, log and reset back
+    // redirect output to oss, log and restore
     std::ostringstream oss;
     auto rdbuf = stream.rdbuf(oss.rdbuf());
-    std::string big_string(sal::logger::event_t::max_message_size, 'x');
-    sal_log(channel) << this->case_name << ' ' << big_string;
+    {
+      Worker worker;
+      auto channel = worker.make_channel("test_channel",
+        sal::logger::set_channel_sink(sink)
+      );
+      std::string big_string(sal::logger::event_t::max_message_size, 'x');
+      sal_log(channel) << this->case_name << ' ' << big_string;
+    }
     stream.rdbuf(rdbuf);
 
     // check content

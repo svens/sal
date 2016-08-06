@@ -11,15 +11,17 @@ template <typename Worker>
 struct channel
   : public sal_test::with_type<Worker>
 {
-  std::shared_ptr<sal_test::sink_t> sink_;
-  Worker worker_;
-  sal::logger::channel_t<Worker> channel_;
+  std::shared_ptr<sal_test::sink_t> sink_{
+    std::make_shared<sal_test::sink_t>()
+  };
 
-  channel ()
-    : sink_(std::make_shared<sal_test::sink_t>())
-    , worker_(sal::logger::set_channel_sink(sink_))
-    , channel_(worker_.make_channel(this->case_name))
-  {}
+  std::unique_ptr<Worker> worker_{
+    std::make_unique<Worker>(sal::logger::set_channel_sink(sink_))
+  };
+
+  sal::logger::channel_t<Worker> channel_{
+    worker_->make_channel(this->case_name)
+  };
 };
 
 TYPED_TEST_CASE_P(channel);
@@ -53,6 +55,10 @@ TYPED_TEST_P(channel, make_event)
     this->sink_->init_called = false;
     EXPECT_FALSE(this->sink_->write_called);
   }
+
+  // have to reset worker: async_worker will write out all queued events
+  this->worker_.reset();
+
   EXPECT_FALSE(this->sink_->init_called);
   EXPECT_TRUE(this->sink_->write_called);
 }

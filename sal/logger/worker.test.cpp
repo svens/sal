@@ -47,12 +47,16 @@ TYPED_TEST_P(worker, default_channel_is_enabled)
 TYPED_TEST_P(worker, default_channel_sink)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
-  TypeParam worker{set_channel_sink(sink)};
-  auto channel = worker.default_channel();
 
-  EXPECT_FALSE(sink->init_called);
-  EXPECT_FALSE(sink->write_called);
-  channel.make_event()->message << this->case_name;
+  {
+    TypeParam worker{set_channel_sink(sink)};
+    auto channel = worker.default_channel();
+
+    EXPECT_FALSE(sink->init_called);
+    EXPECT_FALSE(sink->write_called);
+    channel.make_event()->message << this->case_name;
+  }
+
   EXPECT_TRUE(sink->init_called);
   EXPECT_TRUE(sink->write_called);
   EXPECT_TRUE(sink->last_message_contains(this->case_name));
@@ -127,15 +131,16 @@ TYPED_TEST_P(worker, sink_throwing_event_init)
 TYPED_TEST_P(worker, sink_throwing_event_write)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
-  TypeParam worker{set_channel_sink(sink)};
 
   {
+    TypeParam worker{set_channel_sink(sink)};
     auto channel = worker.default_channel();
     sink->throw_write = true;
     auto event = channel.make_event();
     ASSERT_NE(nullptr, event);
     event->message << this->case_name;
   }
+
   EXPECT_TRUE(sink->init_called);
   EXPECT_TRUE(sink->write_called);
   EXPECT_EQ("", sink->last_message);

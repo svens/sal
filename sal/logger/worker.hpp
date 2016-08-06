@@ -181,11 +181,8 @@ class worker_t
 {
 public:
 
-  /// Construct worker, passing \a options to basic_worker_t<worker_t>
-  template <typename... Options>
-  worker_t (Options &&...options)
-    : basic_worker_t(std::forward<Options>(options)...)
-  {}
+  // inherit ctor, no additional functionality
+  using basic_worker_t::basic_worker_t;
 
 
   /**
