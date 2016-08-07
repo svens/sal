@@ -13,7 +13,7 @@ template <typename Worker>
 struct ostream_sink
   : public sal_test::with_type<Worker>
 {
-  void test_ostream (sal::logger::sink_ptr sink, std::ostream &stream)
+  void test_ostream (std::ostream &stream)
   {
     // redirect output to oss, log and restore
     std::ostringstream oss;
@@ -21,7 +21,7 @@ struct ostream_sink
     {
       Worker worker;
       auto channel = worker.make_channel("test_channel",
-        sal::logger::set_channel_sink(sink)
+        sal::logger::set_channel_sink(stream)
       );
       sal_log(channel) << this->case_name;
     }
@@ -34,7 +34,7 @@ struct ostream_sink
   }
 
 
-  void test_ostream_overflow (sal::logger::sink_ptr sink, std::ostream &stream)
+  void test_ostream_overflow (std::ostream &stream)
   {
     // redirect output to oss, log and restore
     std::ostringstream oss;
@@ -42,7 +42,7 @@ struct ostream_sink
     {
       Worker worker;
       auto channel = worker.make_channel("test_channel",
-        sal::logger::set_channel_sink(sink)
+        sal::logger::set_channel_sink(stream)
       );
       std::string big_string(sal::logger::event_t::max_message_size, 'x');
       sal_log(channel) << this->case_name << ' ' << big_string;
@@ -62,25 +62,25 @@ TYPED_TEST_CASE_P(ostream_sink);
 
 TYPED_TEST_P(ostream_sink, cout)
 {
-  this->test_ostream(sal::logger::cout(), std::cout);
+  this->test_ostream(std::cout);
 }
 
 
 TYPED_TEST_P(ostream_sink, cerr)
 {
-  this->test_ostream(sal::logger::cerr(), std::cerr);
+  this->test_ostream(std::cerr);
 }
 
 
 TYPED_TEST_P(ostream_sink, cout_overflow)
 {
-  this->test_ostream_overflow(sal::logger::cout(), std::cout);
+  this->test_ostream_overflow(std::cout);
 }
 
 
 TYPED_TEST_P(ostream_sink, cerr_overflow)
 {
-  this->test_ostream_overflow(sal::logger::cerr(), std::cerr);
+  this->test_ostream_overflow(std::cerr);
 }
 
 

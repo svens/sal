@@ -31,6 +31,23 @@ inline auto set_channel_sink (const sink_ptr &sink) noexcept
 
 
 /**
+ * Return option to configure channel's sink with \a os of type std::ostream.
+ */
+inline auto set_channel_sink (std::ostream &os) noexcept
+{
+  if (&os == &std::cout)
+  {
+    return __bits::channel_sink(cout());
+  }
+  else if (&os == &std::cerr)
+  {
+    return __bits::channel_sink(cerr());
+  }
+  return __bits::channel_sink(ostream_sink(os));
+}
+
+
+/**
  * Base class for different worker implementations. This class provides
  * functionality to create, configure and query channels. Each channel is
  * identified by name (e.g. module names that use it to log events etc).
