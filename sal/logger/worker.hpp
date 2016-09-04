@@ -35,14 +35,6 @@ inline auto set_channel_sink (const sink_ptr &sink) noexcept
  */
 inline auto set_channel_sink (std::ostream &os) noexcept
 {
-  if (&os == &std::cout)
-  {
-    return __bits::channel_sink(cout());
-  }
-  else if (&os == &std::cerr)
-  {
-    return __bits::channel_sink(cerr());
-  }
   return __bits::channel_sink(ostream_sink(os));
 }
 

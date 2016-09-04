@@ -153,6 +153,16 @@ struct ostream_sink_t final
 
 sink_ptr ostream_sink (std::ostream &os)
 {
+  if (&os == &std::cout)
+  {
+    static auto sink = std::make_shared<ostream_sink_t>(std::cout);
+    return sink;
+  }
+  else if (&os == &std::cerr)
+  {
+    static auto sink = std::make_shared<ostream_sink_t>(std::cerr);
+    return sink;
+  }
   return std::make_shared<ostream_sink_t>(os);
 }
 

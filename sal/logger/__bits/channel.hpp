@@ -3,6 +3,7 @@
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
 #include <sal/logger/sink.hpp>
+#include <iostream>
 #include <string>
 
 
@@ -32,7 +33,7 @@ struct channel_base_t
 {
   const std::string name;
   volatile bool is_enabled = true;
-  sink_ptr sink = cout();
+  sink_ptr sink = ostream_sink(std::cout);
 
 
   channel_base_t (const std::string &name)
