@@ -62,9 +62,9 @@ private:
 
   using mutex_t = spinlock_t;
   using lock_t = std::lock_guard<mutex_t>;
-  mutex_t mutex_;
+  mutex_t mutex_{};
 
-  file_t file_;
+  file_t file_{};
   const std::string suffix_;
   std::string dir_ = ".";
   std::unique_ptr<std::string> buffer_{};
