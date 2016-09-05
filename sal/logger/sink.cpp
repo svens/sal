@@ -14,7 +14,7 @@ __sal_begin
 namespace {
 
 
-void split_time_of_day (time_t time,
+inline void split_time_of_day (time_t time,
   unsigned &h,
   unsigned &m,
   unsigned &s,
