@@ -17,56 +17,73 @@ struct async_worker_t::impl_t
   struct event_ctl_t
     : public event_t
   {
-    impl_t *owner;
-    spsc_t free_hook{};
-    mpsc_t write_hook{};
+    union
+    {
+      spsc_t free_hook;
+      mpsc_t write_hook;
+    };
 
-    event_ctl_t (impl_t *owner) noexcept
-      : owner(owner)
+    using free_list_t = queue_t<event_ctl_t, spsc_t, &event_ctl_t::free_hook>;
+    free_list_t * const free_list{};
+
+    using write_list_t = queue_t<event_ctl_t, mpsc_t, &event_ctl_t::write_hook>;
+    write_list_t * const write_list{};
+
+    event_ctl_t (free_list_t *free_list, write_list_t *write_list) noexcept
+      : free_list(free_list)
+      , write_list(write_list)
     {}
   };
 
-  spinlock_t mutex{};
-  std::deque<event_ctl_t> pool{};
-  queue_t<event_ctl_t, spsc_t, &event_ctl_t::free_hook> free_list{};
-  alignas(64) queue_t<event_ctl_t, mpsc_t, &event_ctl_t::write_hook> write_list{};
+  struct event_pool_t
+  {
+    spinlock_t mutex{};
+    std::deque<event_ctl_t> pool{};
+    event_ctl_t::free_list_t free_list{};
+  };
+
+  std::deque<event_pool_t> free_list_segments{2};
+  event_ctl_t::write_list_t write_list{};
   std::thread writer{};
 
 
   impl_t ()
   {
-    while (pool.size() < 2 * std::thread::hardware_concurrency())
+    for (auto &segment: free_list_segments)
     {
-      pool.emplace_back(this);
-      free_list.push(&pool.back());
+      segment.pool.emplace_back(&segment.free_list, &write_list);
+      segment.free_list.push(&segment.pool.back());
     }
   }
 
 
   event_t *make_event () noexcept
   {
-    std::lock_guard<spinlock_t> lock(mutex);
+    static std::atomic<unsigned> quasi_rnd{};
+    auto &segment = free_list_segments[++quasi_rnd % free_list_segments.size()];
+    std::lock_guard<spinlock_t> lock(segment.mutex);
 
-    if (auto event_ctl = free_list.try_pop())
+    if (auto event_ctl = segment.free_list.try_pop())
     {
       return static_cast<event_t *>(event_ctl);
     }
 
-    pool.emplace_back(this);
-    return static_cast<event_t *>(&pool.back());
+    segment.pool.emplace_back(&segment.free_list, &write_list);
+    return static_cast<event_t *>(&segment.pool.back());
   }
 
 
   void release (event_t *event) noexcept
   {
-    free_list.push(static_cast<event_ctl_t *>(event));
+    auto event_ctl = static_cast<event_ctl_t *>(event);
+    event_ctl->free_list->push(event_ctl);
   }
 
 
   static void async_write (event_t *event) noexcept
   {
     auto event_ctl = static_cast<event_ctl_t *>(event);
-    event_ctl->owner->write_list.push(event_ctl);
+    event_ctl->write_list->push(event_ctl);
   }
 
 
@@ -75,7 +92,7 @@ struct async_worker_t::impl_t
 
   static event_ctl_t *stop_event () noexcept
   {
-    static event_ctl_t event{nullptr};
+    static event_ctl_t event{nullptr, nullptr};
     return &event;
   }
 
@@ -141,12 +158,6 @@ void async_worker_t::impl_t::event_writer () noexcept
 
     release(event_ctl);
   }
-
-  // write remaining events (if any)
-  while (auto event_ctl = write_list.try_pop())
-  {
-    event_ctl->sink->sink_event_write(*event_ctl);
-  }
 }
 
 
@@ -160,23 +171,22 @@ async_worker_t::impl_ptr async_worker_t::start ()
 
 event_ptr async_worker_t::make_event (const channel_type &channel) noexcept
 {
-  event_ptr event(impl_->make_event(), &impl_t::async_write);
-
-  if (event)
+  event_ptr event_p(impl_->make_event(), &impl_t::async_write);
+  if (event_p)
   {
     try
     {
-      event->message.reset();
-      event->sink = channel.impl_.sink.get();
-      event->sink->sink_event_init(*event, channel.name());
+      auto &event = *event_p;
+      event.message.reset();
+      event.sink = channel.impl_.sink.get();
+      event.sink->sink_event_init(event, channel.name());
     }
     catch (...)
     {
-      impl_->release(event.release());
+      impl_->release(event_p.release());
     }
   }
-
-  return event;
+  return event_p;
 }
 
 
