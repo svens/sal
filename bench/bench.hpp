@@ -19,6 +19,7 @@ using func_list = std::unordered_map<std::string, func_ptr>;
 // benchmark functions
 //
 
+int logger (const arg_list &args);
 int queue (const arg_list &args);
 int spinlock (const arg_list &args);
 int str (const arg_list &args);

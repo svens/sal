@@ -78,8 +78,8 @@ if(SAL_UNITTESTS)
     # download and build
     include(ExternalProject)
     ExternalProject_Add(gtest
-      URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
-      URL_HASH SHA1=f85f6d2481e2c6c4a18539e391aa4ea8ab0394af
+      URL https://github.com/google/googletest/archive/release-1.7.0.zip
+      URL_HASH SHA1=f89bc9f55477df2fde082481e2d709bfafdb057b
       PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest-1.7.0
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

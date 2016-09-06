@@ -27,7 +27,7 @@ addons:
       - llvm-toolchain-precise-3.8
       - kubuntu-backports
     packages:
-      - g++-5
+      - g++-6
       - clang-3.8
       - cmake
 

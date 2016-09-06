@@ -243,6 +243,33 @@ TEST_F(str, index)
 }
 
 
+TEST_F(str, remove_suffix)
+{
+  sal::str_t<size> str;
+
+  str << "help";
+  EXPECT_STREQ("help", str.get());
+
+  str.remove_suffix(2);
+  EXPECT_STREQ("he", str.get());
+
+  str << "llo";
+  EXPECT_STREQ("hello", str.get());
+}
+
+
+TEST_F(str, remove_suffix_underflow)
+{
+  sal::str_t<size> str;
+  str << case_name;
+  EXPECT_STREQ(case_name.c_str(), str.get());
+
+  str.remove_suffix(2 * case_name.size());
+  EXPECT_EQ(0U, str.size());
+  EXPECT_STREQ("", str.get());
+}
+
+
 TEST_F(str, to_string)
 {
   sal::str_t<size> str;

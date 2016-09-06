@@ -4,6 +4,7 @@ list(APPEND sal_bench
   bench/main.cpp
 
   # cases
+  bench/logger.cpp
   bench/queue.cpp
   bench/spinlock.cpp
   bench/str.cpp

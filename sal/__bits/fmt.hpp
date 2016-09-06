@@ -64,7 +64,12 @@ inline char *fmt (bool value, char *first, char *last) noexcept
 // char
 inline char *fmt (char value, char *first, char *last) noexcept
 {
-  return copy(&value, &value + 1, first, last);
+  if (first < last)
+  {
+    *first = value;
+  }
+
+  return first + 1;
 }
 
 
