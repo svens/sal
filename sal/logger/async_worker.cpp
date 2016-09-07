@@ -39,12 +39,14 @@ struct async_worker_t::impl_t
   {
     spinlock_t mutex{};
     std::deque<event_ctl_t> pool{};
-    event_ctl_t::free_list_t free_list{};
+
+    __sal_warning_suppress_aligned_struct_padding
+    alignas(64) event_ctl_t::free_list_t free_list{};
   };
 
-  std::deque<event_pool_t> free_list_segments{2};
-  event_ctl_t::write_list_t write_list{};
   std::thread writer{};
+  alignas(64) event_ctl_t::write_list_t write_list{};
+  std::deque<event_pool_t> free_list_segments{2};
 
 
   impl_t ()
@@ -109,7 +111,7 @@ struct async_worker_t::impl_t
     }
   }
 
-#if __sal_os_windows
+#if _MSC_VER
 
   // MSVC: warning C4316: object allocated on the heap may not be aligned 64
 

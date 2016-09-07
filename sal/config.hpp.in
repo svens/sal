@@ -86,5 +86,17 @@ constexpr uint64_t number = make(@version_major@, @version_minor@, @version_patc
 #define __sal_at __FILE__ ":" __sal_t(__LINE__)
 
 
+//
+// __sal_warning_suppress_XXX
+//
+
+#if _MSC_VER
+  #define __sal_warning_suppress_aligned_struct_padding \
+    __pragma(warning(suppress: 4324))
+#else
+  #define __sal_warning_suppress_aligned_struct_padding
+#endif
+
+
 __sal_end
 } // namespace sal
