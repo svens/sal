@@ -37,6 +37,9 @@ osx-clang: &osx-clang
 
 matrix:
   fast_finish: true
+  allow_failures:
+    - env: BUILD_TYPE=Coverage
+    - env: BUILD_TYPE=Coverity
   include:
     - <<: *linux-gcc
       env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
@@ -61,7 +64,7 @@ matrix:
         - BUILD_TYPE=Coverity CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
         - COVERITY_SCAN_PROJECT_NAME="svens/sal"
         - COVERITY_SCAN_NOTIFICATION_EMAIL="sven+sal@alt.ee"
-        - COVERITY_SCAN_BRANCH_PATTERN="wip\\/coverity"
+        - COVERITY_SCAN_BRANCH_PATTERN="next"
         - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-6"
         - COVERITY_SCAN_BUILD_COMMAND="cmake --build ."
         - secure: "BSzv6mcXJp52YYo6jh9LoUK4zfdkDDUpC72fcyyLKbFsiL0ZI0pE+I5/Bj6Pl5Z85veQ7uibxyNeGZ/cQL/SEQMD4vnUq/PZuOcVpon0gq7dzhhnbLdisQ43Yjixi13mruuqqw1b6bfcEnF1wI2OsRgmbqcPqxScayBVhiCY5gdSereNsmJSDyTop0SWyKdhKg3MDOR1FEBnkcqEvHBhvgMKv3zSNgKP0V19go7ZRX5VCGCkuLE7+NAJfvoUq7GD1dxOwQEUhCwCkXIExoSlI7cDwiMVIV8SXr8iviIV3cR/GoghRICtkU+dn9audcP9PXHHqadq+wgrSIjuCPsTRKBtD3aPC4s+k39DS94npOrLmtYJKtfreAVNbDuOBch8L3FKoAnl9QhzvERq2l1TGdyQ+OEnzrA+rZURUzmuackdKnWAsAD1rOMw0duUveBdG1crXsbYMt+rz1YH6NE6sBNpq7qdmGSP5WrQpKP90qZ0+SfsC4ev250IvA2DPjdkbiSWML5vgxKIeOvqKZSbtML0D94PQiZ/GDec+lDn0TIYH6/MFTlLNAHyGAT49qYXapVpFrwfUZNqi95T0HtQCbA/w8FBL7lhn9dK/k3De2Gy30N6kE/AbCLcnn3EgdZgAF8a3sJUxHeKXwa6Z70t3dYS7oLGCIeS/5TZZCE2wIk="
