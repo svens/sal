@@ -42,26 +42,45 @@ matrix:
     - env: BUILD_TYPE=Coverity
   include:
     - <<: *linux-gcc
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
-    - <<: *linux-gcc
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
-    - <<: *linux-clang
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=clang-3.8 CMAKE_CXX_COMPILER=clang++-3.8
-    - <<: *linux-clang
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=clang-3.8 CMAKE_CXX_COMPILER=clang++-3.8
-    - <<: *osx-gcc
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
-    - <<: *osx-gcc
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
-    - <<: *osx-clang
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=clang CMAKE_CXX_COMPILER=clang++
-    - <<: *osx-clang
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=clang CMAKE_CXX_COMPILER=clang++
-    - <<: *linux-gcc
-      env: BUILD_TYPE=Coverage TEST_TARGET=gen-cov CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6 GCOV=gcov-6
+      env:
+        - BUILD_TYPE=Debug
+        - TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
     - <<: *linux-gcc
       env:
-        - BUILD_TYPE=Coverity CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
+        - BUILD_TYPE=Release
+        - TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
+    - <<: *linux-clang
+      env:
+        - BUILD_TYPE=Debug
+        - TEST_TARGET=test CMAKE_C_COMPILER=clang-3.8 CMAKE_CXX_COMPILER=clang++-3.8
+    - <<: *linux-clang
+      env:
+        - BUILD_TYPE=Release
+        - TEST_TARGET=test CMAKE_C_COMPILER=clang-3.8 CMAKE_CXX_COMPILER=clang++-3.8
+    - <<: *osx-gcc
+      env:
+        - BUILD_TYPE=Debug
+        - TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
+    - <<: *osx-gcc
+      env:
+        - BUILD_TYPE=Release
+        - TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
+    - <<: *osx-clang
+      env:
+        - BUILD_TYPE=Debug
+        - TEST_TARGET=test CMAKE_C_COMPILER=clang CMAKE_CXX_COMPILER=clang++
+    - <<: *osx-clang
+      env:
+        - BUILD_TYPE=Release
+        - TEST_TARGET=test CMAKE_C_COMPILER=clang CMAKE_CXX_COMPILER=clang++
+    - <<: *linux-gcc
+      env:
+        - BUILD_TYPE=Coverage
+        - TEST_TARGET=gen-cov CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6 GCOV=gcov-6
+    - <<: *linux-gcc
+      env:
+        - BUILD_TYPE=Coverity
+        - CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
         - COVERITY_SCAN_PROJECT_NAME="svens/sal"
         - COVERITY_SCAN_NOTIFICATION_EMAIL="sven+sal@alt.ee"
         - COVERITY_SCAN_BRANCH_PATTERN="next"
