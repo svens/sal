@@ -11,11 +11,8 @@ compiler:
   - gcc
 
 env:
-  global:
-    - secure: "j/7YGhPfnH/ul2iK6AUi00g4tFUygeJAJyAloJb1Gb/HdP07v1HvmP8wGYlHJ0ubUjTVzMkEQ5+BSgN/8JOGNcKAmKE/XK5tBf5gzj1sjJYLEZvjj2fETb74pKx1yX01/c+rDo6fW0YwjUqHesrWSAITN+Iz14qO8g7FHFu9BaaVlYW8VxDERspOiX/VExrBzIROZa/Y6tC2Eptid5EqPCGre5DMyKcZvubgL3asTFUj70IqYMSFiK8YJHapRvQt9I0SfU8KJnthEHZ3i+po1mgJbCxxk0dSRfQpdzJSaeI+tEjdLDoW9KM37zVopxxm89OaxXPMAMvVIwJ8qtK67Z+Ax5YKPB0QQ2OzGPDO1KcO6rcYzBTJUOEBTK5JyfwaOvdOYDJksdgiXvGyG67eWMbvCaxpN6CYeN7dCFQ4u7LHEaVsQA5p15qqG475BCTjBDbNm0F3oWRw6pSndMM3N/C5ADZfgA/QvzHQ+uTMKfki4KzAYQTt31V/GnqT+1krVFcSkmVFqKoFlcGAwBqGeoFZ2OgIi+5OfycWYsqmbZ+Oznf5Avhtug5KLKu2n+tiTmkmV6fUdIryzUUveqVS/NY2CQriQZR9MSVNZ6iquPhnZonvItNiCGOIVrOW5utPEm4baFL1A0eFDXQocV+zLJ/1hpYbNP8G0GYg6HRz3hc="
-  matrix:
-    - BUILD_TYPE=Debug TEST_TARGET=test
-    - BUILD_TYPE=Release TEST_TARGET=test
+  - BUILD_TYPE=Debug TEST_TARGET=test
+  - BUILD_TYPE=Release TEST_TARGET=test
 
 matrix:
   include:
@@ -33,23 +30,12 @@ addons:
       - g++-6
       - clang-3.8
       - cmake
-  coverity_scan:
-    project:
-      name: "svens/sal"
-    notification_email: "sven+sal@alt.ee"
-    build_command_prepend: cmake . -DSAL_UNITTESTS=no -DSAL_BENCH=no
-    build_command: cmake --build .
-    branch_pattern: next
 
 install:
-  - source scripts/travis_install-${TRAVIS_OS_NAME}-${CC}.sh
+  - source scripts/travis_install.sh
 
-script: |
-  if test "${COVERITY_SCAN_BRANCH}" != 1; then
-    cmake . -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-    cmake --build .
-    cmake --build . --target ${TEST_TARGET} -- ARGS=--output-on-failure
-  fi
+script:
+  - source scripts/travis_script.sh
 
 after_success:
-  - test "${BUILD_TYPE}" = "Coverage" && source scripts/travis_success-codecov.sh || true
+  - source scripts/travis_success.sh
