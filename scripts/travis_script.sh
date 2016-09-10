@@ -1,5 +1,11 @@
-# Coverity builds are handled by addons.coverity_scan
-if test "${BUILD_TYPE}" != "Coverity"; then
+if test "${BUILD_TYPE}" = "Coverity"; then
+  cmake . \
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
+    -DSAL_UNITTESTS=no \
+    -DSAL_BENCH=no
+  sh <(curl -s https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh)
+else
   cmake . \
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
