@@ -18,6 +18,7 @@ linux-clang: &linux-clang
   addons:
     apt:
       sources:
+        - ubuntu-toolchain-r-test
         - llvm-toolchain-precise-3.8
         - kubuntu-backports
       packages:
