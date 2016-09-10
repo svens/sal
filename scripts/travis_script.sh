@@ -4,7 +4,7 @@ if test "${BUILD_TYPE}" = "Coverity"; then
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
     -DSAL_UNITTESTS=no \
     -DSAL_BENCH=no
-  sh <(curl -s https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh)
+  bash <(curl -s https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh)
 else
   cmake . \
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
