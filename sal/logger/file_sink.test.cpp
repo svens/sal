@@ -44,6 +44,7 @@ namespace {
 
     ::_findclose(h);
 
+    std::sort(result.begin(), result.end());
     return result;
   }
 
@@ -69,6 +70,7 @@ namespace {
       }
       ::closedir(dir);
     }
+    std::sort(result.begin(), result.end());
     return result;
   }
 
