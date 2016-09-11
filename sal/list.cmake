@@ -33,3 +33,7 @@ list(APPEND sal_unittests
   sal/thread.test.cpp
   sal/time.test.cpp
 )
+
+
+# submodules
+include(sal/logger/list.cmake)

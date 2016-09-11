@@ -66,10 +66,11 @@ inline void adaptive_spin (size_t iter_count) noexcept
   }
   else
   {
-    using namespace std::chrono_literals;
-    // LCOV_EXCL_BR_START
-    std::this_thread::sleep_for(iter_count > 1000 ? 1ms : iter_count * 1us);
-    // LCOV_EXCL_BR_STOP
+    using namespace std::chrono;
+    std::this_thread::sleep_for(iter_count > 1000
+      ? milliseconds(1)
+      : iter_count * microseconds(1)
+    );
   }
 }
 

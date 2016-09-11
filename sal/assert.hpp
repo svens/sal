@@ -2,8 +2,7 @@
 
 /**
  * \file sal/assert.hpp
- * SAL's implementation of assert: sal_expect for pre-condition and
- * sal_ensure for post-condition checking.
+ * SAL's implementation of assert.
  */
 
 #include <sal/config.hpp>
@@ -15,19 +14,35 @@ __sal_begin
 
 
 /**
- * \def sal_expect(cond)
- * Check pre-condition \a cond to be true. On false, throw std::logic_error
+ * \def sal_assert(condition)
+ *
+ * Check \a condition to be true. On false, throw std::logic_error. Like
+ * \c assert, it is invoked only if \c NDEBUG is not defined. If \a condition
+ * has desirable side-effects, use sal_verify() instead that evaluations
+ * always \c condition.
  */
-#define sal_expect(cond) \
-  sal::__bits::check(cond, __sal_at ": Assertion '" #cond "' failed")
+
+#if !defined(NDEBUG)
+  #define sal_assert(condition) \
+    sal::__bits::check(sal_likely(condition), \
+      __sal_at ": Assertion '" #condition "' failed" \
+    )
+#else
+  #define sal_assert(condition) ((void)0)
+#endif
 
 
 /**
- * \def sal_ensure(cond)
- * Check post-condition \a cond to be true. On false, throw std::logic_error
+ * \def sal_verify(condition)
+ *
+ * Check \a condition to be true. On false, throw std::logic_error. It is
+ * similar to sal_assert() except \a condition is always evaluated. This is
+ * useful when \a condition has desired side-effects.
  */
-#define sal_ensure(cond) \
-  sal::__bits::check(cond, __sal_at ": Assertion '" #cond "' failed")
+#define sal_verify(condition) \
+  sal::__bits::check(condition, \
+    __sal_at ": Assertion '" #condition "' failed" \
+  )
 
 
 /**

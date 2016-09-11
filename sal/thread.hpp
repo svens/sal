@@ -40,7 +40,7 @@ thread_id make_id () noexcept;
 inline thread_id get_id () noexcept
 {
 #if __apple_build_version__
-  // 2016-05-06: latest Xcode clang++ does not support thread_local
+  // TODO: fix once Xcode8 is available
   static __thread auto id_ = null_thread;
   if (!id_)
   {

@@ -4,6 +4,7 @@
   #include <windows.h>
 #else
   #include <fcntl.h>
+  #include <sys/stat.h>
   #include <unistd.h>
 #endif
 
@@ -215,7 +216,7 @@ file_t file_t::unique (std::string &name, std::error_code &error) noexcept
   name = new_name;
 
   static constexpr auto open_mode = std::ios::in | std::ios::out;
-  return open_impl(name, open_mode, OPEN_EXISTING, error);
+  return open_impl(name, open_mode, CREATE_ALWAYS, error);
 
 #else
 
@@ -224,11 +225,15 @@ file_t file_t::unique (std::string &name, std::error_code &error) noexcept
     name += "XXXXXX";
   }
 
+  auto orig_mode = ::umask(077);
   native_handle handle = ::mkstemp(&name[0]);
+  ::umask(orig_mode);
+
   if (handle == null)
   {
     error.assign(errno, std::generic_category());
   }
+
   return handle;
 
 #endif
