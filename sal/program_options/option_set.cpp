@@ -290,7 +290,8 @@ std::ostream &option_set_t::print (std::ostream &os, size_t width) const
 }
 
 
-bool option_set_t::valid_name (const std::string &name) const noexcept
+bool option_set_t::is_valid_option_name (const std::string &name)
+  const noexcept
 {
   auto valid_name_char = [](int ch)
   {
@@ -300,6 +301,66 @@ bool option_set_t::valid_name (const std::string &name) const noexcept
     ;
   };
   return skip(valid_name_char, name.begin(), name.end()) == name.end();
+}
+
+
+argument_map_t::string_list_t &option_set_t::find_or_add_argument_list (
+  const std::string &option,
+  const __bits::option_ptr &option_p,
+  argument_map_t &result) const
+{
+  auto it = result.arguments_.find(option);
+  if (it != result.arguments_.end())
+  {
+    // argument with same name (or alias) was already added
+    return *it->second;
+  }
+
+  auto argument_p = std::make_shared<argument_map_t::string_list_t>();
+
+  if (option_p)
+  {
+    // known option but first time seen, add it using all aliases
+    auto aliases = reverse_index_.equal_range(option_p);
+    for (auto alias = aliases.first;  alias != aliases.second;  ++alias)
+    {
+      result.arguments_[alias->second] = argument_p;
+    }
+  }
+  else
+  {
+    // unknown option, add as is
+    result.arguments_[option] = argument_p;
+  }
+
+  return *argument_p;
+}
+
+
+std::string option_set_t::get_or_make_argument (
+  const std::string &option,
+  const __bits::option_ptr &option_p,
+  const std::string &argument) const
+{
+  if (!argument.empty())
+  {
+    if (option_p && option_p->unit.empty())
+    {
+      throw_runtime_error("option '", option, "' must not have argument");
+    }
+    return argument;
+  }
+
+  if (option_p)
+  {
+    if (option_p->requires_argument)
+    {
+      throw_runtime_error("option '", option, "' must have argument");
+    }
+    return option_p->default_value;
+  }
+
+  return argument;
 }
 
 
