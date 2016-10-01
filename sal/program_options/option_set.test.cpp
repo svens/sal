@@ -11,6 +11,34 @@ struct option_set
   : public sal_test::with_value<bool>
 {
   po::option_set_t options;
+
+
+  const std::string &not_found () const
+  {
+    static const std::string data = "not_found";
+    return data;
+  }
+
+
+  po::argument_map_t make_conf (const std::string &option)
+  {
+    sal_test::hardcoded_config_t config =
+    {
+      { "option_" + option, "argument_" + option + "_0" },
+      { "option_" + option, "argument_" + option + "_1" },
+      { "x_option_" + option, "x_argument_" + option },
+      { "option_" + case_name, option },
+      { "", "positional_" + option },
+    };
+    return options.load_from(config);
+  }
+
+
+  po::argument_map_t make_empty_conf ()
+  {
+    sal_test::hardcoded_config_t config{};
+    return options.load_from(config);
+  }
 };
 
 
@@ -588,6 +616,187 @@ TEST_P(option_set, load_from_hardcoded_optional_argument_option_with_argument_wi
   EXPECT_EQ(case_name, conf["5"][0]);
 
   EXPECT_TRUE(conf.positional_arguments().empty());
+}
+
+
+TEST_P(option_set, has)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+
+  EXPECT_TRUE(options.has("option_a", { a, b }));
+  EXPECT_TRUE(options.has("option_a", { b, a }));
+
+  EXPECT_TRUE(options.has("option_b", { a, b }));
+  EXPECT_TRUE(options.has("option_b", { b, a }));
+
+  EXPECT_FALSE(options.has(not_found(), { a, b }));
+  EXPECT_FALSE(options.has(not_found(), { b, a }));
+}
+
+
+TEST_P(option_set, front)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ("argument_a_0", *options.front("option_a", { a, b }));
+  EXPECT_EQ("argument_a_0", *options.front("option_a", { b, a }));
+  EXPECT_EQ("argument_b_0", *options.front("option_b", { a, b }));
+  EXPECT_EQ("argument_b_0", *options.front("option_b", { b, a }));
+}
+
+
+TEST_P(option_set, front_not_found)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ(nullptr, options.front(not_found(), { a, b }));
+  EXPECT_EQ(nullptr, options.front(not_found(), { b, a }));
+}
+
+
+TEST_P(option_set, front_or_default)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ("argument_a_0", options.front_or_default("option_a", { a, b }));
+  EXPECT_EQ("argument_a_0", options.front_or_default("option_a", { b, a }));
+  EXPECT_EQ("argument_b_0", options.front_or_default("option_b", { a, b }));
+  EXPECT_EQ("argument_b_0", options.front_or_default("option_b", { b, a }));
+}
+
+
+TEST_P(option_set, front_or_default_not_found)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ("4th", options.front_or_default("4", { a, b }));
+  EXPECT_EQ("4th", options.front_or_default("4", { b, a }));
+}
+
+
+TEST_P(option_set, front_or_default_not_found_empty)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ("", options.front_or_default(not_found(), { a, b }));
+  EXPECT_EQ("", options.front_or_default(not_found(), { b, a }));
+}
+
+
+TEST_P(option_set, back)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ("argument_a_1", *options.back("option_a", { a, b }));
+  EXPECT_EQ("argument_a_1", *options.back("option_a", { b, a }));
+  EXPECT_EQ("argument_b_1", *options.back("option_b", { a, b }));
+  EXPECT_EQ("argument_b_1", *options.back("option_b", { b, a }));
+}
+
+
+TEST_P(option_set, back_not_found)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ(nullptr, options.back(not_found(), { a, b }));
+  EXPECT_EQ(nullptr, options.back(not_found(), { b, a }));
+}
+
+
+TEST_P(option_set, back_or_default)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ("argument_a_1", options.back_or_default("option_a", { a, b }));
+  EXPECT_EQ("argument_a_1", options.back_or_default("option_a", { b, a }));
+  EXPECT_EQ("argument_b_1", options.back_or_default("option_b", { a, b }));
+  EXPECT_EQ("argument_b_1", options.back_or_default("option_b", { b, a }));
+}
+
+
+TEST_P(option_set, back_or_default_not_found)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ("4th", options.back_or_default("4", { a, b }));
+  EXPECT_EQ("4th", options.back_or_default("4", { b, a }));
+}
+
+
+TEST_P(option_set, back_or_default_not_found_empty)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  EXPECT_EQ("", options.back_or_default(not_found(), { a, b }));
+  EXPECT_EQ("", options.back_or_default(not_found(), { b, a }));
+}
+
+
+TEST_P(option_set, merge)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  auto ab = options.merge("option_" + case_name, { a, b });
+  ASSERT_EQ(2U, ab.size());
+  EXPECT_EQ("a", ab[0]);
+  EXPECT_EQ("b", ab[1]);
+}
+
+
+TEST_P(option_set, merge_reverse)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  auto ba = options.merge("option_" + case_name, { b, a });
+  ASSERT_EQ(2U, ba.size());
+  EXPECT_EQ("b", ba[0]);
+  EXPECT_EQ("a", ba[1]);
+}
+
+
+TEST_P(option_set, merge_not_found)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  auto ab = options.merge(not_found(), { a, b });
+  EXPECT_TRUE(ab.empty());
+}
+
+
+TEST_P(option_set, merge_empty)
+{
+  fill(options);
+  auto result = options.merge(case_name, {});
+  EXPECT_TRUE(result.empty());
+}
+
+
+TEST_P(option_set, positional_arguments)
+{
+  fill(options);
+  auto a = make_conf("a"), b = make_conf("b");
+  auto pos_args = options.positional_arguments({ a, b });
+  ASSERT_EQ(2U, pos_args.size());
+  EXPECT_EQ("positional_a", pos_args[0]);
+  EXPECT_EQ("positional_b", pos_args[1]);
+}
+
+
+TEST_P(option_set, positional_arguments_not_found)
+{
+  fill(options);
+  auto a = make_empty_conf(), b = make_empty_conf();
+  auto pos_args = options.positional_arguments({ a, b });
+  EXPECT_TRUE(pos_args.empty());
+}
+
+
+TEST_P(option_set, positional_arguments_empty)
+{
+  fill(options);
+  auto pos_args = options.positional_arguments({});
+  EXPECT_TRUE(pos_args.empty());
 }
 
 

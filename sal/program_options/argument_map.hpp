@@ -19,22 +19,35 @@ namespace sal { namespace program_options {
 __sal_begin
 
 
-class option_set;
+class option_set_t;
 
 
+/**
+ * Program options' arguments. This class is returned by option_set_t parsing
+ * methods.
+ */
 class argument_map_t
 {
 public:
 
+  /**
+   * Vector of strings
+   */
   using string_list_t = std::vector<std::string>;
 
 
+  /**
+   * Return true if \a option has arguments
+   */
   bool has (const std::string &option) const noexcept
   {
     return arguments_.find(option) != arguments_.end();
   }
 
 
+  /**
+   * Return list of arguments for \a option or empty vector if none
+   */
   const string_list_t &operator[] (const std::string &option) const
   {
     auto it = arguments_.find(option);
@@ -47,6 +60,9 @@ public:
   }
 
 
+  /**
+   * Return list of positional arguments
+   */
   const string_list_t &positional_arguments () const noexcept
   {
     return positional_arguments_;

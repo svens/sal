@@ -364,5 +364,64 @@ std::string option_set_t::get_or_make_argument (
 }
 
 
+const std::string *option_set_t::front (const std::string &option,
+  argument_map_list_t arguments_list) const noexcept
+{
+  for (auto &it: arguments_list)
+  {
+    const auto &arguments = it.get().arguments_;
+    auto argument_it = arguments.find(option);
+    if (argument_it != arguments.end())
+    {
+      return &argument_it->second->front();
+    }
+  }
+  return nullptr;
+}
+
+
+const std::string *option_set_t::back (const std::string &option,
+  argument_map_list_t arguments_list) const noexcept
+{
+  for (auto it = std::crbegin(arguments_list), e = std::crend(arguments_list);
+    it != e;  ++it)
+  {
+    const auto &arguments = it->get().arguments_;
+    auto argument_it = arguments.find(option);
+    if (argument_it != arguments.end())
+    {
+      return &argument_it->second->back();
+    }
+  }
+  return nullptr;
+}
+
+
+argument_map_t::string_list_t option_set_t::merge (const std::string &option,
+  argument_map_list_t arguments_list) const
+{
+  argument_map_t::string_list_t result;
+  for (const auto &it: arguments_list)
+  {
+    const auto &arguments = it.get().operator[](option);
+    result.insert(result.end(), arguments.begin(), arguments.end());
+  }
+  return result;
+}
+
+
+argument_map_t::string_list_t option_set_t::positional_arguments (
+  argument_map_list_t arguments_list) const
+{
+  argument_map_t::string_list_t result;
+  for (const auto &it: arguments_list)
+  {
+    const auto &arguments = it.get().positional_arguments();
+    result.insert(result.end(), arguments.begin(), arguments.end());
+  }
+  return result;
+}
+
+
 __sal_end
 }} // namespace sal::program_options
