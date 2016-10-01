@@ -24,6 +24,7 @@ linux-clang: &linux-clang
       packages:
         - clang-3.8
         - cmake
+        - g++-6
 
 osx-gcc: &osx-gcc
   os: osx
