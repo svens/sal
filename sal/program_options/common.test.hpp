@@ -23,14 +23,17 @@ public:
   {}
 
 
-  const value_t &operator() (const sal::program_options::option_set_t &)
+  bool operator() (const sal::program_options::option_set_t &,
+    std::string *option, std::string *argument)
   {
     if (it_ != data_.end())
     {
-      return *it_++;
+      *option = it_->first;
+      *argument = it_->second;
+      ++it_;
+      return true;
     }
-    static const value_t end = { "", "" };
-    return end;
+    return false;
   }
 
 

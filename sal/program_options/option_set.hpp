@@ -91,12 +91,13 @@ public:
    * Create option/argument map from \a parser. Parser must provide call
    * operator with API:
    * \code
-   * std::pair<std::string, std::string> operator() (const option_set_t &);
+   * bool operator() (const option_set_t &,
+   *   std::string *option, std::string *argument
+   * );
    * \endcode
-   * Return pair's first should contain value for currently parsed option name
-   * and second is it's value. Parser is called until it returns both strings
-   * as empty. Non-empty values are inserted into argument_map_t as follows:
-   *   - both option & argument are non-empty: insert
+   * It is called until it returns false, indicating end of input data. On
+   * each call, parser should set value for \a option and \a argument:
+   *   - both option & argument are non-empty: insert into argument_map_t
    *   - option is non-empty & argument is empty: insert option with default
    *     value (or empty if default_value() was not set for option)
    *   - option is empty & argument is not empty: insert argument into
@@ -288,23 +289,20 @@ argument_map_t option_set_t::load_from (Parser &parser) const
   argument_map_t result;
 
   std::string option, argument;
-  for (;;)
+  while (parser(*this, &option, &argument))
   {
-    std::tie(option, argument) = parser(*this);
-    if (option.empty() && argument.empty())
-    {
-      break;
-    }
-    else if (option.empty())
-    {
-      result.positional_arguments_.emplace_back(argument);
-    }
-    else
+    if (!option.empty())
     {
       auto option_p = find_option(option);
       auto &arguments = find_or_add_argument_list(option, option_p, result);
       arguments.emplace_back(get_or_make_argument(option, option_p, argument));
     }
+    else if (!argument.empty())
+    {
+      result.positional_arguments_.emplace_back(argument);
+    }
+
+    option.clear(), argument.clear();
   }
 
   return result;
