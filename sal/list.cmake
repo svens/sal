@@ -1,5 +1,6 @@
 # sources
 list(APPEND sal_sources
+  sal/__bits/member_assign.hpp
   sal/assert.hpp
   sal/builtins.hpp
   sal/error.hpp
