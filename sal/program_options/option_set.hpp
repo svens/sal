@@ -9,13 +9,14 @@
 
 #include <sal/config.hpp>
 #include <sal/error.hpp>
-#include <sal/program_options/__bits/option_set.hpp>
+#include <sal/__bits/member_assign.hpp>
 #include <sal/program_options/argument_map.hpp>
 #include <initializer_list>
 #include <iosfwd>
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 
 
 namespace sal { namespace program_options {
@@ -23,41 +24,167 @@ __sal_begin
 
 
 /**
- * Return opaque option configuration setting to mark option's argument is
- * required.
+ * Single option settings.
+ */
+struct option_t
+{
+  /**
+   * Argument requirement setting.
+   */
+  enum class argument_t
+  {
+    none,
+    optional,
+    required
+  };
+
+  /**
+   * Option argument settings.
+   */
+  using argument_info_t = std::tuple<
+    argument_t,   /**< Argument rquirement settings */
+    std::string,  /**< Argument unit. Valid only if argument is optional or
+                    required */
+    std::string   /**< Default value for argument. Valid only if argument is
+                    optional or required */
+  >;
+
+
+  /**
+   * Option argument settings.
+   */
+  argument_info_t argument{argument_t::none, "", ""};
+
+
+  /**
+   * Help text for option.
+   */
+  std::string help{};
+
+
+  /**
+   * Returns true if option must not have argument.
+   */
+  bool no_argument () const noexcept
+  {
+    return std::get<0>(argument) == argument_t::none;
+  }
+
+
+  /**
+   * Returns true if option must have argument.
+   */
+  bool requires_argument () const noexcept
+  {
+    return std::get<0>(argument) == argument_t::required;
+  }
+
+
+  /**
+   * Returns true if option may have argument.
+   */
+  bool optional_argument () const noexcept
+  {
+    return std::get<0>(argument) == argument_t::optional;
+  }
+
+
+  /**
+   * Return option argument unit name (eg string, int etc). Valid only if
+   * argument is optional or required.
+   */
+  const std::string &unit () const noexcept
+  {
+    return std::get<1>(argument);
+  }
+
+
+  /**
+   * Return textual default value for option argument. Valid only if argument
+   * is optional or required.
+   */
+  const std::string &default_value () const noexcept
+  {
+    return std::get<2>(argument);
+  }
+
+
+  /// Internal helper
+  using assign_argument_t = __bits::member_assign_t<
+    argument_info_t, option_t, &option_t::argument
+  >;
+
+  /// Internal helper
+  using assign_help_t = __bits::member_assign_t<
+    std::string, option_t, &option_t::help
+  >;
+};
+
+
+/** Shared pointer to option */
+using option_ptr = std::shared_ptr<option_t>;
+
+
+/**
+ * Return opaque option setting to indicate option's argument is required.
+ * Also set's argument \a unit. Default value is set to empty string.
  */
 inline auto requires_argument (const std::string &unit)
 {
-  return __bits::requires_argument_t{unit};
+  return option_t::assign_argument_t(
+    { option_t::argument_t::required, unit, "" }
+  );
 }
 
 
 /**
- * Return opaque option configuration setting to mark option's argument is
- * optional.
+ * Return opaque option setting to indicate option's argument is required.
+ * Also set's argument \a unit and \a default_value.
+ */
+template <typename T>
+inline auto requires_argument (const std::string &unit, const T &default_value)
+{
+  std::ostringstream oss;
+  oss << default_value;
+  return option_t::assign_argument_t(
+    { option_t::argument_t::required, unit, oss.str() }
+  );
+}
+
+
+/**
+ * Return opaque option setting to indicate option's argument is optional.
+ * Also set's argument \a unit. Default value is set to empty string.
  */
 inline auto optional_argument (const std::string &unit)
 {
-  return __bits::optional_argument_t{unit};
+  return option_t::assign_argument_t(
+    { option_t::argument_t::optional, unit, "" }
+  );
 }
 
 
 /**
- * Return opaque option configuration for default value.
+ * Return opaque option setting to indicate option's argument is optional.
+ * Also set's argument \a unit and \a default_value.
  */
 template <typename T>
-inline auto default_value (const T &value)
+inline auto optional_argument (const std::string &unit, const T &default_value)
 {
-  return __bits::default_value_t<T>{value};
+  std::ostringstream oss;
+  oss << default_value;
+  return option_t::assign_argument_t(
+    { option_t::argument_t::optional, unit, oss.str() }
+  );
 }
 
 
 /**
- * Return opaque option configuration for help text.
+ * Return opaque option setting for help text.
  */
 inline auto help (const std::string &text)
 {
-  return __bits::help_t{text};
+  return option_t::assign_help_t(text);
 }
 
 
@@ -77,7 +204,6 @@ public:
    * Possible configuration settings:
    *   - requires_argument()
    *   - optional_argument()
-   *   - default_value()
    *   - help()
    *
    * This method returns \e this allowing multiple option adding chained
@@ -85,6 +211,16 @@ public:
    */
   template <typename... Args>
   option_set_t &add (std::initializer_list<std::string> names, Args &&...args);
+
+
+  /**
+   * Return pointer to \a option settings or nullptr if not found.
+   */
+  option_ptr find (const std::string &option) const noexcept
+  {
+    auto it = options_.find(option);
+    return it != options_.end() ? it->second : nullptr;
+  }
 
 
   /**
@@ -99,7 +235,7 @@ public:
    * each call, parser should set value for \a option and \a argument:
    *   - both option & argument are non-empty: insert into argument_map_t
    *   - option is non-empty & argument is empty: insert option with default
-   *     value (or empty if default_value() was not set for option)
+   *     value (or empty if default value was not set for option)
    *   - option is empty & argument is not empty: insert argument into
    *     argument_map_t::positional_arguments() list
    */
@@ -165,7 +301,7 @@ public:
     {
       return *value;
     }
-    return default_value(find_option(option));
+    return default_value(find(option));
   }
 
 
@@ -189,7 +325,7 @@ public:
     {
       return *value;
     }
-    return default_value(find_option(option));
+    return default_value(find(option));
   }
 
 
@@ -212,39 +348,28 @@ public:
 
 private:
 
-  std::map<std::string, __bits::option_ptr> options_{};
-  std::multimap<__bits::option_ptr, std::string> reverse_index_;
+  std::map<std::string, option_ptr> options_{};
+  std::multimap<option_ptr, std::string> reverse_index_;
 
   bool is_valid_option_name (const std::string &name) const noexcept;
 
-
-  __bits::option_ptr find_option (const std::string &option) const noexcept
-  {
-    auto it = options_.find(option);
-    return it != options_.end() ? it->second : nullptr;
-  }
-
-
-  const std::string &default_value (const __bits::option_ptr &option)
-    const noexcept
-  {
-    static const std::string empty;
-    return option ? option->default_value : empty;
-  }
-
-
   argument_map_t::string_list_t &find_or_add_argument_list (
     const std::string &option,
-    const __bits::option_ptr &option_p,
+    const option_ptr &option_p,
     argument_map_t &result
   ) const;
 
-
   std::string get_or_make_argument (
     const std::string &option,
-    const __bits::option_ptr &option_p,
+    const option_ptr &option_p,
     const std::string &argument
   ) const;
+
+  const std::string &default_value (const option_ptr &option) const noexcept
+  {
+    static const std::string empty;
+    return option ? option->default_value() : empty;
+  }
 };
 
 
@@ -258,9 +383,8 @@ option_set_t &option_set_t::add (std::initializer_list<std::string> names,
     throw_logic_error("no option name");
   }
 
-  auto option = std::make_shared<__bits::option_t>(
-    std::forward<Args>(args)...
-  );
+  auto option_p = std::make_shared<option_t>();
+  __bits::assign_members(option_p.get(), std::forward<Args>(args)...);
 
   for (const auto &name: names)
   {
@@ -272,11 +396,11 @@ option_set_t &option_set_t::add (std::initializer_list<std::string> names,
     {
       throw_logic_error("invalid option name '", name, '\'');
     }
-    if (!options_.emplace(name, option).second)
+    if (!options_.emplace(name, option_p).second)
     {
       throw_logic_error("duplicate option '", name, '\'');
     }
-    reverse_index_.emplace(option, name);
+    reverse_index_.emplace(option_p, name);
   }
 
   return *this;
@@ -293,7 +417,7 @@ argument_map_t option_set_t::load_from (Parser &parser) const
   {
     if (!option.empty())
     {
-      auto option_p = find_option(option);
+      auto option_p = find(option);
       auto &arguments = find_or_add_argument_list(option, option_p, result);
       arguments.emplace_back(get_or_make_argument(option, option_p, argument));
     }

@@ -45,17 +45,16 @@ inline std::string to_lower (std::string input) noexcept
 }
 
 
-std::string to_str (const std::string &option,
-  const __bits::option_t &settings)
+std::string to_str (const std::string &name, const option_t &option)
 {
   //
   // -X | --longX
   //
 
-  std::string result = option.size() > 1 ? "--" : "-";
-  result += option;
+  std::string result = name.size() > 1 ? "--" : "-";
+  result += name;
 
-  if (settings.unit.empty())
+  if (option.no_argument())
   {
     return result;
   }
@@ -67,20 +66,20 @@ std::string to_str (const std::string &option,
   // '--longX[=arg]'
   //
 
-  if (option.size() > 1)
+  if (name.size() > 1)
   {
-    result += settings.requires_argument ? "" : "[";
+    result += option.requires_argument() ? "" : "[";
     result += '=';
   }
   else
   {
     result += ' ';
-    result += settings.requires_argument ? "" : "[";
+    result += option.requires_argument() ? "" : "[";
   }
 
-  result += settings.unit;
+  result += option.unit();
 
-  if (!settings.requires_argument)
+  if (!option.requires_argument())
   {
     result += ']';
   }
@@ -93,7 +92,7 @@ using display_list_t = std::map<
   std::string,          // sorting key
   std::pair<
     std::string,        // display string
-    __bits::option_ptr  // option itself
+    option_ptr          // option itself
   >
 >;
 
@@ -104,11 +103,10 @@ struct name_info_t
   std::string display_short{}, display_long{};
 };
 
-using name_list_t = std::map<__bits::option_ptr, name_info_t>;
+using name_list_t = std::map<option_ptr, name_info_t>;
 
 
-display_list_t sort_options (
-  const std::map<std::string, __bits::option_ptr> &options,
+display_list_t sort_options (const std::map<std::string, option_ptr> &options,
   size_t *longest_display)
 {
   // create reverse index (option_ptr -> short & long names)
@@ -305,11 +303,11 @@ bool option_set_t::is_valid_option_name (const std::string &name)
 
 
 argument_map_t::string_list_t &option_set_t::find_or_add_argument_list (
-  const std::string &option,
-  const __bits::option_ptr &option_p,
+  const std::string &name,
+  const option_ptr &option,
   argument_map_t &result) const
 {
-  auto it = result.arguments_.find(option);
+  auto it = result.arguments_.find(name);
   if (it != result.arguments_.end())
   {
     // argument with same name (or alias) was already added
@@ -318,10 +316,10 @@ argument_map_t::string_list_t &option_set_t::find_or_add_argument_list (
 
   auto argument_p = std::make_shared<argument_map_t::string_list_t>();
 
-  if (option_p)
+  if (option)
   {
-    // known option but first time seen, add it using all aliases
-    auto aliases = reverse_index_.equal_range(option_p);
+    // known name but first time seen, add it using all aliases
+    auto aliases = reverse_index_.equal_range(option);
     for (auto alias = aliases.first;  alias != aliases.second;  ++alias)
     {
       result.arguments_[alias->second] = argument_p;
@@ -329,8 +327,8 @@ argument_map_t::string_list_t &option_set_t::find_or_add_argument_list (
   }
   else
   {
-    // unknown option, add as is
-    result.arguments_[option] = argument_p;
+    // unknown name, add as is
+    result.arguments_[name] = argument_p;
   }
 
   return *argument_p;
@@ -338,39 +336,39 @@ argument_map_t::string_list_t &option_set_t::find_or_add_argument_list (
 
 
 std::string option_set_t::get_or_make_argument (
-  const std::string &option,
-  const __bits::option_ptr &option_p,
+  const std::string &name,
+  const option_ptr &option,
   const std::string &argument) const
 {
   if (!argument.empty())
   {
-    if (option_p && option_p->unit.empty())
+    if (option && option->no_argument())
     {
-      throw_runtime_error("option '", option, "' must not have argument");
+      throw_runtime_error("option '", name, "' must not have argument");
     }
     return argument;
   }
 
-  if (option_p)
+  if (option)
   {
-    if (option_p->requires_argument)
+    if (option->requires_argument())
     {
-      throw_runtime_error("option '", option, "' must have argument");
+      throw_runtime_error("option '", name, "' must have argument");
     }
-    return option_p->default_value;
+    return option->default_value();
   }
 
   return argument;
 }
 
 
-const std::string *option_set_t::front (const std::string &option,
+const std::string *option_set_t::front (const std::string &name,
   argument_map_list_t arguments_list) const noexcept
 {
   for (auto &it: arguments_list)
   {
     const auto &arguments = it.get().arguments_;
-    auto argument_it = arguments.find(option);
+    auto argument_it = arguments.find(name);
     if (argument_it != arguments.end())
     {
       return &argument_it->second->front();
@@ -380,14 +378,14 @@ const std::string *option_set_t::front (const std::string &option,
 }
 
 
-const std::string *option_set_t::back (const std::string &option,
+const std::string *option_set_t::back (const std::string &name,
   argument_map_list_t arguments_list) const noexcept
 {
   for (auto it = std::crbegin(arguments_list), e = std::crend(arguments_list);
     it != e;  ++it)
   {
     const auto &arguments = it->get().arguments_;
-    auto argument_it = arguments.find(option);
+    auto argument_it = arguments.find(name);
     if (argument_it != arguments.end())
     {
       return &argument_it->second->back();
@@ -397,13 +395,13 @@ const std::string *option_set_t::back (const std::string &option,
 }
 
 
-argument_map_t::string_list_t option_set_t::merge (const std::string &option,
+argument_map_t::string_list_t option_set_t::merge (const std::string &name,
   argument_map_list_t arguments_list) const
 {
   argument_map_t::string_list_t result;
   for (const auto &it: arguments_list)
   {
-    const auto &arguments = it.get().operator[](option);
+    const auto &arguments = it.get().operator[](name);
     result.insert(result.end(), arguments.begin(), arguments.end());
   }
   return result;

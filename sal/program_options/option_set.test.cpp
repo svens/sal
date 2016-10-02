@@ -107,13 +107,11 @@ void fill (po::option_set_t &options)
       po::help("Third\ntHird\n\nthIrd\nthiRd thirD")
     )
     .add({ "4", "fourth" },
-      po::requires_argument("FOURTH"),
-      po::default_value("4th"),
+      po::requires_argument("FOURTH", "4th"),
       po::help("HTRUOF")
     )
     .add({ "5", "fifth" },
-      po::optional_argument("FIFTH"),
-      po::default_value("5th"),
+      po::optional_argument("FIFTH", "5th"),
       po::help("HTFIF")
     )
   ;
@@ -176,6 +174,57 @@ TEST_P(option_set, help_narrow)
   std::ostringstream oss;
   oss << std::setw(10) << options;
   check(oss.str());
+}
+
+
+TEST_P(option_set, find_option)
+{
+  fill(options);
+
+  auto first = options.find("first");
+  ASSERT_NE(nullptr, first);
+  EXPECT_EQ(first, options.find("1"));
+  EXPECT_TRUE(first->requires_argument());
+  EXPECT_FALSE(first->optional_argument());
+  EXPECT_FALSE(first->no_argument());
+  EXPECT_EQ("FIRST", first->unit());
+  EXPECT_TRUE(first->default_value().empty());
+
+  auto second = options.find("second");
+  ASSERT_NE(nullptr, second);
+  EXPECT_EQ(second, options.find("2"));
+  EXPECT_FALSE(second->requires_argument());
+  EXPECT_TRUE(second->optional_argument());
+  EXPECT_FALSE(second->no_argument());
+  EXPECT_EQ("SECOND", second->unit());
+  EXPECT_TRUE(second->default_value().empty());
+
+  auto third = options.find("third");
+  ASSERT_NE(nullptr, third);
+  EXPECT_EQ(third, options.find("3"));
+  EXPECT_FALSE(third->requires_argument());
+  EXPECT_FALSE(third->optional_argument());
+  EXPECT_TRUE(third->no_argument());
+  EXPECT_TRUE(third->unit().empty());
+  EXPECT_TRUE(third->default_value().empty());
+
+  auto fourth = options.find("fourth");
+  ASSERT_NE(nullptr, fourth);
+  EXPECT_EQ(fourth, options.find("4"));
+  EXPECT_TRUE(fourth->requires_argument());
+  EXPECT_FALSE(fourth->optional_argument());
+  EXPECT_FALSE(fourth->no_argument());
+  EXPECT_EQ("FOURTH", fourth->unit());
+  EXPECT_EQ("4th", fourth->default_value());
+
+  auto fifth = options.find("fifth");
+  ASSERT_NE(nullptr, fifth);
+  EXPECT_EQ(fifth, options.find("5"));
+  EXPECT_FALSE(fifth->requires_argument());
+  EXPECT_TRUE(fifth->optional_argument());
+  EXPECT_FALSE(fifth->no_argument());
+  EXPECT_EQ("FIFTH", fifth->unit());
+  EXPECT_EQ("5th", fifth->default_value());
 }
 
 
