@@ -344,7 +344,7 @@ std::string option_set_t::get_or_make_argument (
   {
     if (option && option->no_argument())
     {
-      throw_runtime_error("option '", name, "' must not have argument");
+      throw_error<option_rejects_argument>(name);
     }
     return argument;
   }
@@ -353,7 +353,7 @@ std::string option_set_t::get_or_make_argument (
   {
     if (option->requires_argument())
     {
-      throw_runtime_error("option '", name, "' must have argument");
+      throw_error<option_requires_argument>(name);
     }
     return option->default_value();
   }

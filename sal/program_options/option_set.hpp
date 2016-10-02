@@ -8,9 +8,9 @@
 
 
 #include <sal/config.hpp>
-#include <sal/error.hpp>
 #include <sal/__bits/member_assign.hpp>
 #include <sal/program_options/argument_map.hpp>
+#include <sal/program_options/error.hpp>
 #include <initializer_list>
 #include <iosfwd>
 #include <map>
@@ -373,14 +373,13 @@ private:
 };
 
 
-
 template <typename... Args>
 option_set_t &option_set_t::add (std::initializer_list<std::string> names,
   Args &&...args)
 {
   if (names.size() < 1)
   {
-    throw_logic_error("no option name");
+    throw_error<no_option_name>();
   }
 
   auto option_p = std::make_shared<option_t>();
@@ -390,15 +389,15 @@ option_set_t &option_set_t::add (std::initializer_list<std::string> names,
   {
     if (name.empty())
     {
-      throw_logic_error("empty option name");
+      throw_error<empty_option_name>();
     }
     if (!is_valid_option_name(name))
     {
-      throw_logic_error("invalid option name '", name, '\'');
+      throw_error<invalid_option_name>(name);
     }
     if (!options_.emplace(name, option_p).second)
     {
-      throw_logic_error("duplicate option '", name, '\'');
+      throw_error<duplicate_option_name>(name);
     }
     reverse_index_.emplace(option_p, name);
   }

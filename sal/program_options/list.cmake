@@ -7,6 +7,7 @@ list(APPEND sal_docs
 # sources
 list(APPEND sal_sources
   sal/program_options/argument_map.hpp
+  sal/program_options/error.hpp
   sal/program_options/option_set.hpp
   sal/program_options/option_set.cpp
 )
