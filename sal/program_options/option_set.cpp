@@ -294,8 +294,9 @@ bool option_set_t::is_valid_option_name (const std::string &name)
   auto valid_name_char = [](int ch)
   {
     return std::isalnum(ch)
-      || ch == '_'
+      || ch == '-'
       || ch == '.'
+      || ch == '_'
     ;
   };
   return skip(valid_name_char, name.begin(), name.end()) == name.end();

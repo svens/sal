@@ -36,6 +36,11 @@ using invalid_option_name = std::logic_error;
 using duplicate_option_name = std::logic_error;
 
 /**
+ * Runtime error when parsed option that is not registered in option_set_t
+ */
+using unknown_option = std::runtime_error;
+
+/**
  * Runtime error when option requires argument but none is specified
  */
 using option_requires_argument = std::runtime_error;

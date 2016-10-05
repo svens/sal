@@ -379,7 +379,7 @@ option_set_t &option_set_t::add (std::initializer_list<std::string> names,
 {
   if (names.size() < 1)
   {
-    throw_error<no_option_name>();
+    throw_error<no_option_name>("no option name");
   }
 
   auto option_p = std::make_shared<option_t>();
@@ -389,15 +389,15 @@ option_set_t &option_set_t::add (std::initializer_list<std::string> names,
   {
     if (name.empty())
     {
-      throw_error<empty_option_name>();
+      throw_error<empty_option_name>("empty option name");
     }
     if (!is_valid_option_name(name))
     {
-      throw_error<invalid_option_name>(name);
+      throw_error<invalid_option_name>("invalid option name: ", name);
     }
     if (!options_.emplace(name, option_p).second)
     {
-      throw_error<duplicate_option_name>(name);
+      throw_error<duplicate_option_name>("duplicate option name: ", name);
     }
     reverse_index_.emplace(option_p, name);
   }
