@@ -72,8 +72,8 @@ public:
 private:
 
   using string_list_ptr = std::shared_ptr<string_list_t>;
-  std::map<std::string, string_list_ptr> arguments_;
-  string_list_t positional_arguments_;
+  std::map<std::string, string_list_ptr> arguments_{};
+  string_list_t positional_arguments_{};
 
   argument_map_t () = default;
 

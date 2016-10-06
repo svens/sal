@@ -15,10 +15,20 @@ namespace sal { namespace program_options {
 __sal_begin
 
 
+/**
+ * GNU-style command line options parser for option_set_t::load_from().
+ */
 class command_line_t
 {
 public:
 
+  /**
+   * Construct parser using \a argc options from \a argv. This class does not
+   * make deep-copy of \a argv but uses pointer directly.
+   *
+   * \note \a argv[0] is assumed to be application name and is ignored during
+   * parsing.
+   */
   command_line_t (int argc, const char **argv) noexcept
     : it_(argv + 1)
     , end_(argv + argc)
@@ -26,6 +36,10 @@ public:
   {}
 
 
+  /**
+   * Get next option/argument pair from \a argv specified in constructor.
+   * \see option_set_t::load_from()
+   */
   bool operator() (const option_set_t &option_set,
     std::string *option,
     std::string *argument

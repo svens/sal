@@ -16,6 +16,7 @@ namespace sal {
 __sal_begin
 
 
+/// Throw \a Error with message composed from list of \a args.
 template <typename Error, typename... Args>
 inline void throw_error [[noreturn]] (Args &&...args)
 {

@@ -349,7 +349,7 @@ public:
 private:
 
   std::map<std::string, option_ptr> options_{};
-  std::multimap<option_ptr, std::string> reverse_index_;
+  std::multimap<option_ptr, std::string> reverse_index_{};
 
   bool is_valid_option_name (const std::string &name) const noexcept;
 
