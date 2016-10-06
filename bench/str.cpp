@@ -8,26 +8,8 @@
 namespace {
 
 
-std::string func = "str";
+std::string function = "str";
 size_t count = 10'000'000;
-
-
-int usage (const std::string message="")
-{
-  if (!message.empty())
-  {
-    std::cerr << message << '\n' << std::endl;
-  }
-
-  std::cerr << "str:"
-    << "\n  --help        this page"
-    << "\n  --count=int   number of iterations"
-    << "\n  --func=Func   function to test"
-    << "\n                possible values: str, printf"
-    << std::endl;
-
-  return EXIT_FAILURE;
-}
 
 
 const bool p_bool = true;
@@ -158,36 +140,44 @@ void use_str ()
 } // namespace
 
 
-int bench::str (const arg_list &args)
-{
-  for (auto &arg: args)
-  {
-    if (arg == "--help")
-    {
-      return usage();
-    }
-    else if (arg.find("--count=") != arg.npos)
-    {
-      count = std::stoul(arg.substr(sizeof("--count=") - 1));
-    }
-    else if (arg.find("--func=") != arg.npos)
-    {
-      func = arg.substr(sizeof("--func=") - 1);
-    }
-    else
-    {
-      return usage("unknown argument: " + arg);
-    }
-  }
+namespace bench {
 
-  if (func == "str")
+
+option_set_t options ()
+{
+  using namespace sal::program_options;
+
+  option_set_t desc;
+  desc
+    .add({"c", "count"},
+      requires_argument("INT", count),
+      help("number of iterations")
+    )
+    .add({"f", "function"},
+      requires_argument("STRING", function),
+      help("function to test (str | printf)")
+    )
+  ;
+  return desc;
+}
+
+
+int run (const option_set_t &options, const argument_map_t &arguments)
+{
+  count = std::stoul(options.back_or_default("count", { arguments }));
+  function = options.back_or_default("function", { arguments });
+
+  if (function == "str")
   {
     return worker(use_str);
   }
-  else if (func == "printf")
+  else if (function == "printf")
   {
     return worker(use_printf);
   }
 
-  return usage("unknown func '" + func + '\'');
+  return usage("unknown function '" + function + '\'');
 }
+
+
+} // namespace bench

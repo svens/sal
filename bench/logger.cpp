@@ -25,25 +25,6 @@ inline constexpr bool measure_latency ()
 }
 
 
-int usage (const std::string &message="")
-{
-  if (!message.empty())
-  {
-    std::cerr << message << '\n' << std::endl;
-  }
-
-  std::cerr << "logger:"
-    << "\n  --help              this page"
-    << "\n  --type=Worker       Worker type (default: " << type << ')'
-    << "\n                      possible values: sync, async"
-    << "\n  --lines=N           number of lines to log"
-    << "\n  --threads=N         number of logging threads"
-    << std::endl;
-
-  return EXIT_FAILURE;
-}
-
-
 template <typename Worker>
 void logger_thread (const sal::logger::channel_t<Worker> &channel,
   size_t count, nanoseconds &min, nanoseconds &max, nanoseconds &avg)
@@ -83,7 +64,7 @@ void logger_thread (const sal::logger::channel_t<Worker> &channel,
 
 
 template <typename Worker>
-int run ()
+int log_with ()
 {
   auto start_time = bench::start();
 
@@ -145,40 +126,49 @@ int run ()
 } // namespace
 
 
-int bench::logger (const arg_list &args)
+namespace bench {
+
+
+option_set_t options ()
 {
-  for (auto &arg: args)
-  {
-    if (arg == "--help")
-    {
-      return usage();
-    }
-    else if (arg.find("--type=") != arg.npos)
-    {
-      type = arg.substr(sizeof("--type=") - 1);
-    }
-    else if (arg.find("--lines=") != arg.npos)
-    {
-      lines = std::stoul(arg.substr(sizeof("--lines=") - 1));
-    }
-    else if (arg.find("--threads=") != arg.npos)
-    {
-      threads = std::stoul(arg.substr(sizeof("--threads=") - 1));
-    }
-    else
-    {
-      return usage("unknown argument: " + arg);
-    }
-  }
+  using namespace sal::program_options;
+
+  option_set_t desc;
+  desc
+    .add({"t", "type"},
+      requires_argument("STRING", type),
+      help("worker type (sync | async)")
+    )
+    .add({"l", "lines"},
+      requires_argument("INT", lines),
+      help("total number of lines to log")
+    )
+    .add({"threads"},
+      requires_argument("INT", threads),
+      help("number of logging threads")
+    )
+  ;
+  return desc;
+}
+
+
+int run (const option_set_t &options, const argument_map_t &arguments)
+{
+  lines = std::stoul(options.back_or_default("lines", { arguments }));
+  threads = std::stoul(options.back_or_default("threads", { arguments }));
+  type = options.back_or_default("type", { arguments });
 
   if (type == "sync")
   {
-    return run<sal::logger::worker_t>();
+    return log_with<sal::logger::worker_t>();
   }
   else if (type == "async")
   {
-    return run<sal::logger::async_worker_t>();
+    return log_with<sal::logger::async_worker_t>();
   }
 
   return usage("unknown worker type '" + type + '\'');
 }
+
+
+} // namespace bench

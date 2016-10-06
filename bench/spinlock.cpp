@@ -15,26 +15,6 @@ size_t spin = 100;
 size_t threads = 2;
 
 
-int usage (const std::string message="")
-{
-  if (!message.empty())
-  {
-    std::cerr << message << '\n' << std::endl;
-  }
-
-  std::cerr << "spinlock:"
-    << "\n  --help        this page"
-    << "\n  --count=int   number of iteration (default: " << count << ')'
-    << "\n  --lock=Lock   lock type (default: " << lock << ')'
-    << "\n                possible values: spinlock, mutex"
-    << "\n  --spin=int    number of spins before yield (default: " << spin << ')'
-    << "\n  --threads=int number of threads (default: " << threads << ')'
-    << std::endl;
-
-  return EXIT_FAILURE;
-}
-
-
 template <typename Mutex>
 int worker (Mutex &mutex)
 {
@@ -86,35 +66,42 @@ int worker (Mutex &mutex)
 } // namespace
 
 
-int bench::spinlock (const arg_list &args)
+namespace bench {
+
+
+option_set_t options ()
 {
-  for (auto &arg: args)
-  {
-    if (arg == "--help")
-    {
-      return usage();
-    }
-    else if (arg.find("--count=") != arg.npos)
-    {
-      count = std::stoul(arg.substr(sizeof("--count=") - 1));
-    }
-    else if (arg.find("--spin=") != arg.npos)
-    {
-      spin = std::stoul(arg.substr(sizeof("--spin=") - 1));
-    }
-    else if (arg.find("--threads=") != arg.npos)
-    {
-      threads = std::stoul(arg.substr(sizeof("--threads=") - 1));
-    }
-    else if (arg.find("--lock=") != arg.npos)
-    {
-      lock = arg.substr(sizeof("--lock=") - 1);
-    }
-    else
-    {
-      return usage("unknown argument: " + arg);
-    }
-  }
+  using namespace sal::program_options;
+
+  option_set_t desc;
+  desc
+    .add({"c", "count"},
+      requires_argument("INT", count),
+      help("number of iterations")
+    )
+    .add({"s", "spin"},
+      requires_argument("INT", spin),
+      help("number of spins before yield")
+    )
+    .add({"t", "threads"},
+      requires_argument("INT", threads),
+      help("number of threads")
+    )
+    .add({"l", "lock"},
+      requires_argument("STRING", lock),
+      help("lock type (spinlock | mutex)")
+    )
+  ;
+  return desc;
+}
+
+
+int run (const option_set_t &options, const argument_map_t &arguments)
+{
+  count = std::stoul(options.back_or_default("count", { arguments }));
+  spin = std::stoul(options.back_or_default("spin", { arguments }));
+  threads = std::stoul(options.back_or_default("threads", { arguments }));
+  lock = options.back_or_default("lock", { arguments });
 
   if (lock == "spinlock")
   {
@@ -129,3 +116,6 @@ int bench::spinlock (const arg_list &args)
 
   return usage("unknown lock '" + lock + '\'');
 }
+
+
+} // namespace bench
