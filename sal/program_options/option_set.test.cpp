@@ -593,7 +593,7 @@ TEST_P(option_set, load_from_hardcoded_required_argument_option_no_argument_with
     { "4", "" },
   };
 
-  EXPECT_THROW(options.load_from(hardcoded), po::option_rejects_argument);
+  EXPECT_THROW(options.load_from(hardcoded), po::option_requires_argument);
 }
 
 
