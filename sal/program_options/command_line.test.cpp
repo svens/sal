@@ -172,13 +172,13 @@ TEST_P(command_line, optional_short) //{{{1
 
 TEST_P(command_line, requires_short) //{{{1
 {
-  EXPECT_THROW(parse("-r"), po::option_requires_argument);
+  EXPECT_THROW(parse("-r"), po::option_requires_argument_error);
 }
 
 
 TEST_P(command_line, no_argument_short_with_combined_argument) //{{{1
 {
-  EXPECT_THROW(parse("-na"), po::unknown_option);
+  EXPECT_THROW(parse("-na"), po::unknown_option_error);
 }
 
 
@@ -248,13 +248,13 @@ TEST_P(command_line, optional_long) //{{{1
 
 TEST_P(command_line, requires_long) //{{{1
 {
-  EXPECT_THROW(parse("--requires"), po::option_requires_argument);
+  EXPECT_THROW(parse("--requires"), po::option_requires_argument_error);
 }
 
 
 TEST_P(command_line, no_argument_long_assign) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument="), po::option_rejects_argument);
+  EXPECT_THROW(parse("--no-argument="), po::option_rejects_argument_error);
 }
 
 
@@ -269,7 +269,7 @@ TEST_P(command_line, optional_long_assign) //{{{1
 
 TEST_P(command_line, requires_long_assign) //{{{1
 {
-  EXPECT_THROW(parse("--requires="), po::option_requires_argument);
+  EXPECT_THROW(parse("--requires="), po::option_requires_argument_error);
 }
 
 
@@ -285,13 +285,13 @@ TEST_P(command_line, no_argument_long_with_argument) //{{{1
 
 TEST_P(command_line, no_argument_long_with_assigned_argument) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument=a"), po::option_rejects_argument);
+  EXPECT_THROW(parse("--no-argument=a"), po::option_rejects_argument_error);
 }
 
 
 TEST_P(command_line, no_argument_long_with_combined_argument) //{{{1
 {
-  EXPECT_THROW(parse("--no-argumenta"), po::unknown_option);
+  EXPECT_THROW(parse("--no-argumenta"), po::unknown_option_error);
 }
 
 
@@ -315,7 +315,7 @@ TEST_P(command_line, optional_long_with_assigned_argument) //{{{1
 
 TEST_P(command_line, optional_long_with_combined_argument) //{{{1
 {
-  EXPECT_THROW(parse("--optionala"), po::unknown_option);
+  EXPECT_THROW(parse("--optionala"), po::unknown_option_error);
 }
 
 
@@ -339,7 +339,7 @@ TEST_P(command_line, requires_long_with_assigned_argument) //{{{1
 
 TEST_P(command_line, requires_long_with_combined_argument) //{{{1
 {
-  EXPECT_THROW(parse("--requiresa"), po::unknown_option);
+  EXPECT_THROW(parse("--requiresa"), po::unknown_option_error);
 }
 
 
@@ -385,13 +385,13 @@ TEST_P(command_line, no_argument_short_and_optional_short_combined) //{{{1
 
 TEST_P(command_line, no_argument_short_and_requires_short) //{{{1
 {
-  EXPECT_THROW(parse("-n", "-r"), po::option_requires_argument);
+  EXPECT_THROW(parse("-n", "-r"), po::option_requires_argument_error);
 }
 
 
 TEST_P(command_line, no_argument_short_and_requires_short_combined) //{{{1
 {
-  EXPECT_THROW(parse("-nr"), po::option_requires_argument);
+  EXPECT_THROW(parse("-nr"), po::option_requires_argument_error);
 }
 
 
@@ -435,7 +435,7 @@ TEST_P(command_line, optional_short_and_optional_short_combined) //{{{1
 
 TEST_P(command_line, optional_short_and_requires_short) //{{{1
 {
-  EXPECT_THROW(parse("-o", "-r"), po::option_requires_argument);
+  EXPECT_THROW(parse("-o", "-r"), po::option_requires_argument_error);
 }
 
 
@@ -450,7 +450,7 @@ TEST_P(command_line, optional_short_and_requires_short_combined) //{{{1
 
 TEST_P(command_line, requires_short_and_no_argument_short) //{{{1
 {
-  EXPECT_THROW(parse("-r", "-n"), po::option_requires_argument);
+  EXPECT_THROW(parse("-r", "-n"), po::option_requires_argument_error);
 }
 
 
@@ -465,7 +465,7 @@ TEST_P(command_line, requires_short_and_no_argument_short_combined) //{{{1
 
 TEST_P(command_line, requires_short_and_optional_short) //{{{1
 {
-  EXPECT_THROW(parse("-r", "-o"), po::option_requires_argument);
+  EXPECT_THROW(parse("-r", "-o"), po::option_requires_argument_error);
 }
 
 
@@ -480,7 +480,7 @@ TEST_P(command_line, requires_short_and_optional_short_combined) //{{{1
 
 TEST_P(command_line, requires_short_and_requires_short) //{{{1
 {
-  EXPECT_THROW(parse("-r", "-r"), po::option_requires_argument);
+  EXPECT_THROW(parse("-r", "-r"), po::option_requires_argument_error);
 }
 
 
@@ -505,7 +505,7 @@ TEST_P(command_line, no_argument_long_and_no_argument_long) //{{{1
 
 TEST_P(command_line, no_argument_long_and_no_argument_long_assigned) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument=no-argument"), po::option_rejects_argument);
+  EXPECT_THROW(parse("--no-argument=no-argument"), po::option_rejects_argument_error);
 }
 
 
@@ -531,7 +531,7 @@ TEST_P(command_line, no_argument_long_and_optional_long) //{{{1
 
 TEST_P(command_line, no_argument_long_and_optional_long_assigned) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument=optional"), po::option_rejects_argument);
+  EXPECT_THROW(parse("--no-argument=optional"), po::option_rejects_argument_error);
 }
 
 
@@ -547,13 +547,13 @@ TEST_P(command_line, no_argument_long_and_optional_long_spaced) //{{{1
 
 TEST_P(command_line, no_argument_long_and_requires_long) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument", "--requires"), po::option_requires_argument);
+  EXPECT_THROW(parse("--no-argument", "--requires"), po::option_requires_argument_error);
 }
 
 
 TEST_P(command_line, no_argument_long_and_requires_long_assigned) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument=requires"), po::option_rejects_argument);
+  EXPECT_THROW(parse("--no-argument=requires"), po::option_rejects_argument_error);
 }
 
 
@@ -625,7 +625,7 @@ TEST_P(command_line, optional_long_and_optional_long_spaced) //{{{1
 
 TEST_P(command_line, optional_long_and_requires_long) //{{{1
 {
-  EXPECT_THROW(parse("--optional", "--requires"), po::option_requires_argument);
+  EXPECT_THROW(parse("--optional", "--requires"), po::option_requires_argument_error);
 }
 
 
@@ -649,7 +649,7 @@ TEST_P(command_line, optional_long_and_requires_long_spaced) //{{{1
 
 TEST_P(command_line, requires_long_and_no_argument_long) //{{{1
 {
-  EXPECT_THROW(parse("--requires", "--no-argument"), po::option_requires_argument);
+  EXPECT_THROW(parse("--requires", "--no-argument"), po::option_requires_argument_error);
 }
 
 
@@ -673,7 +673,7 @@ TEST_P(command_line, requires_long_and_no_argument_long_spaced) //{{{1
 
 TEST_P(command_line, requires_long_and_optional_long) //{{{1
 {
-  EXPECT_THROW(parse("--requires", "--optional"), po::option_requires_argument);
+  EXPECT_THROW(parse("--requires", "--optional"), po::option_requires_argument_error);
 }
 
 
@@ -697,7 +697,7 @@ TEST_P(command_line, requires_long_and_optional_long_spaced) //{{{1
 
 TEST_P(command_line, requires_long_and_requires_long) //{{{1
 {
-  EXPECT_THROW(parse("--requires", "--requires"), po::option_requires_argument);
+  EXPECT_THROW(parse("--requires", "--requires"), po::option_requires_argument_error);
 }
 
 
@@ -731,7 +731,7 @@ TEST_P(command_line, no_argument_short_and_no_argument_long) //{{{1
 
 TEST_P(command_line, no_argument_short_and_no_argument_long_combined) //{{{1
 {
-  EXPECT_THROW(parse("-nno-argument"), po::unknown_option);
+  EXPECT_THROW(parse("-nno-argument"), po::unknown_option_error);
 }
 
 
@@ -757,7 +757,7 @@ TEST_P(command_line, no_argument_short_and_optional_long_combined) //{{{1
 
 TEST_P(command_line, no_argument_short_and_requires_long) //{{{1
 {
-  EXPECT_THROW(parse("-n", "--requires"), po::option_requires_argument);
+  EXPECT_THROW(parse("-n", "--requires"), po::option_requires_argument_error);
 }
 
 
@@ -811,7 +811,7 @@ TEST_P(command_line, optional_short_and_optional_long_combined) //{{{1
 
 TEST_P(command_line, optional_short_and_requires_long) //{{{1
 {
-  EXPECT_THROW(parse("-o", "--requires"), po::option_requires_argument);
+  EXPECT_THROW(parse("-o", "--requires"), po::option_requires_argument_error);
 }
 
 
@@ -826,7 +826,7 @@ TEST_P(command_line, optional_short_and_requires_long_combined) //{{{1
 
 TEST_P(command_line, requires_short_and_no_argument_long) //{{{1
 {
-  EXPECT_THROW(parse("-r", "--no-argument"), po::option_requires_argument);
+  EXPECT_THROW(parse("-r", "--no-argument"), po::option_requires_argument_error);
 }
 
 
@@ -859,7 +859,7 @@ TEST_P(command_line, requires_short_and_optional_long_combined) //{{{1
 
 TEST_P(command_line, requires_short_and_requires_long) //{{{1
 {
-  EXPECT_THROW(parse("-r", "--requires"), po::option_requires_argument);
+  EXPECT_THROW(parse("-r", "--requires"), po::option_requires_argument_error);
 }
 
 
@@ -894,7 +894,7 @@ TEST_P(command_line, no_argument_long_and_no_argument_short_spaced) //{{{1
 
 TEST_P(command_line, no_argument_long_and_no_argument_short_assigned) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument=n"), po::option_rejects_argument);
+  EXPECT_THROW(parse("--no-argument=n"), po::option_rejects_argument_error);
 }
 
 
@@ -920,13 +920,13 @@ TEST_P(command_line, no_argument_long_and_optional_short_spaced) //{{{1
 
 TEST_P(command_line, no_argument_long_and_optional_short_assigned) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument=o"), po::option_rejects_argument);
+  EXPECT_THROW(parse("--no-argument=o"), po::option_rejects_argument_error);
 }
 
 
 TEST_P(command_line, no_argument_long_and_requires_short) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument", "-r"), po::option_requires_argument);
+  EXPECT_THROW(parse("--no-argument", "-r"), po::option_requires_argument_error);
 }
 
 
@@ -942,7 +942,7 @@ TEST_P(command_line, no_argument_long_and_requires_short_spaced) //{{{1
 
 TEST_P(command_line, no_argument_long_and_requires_short_assigned) //{{{1
 {
-  EXPECT_THROW(parse("--no-argument=r"), po::option_rejects_argument);
+  EXPECT_THROW(parse("--no-argument=r"), po::option_rejects_argument_error);
 }
 
 
@@ -1004,7 +1004,7 @@ TEST_P(command_line, optional_long_and_optional_short_assigned) //{{{1
 
 TEST_P(command_line, optional_long_and_requires_short) //{{{1
 {
-  EXPECT_THROW(parse("--optional", "-r"), po::option_requires_argument);
+  EXPECT_THROW(parse("--optional", "-r"), po::option_requires_argument_error);
 }
 
 
@@ -1028,7 +1028,7 @@ TEST_P(command_line, optional_long_and_requires_short_assigned) //{{{1
 
 TEST_P(command_line, requires_long_and_no_argument_short) //{{{1
 {
-  EXPECT_THROW(parse("--requires", "-n"), po::option_requires_argument);
+  EXPECT_THROW(parse("--requires", "-n"), po::option_requires_argument_error);
 }
 
 
@@ -1052,7 +1052,7 @@ TEST_P(command_line, requires_long_and_no_argument_short_assigned) //{{{1
 
 TEST_P(command_line, requires_long_and_optional_short) //{{{1
 {
-  EXPECT_THROW(parse("--requires", "-o"), po::option_requires_argument);
+  EXPECT_THROW(parse("--requires", "-o"), po::option_requires_argument_error);
 }
 
 
@@ -1076,7 +1076,7 @@ TEST_P(command_line, requires_long_and_optional_short_assigned) //{{{1
 
 TEST_P(command_line, requires_long_and_requires_short) //{{{1
 {
-  EXPECT_THROW(parse("--requires", "-r"), po::option_requires_argument);
+  EXPECT_THROW(parse("--requires", "-r"), po::option_requires_argument_error);
 }
 
 

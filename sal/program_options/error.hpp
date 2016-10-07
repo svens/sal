@@ -17,7 +17,7 @@ __sal_begin
 /**
  * Logic error when option with no name is inserted into option_set_t
  */
-struct no_option_name
+struct no_option_name_error
   : public std::logic_error
 {
   using std::logic_error::logic_error;
@@ -27,7 +27,7 @@ struct no_option_name
 /**
  * Logic error when option with empty name is inserted into option_set_t
  */
-struct empty_option_name
+struct empty_option_name_error
   : public std::logic_error
 {
   using std::logic_error::logic_error;
@@ -37,7 +37,7 @@ struct empty_option_name
 /**
  * Logic error when option with invalid name is inserted into option_set_t
  */
-struct invalid_option_name
+struct invalid_option_name_error
   : public std::logic_error
 {
   using std::logic_error::logic_error;
@@ -48,7 +48,7 @@ struct invalid_option_name
  * Logic error when option with already existing name is inserted into
  * option_set_t
  */
-struct duplicate_option_name
+struct duplicate_option_name_error
   : public std::logic_error
 {
   using std::logic_error::logic_error;
@@ -58,7 +58,7 @@ struct duplicate_option_name
 /**
  * Runtime error when parsed option that is not registered in option_set_t
  */
-struct unknown_option
+struct unknown_option_error
   : public std::runtime_error
 {
   using std::runtime_error::runtime_error;
@@ -68,7 +68,7 @@ struct unknown_option
 /**
  * Runtime error when option requires argument but none is specified
  */
-struct option_requires_argument
+struct option_requires_argument_error
   : public std::runtime_error
 {
   using std::runtime_error::runtime_error;
@@ -78,7 +78,17 @@ struct option_requires_argument
 /**
  * Runtime error when option with no argument has argument
  */
-struct option_rejects_argument
+struct option_rejects_argument_error
+  : public std::runtime_error
+{
+  using std::runtime_error::runtime_error;
+};
+
+
+/**
+ * Runtime error when parser fails
+ */
+struct parser_error
   : public std::runtime_error
 {
   using std::runtime_error::runtime_error;

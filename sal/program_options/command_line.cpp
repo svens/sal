@@ -1,8 +1,6 @@
 #include <sal/program_options/command_line.hpp>
 #include <sal/assert.hpp>
 
-#include <iostream>
-
 
 namespace sal { namespace program_options {
 __sal_begin
@@ -83,7 +81,7 @@ bool command_line_t::operator() (const option_set_t &option_set,
 
     if (!option_p)
     {
-      throw_error<unknown_option>("unknown option: ", *option);
+      throw_error<unknown_option_error>("unknown option: ", *option);
     }
 
     if (option_p->no_argument())
@@ -92,7 +90,7 @@ bool command_line_t::operator() (const option_set_t &option_set,
       {
         // must not have argument but still has
         state_ = state_t::argument;
-        throw_error<option_rejects_argument>(
+        throw_error<option_rejects_argument_error>(
           "option rejects argument: ", *option
         );
       }
@@ -128,7 +126,7 @@ bool command_line_t::operator() (const option_set_t &option_set,
     state_ = state_t::undef;
     if (option_p->requires_argument())
     {
-      throw_error<option_requires_argument>(
+      throw_error<option_requires_argument_error>(
         "option requires argument: ", *option
       );
     }

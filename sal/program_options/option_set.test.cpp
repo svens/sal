@@ -47,25 +47,25 @@ INSTANTIATE_TEST_CASE_P(program_options, option_set, testing::Values(true));
 
 TEST_P(option_set, add_no_names)
 {
-  EXPECT_THROW(options.add({}), po::no_option_name);
+  EXPECT_THROW(options.add({}), po::no_option_name_error);
 }
 
 
 TEST_P(option_set, add_empty_name)
 {
-  EXPECT_THROW(options.add({ "" }), po::empty_option_name);
+  EXPECT_THROW(options.add({ "" }), po::empty_option_name_error);
 }
 
 
 TEST_P(option_set, add_invalid_name)
 {
-  EXPECT_THROW(options.add({ "$name" }), po::invalid_option_name);
+  EXPECT_THROW(options.add({ "$name" }), po::invalid_option_name_error);
 }
 
 
 TEST_P(option_set, add_duplicate_name_same_option)
 {
-  EXPECT_THROW(options.add({ "name", "name" }), po::duplicate_option_name);
+  EXPECT_THROW(options.add({ "name", "name" }), po::duplicate_option_name_error);
 }
 
 
@@ -73,7 +73,7 @@ TEST_P(option_set, add_duplicate_name_different_option)
 {
   EXPECT_THROW(
     options.add({ "name" }).add({ "name" }),
-    po::duplicate_option_name
+    po::duplicate_option_name_error
   );
 }
 
@@ -457,7 +457,7 @@ TEST_P(option_set, load_from_hardcoded_required_argument_option_no_argument)
     { "1", "" },
   };
 
-  EXPECT_THROW(options.load_from(hardcoded), po::option_requires_argument);
+  EXPECT_THROW(options.load_from(hardcoded), po::option_requires_argument_error);
 }
 
 
@@ -546,7 +546,7 @@ TEST_P(option_set, load_from_hardcoded_no_argument_option_with_argument)
     { "3", case_name },
   };
 
-  EXPECT_THROW(options.load_from(hardcoded), po::option_rejects_argument);
+  EXPECT_THROW(options.load_from(hardcoded), po::option_rejects_argument_error);
 }
 
 
@@ -593,7 +593,7 @@ TEST_P(option_set, load_from_hardcoded_required_argument_option_no_argument_with
     { "4", "" },
   };
 
-  EXPECT_THROW(options.load_from(hardcoded), po::option_requires_argument);
+  EXPECT_THROW(options.load_from(hardcoded), po::option_requires_argument_error);
 }
 
 
