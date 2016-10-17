@@ -42,7 +42,7 @@ struct yaml_reader_t::impl_t
     , oss()
     , old_buf(std::cout.rdbuf())
   {
-    //std::cout.rdbuf(oss.rdbuf());
+    std::cout.rdbuf(oss.rdbuf());
   }
 
 
@@ -81,13 +81,26 @@ struct yaml_reader_t::impl_t
 
   void handle_trail ()
   {
+    std::cout << "(handle_trail:";
     if (style == style_t::unset || chomp == chomp_t::strip)
     {
+      std::cout << "unset|strip";
       while (argument->size() && std::isspace(argument->back()))
       {
         argument->pop_back();
       }
     }
+    else if (chomp == chomp_t::clip)
+    {
+      std::cout << "clip";
+      while (argument->size() > 1
+        && argument->back() == '\n'
+        && (*argument)[argument->size() - 2] == '\n')
+      {
+        argument->pop_back();
+      }
+    }
+    std::cout << ')' << std::endl;
   }
 
 
@@ -217,6 +230,7 @@ bool yaml_reader_t::impl_t::next (std::string *opt, std::string *arg)
     input_pos.second++;
   }
 
+  handle_trail();
   return option->size() > 0;
 }
 
@@ -293,16 +307,16 @@ bool yaml_reader_t::impl_t::handle_assign_settings (char ch)
       expected_newline();
     }
 
-    std::cout << "(style" << ch << ")";
     style = ch == '|' ? style_t::literal : style_t::folded;
+    std::cout << "(style:" << (style == style_t::literal ? "literal" : "folded") << ')';
 
     ch = input.peek();
     if (ch == '+' || ch == '-')
     {
-      std::cout << "(chomp" << ch << ")";
       input.get(ch);
       input_pos.second++;
       chomp = ch == '+' ? chomp_t::keep : chomp_t::strip;
+      std::cout << "(chomp:" << (chomp == chomp_t::keep ? "keep" : "strip") << ')';
     }
   }
   else if (ch == '\n')
@@ -328,7 +342,7 @@ bool yaml_reader_t::impl_t::handle_assign_settings (char ch)
 
 bool yaml_reader_t::impl_t::handle_argument (char ch)
 {
-  if (ch == '#')
+  if (ch == '#' && style == style_t::unset)
   {
     ignore_until_eol();
     std::cout << "(argument -> start)";
@@ -337,6 +351,11 @@ bool yaml_reader_t::impl_t::handle_argument (char ch)
   }
   else if (ch == '\n')
   {
+    if (argument->size() && style != style_t::unset)
+    {
+      std::cout << "(+literal)";
+      argument->push_back(ch);
+    }
     std::cout << "(argument -> argument_eol)";
     state = &impl_t::handle_argument_eol;
   }
@@ -351,13 +370,17 @@ bool yaml_reader_t::impl_t::handle_argument (char ch)
 
 bool yaml_reader_t::impl_t::handle_argument_eol (char ch)
 {
-  if (ch == '\n')
+  if (std::isblank(ch))
   {
-    argument->push_back(ch);
     return true;
   }
-  else if (std::isblank(ch))
+  else if (ch == '\n')
   {
+    if (style != style_t::unset || argument->size())
+    {
+      std::cout << "(+newline)";
+      argument->push_back(ch);
+    }
     return true;
   }
 
@@ -369,12 +392,16 @@ bool yaml_reader_t::impl_t::handle_argument_eol (char ch)
     return false;
   }
 
-  //if (argument->size())
+  if (argument->size())
   {
-    argument->push_back(style != style_t::unset
-      ? static_cast<char>(style)
-      : ' '
-    );
+    if (style != style_t::unset)
+    {
+      argument->back() = static_cast<char>(style);
+    }
+    else if (argument->back() != '\n')
+    {
+      argument->push_back(' ');
+    }
   }
 
   std::cout << "(argument_eol -> argument)";
