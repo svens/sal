@@ -44,7 +44,7 @@ struct yaml_reader
 INSTANTIATE_TEST_CASE_P(program_options, yaml_reader, testing::Values(true));
 
 
-// flat successful cases: https://goo.gl/8l3BYx
+// simple successful cases: https://goo.gl/8l3BYx
 
 
 TEST_P(yaml_reader, comment) //{{{1
@@ -208,6 +208,7 @@ option_multiline_folded_strip_argument: >-
 }
 
 
+#if 0
 TEST_P(yaml_reader, option_list_argument) //{{{1
 {
   check(parse(R"(
@@ -236,6 +237,7 @@ option_list_argument_no_indent:
     { "option_list_argument_no_indent", "argument_2" },
   });
 }
+#endif
 
 
 TEST_P(yaml_reader, option_list_literal_argument) //{{{1
@@ -269,18 +271,150 @@ option_list_folded_argument: >
 //}}}1
 
 
+
+// complex successful cases
+
+
+TEST_P(yaml_reader, indented_comment) //{{{1
+{
+  check(parse(R"( # comment)"), {});
+}
+
+
+TEST_P(yaml_reader, comment_after_colon) //{{{1
+{
+  check(parse(R"(
+comment_after_colon: # comment
+  argument
+)"),
+  {
+    { "comment_after_colon", "argument" },
+  });
+}
+
+
+TEST_P(yaml_reader, comment_at_end_block)
+{
+  check(parse(R"(
+comment_at_end_of_block:
+  argument
+  # comment
+)"),
+  {
+    { "comment_at_end_of_block", "argument" }
+  });
+}
+
+
+TEST_P(yaml_reader, space_before_colon) //{{{1
+{
+  check(parse(R"(
+space_before_colon : argument
+)"),
+  {
+    { "space_before_colon", "argument" },
+  });
+}
+
+
+TEST_P(yaml_reader, option_literal_option) //{{{1
+{
+  check(parse(R"(
+option_literal_option: >
+
+option: argument
+)"),
+  {
+    { "option_literal_option", "" },
+    { "option", "argument" },
+  });
+}
+
+
+TEST_P(yaml_reader, chomp_without_style)
+{
+  check(parse(R"(
+option1: +
+option2: -
+)"),
+  {
+    { "option1", "+" },
+    { "option2", "-" },
+  });
+}
+
+
+//}}}1
+
+
 // parser error cases
+
+
+TEST_P(yaml_reader, error_bad_indent)
+{
+  EXPECT_THROW(parse(" option: argument"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, error_start_tab)
+{
+  EXPECT_THROW(parse("\t"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, error_tab_indent)
+{
+  EXPECT_THROW(parse("option:\n\targument"), po::parser_error);
+}
 
 
 TEST_P(yaml_reader, error_double_colon)
 {
-  EXPECT_THROW(parse(R"(option::)"), po::parser_error);
+  EXPECT_THROW(parse("option::"), po::parser_error);
 }
 
 
 TEST_P(yaml_reader, error_fold_no_colon)
 {
-  EXPECT_THROW(parse(R"(option>)"), po::parser_error);
+  EXPECT_THROW(parse("option>"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, error_multiple_styles)
+{
+  EXPECT_THROW(parse("option: ||"), po::parser_error);
+  EXPECT_THROW(parse("option: >|"), po::parser_error);
+  EXPECT_THROW(parse("option: |>"), po::parser_error);
+  EXPECT_THROW(parse("option: >>"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, error_invalid_chomp)
+{
+  EXPECT_THROW(parse("option: |x"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, error_style_and_argument)
+{
+  EXPECT_THROW(parse("option: | argument"), po::parser_error);
+  EXPECT_THROW(parse("option: |+ argument"), po::parser_error);
+  EXPECT_THROW(parse("option: |- argument"), po::parser_error);
+  EXPECT_THROW(parse("option: > argument"), po::parser_error);
+  EXPECT_THROW(parse("option: >+ argument"), po::parser_error);
+  EXPECT_THROW(parse("option: >- argument"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, error_comment_inbetween_block_argument)
+{
+  EXPECT_THROW(parse(R"(
+option:
+  line_1
+  # comment
+  line_2
+)"),
+    po::parser_error);
 }
 
 
@@ -289,7 +423,7 @@ TEST_P(yaml_reader, devel) //{{{1
 {
   check(parse(R"(
 a:
-
+  
   X
 
 

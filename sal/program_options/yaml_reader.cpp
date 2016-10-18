@@ -12,6 +12,16 @@ namespace sal { namespace program_options {
 __sal_begin
 
 
+inline bool ends_with (const std::string &name, const std::string &suffix)
+{
+  if (suffix.size() <= name.size())
+  {
+    return std::equal(suffix.rbegin(), suffix.rend(), name.rbegin());
+  }
+  return false;
+}
+
+
 struct yaml_reader_t::impl_t
 {
   std::istream &input;
@@ -93,9 +103,8 @@ struct yaml_reader_t::impl_t
     else if (chomp == chomp_t::clip)
     {
       std::cout << "clip";
-      while (argument->size() > 1
-        && argument->back() == '\n'
-        && (*argument)[argument->size() - 2] == '\n')
+      static const std::string newline = "\n", double_newline = "\n\n";
+      while (*argument == newline || ends_with(*argument, double_newline))
       {
         argument->pop_back();
       }
@@ -108,22 +117,6 @@ struct yaml_reader_t::impl_t
   {
     throw_error<parser_error>("unexpected TAB at ",
       '(', input_pos.first, ',', input_pos.second, ')'
-    );
-  }
-
-
-  void unexpected_trail [[noreturn]] () const
-  {
-    throw_error<parser_error>("unexpected chomp marker at ",
-      '(', input_pos.first, ',', input_pos.second, ')'
-    );
-  }
-
-
-  void unexpected_character [[noreturn]] (char ch) const
-  {
-    throw_error<parser_error>("unexpected character '", ch,
-      "' at (", input_pos.first, ',', input_pos.second, ')'
     );
   }
 
@@ -241,15 +234,19 @@ bool yaml_reader_t::impl_t::handle_start (char ch)
   {
     ignore_until_eol();
   }
-  else if (ch == ' ')
+  else if (ch == '\t')
   {
-    bad_indent();
+    unexpected_tab();
   }
-  else if (ch != '\n')
+  else if (ch != ' ' && ch != '\n')
   {
-    std::cout << "(start -> option)";
-    state = &impl_t::handle_option;
-    return handle_option(ch);
+    if (input_pos.second == 1)
+    {
+      std::cout << "(start -> option)";
+      state = &impl_t::handle_option;
+      return handle_option(ch);
+    }
+    bad_indent();
   }
 
   return true;
@@ -326,14 +323,13 @@ bool yaml_reader_t::impl_t::handle_assign_settings (char ch)
   }
   else if (!std::isblank(ch))
   {
-    if (style != style_t::unset)
+    if (style == style_t::unset)
     {
-      expected_newline();
+      std::cout << "(assign -> argument)";
+      state = &impl_t::handle_argument;
+      return handle_argument(ch);
     }
-
-    std::cout << "(assign -> argument)";
-    state = &impl_t::handle_argument;
-    return handle_argument(ch);
+    expected_newline();
   }
 
   return true;
@@ -351,7 +347,7 @@ bool yaml_reader_t::impl_t::handle_argument (char ch)
   }
   else if (ch == '\n')
   {
-    if (argument->size() && style != style_t::unset)
+    if (style != style_t::unset)
     {
       std::cout << "(+literal)";
       argument->push_back(ch);
@@ -370,11 +366,7 @@ bool yaml_reader_t::impl_t::handle_argument (char ch)
 
 bool yaml_reader_t::impl_t::handle_argument_eol (char ch)
 {
-  if (std::isblank(ch))
-  {
-    return true;
-  }
-  else if (ch == '\n')
+  if (ch == '\n')
   {
     if (style != style_t::unset || argument->size())
     {
@@ -382,6 +374,14 @@ bool yaml_reader_t::impl_t::handle_argument_eol (char ch)
       argument->push_back(ch);
     }
     return true;
+  }
+  else if (ch == ' ')
+  {
+    return true;
+  }
+  else if (ch == '\t')
+  {
+    unexpected_tab();
   }
 
   if (input_pos.second == 1)
