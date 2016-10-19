@@ -11,10 +11,10 @@ namespace po = sal::program_options;
 struct yaml_reader
   : public sal_test::with_value<bool>
 {
-  std::vector<std::pair<std::string, std::string>> parse (const std::string &content)
+  void parse_and_check (size_t line,
+    const std::string &content,
+    const std::vector<std::pair<std::string, std::string>> &expected)
   {
-    std::cout << "\n\n-- 8< --" << content << "-- 8< --\n\n" << std::endl;
-
     std::istringstream iss;
     iss.str(content);
     po::yaml_reader_t parser{iss};
@@ -29,14 +29,7 @@ struct yaml_reader
       argument.clear();
     }
 
-    return result;
-  }
-
-
-  void check (const std::vector<std::pair<std::string, std::string>> &result,
-    const std::vector<std::pair<std::string, std::string>> &expected)
-  {
-    EXPECT_EQ(expected, result);
+    EXPECT_EQ(expected, result) << "(line " << line << ')';
   }
 };
 
@@ -44,17 +37,17 @@ struct yaml_reader
 INSTANTIATE_TEST_CASE_P(program_options, yaml_reader, testing::Values(true));
 
 
-// simple successful cases: https://goo.gl/8l3BYx
+// simple successful cases: https://goo.gl/MMRfgG
 
 
 TEST_P(yaml_reader, comment) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 #
 # to be ignored
 #
 
-)"),
+)",
   {
   });
 }
@@ -62,10 +55,10 @@ TEST_P(yaml_reader, comment) //{{{1
 
 TEST_P(yaml_reader, option_no_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option:
 
-)"),
+)",
   {
     { "option", "" },
   });
@@ -74,10 +67,10 @@ option:
 
 TEST_P(yaml_reader, option_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_argument: argument
 
-)"),
+)",
   {
     { "option_argument", "argument" },
   });
@@ -86,11 +79,11 @@ option_argument: argument
 
 TEST_P(yaml_reader, option_newline_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_newline_argument:
   argument
 
-)"),
+)",
   {
     { "option_newline_argument", "argument" },
   });
@@ -99,111 +92,159 @@ option_newline_argument:
 
 TEST_P(yaml_reader, option_argument_newline_argument) //{{{1
 {
-  check(parse(R"(
-option_argument_newline_argument: argument_1
-  argument_2
+  parse_and_check(__LINE__, R"(
+option_argument_newline_argument: 1
+  2
 
-)"),
+)",
   {
-    { "option_argument_newline_argument", "argument_1 argument_2" },
+    { "option_argument_newline_argument", "1 2" },
   });
 }
 
 
 TEST_P(yaml_reader, option_multiline_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_multiline_argument:
-  argument_line_1
-  argument_line_2
+  1
+  2
 
-)"),
+)",
   {
-    { "option_multiline_argument", "argument_line_1 argument_line_2" },
+    { "option_multiline_argument", "1 2" },
+  });
+}
+
+
+TEST_P(yaml_reader, option_indented_multiline_argument) //{{{1
+{
+  parse_and_check(__LINE__, R"(
+option_indented_multiline_argument:
+  1
+    2
+  3
+  4
+
+)",
+  {
+    { "option_indented_multiline_argument", "1 2 3 4" },
   });
 }
 
 
 TEST_P(yaml_reader, option_multiline_literal_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_multiline_literal_argument: |
-  argument_line_1
-  argument_line_2
+  1
+  2
 
-)"),
+)",
   {
-    { "option_multiline_literal_argument", "argument_line_1\nargument_line_2\n" },
+    { "option_multiline_literal_argument", "1\n2\n" },
+  });
+}
+
+
+TEST_P(yaml_reader, option_indented_multiline_literal_argument) //{{{1
+{
+  parse_and_check(__LINE__, R"(
+option_indented_multiline_literal_argument: |
+  1
+    2
+  3
+  4
+
+)",
+  {
+    { "option_indented_multiline_literal_argument", "1\n  2\n3\n4\n" },
   });
 }
 
 
 TEST_P(yaml_reader, option_multiline_literal_keep_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_multiline_literal_keep_argument: |+
-  argument_line_1
-  argument_line_2
+  1
+  2
 
-)"),
+)",
   {
-    { "option_multiline_literal_keep_argument", "argument_line_1\nargument_line_2\n\n" },
+    { "option_multiline_literal_keep_argument", "1\n2\n\n" },
   });
 }
 
 
 TEST_P(yaml_reader, option_multiline_literal_strip_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_multiline_literal_strip_argument: |-
-  argument_line_1
-  argument_line_2
+  1
+  2
 
-)"),
+)",
   {
-    { "option_multiline_literal_strip_argument", "argument_line_1\nargument_line_2" },
+    { "option_multiline_literal_strip_argument", "1\n2" },
   });
 }
 
 
 TEST_P(yaml_reader, option_multiline_folded_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_multiline_folded_argument: >
-  argument_line_1
-  argument_line_2
+  1
+  2
 
-)"),
+)",
   {
-    { "option_multiline_folded_argument", "argument_line_1 argument_line_2\n" },
+    { "option_multiline_folded_argument", "1 2\n" },
+  });
+}
+
+
+TEST_P(yaml_reader, option_indented_multiline_folded_argument) //{{{1
+{
+  parse_and_check(__LINE__, R"(
+option_indented_multiline_folded_argument: >
+  1
+    2
+  3
+  4
+
+)",
+  {
+    { "option_indented_multiline_folded_argument", "1\n  2\n3 4\n" },
   });
 }
 
 
 TEST_P(yaml_reader, option_multiline_folded_keep_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_multiline_folded_keep_argument: >+
-  argument_line_1
-  argument_line_2
+  1
+  2
 
-)"),
+)",
   {
-    { "option_multiline_folded_keep_argument", "argument_line_1 argument_line_2\n\n" },
+    { "option_multiline_folded_keep_argument", "1 2\n\n" },
   });
 }
 
 
 TEST_P(yaml_reader, option_multiline_folded_strip_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_multiline_folded_strip_argument: >-
-  argument_line_1
-  argument_line_2
+  1
+  2
 
-)"),
+)",
   {
-    { "option_multiline_folded_strip_argument", "argument_line_1 argument_line_2" },
+    { "option_multiline_folded_strip_argument", "1 2" },
   });
 }
 
@@ -211,30 +252,30 @@ option_multiline_folded_strip_argument: >-
 #if 0
 TEST_P(yaml_reader, option_list_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_list_argument:
-  - argument_1
-  - argument_2
+  - 1
+  - 2
 
-)"),
+)",
   {
-    { "option_list_argument", "argument_1" },
-    { "option_list_argument", "argument_2" },
+    { "option_list_argument", "1" },
+    { "option_list_argument", "2" },
   });
 }
 
 
 TEST_P(yaml_reader, option_list_argument_no_indent) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_list_argument_no_indent:
-- argument_1
-- argument_2
+- 1
+- 2
 
-)"),
+)",
   {
-    { "option_list_argument_no_indent", "argument_1" },
-    { "option_list_argument_no_indent", "argument_2" },
+    { "option_list_argument_no_indent", "1" },
+    { "option_list_argument_no_indent", "2" },
   });
 }
 #endif
@@ -242,28 +283,28 @@ option_list_argument_no_indent:
 
 TEST_P(yaml_reader, option_list_literal_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_list_literal_argument: |
-  - argument_1
-  - argument_2
+  - 1
+  - 2
 
-)"),
+)",
   {
-    { "option_list_literal_argument", "- argument_1\n- argument_2\n" },
+    { "option_list_literal_argument", "- 1\n- 2\n" },
   });
 }
 
 
 TEST_P(yaml_reader, option_list_folded_argument) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_list_folded_argument: >
-  - argument_1
-  - argument_2
+  - 1
+  - 2
 
-)"),
+)",
   {
-    { "option_list_folded_argument", "- argument_1 - argument_2\n" },
+    { "option_list_folded_argument", "- 1 - 2\n" },
   });
 }
 
@@ -277,16 +318,16 @@ option_list_folded_argument: >
 
 TEST_P(yaml_reader, indented_comment) //{{{1
 {
-  check(parse(R"( # comment)"), {});
+  parse_and_check(__LINE__, R"( # comment)", {});
 }
 
 
 TEST_P(yaml_reader, comment_after_colon) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 comment_after_colon: # comment
   argument
-)"),
+)",
   {
     { "comment_after_colon", "argument" },
   });
@@ -295,11 +336,11 @@ comment_after_colon: # comment
 
 TEST_P(yaml_reader, comment_at_end_block)
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 comment_at_end_of_block:
   argument
   # comment
-)"),
+)",
   {
     { "comment_at_end_of_block", "argument" }
   });
@@ -308,9 +349,9 @@ comment_at_end_of_block:
 
 TEST_P(yaml_reader, space_before_colon) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 space_before_colon : argument
-)"),
+)",
   {
     { "space_before_colon", "argument" },
   });
@@ -319,11 +360,11 @@ space_before_colon : argument
 
 TEST_P(yaml_reader, option_literal_option) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option_literal_option: >
 
 option: argument
-)"),
+)",
   {
     { "option_literal_option", "" },
     { "option", "argument" },
@@ -333,10 +374,10 @@ option: argument
 
 TEST_P(yaml_reader, chomp_without_style)
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 option1: +
 option2: -
-)"),
+)",
   {
     { "option1", "+" },
     { "option2", "-" },
@@ -350,78 +391,139 @@ option2: -
 // parser error cases
 
 
-TEST_P(yaml_reader, error_bad_indent)
+TEST_P(yaml_reader, error_bad_option_indent)
 {
-  EXPECT_THROW(parse(" option: argument"), po::parser_error);
+  EXPECT_THROW(
+    parse_and_check(__LINE__, " option: argument", {}),
+    po::parser_error
+  );
+}
+
+
+TEST_P(yaml_reader, error_bad_argument_indent)
+{
+  EXPECT_THROW(
+    parse_and_check(__LINE__, R"(
+option: 1
+2
+)", {}),
+    po::parser_error
+  );
 }
 
 
 TEST_P(yaml_reader, error_start_tab)
 {
-  EXPECT_THROW(parse("\t"), po::parser_error);
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "\t", {}),
+    po::parser_error
+  );
 }
 
 
 TEST_P(yaml_reader, error_tab_indent)
 {
-  EXPECT_THROW(parse("option:\n\targument"), po::parser_error);
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option:\n\targument", {}),
+    po::parser_error
+  );
 }
 
 
 TEST_P(yaml_reader, error_double_colon)
 {
-  EXPECT_THROW(parse("option::"), po::parser_error);
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option::", {})
+    , po::parser_error
+  );
 }
 
 
 TEST_P(yaml_reader, error_fold_no_colon)
 {
-  EXPECT_THROW(parse("option>"), po::parser_error);
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option>", {}),
+    po::parser_error
+  );
 }
 
 
 TEST_P(yaml_reader, error_multiple_styles)
 {
-  EXPECT_THROW(parse("option: ||"), po::parser_error);
-  EXPECT_THROW(parse("option: >|"), po::parser_error);
-  EXPECT_THROW(parse("option: |>"), po::parser_error);
-  EXPECT_THROW(parse("option: >>"), po::parser_error);
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: ||", {}),
+    po::parser_error
+  );
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: >|", {}),
+    po::parser_error
+  );
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: |>", {}),
+    po::parser_error
+  );
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: >>", {}),
+    po::parser_error
+  );
 }
 
 
 TEST_P(yaml_reader, error_invalid_chomp)
 {
-  EXPECT_THROW(parse("option: |x"), po::parser_error);
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: |x", {}),
+    po::parser_error
+  );
 }
 
 
 TEST_P(yaml_reader, error_style_and_argument)
 {
-  EXPECT_THROW(parse("option: | argument"), po::parser_error);
-  EXPECT_THROW(parse("option: |+ argument"), po::parser_error);
-  EXPECT_THROW(parse("option: |- argument"), po::parser_error);
-  EXPECT_THROW(parse("option: > argument"), po::parser_error);
-  EXPECT_THROW(parse("option: >+ argument"), po::parser_error);
-  EXPECT_THROW(parse("option: >- argument"), po::parser_error);
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: | argument", {}),
+    po::parser_error
+  );
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: |+ argument", {}),
+    po::parser_error
+  );
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: |- argument", {}),
+    po::parser_error
+  );
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: > argument", {}),
+    po::parser_error
+  );
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: >+ argument", {}),
+    po::parser_error
+  );
+  EXPECT_THROW(
+    parse_and_check(__LINE__, "option: >- argument", {}),
+    po::parser_error
+  );
 }
 
 
 TEST_P(yaml_reader, error_comment_inbetween_block_argument)
 {
-  EXPECT_THROW(parse(R"(
+  EXPECT_THROW(parse_and_check(__LINE__, R"(
 option:
   line_1
   # comment
   line_2
-)"),
-    po::parser_error);
+)", {}),
+    po::parser_error
+  );
 }
 
 
 
 TEST_P(yaml_reader, devel) //{{{1
 {
-  check(parse(R"(
+  parse_and_check(__LINE__, R"(
 a:
   
   X
@@ -429,7 +531,7 @@ a:
 
   Z
 
-b: >+
+b: >+ # comm
   X
   Z
 
@@ -445,7 +547,7 @@ x: |
   proov
 
 ends: here
-)"),
+)",
   {
     { "a", "X\n\nZ" },
     { "b", "X Z\n\n" },

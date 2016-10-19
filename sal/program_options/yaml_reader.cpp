@@ -1,6 +1,7 @@
 #include <sal/program_options/yaml_reader.hpp>
 #include <sal/program_options/error.hpp>
 #include <sal/assert.hpp>
+#include <cctype>
 #include <istream>
 #include <limits>
 
@@ -27,6 +28,8 @@ struct yaml_reader_t::impl_t
   std::istream &input;
   std::pair<size_t, size_t> input_pos{1, 1};
   std::string *option{}, *argument{};
+  size_t argument_indent = 0;
+  bool is_argument_line_indented = false;
 
 
   enum class style_t
@@ -74,6 +77,9 @@ struct yaml_reader_t::impl_t
   void ignore_until_eol ()
   {
     input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    input_pos.first++;
+    input_pos.second = 0;
+
   }
 
 
@@ -95,7 +101,8 @@ struct yaml_reader_t::impl_t
     if (style == style_t::unset || chomp == chomp_t::strip)
     {
       std::cout << "unset|strip";
-      while (argument->size() && std::isspace(argument->back()))
+      while (argument->size()
+        && std::isspace(static_cast<int>(argument->back())))
       {
         argument->pop_back();
       }
@@ -166,7 +173,7 @@ namespace {
 
 inline bool is_valid_option_name_char (char ch) noexcept
 {
-  return std::isalnum(ch)
+  return std::isalnum(static_cast<int>(ch))
     || ch == '-'
     || ch == '.'
     || ch == '/'
@@ -203,7 +210,7 @@ bool yaml_reader_t::impl_t::next (std::string *opt, std::string *arg)
     {
       std::cout << "\\t";
     }
-    else if (std::isprint(ch))
+    else if (std::isprint(static_cast<int>(ch)))
     {
       std::cout << ch;
     }
@@ -286,12 +293,6 @@ bool yaml_reader_t::impl_t::handle_assign (char ch)
 
 bool yaml_reader_t::impl_t::handle_assign_settings (char ch)
 {
-  if (ch == '#')
-  {
-    ignore_until_eol();
-    ch = '\n';
-  }
-
   if (ch == ':')
   {
     expected_newline();
@@ -307,19 +308,25 @@ bool yaml_reader_t::impl_t::handle_assign_settings (char ch)
     style = ch == '|' ? style_t::literal : style_t::folded;
     std::cout << "(style:" << (style == style_t::literal ? "literal" : "folded") << ')';
 
-    ch = input.peek();
+    ch = static_cast<char>(input.peek());
     if (ch == '+' || ch == '-')
     {
-      input.get(ch);
+      input.get();
       input_pos.second++;
       chomp = ch == '+' ? chomp_t::keep : chomp_t::strip;
       std::cout << "(chomp:" << (chomp == chomp_t::keep ? "keep" : "strip") << ')';
     }
   }
-  else if (ch == '\n')
+  else if (ch == '\n' || ch == '#')
   {
+    if (ch == '#')
+    {
+      ignore_until_eol();
+    }
     std::cout << "(assign -> argument_eol)";
     state = &impl_t::handle_argument_eol;
+    is_argument_line_indented = false;
+    argument_indent = 0;
   }
   else if (!std::isblank(ch))
   {
@@ -377,6 +384,13 @@ bool yaml_reader_t::impl_t::handle_argument_eol (char ch)
   }
   else if (ch == ' ')
   {
+    if (input_pos.second == argument_indent)
+    {
+      argument->push_back(ch);
+      is_argument_line_indented = true;
+      std::cout << "(argument_eol -> argument)";
+      state = &impl_t::handle_argument;
+    }
     return true;
   }
   else if (ch == '\t')
@@ -396,12 +410,19 @@ bool yaml_reader_t::impl_t::handle_argument_eol (char ch)
   {
     if (style != style_t::unset)
     {
-      argument->back() = static_cast<char>(style);
+      argument->back() = is_argument_line_indented ? '\n' : static_cast<char>(style);
+      is_argument_line_indented = false;
     }
     else if (argument->back() != '\n')
     {
       argument->push_back(' ');
     }
+  }
+
+  if (!argument_indent && style != style_t::unset)
+  {
+    argument_indent = input_pos.second;
+    std::cout << "(indent=" << argument_indent << ')';
   }
 
   std::cout << "(argument_eol -> argument)";
