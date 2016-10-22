@@ -1,9 +1,12 @@
 #include <sal/program_options/yaml_reader.hpp>
 #include <sal/program_options/error.hpp>
 #include <sal/assert.hpp>
+#include <sal/fmt.hpp>
 #include <cctype>
+#include <deque>
 #include <istream>
 #include <limits>
+#include <unordered_map>
 
 #include <iostream>
 #include <iomanip>
@@ -13,56 +16,51 @@ namespace sal { namespace program_options {
 __sal_begin
 
 
-inline bool ends_with (const std::string &name, const std::string &suffix)
+namespace {
+
+inline bool is_key_char (char ch) noexcept
 {
-  if (suffix.size() <= name.size())
-  {
-    return std::equal(suffix.rbegin(), suffix.rend(), name.rbegin());
-  }
-  return false;
+  return std::isalnum(static_cast<int>(ch))
+    || ch == '-'
+    || ch == '_'
+  ;
 }
+
+inline bool is_reference_char (char ch) noexcept
+{
+  return is_key_char(ch);
+}
+
+} // namespace
 
 
 struct yaml_reader_t::impl_t
 {
   std::istream &input;
-  std::pair<size_t, size_t> input_pos{1, 1};
-  std::string *option{}, *argument{};
-  size_t argument_indent = 0;
-  bool is_argument_line_indented = false;
+  size_t line = 1, column = 1;
+  size_t current_line = 1, current_column = 1;
+  std::string *key{}, *value{};
 
-
-  enum class style_t
+  enum class quote_t
   {
-    unset,
-    literal = '\n',
-    folded = ' ',
-  } style = style_t::unset;
+    none,
+    stop,
+    any,
+    one = any,
+    two,
+  } quote = quote_t::none;
 
+  size_t root_node_column = 0;
+  std::deque<std::pair<size_t, std::string>> node_stack{};
 
-  enum class chomp_t
-  {
-    clip,
-    keep,
-    strip,
-  } chomp = chomp_t::clip;
+  std::unordered_map<std::string, std::string> references{};
+  std::string reference{};
+  bool make_reference = true;
 
-  std::ostringstream oss;
-  std::streambuf *old_buf;
 
   impl_t (std::istream &input)
     : input(input)
-    , oss()
-    , old_buf(std::cout.rdbuf())
-  {
-    std::cout.rdbuf(oss.rdbuf());
-  }
-
-
-  ~impl_t ()
-  {
-    std::cout.rdbuf(old_buf);
-  }
+  {}
 
 
   impl_t (const impl_t &) = delete;
@@ -73,81 +71,55 @@ struct yaml_reader_t::impl_t
   // returns true if has more, false otherwise
   bool next (std::string *option, std::string *argument);
 
-  // ignore current line until end of line
-  void ignore_until_eol ()
+  // read next character from input, updating position
+  bool read (char &ch);
+
+
+  // feed function return value:
+  //  - false: current key/value pair is completed
+  //  - true: keep reading input for current key/value pair
+  bool (yaml_reader_t::impl_t::*feed)(char ch) = &impl_t::feed_node;
+  bool feed_node (char ch);
+  bool feed_key (char ch);
+  bool feed_assign (char ch);
+  bool feed_detect_node_or_value (char ch);
+  bool feed_value (char ch);
+  bool feed_reference (char ch);
+
+  char get_and_escape ();
+  bool finish_value ();
+  void strip_unquoted_value ();
+  void update_reference ();
+
+
+  void throw_not_supported [[noreturn]] (const char *feature) const
   {
-    input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    input_pos.first++;
-    input_pos.second = 0;
-
-  }
-
-
-  // state function return value:
-  //  - false: current option/argument pair is completed
-  //  - true: keep reading input for current option/argument pair
-  bool (yaml_reader_t::impl_t::*state)(char ch) = &impl_t::handle_start;
-  bool handle_start (char ch);
-  bool handle_option (char ch);
-  bool handle_assign (char ch);
-  bool handle_assign_settings (char ch);
-  bool handle_argument (char ch);
-  bool handle_argument_eol (char ch);
-
-
-  void handle_trail ()
-  {
-    std::cout << "(handle_trail:";
-    if (style == style_t::unset || chomp == chomp_t::strip)
-    {
-      std::cout << "unset|strip";
-      while (argument->size()
-        && std::isspace(static_cast<int>(argument->back())))
-      {
-        argument->pop_back();
-      }
-    }
-    else if (chomp == chomp_t::clip)
-    {
-      std::cout << "clip";
-      static const std::string newline = "\n", double_newline = "\n\n";
-      while (*argument == newline || ends_with(*argument, double_newline))
-      {
-        argument->pop_back();
-      }
-    }
-    std::cout << ')' << std::endl;
-  }
-
-
-  void unexpected_tab [[noreturn]] () const
-  {
-    throw_error<parser_error>("unexpected TAB at ",
-      '(', input_pos.first, ',', input_pos.second, ')'
+    throw_error<parser_error>(feature, " is not supported yet ",
+      '(', current_line, ',', current_column, ')'
     );
   }
 
 
-  void expected_character [[noreturn]] (char ch) const
+  void throw_expected_character [[noreturn]] (char ch) const
   {
     throw_error<parser_error>("expected character '", ch,
-      "' at (", input_pos.first, ',', input_pos.second, ')'
+      "' (", current_line, ',', current_column, ')'
     );
   }
 
 
-  void expected_newline [[noreturn]] () const
+  void throw_unexpected_character [[noreturn]] () const
   {
-    throw_error<parser_error>("expected newline at ",
-      '(', input_pos.first, ',', input_pos.second, ')'
+    throw_error<parser_error>("unexpected character ",
+      '(', current_line, ',', current_column, ')'
     );
   }
 
 
-  void bad_indent [[noreturn]] () const
+  void throw_bad_indent [[noreturn]] () const
   {
-    throw_error<parser_error>("bad indent at ",
-      '(', input_pos.first, ',', input_pos.second, ')'
+    throw_error<parser_error>("bad indent ",
+      '(', current_line, ',', current_column, ')'
     );
   }
 };
@@ -169,265 +141,348 @@ bool yaml_reader_t::operator() (const option_set_t &,
 }
 
 
-namespace {
-
-inline bool is_valid_option_name_char (char ch) noexcept
+bool yaml_reader_t::impl_t::read (char &ch)
 {
-  return std::isalnum(static_cast<int>(ch))
-    || ch == '-'
-    || ch == '.'
-    || ch == '/'
-    || ch == '_'
-  ;
+  if (input.get(ch))
+  {
+    std::cout << '\n' << line << ',' << column << '\t';
+    current_line = line;
+    current_column = column;
+
+    if (ch == '\n')
+    {
+      std::cout << "\\n";
+    }
+    else if (ch == ' ')
+    {
+      std::cout << "sp";
+    }
+    else if (ch == '\t')
+    {
+      std::cout << "\\t";
+    }
+    else
+    {
+      std::cout << ch;
+    }
+    std::cout << '\t';
+
+    if (ch == '#' && quote < quote_t::any)
+    {
+      input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      ch = '\n';
+    }
+
+    if (ch != '\n')
+    {
+      column++;
+    }
+    else
+    {
+      column = 1;
+      line++;
+    }
+
+    return true;
+  }
+  return false;
 }
 
-} // namespace
 
-
-bool yaml_reader_t::impl_t::next (std::string *opt, std::string *arg)
+bool yaml_reader_t::impl_t::next (std::string *option, std::string *argument)
 {
   if (!input)
   {
     return false;
   }
 
-  option = sal_check_ptr(opt);
-  argument = sal_check_ptr(arg);
+  key = sal_check_ptr(option);
+  value = sal_check_ptr(argument);
 
   char ch;
-  while (input.get(ch))
+  while (read(ch))
   {
-    std::cout << "\n[" << input_pos.first << ',' << input_pos.second << "] ";
-    if (ch == ' ')
+    if (!(this->*feed)(ch))
     {
-      std::cout << "' '";
-    }
-    else if (ch == '\n')
-    {
-      std::cout << "\\n";
-    }
-    else if (ch == '\t')
-    {
-      std::cout << "\\t";
-    }
-    else if (std::isprint(static_cast<int>(ch)))
-    {
-      std::cout << ch;
-    }
-    std::cout << ' ' << std::setw(5) << '\t';
-
-    if (!(this->*state)(ch))
-    {
-      handle_trail();
       return true;
     }
-
-    if (ch == '\n')
-    {
-      input_pos.first++;
-      input_pos.second = 0;
-    }
-    input_pos.second++;
   }
 
-  handle_trail();
-  return option->size() > 0;
-}
-
-
-bool yaml_reader_t::impl_t::handle_start (char ch)
-{
-  if (ch == '#')
+  if (node_stack.size())
   {
-    ignore_until_eol();
-  }
-  else if (ch == '\t')
-  {
-    unexpected_tab();
-  }
-  else if (ch != ' ' && ch != '\n')
-  {
-    if (input_pos.second == 1)
-    {
-      std::cout << "(start -> option)";
-      state = &impl_t::handle_option;
-      return handle_option(ch);
-    }
-    bad_indent();
-  }
-
-  return true;
-}
-
-
-bool yaml_reader_t::impl_t::handle_option (char ch)
-{
-  if (is_valid_option_name_char(ch))
-  {
-    option->push_back(ch);
+    finish_value();
     return true;
   }
 
-  std::cout << "(option -> assign)";
-  state = &impl_t::handle_assign;
-  return handle_assign(ch);
+  return false;
 }
 
 
-bool yaml_reader_t::impl_t::handle_assign (char ch)
+void yaml_reader_t::impl_t::strip_unquoted_value ()
+{
+  if (quote != quote_t::none)
+  {
+    return;
+  }
+
+  while (value->size() && std::isblank(value->back()))
+  {
+    value->pop_back();
+  }
+}
+
+
+void yaml_reader_t::impl_t::update_reference ()
+{
+  if (reference.empty())
+  {
+    return;
+  }
+
+  std::string ref;
+  std::swap(ref, reference);
+
+  if (make_reference)
+  {
+    std::cout << "{+reference: " << ref << " -> " << *value << '}';
+    if (!references.emplace(ref, *value).second)
+    {
+      throw_error<parser_error>("duplicate reference: ", ref,
+        " (on line ", current_line, ')'
+      );
+    }
+    make_reference = false;
+    return;
+  }
+
+  std::cout << "{?reference: " << ref << '}';
+  if (value->size())
+  {
+    throw_error<parser_error>("trailing characters after reference",
+      " (on line ", current_line, ')'
+    );
+  }
+
+  auto it = references.find(ref);
+  if (it == references.end())
+  {
+    throw_error<parser_error>("reference not found: ", ref,
+      " (on line ", current_line, ')'
+    );
+  }
+  *value = it->second;
+}
+
+
+bool yaml_reader_t::impl_t::finish_value ()
+{
+  strip_unquoted_value();
+  update_reference();
+
+  for (const auto &node: node_stack)
+  {
+    key->append(node.second);
+    key->push_back('.');
+  }
+  key->pop_back();
+
+  // there is always at least one node, key itself
+  node_stack.pop_back();
+
+  std::cout << "{finish: " << *key << "=" << *value << '}';
+  std::cout << "(value -> node)";
+  feed = &impl_t::feed_node;
+  return false;
+}
+
+
+char yaml_reader_t::impl_t::get_and_escape ()
+{
+  auto ch = input.peek();
+  switch (ch)
+  {
+    case 'a': ch = '\a'; break;
+    case 'b': ch = '\b'; break;
+    case 't': ch = '\t'; break;
+    case 'n': ch = '\n'; break;
+    case 'v': ch = '\v'; break;
+    case 'f': ch = '\f'; break;
+    case 'r': ch = '\r'; break;
+    case '"': ch = '"'; break;
+    case '/': ch = '/'; break;
+    case '\\': ch = '\\'; break;
+    default:
+      throw_error<parser_error>("invalid escape \\",
+        static_cast<char>(ch),
+        " (", current_line, ',', current_column, ')'
+      );
+  }
+
+  input.get();
+  column++;
+
+  return ch;
+}
+
+
+bool yaml_reader_t::impl_t::feed_node (char ch)
+{
+  if (ch == ' ' || ch == '\n')
+  {
+    return true;
+  }
+  else if (ch == '\t')
+  {
+    throw_unexpected_character();
+  }
+
+  if (!root_node_column)
+  {
+    root_node_column = column;
+  }
+  if (column < root_node_column)
+  {
+    throw_bad_indent();
+  }
+
+  node_stack.emplace_back(column - 1, "");
+
+  std::cout << "(node -> key)";
+  feed = &impl_t::feed_key;
+  return feed_key(ch);
+}
+
+
+bool yaml_reader_t::impl_t::feed_key (char ch)
+{
+  if (is_key_char(ch))
+  {
+    node_stack.back().second.push_back(ch);
+    return true;
+  }
+
+  if (node_stack.back().second.empty())
+  {
+    throw_unexpected_character();
+  }
+
+  std::cout << "(key[" << node_stack.back().first
+    << ':' << node_stack.back().second
+    << "] -> assign)";
+  feed = &impl_t::feed_assign;
+  return feed_assign(ch);
+}
+
+
+bool yaml_reader_t::impl_t::feed_assign (char ch)
 {
   if (ch == ':')
   {
-    style = style_t::unset;
-    chomp = chomp_t::clip;
-    state = &impl_t::handle_assign_settings;
+    std::cout << "(assign -> detect_node_or_value)";
+    feed = &impl_t::feed_detect_node_or_value;
   }
   else if (!std::isblank(ch))
   {
-    expected_character(':');
+    throw_expected_character(':');
   }
-
   return true;
 }
 
 
-bool yaml_reader_t::impl_t::handle_assign_settings (char ch)
+bool yaml_reader_t::impl_t::feed_detect_node_or_value (char ch)
 {
-  if (ch == ':')
+  if (ch == '|' || ch == '>')
   {
-    expected_newline();
+    throw_not_supported("multiline value");
   }
-  else if (ch == '|' || ch == '>')
+  else if (ch == '&' || ch == '*')
   {
-    if (style != style_t::unset)
-    {
-      std::cout << "(expected_newline)";
-      expected_newline();
-    }
-
-    style = ch == '|' ? style_t::literal : style_t::folded;
-    std::cout << "(style:" << (style == style_t::literal ? "literal" : "folded") << ')';
-
-    ch = static_cast<char>(input.peek());
-    if (ch == '+' || ch == '-')
-    {
-      input.get();
-      input_pos.second++;
-      chomp = ch == '+' ? chomp_t::keep : chomp_t::strip;
-      std::cout << "(chomp:" << (chomp == chomp_t::keep ? "keep" : "strip") << ')';
-    }
-  }
-  else if (ch == '\n' || ch == '#')
-  {
-    if (ch == '#')
-    {
-      ignore_until_eol();
-    }
-    std::cout << "(assign -> argument_eol)";
-    state = &impl_t::handle_argument_eol;
-    is_argument_line_indented = false;
-    argument_indent = 0;
-  }
-  else if (!std::isblank(ch))
-  {
-    if (style == style_t::unset)
-    {
-      std::cout << "(assign -> argument)";
-      state = &impl_t::handle_argument;
-      return handle_argument(ch);
-    }
-    expected_newline();
-  }
-
-  return true;
-}
-
-
-bool yaml_reader_t::impl_t::handle_argument (char ch)
-{
-  if (ch == '#' && style == style_t::unset)
-  {
-    ignore_until_eol();
-    std::cout << "(argument -> start)";
-    state = &impl_t::handle_start;
-    return false;
+    make_reference = ch == '&';
+    std::cout << "(detect_node_or_value -> reference)";
+    feed = &impl_t::feed_reference;
   }
   else if (ch == '\n')
   {
-    if (style != style_t::unset)
+    // TODO(nesting)
+    if (input.peek() == ' ')
     {
-      std::cout << "(+literal)";
-      argument->push_back(ch);
+      std::cout << "(detect_node_or_value -> node)";
+      feed = &impl_t::feed_node;
+      return true;
     }
-    std::cout << "(argument -> argument_eol)";
-    state = &impl_t::handle_argument_eol;
+    return finish_value();
   }
-  else
+  else if (!std::isblank(ch))
   {
-    argument->push_back(ch);
+    std::cout << "(detect_node_or_value -> value)";
+    quote = quote_t::none;
+    feed = &impl_t::feed_value;
+    return feed_value(ch);
   }
-
   return true;
 }
 
 
-bool yaml_reader_t::impl_t::handle_argument_eol (char ch)
+bool yaml_reader_t::impl_t::feed_value (char ch)
 {
-  if (ch == '\n')
+  if (ch == '\n' || quote == quote_t::stop)
   {
-    if (style != style_t::unset || argument->size())
+    if (ch == '\n' && quote < quote_t::any)
     {
-      std::cout << "(+newline)";
-      argument->push_back(ch);
+      return finish_value();
     }
-    return true;
-  }
-  else if (ch == ' ')
-  {
-    if (input_pos.second == argument_indent)
+    else if (std::isblank(ch))
     {
-      argument->push_back(ch);
-      is_argument_line_indented = true;
-      std::cout << "(argument_eol -> argument)";
-      state = &impl_t::handle_argument;
+      return true;
     }
-    return true;
+    throw_unexpected_character();
   }
-  else if (ch == '\t')
+  else if (ch == '\'' || ch == '"')
   {
-    unexpected_tab();
-  }
-
-  if (input_pos.second == 1)
-  {
-    input.unget();
-    std::cout << "(argument_eol -> start)";
-    state = &impl_t::handle_start;
-    return false;
-  }
-
-  if (argument->size())
-  {
-    if (style != style_t::unset)
+    if (quote == quote_t::none)
     {
-      argument->back() = is_argument_line_indented ? '\n' : static_cast<char>(style);
-      is_argument_line_indented = false;
+      std::cout << "{+quote:" << ch << '}';
+      quote = ch == '\'' ? quote_t::one : quote_t::two;
+      return true;
     }
-    else if (argument->back() != '\n')
+    else if ((ch == '\'' && quote == quote_t::one)
+      || (ch == '"' && quote == quote_t::two))
     {
-      argument->push_back(' ');
+      std::cout << "{-quote}";
+      quote = quote_t::stop;
+      return true;
     }
   }
-
-  if (!argument_indent && style != style_t::unset)
+  else if (ch == '\\' && quote == quote_t::two)
   {
-    argument_indent = input_pos.second;
-    std::cout << "(indent=" << argument_indent << ')';
+    ch = get_and_escape();
   }
 
-  std::cout << "(argument_eol -> argument)";
-  state = &impl_t::handle_argument;
-  return handle_argument(ch);
+  value->push_back(ch);
+  return true;
+}
+
+
+bool yaml_reader_t::impl_t::feed_reference (char ch)
+{
+  if (is_reference_char(ch))
+  {
+    reference.push_back(ch);
+  }
+  else if (std::isspace(ch))
+  {
+    std::cout << "(reference[" << reference << "] -> value)";
+    feed = &impl_t::feed_value;
+    if (ch == '\n')
+    {
+      return feed_value(ch);
+    }
+  }
+  else
+  {
+    throw_unexpected_character();
+  }
+  return true;
 }
 
 

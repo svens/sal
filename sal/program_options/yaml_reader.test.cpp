@@ -11,25 +11,43 @@ namespace po = sal::program_options;
 struct yaml_reader
   : public sal_test::with_value<bool>
 {
-  void parse_and_check (size_t line,
-    const std::string &content,
-    const std::vector<std::pair<std::string, std::string>> &expected)
+  using data_list = std::vector<std::pair<std::string, std::string>>;
+
+  std::ostringstream oss;
+  std::streambuf *old_buf;
+
+
+  void SetUp ()
   {
-    std::istringstream iss;
-    iss.str(content);
+    old_buf = std::cout.rdbuf();
+    std::cout.rdbuf(oss.rdbuf());
+  }
+
+
+  void TearDown ()
+  {
+    std::cout.rdbuf(old_buf);
+  }
+
+
+  data_list parse (const std::string &content)
+  {
+    std::cout << "-----" << content << "-----" << std::endl;
+
+    std::istringstream iss{content};
     po::yaml_reader_t parser{iss};
 
     po::option_set_t options;
-    std::string option, argument;
-    std::vector<std::pair<std::string, std::string>> result;
-    while (parser(options, &option, &argument))
+    std::string key, value;
+    data_list result;
+    while (parser(options, &key, &value))
     {
-      result.emplace_back(option, argument);
-      option.clear();
-      argument.clear();
+      result.emplace_back(key, value);
+      key.clear();
+      value.clear();
     }
 
-    EXPECT_EQ(expected, result) << "(line " << line << ')';
+    return result;
   }
 };
 
@@ -37,528 +55,697 @@ struct yaml_reader
 INSTANTIATE_TEST_CASE_P(program_options, yaml_reader, testing::Values(true));
 
 
-// simple successful cases: https://goo.gl/MMRfgG
+// supported constructs: https://goo.gl/2nGFs8
 
 
 TEST_P(yaml_reader, comment) //{{{1
 {
-  parse_and_check(__LINE__, R"(
+  auto cf = R"(
 #
 # to be ignored
 #
+)";
 
-)",
-  {
-  });
+  EXPECT_EQ(data_list{}, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_no_argument) //{{{1
+TEST_P(yaml_reader, simple) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option:
+  auto cf = R"(
+simple: value
+)";
 
-)",
+  data_list expected =
   {
-    { "option", "" },
-  });
+    { "simple", "value" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_argument) //{{{1
+TEST_P(yaml_reader, DISABLED_nested) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_argument: argument
+  auto cf = R"(
+nested:
+  nested_1: value
+  nested_2: value
+)";
 
-)",
+  data_list expected =
   {
-    { "option_argument", "argument" },
-  });
+    { "nested.nested_1", "value" },
+    { "nested.nested_2", "value" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_newline_argument) //{{{1
+TEST_P(yaml_reader, DISABLED_deep_nested) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_newline_argument:
-  argument
+  auto cf = R"(
+deep_nested:
+  deep_nested_1:
+    deep_nested_1_1: value_1_1
+    deep_nested_1_2: value_1_2
+  deep_nested_2:
+    deep_nested_2_1: value_2_1
+    deep_nested_2_2: value_2_2
+)";
 
-)",
+  data_list expected =
   {
-    { "option_newline_argument", "argument" },
-  });
+    { "deep_nested.deep_nested_1.deep_nested_1_1", "value_1_1" },
+    { "deep_nested.deep_nested_1.deep_nested_1_2", "value_1_2" },
+    { "deep_nested.deep_nested_2.deep_nested_2_1", "value_2_1" },
+    { "deep_nested.deep_nested_2.deep_nested_2_2", "value_2_2" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_argument_newline_argument) //{{{1
+TEST_P(yaml_reader, DISABLED_list) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_argument_newline_argument: 1
-  2
+  auto cf = R"(
+list:
+  - value_1
+  - value_2
+)";
 
-)",
+  data_list expected =
   {
-    { "option_argument_newline_argument", "1 2" },
-  });
+    { "list", "value_1" },
+    { "list", "value_2" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_multiline_argument) //{{{1
+TEST_P(yaml_reader, DISABLED_nested_list) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_multiline_argument:
-  1
-  2
+  auto cf = R"(
+nested_list:
+  nested_list_1:
+    - value_1
+    - value_2
+  nested_list_2:
+    - value_1
+    - value_2
+)";
 
-)",
+  data_list expected =
   {
-    { "option_multiline_argument", "1 2" },
-  });
+    { "nested_list.nested_list_1", "value_1" },
+    { "nested_list.nested_list_1", "value_2" },
+    { "nested_list.nested_list_2", "value_1" },
+    { "nested_list.nested_list_2", "value_2" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_indented_multiline_argument) //{{{1
+TEST_P(yaml_reader, reference) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_indented_multiline_argument:
-  1
-    2
-  3
-  4
+  auto cf = R"(
+reference: &reference_ref value
+dereference: *reference_ref
+)";
 
-)",
+  data_list expected =
   {
-    { "option_indented_multiline_argument", "1 2 3 4" },
-  });
+    { "reference", "value" },
+    { "dereference", "value" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_multiline_literal_argument) //{{{1
+TEST_P(yaml_reader, DISABLED_list_item_reference) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_multiline_literal_argument: |
-  1
-  2
+  auto cf = R"(
+list_item_reference:
+  - &list_item_reference_ref value
+  - *list_item_reference_ref
+list_item_reference_deref: *list_item_reference_ref
+)";
 
-)",
+  data_list expected =
   {
-    { "option_multiline_literal_argument", "1\n2\n" },
-  });
+    { "list_item_reference", "value" },
+    { "list_item_reference", "value" },
+    { "list_item_reference_deref", "value" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_indented_multiline_literal_argument) //{{{1
+TEST_P(yaml_reader, double_quote) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_indented_multiline_literal_argument: |
-  1
-    2
-  3
-  4
+  auto cf = R"(
+double_quote: "value_1\nvalue_2"
+)";
 
-)",
+  data_list expected =
   {
-    { "option_indented_multiline_literal_argument", "1\n  2\n3\n4\n" },
-  });
+    { "double_quote", "value_1\nvalue_2" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_multiline_literal_keep_argument) //{{{1
+TEST_P(yaml_reader, single_quote) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_multiline_literal_keep_argument: |+
-  1
-  2
+  auto cf = R"(
+single_quote: 'value_1\nvalue_2'
+)";
 
-)",
+  data_list expected =
   {
-    { "option_multiline_literal_keep_argument", "1\n2\n\n" },
-  });
-}
+    { "single_quote", "value_1\\nvalue_2" },
+  };
 
-
-TEST_P(yaml_reader, option_multiline_literal_strip_argument) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_multiline_literal_strip_argument: |-
-  1
-  2
-
-)",
-  {
-    { "option_multiline_literal_strip_argument", "1\n2" },
-  });
-}
-
-
-TEST_P(yaml_reader, option_multiline_folded_argument) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_multiline_folded_argument: >
-  1
-  2
-
-)",
-  {
-    { "option_multiline_folded_argument", "1 2\n" },
-  });
-}
-
-
-TEST_P(yaml_reader, option_indented_multiline_folded_argument) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_indented_multiline_folded_argument: >
-  1
-    2
-  3
-  4
-
-)",
-  {
-    { "option_indented_multiline_folded_argument", "1\n  2\n3 4\n" },
-  });
-}
-
-
-TEST_P(yaml_reader, option_multiline_folded_keep_argument) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_multiline_folded_keep_argument: >+
-  1
-  2
-
-)",
-  {
-    { "option_multiline_folded_keep_argument", "1 2\n\n" },
-  });
-}
-
-
-TEST_P(yaml_reader, option_multiline_folded_strip_argument) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_multiline_folded_strip_argument: >-
-  1
-  2
-
-)",
-  {
-    { "option_multiline_folded_strip_argument", "1 2" },
-  });
-}
-
-
-#if 0
-TEST_P(yaml_reader, option_list_argument) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_list_argument:
-  - 1
-  - 2
-
-)",
-  {
-    { "option_list_argument", "1" },
-    { "option_list_argument", "2" },
-  });
-}
-
-
-TEST_P(yaml_reader, option_list_argument_no_indent) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_list_argument_no_indent:
-- 1
-- 2
-
-)",
-  {
-    { "option_list_argument_no_indent", "1" },
-    { "option_list_argument_no_indent", "2" },
-  });
-}
-#endif
-
-
-TEST_P(yaml_reader, option_list_literal_argument) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_list_literal_argument: |
-  - 1
-  - 2
-
-)",
-  {
-    { "option_list_literal_argument", "- 1\n- 2\n" },
-  });
-}
-
-
-TEST_P(yaml_reader, option_list_folded_argument) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-option_list_folded_argument: >
-  - 1
-  - 2
-
-)",
-  {
-    { "option_list_folded_argument", "- 1 - 2\n" },
-  });
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
 //}}}1
 
 
+// corner cases
 
-// complex successful cases
 
-
-TEST_P(yaml_reader, indented_comment) //{{{1
+TEST_P(yaml_reader, colon) //{{{1
 {
-  parse_and_check(__LINE__, R"( # comment)", {});
+  EXPECT_THROW(parse(":"), po::parser_error);
 }
 
 
-TEST_P(yaml_reader, comment_after_colon) //{{{1
+TEST_P(yaml_reader, empty) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-comment_after_colon: # comment
-  argument
-)",
+  EXPECT_EQ(data_list{}, parse(""));
+}
+
+
+TEST_P(yaml_reader, missing_final_newline) //{{{1
+{
+  auto cf = R"(
+key: value
+stop: here)";
+
+  data_list expected =
   {
-    { "comment_after_colon", "argument" },
-  });
+    { "key", "value" },
+    { "stop", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, comment_at_end_block)
+TEST_P(yaml_reader, indented_root_node) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-comment_at_end_of_block:
-  argument
-  # comment
-)",
+  auto cf = R"(
+  key: value
+  stop: here
+)";
+
+  data_list expected =
   {
-    { "comment_at_end_of_block", "argument" }
-  });
+    { "key", "value" },
+    { "stop", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
+
+
+TEST_P(yaml_reader, outdented_root_node) //{{{1
+{
+  auto cf = R"(
+  key: value
+stop: here
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, unexpected_tab) //{{{1
+{
+  EXPECT_THROW(parse("\t#\n"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, unsupported_block_style) //{{{1
+{
+  EXPECT_THROW(parse("key: >\n  value"), po::parser_error);
+  EXPECT_THROW(parse("key: |\n  value"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, invalid_characters_before_colon) //{{{1
+{
+  EXPECT_THROW(parse("key X: value"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, missing_colon_space) ///{{{1
+{
+  EXPECT_THROW(parse("key value"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, missing_colon_newline) ///{{{1
+{
+  EXPECT_THROW(parse("key\nvalue"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, missing_value) //{{{1
+{
+  auto cf = R"(
+key:
+stop: here
+)";
+
+  data_list expected =
+  {
+    { "key", "" },
+    { "stop", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, missing_value_with_comment) //{{{1
+{
+  auto cf = R"(
+key: # comment
+stop: here
+)";
+
+  data_list expected =
+  {
+    { "key", "" },
+    { "stop", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
 
 
 TEST_P(yaml_reader, space_before_colon) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-space_before_colon : argument
-)",
+  auto cf = R"(
+key :value
+)";
+
+  data_list expected =
   {
-    { "space_before_colon", "argument" },
-  });
+    { "key", "value" }
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, option_literal_option) //{{{1
+TEST_P(yaml_reader, tab_before_colon) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option_literal_option: >
+  auto cf = "key\t:value\n";
 
-option: argument
-)",
+  data_list expected =
   {
-    { "option_literal_option", "" },
-    { "option", "argument" },
-  });
+    { "key", "value" }
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, chomp_without_style)
+TEST_P(yaml_reader, space_after_value) //{{{1
 {
-  parse_and_check(__LINE__, R"(
-option1: +
-option2: -
-)",
+  data_list expected = { { "key", "value" } };
+  EXPECT_EQ(expected, parse("key: value\t # comment"));
+}
+
+
+TEST_P(yaml_reader, invalid_reference_name) ///{{{1
+{
+  EXPECT_THROW(parse("key: &ref{r}ence value"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, reference_without_value) //{{{1
+{
+  auto cf = R"(
+reference: &reference_ref
+dereference: *reference_ref
+)";
+
+  data_list expected =
   {
-    { "option1", "+" },
-    { "option2", "-" },
-  });
+    { "reference", "" },
+    { "dereference", "" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, duplicate_reference) //{{{1
+{
+  auto cf = R"(
+key_1: &a value_1
+key_2: &a value_2
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, unknown_reference) //{{{1
+{
+  auto cf = R"(
+key: *a
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, trailing_characters_after_reference) //{{{1
+{
+  auto cf = R"(
+key_1: &a value
+key_2: *a X
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, trailing_comment_after_reference) //{{{1
+{
+  auto cf = R"(
+key_1: &a value
+key_2: *a # comment
+)";
+
+  data_list expected =
+  {
+    { "key_1", "value" },
+    { "key_2", "value" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
 //}}}1
 
 
-// parser error cases
-
-
-TEST_P(yaml_reader, error_bad_option_indent)
+TEST_P(yaml_reader, double_quote_with_embedded_trailing_spaces) //{{{1
 {
-  EXPECT_THROW(
-    parse_and_check(__LINE__, " option: argument", {}),
-    po::parser_error
-  );
-}
+  auto cf = "\na: \"b\t \"\n";
 
-
-TEST_P(yaml_reader, error_bad_argument_indent)
-{
-  EXPECT_THROW(
-    parse_and_check(__LINE__, R"(
-option: 1
-2
-)", {}),
-    po::parser_error
-  );
-}
-
-
-TEST_P(yaml_reader, error_start_tab)
-{
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "\t", {}),
-    po::parser_error
-  );
-}
-
-
-TEST_P(yaml_reader, error_tab_indent)
-{
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option:\n\targument", {}),
-    po::parser_error
-  );
-}
-
-
-TEST_P(yaml_reader, error_double_colon)
-{
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option::", {})
-    , po::parser_error
-  );
-}
-
-
-TEST_P(yaml_reader, error_fold_no_colon)
-{
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option>", {}),
-    po::parser_error
-  );
-}
-
-
-TEST_P(yaml_reader, error_multiple_styles)
-{
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: ||", {}),
-    po::parser_error
-  );
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: >|", {}),
-    po::parser_error
-  );
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: |>", {}),
-    po::parser_error
-  );
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: >>", {}),
-    po::parser_error
-  );
-}
-
-
-TEST_P(yaml_reader, error_invalid_chomp)
-{
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: |x", {}),
-    po::parser_error
-  );
-}
-
-
-TEST_P(yaml_reader, error_style_and_argument)
-{
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: | argument", {}),
-    po::parser_error
-  );
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: |+ argument", {}),
-    po::parser_error
-  );
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: |- argument", {}),
-    po::parser_error
-  );
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: > argument", {}),
-    po::parser_error
-  );
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: >+ argument", {}),
-    po::parser_error
-  );
-  EXPECT_THROW(
-    parse_and_check(__LINE__, "option: >- argument", {}),
-    po::parser_error
-  );
-}
-
-
-TEST_P(yaml_reader, error_comment_inbetween_block_argument)
-{
-  EXPECT_THROW(parse_and_check(__LINE__, R"(
-option:
-  line_1
-  # comment
-  line_2
-)", {}),
-    po::parser_error
-  );
-}
-
-
-
-TEST_P(yaml_reader, devel) //{{{1
-{
-  parse_and_check(__LINE__, R"(
-a:
-  
-  X
-
-
-  Z
-
-b: >+ # comm
-  X
-  Z
-
-c: |+
-
-  X
-
-
-  Z
-
-x: |
-  # komment
-  proov
-
-ends: here
-)",
+  data_list expected =
   {
-    { "a", "X\n\nZ" },
-    { "b", "X Z\n\n" },
-    { "c", "\nX\n\n\nZ\n\n" },
-    { "x", "# komment\nproov\n" },
-    { "ends", "here" },
-  });
+    { "a", "b\t " },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
 }
 
 
-// }}}1
+TEST_P(yaml_reader, single_quote_with_embedded_trailing_spaces) //{{{1
+{
+  auto cf = "\na: 'b\t '\n";
+
+  data_list expected =
+  {
+    { "a", "b\t " },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, double_quote_with_embedded_comment) //{{{1
+{
+  auto cf = R"(
+a: "b # c"
+)";
+
+  data_list expected =
+  {
+    { "a", "b # c" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, single_quote_with_embedded_comment) //{{{1
+{
+  auto cf = R"(
+a: 'b # c'
+)";
+
+  data_list expected =
+  {
+    { "a", "b # c" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, double_quote_with_embedded_single_quote) //{{{1
+{
+  auto cf = R"(
+a: "b ' c"
+)";
+
+  data_list expected =
+  {
+    { "a", "b ' c" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, single_quote_with_embedded_double_quote) //{{{1
+{
+  auto cf = R"(
+a: 'b " c'
+)";
+
+  data_list expected =
+  {
+    { "a", "b \" c" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, double_quote_unexpected_newline) //{{{1
+{
+  auto cf = R"(
+a: "b
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, single_quote_unexpected_newline) //{{{1
+{
+  auto cf = R"(
+a: 'b
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, double_quote_unexpected_single_quote) //{{{1
+{
+  auto cf = R"(
+a: "b'
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, single_quote_unexpected_double_quote) //{{{1
+{
+  auto cf = R"(
+a: 'b"
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, double_quote_trailing_characters) //{{{1
+{
+  auto cf = R"(
+a: "b c" d
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, single_quote_trailing_characters) //{{{1
+{
+  auto cf = R"(
+a: 'b c' d
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, double_quote_trailing_comment) //{{{1
+{
+  auto cf = R"(
+a: "b c" # comment
+)";
+
+  data_list expected =
+  {
+    { "a", "b c" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, single_quote_trailing_comment) //{{{1
+{
+  auto cf = R"(
+a: 'b c' # comment
+)";
+
+  data_list expected =
+  {
+    { "a", "b c" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+//}}}1
+TEST_P(yaml_reader, double_quote_escaped_characters) //{{{1
+{
+  auto cf = R"(
+all: "\a\b\t\n\v\f\r\"\/\\"
+)";
+
+  data_list expected =
+  {
+    { "all", "\a\b\t\n\v\f\r\"/\\" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, single_quote_escaped_characters) //{{{1
+{
+  auto cf = R"(
+all: '\a\b\t\n\v\f\r\"\/\\'
+)";
+
+  data_list expected =
+  {
+    { "all", "\\a\\b\\t\\n\\v\\f\\r\\\"\\/\\\\" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+//}}}1
+TEST_P(yaml_reader, double_quote_invalid_escaped_characters) //{{{1
+{
+  auto cf = R"(
+all: "\x"
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, single_quote_invalid_escaped_characters) //{{{1
+{
+  auto cf = R"(
+all: '\x'
+)";
+
+  data_list expected =
+  {
+    { "all", "\\x" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+//}}}1
+
+
+TEST_P(yaml_reader, DISABLED_devel) //{{{1
+{
+  auto cf = R"(
+
+  #
+  # comment
+  #
+
+  a:
+    a1:
+      var1: val1
+      var2: val2
+    a2:
+      var1: val1
+      var2: val2
+
+  b:
+    b1:
+      b11:
+        var1: val1
+)";
+
+  data_list expected =
+  {
+    { "a.a1.var1", "val1" },
+    { "a.a1.var2", "val2" },
+    { "a.a2.var1", "val1" },
+    { "a.a2.var2", "val2" },
+    { "b.b1.b11.var1", "val1" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+//}}}1
 
 
 } // namespace
