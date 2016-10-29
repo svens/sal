@@ -17,22 +17,34 @@ struct yaml_reader
   std::streambuf *old_buf;
 
 
-  void SetUp ()
+  void disable_output ()
   {
-    old_buf = std::cout.rdbuf();
     std::cout.rdbuf(oss.rdbuf());
   }
 
 
-  void TearDown ()
+  void enable_output ()
   {
     std::cout.rdbuf(old_buf);
   }
 
 
+  void SetUp ()
+  {
+    old_buf = std::cout.rdbuf();
+    disable_output();
+  }
+
+
+  void TearDown ()
+  {
+    enable_output();
+  }
+
+
   data_list parse (const std::string &content)
   {
-    std::cout << "-----" << content << "-----" << std::endl;
+    std::cout << "-----" << content << "-----\n\n*\n* begin\n*\n";
 
     std::istringstream iss{content};
     po::yaml_reader_t parser{iss};
@@ -47,6 +59,7 @@ struct yaml_reader
       value.clear();
     }
 
+    std::cout << "\n\n*\n* end\n*\n\n";
     return result;
   }
 };
@@ -85,25 +98,28 @@ simple: value
 }
 
 
-TEST_P(yaml_reader, DISABLED_nested) //{{{1
+TEST_P(yaml_reader, nested) //{{{1
 {
   auto cf = R"(
 nested:
   nested_1: value
   nested_2: value
+
+end: here
 )";
 
   data_list expected =
   {
     { "nested.nested_1", "value" },
     { "nested.nested_2", "value" },
+    { "end", "here" },
   };
 
   EXPECT_EQ(expected, parse(cf));
 }
 
 
-TEST_P(yaml_reader, DISABLED_deep_nested) //{{{1
+TEST_P(yaml_reader, deep_nested) //{{{1
 {
   auto cf = R"(
 deep_nested:
@@ -301,6 +317,12 @@ stop: here
 TEST_P(yaml_reader, unexpected_tab) //{{{1
 {
   EXPECT_THROW(parse("\t#\n"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, indented_node_with_tab) //{{{1
+{
+  EXPECT_THROW(parse("a:\n\tb: c"), po::parser_error);
 }
 
 
@@ -701,44 +723,6 @@ all: '\x'
   data_list expected =
   {
     { "all", "\\x" },
-  };
-
-  EXPECT_EQ(expected, parse(cf));
-}
-
-
-//}}}1
-
-
-TEST_P(yaml_reader, DISABLED_devel) //{{{1
-{
-  auto cf = R"(
-
-  #
-  # comment
-  #
-
-  a:
-    a1:
-      var1: val1
-      var2: val2
-    a2:
-      var1: val1
-      var2: val2
-
-  b:
-    b1:
-      b11:
-        var1: val1
-)";
-
-  data_list expected =
-  {
-    { "a.a1.var1", "val1" },
-    { "a.a1.var2", "val2" },
-    { "a.a2.var1", "val1" },
-    { "a.a2.var2", "val2" },
-    { "b.b1.b11.var1", "val1" },
   };
 
   EXPECT_EQ(expected, parse(cf));
