@@ -13,39 +13,9 @@ struct yaml_reader
 {
   using data_list = std::vector<std::pair<std::string, std::string>>;
 
-  std::ostringstream oss;
-  std::streambuf *old_buf;
-
-
-  void enable_output ()
-  {
-    std::cout.rdbuf(old_buf);
-  }
-
-
-  void disable_output ()
-  {
-    std::cout.rdbuf(oss.rdbuf());
-  }
-
-
-  void SetUp ()
-  {
-    old_buf = std::cout.rdbuf();
-    disable_output();
-  }
-
-
-  void TearDown ()
-  {
-    enable_output();
-  }
-
 
   data_list parse (const std::string &content)
   {
-    std::cout << "-----" << content << "-----\n\n*\n* begin\n*\n";
-
     std::istringstream iss{content};
     po::yaml_reader_t parser{iss};
 
@@ -59,7 +29,6 @@ struct yaml_reader
       value.clear();
     }
 
-    std::cout << "\n\n*\n* end\n*\n\n";
     return result;
   }
 };
