@@ -17,15 +17,15 @@ struct yaml_reader
   std::streambuf *old_buf;
 
 
-  void disable_output ()
-  {
-    std::cout.rdbuf(oss.rdbuf());
-  }
-
-
   void enable_output ()
   {
     std::cout.rdbuf(old_buf);
+  }
+
+
+  void disable_output ()
+  {
+    std::cout.rdbuf(oss.rdbuf());
   }
 
 
@@ -143,7 +143,7 @@ deep_nested:
 }
 
 
-TEST_P(yaml_reader, DISABLED_list) //{{{1
+TEST_P(yaml_reader, list) //{{{1
 {
   auto cf = R"(
 list:
@@ -161,7 +161,7 @@ list:
 }
 
 
-TEST_P(yaml_reader, DISABLED_nested_list) //{{{1
+TEST_P(yaml_reader, nested_list) //{{{1
 {
   auto cf = R"(
 nested_list:
@@ -703,7 +703,6 @@ all: '\a\b\t\n\v\f\r\"\/\\'
 }
 
 
-//}}}1
 TEST_P(yaml_reader, double_quote_invalid_escaped_characters) //{{{1
 {
   auto cf = R"(
@@ -723,6 +722,233 @@ all: '\x'
   data_list expected =
   {
     { "all", "\\x" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+//}}}1
+
+
+TEST_P(yaml_reader, space_in_list_item) //{{{1
+{
+  auto cf = "list:\n - value 1\n - value\t2\n - value 3 \t\n";
+
+  data_list expected =
+  {
+    { "list", "value 1" },
+    { "list", "value\t2" },
+    { "list", "value 3" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, empty_lines_between_list_key_and_items) //{{{1
+{
+  auto cf = R"(
+list:
+
+ - val1
+
+ - val2
+
+end: here
+)";
+
+  data_list expected =
+  {
+    { "list", "val1" },
+    { "list", "val2" },
+    { "end", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, tabbed_line_between_list_key_and_items) //{{{
+{
+  auto cf = "list:\n\t\n - val1\n - val2\n";
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, tabbed_line_between_list_items) //{{{
+{
+  auto cf = "list:\n - val1\n\t\n - val2\n";
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, multiple_spaces_between_list_marker_and_value) //{{{1
+{
+  auto cf = R"(
+list:
+ -   val1
+ -  val2
+
+end: here
+)";
+
+  data_list expected =
+  {
+    { "list", "val1" },
+    { "list", "val2" },
+    { "end", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, tab_between_list_marker_and_value) //{{{1
+{
+  auto cf = "list:\n -\tval1\n - val2\nend:here";
+
+  data_list expected =
+  {
+    { "list", "val1" },
+    { "list", "val2" },
+    { "end", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, empty_list_value) //{{{1
+{
+  auto cf = R"(
+list:
+ -
+ - val
+
+end: here
+)";
+
+  data_list expected =
+  {
+    { "list", "" },
+    { "list", "val" },
+    { "end", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, empty_last_list_value) //{{{1
+{
+  auto cf = R"(
+list:
+ - val
+ -
+
+end: here
+)";
+
+  data_list expected =
+  {
+    { "list", "val" },
+    { "list", "" },
+    { "end", "here" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, empty_list_value_with_spaces) //{{{1
+{
+  auto cf = "list:\n -  \n - val\n";
+
+  data_list expected =
+  {
+    { "list", "" },
+    { "list", "val" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, unsupported_multiline_list_item) //{{{1
+{
+  auto cf = R"(
+list:
+ - val1
+   val2
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, unsupported_list_item_block_style) //{{{1
+{
+  EXPECT_THROW(parse("l:\n - >\n  1\n"), po::parser_error);
+  EXPECT_THROW(parse("l:\n - |\n  1\n"), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, list_item_invalid_indent_more) //{{{1
+{
+  auto cf = R"(
+list:
+ - val1
+  - val2
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, list_item_invalid_indent_less) //{{{1
+{
+  auto cf = R"(
+list:
+  - val1
+ - val2
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, list_item_indented_with_tab) //{{{1
+{
+  auto cf = "list:\n\t- val1\n\t- val2";
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
+
+
+TEST_P(yaml_reader, list_with_missing_final_newline) //{{{1
+{
+  auto cf = "list:\n - val";
+
+  data_list expected =
+  {
+    { "list", "val" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, empty_last_list_value_with_missing_final_newline) //{{{1
+{
+  auto cf = R"(
+list:
+ - val
+ -)";
+
+  data_list expected =
+  {
+    { "list", "val" },
+    { "list", "" },
   };
 
   EXPECT_EQ(expected, parse(cf));

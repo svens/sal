@@ -16,6 +16,9 @@ namespace sal { namespace program_options {
 __sal_begin
 
 
+#define trace if (true) /**/; else std::cout
+
+
 namespace {
 
 inline bool is_key_char (char ch) noexcept
@@ -64,6 +67,8 @@ struct yaml_reader_t::impl_t
   std::string reference{};
   bool make_reference = true;
 
+  size_t list_column = 0;
+
 
   impl_t (std::istream &input)
     : input(input)
@@ -98,12 +103,14 @@ struct yaml_reader_t::impl_t
   bool feed_key (char ch);
   bool feed_assign (char ch);
   bool feed_detect_value (char ch);
-  bool feed_detect_node_or_key (char ch);
+  bool feed_detect_next (char ch);
   bool feed_value (char ch);
+  bool feed_list_item (char ch);
+  bool feed_list (char ch);
   bool feed_reference (char ch);
 
   char get_and_escape ();
-  bool finish_value ();
+  bool finish_value (bool is_list_item);
   void strip_unquoted_value ();
   void update_reference ();
 
@@ -168,27 +175,27 @@ bool yaml_reader_t::impl_t::read (char &ch)
 
   if (input.get(ch))
   {
-    std::cout << '\n' << next_line << ',' << next_column << '\t';
+    trace << '\n' << next_line << ',' << next_column << '\t';
     line = next_line;
     column = next_column;
 
     if (ch == '\n')
     {
-      std::cout << "\\n";
+      trace << "\\n";
     }
     else if (ch == ' ')
     {
-      std::cout << "sp";
+      trace << "sp";
     }
     else if (ch == '\t')
     {
-      std::cout << "\\t";
+      trace << "\\t";
     }
     else
     {
-      std::cout << ch;
+      trace << ch;
     }
-    std::cout << '\t';
+    trace << '\t';
 
     if (ch == '#' && quote < quote_t::any)
     {
@@ -232,9 +239,14 @@ bool yaml_reader_t::impl_t::next (std::string *option, std::string *argument)
     }
   }
 
+  if (feed == &impl_t::feed_list)
+  {
+    node_stack.clear();
+  }
+
   if (node_stack.size() && !node_stack.back().had_sub_node)
   {
-    finish_value();
+    finish_value(list_column != 0);
     return true;
   }
 
@@ -249,7 +261,7 @@ void yaml_reader_t::impl_t::strip_unquoted_value ()
     return;
   }
 
-  while (value->size() && std::isblank(value->back()))
+  while (value->size() && std::isblank(static_cast<int>(value->back())))
   {
     value->pop_back();
   }
@@ -268,7 +280,7 @@ void yaml_reader_t::impl_t::update_reference ()
 
   if (make_reference)
   {
-    std::cout << "{+reference: " << ref << " -> " << *value << '}';
+    trace << "{+reference: " << ref << " -> " << *value << '}';
     if (!references.emplace(ref, *value).second)
     {
       throw_error<parser_error>("duplicate reference: ", ref,
@@ -279,7 +291,7 @@ void yaml_reader_t::impl_t::update_reference ()
     return;
   }
 
-  std::cout << "{?reference: " << ref << '}';
+  trace << "{?reference: " << ref << '}';
   if (value->size())
   {
     throw_error<parser_error>("trailing characters after reference",
@@ -298,7 +310,7 @@ void yaml_reader_t::impl_t::update_reference ()
 }
 
 
-bool yaml_reader_t::impl_t::finish_value ()
+bool yaml_reader_t::impl_t::finish_value (bool is_list_item)
 {
   strip_unquoted_value();
   update_reference();
@@ -310,12 +322,21 @@ bool yaml_reader_t::impl_t::finish_value ()
   }
   key->pop_back();
 
-  // there is always at least one node, key itself
-  node_stack.pop_back();
+  trace << "{finish: " << *key << "=" << *value << '}';
 
-  std::cout << "{finish: " << *key << "=" << *value << '}';
-  std::cout << "(value -> node)";
-  feed = &impl_t::feed_node;
+  if (is_list_item)
+  {
+    trace << "{value -> list}";
+    feed = &impl_t::feed_list;
+  }
+  else
+  {
+    // there is always at least one node, key itself
+    node_stack.pop_back();
+    trace << "(value -> node)";
+    feed = &impl_t::feed_node;
+  }
+
   return false;
 }
 
@@ -383,7 +404,7 @@ bool yaml_reader_t::impl_t::feed_node (char ch)
   node_stack.emplace_back();
   node_stack.back().column = column;
 
-  std::cout << "(node -> key)";
+  trace << "(node -> key)";
   feed = &impl_t::feed_key;
   return feed_key(ch);
 }
@@ -402,7 +423,7 @@ bool yaml_reader_t::impl_t::feed_key (char ch)
     throw_unexpected_character();
   }
 
-  std::cout << "(key[" << node_stack.back().column
+  trace << "(key[" << node_stack.back().column
     << ':' << node_stack.back().key
     << "] -> assign)";
   feed = &impl_t::feed_assign;
@@ -414,10 +435,10 @@ bool yaml_reader_t::impl_t::feed_assign (char ch)
 {
   if (ch == ':')
   {
-    std::cout << "(assign -> detect_value)";
+    trace << "(assign -> detect_value)";
     feed = &impl_t::feed_detect_value;
   }
-  else if (!std::isblank(ch))
+  else if (!std::isblank(static_cast<int>(ch)))
   {
     throw_expected_character(':');
   }
@@ -434,18 +455,18 @@ bool yaml_reader_t::impl_t::feed_detect_value (char ch)
   else if (ch == '&' || ch == '*')
   {
     make_reference = ch == '&';
-    std::cout << "(detect_value -> reference)";
+    trace << "(detect_value -> reference)";
     feed = &impl_t::feed_reference;
   }
   else if (ch == '\n')
   {
-    std::cout << "(detect_value -> detect_node_or_key)";
-    feed = &impl_t::feed_detect_node_or_key;
+    trace << "(detect_value -> detect_next)";
+    feed = &impl_t::feed_detect_next;
     return true;
   }
-  else if (!std::isblank(ch))
+  else if (!std::isblank(static_cast<int>(ch)))
   {
-    std::cout << "(detect_value -> value)";
+    trace << "(detect_value -> value)";
     quote = quote_t::none;
     feed = &impl_t::feed_value;
     return feed_value(ch);
@@ -454,26 +475,92 @@ bool yaml_reader_t::impl_t::feed_detect_value (char ch)
 }
 
 
-bool yaml_reader_t::impl_t::feed_detect_node_or_key (char ch)
+bool yaml_reader_t::impl_t::feed_detect_next (char ch)
 {
-  if (ch == '\t')
+  if (ch == ' ' || ch == '\n')
+  {
+    return true;
+  }
+  else if (ch == '\t')
   {
     throw_unexpected_character();
+  }
+
+  if (column > node_stack.back().column)
+  {
+    if (ch == '-')
+    {
+      trace << "(detect_next -> list_item:" << column << ')';
+      list_column = column;
+      feed = &impl_t::feed_list_item;
+      return true;
+    }
+    else
+    {
+      trace << "(detect_next -> node)";
+      feed = &impl_t::feed_node;
+      return feed_node(ch);
+    }
+  }
+
+  unread(ch);
+  return finish_value(false);
+}
+
+
+bool yaml_reader_t::impl_t::feed_list_item (char ch)
+{
+  if (ch == '\n')
+  {
+    return finish_value(true);
+  }
+  else if (value->empty())
+  {
+    if (std::isblank(static_cast<int>(ch)))
+    {
+      return true;
+    }
+    else if (ch == '|' || ch == '>')
+    {
+      throw_not_supported("multiline value");
+    }
+  }
+
+  value->push_back(ch);
+  return true;
+}
+
+
+bool yaml_reader_t::impl_t::feed_list (char ch)
+{
+  if (ch == '-')
+  {
+    if (column == list_column)
+    {
+      trace << "(list -> list_item)";
+      feed = &impl_t::feed_list_item;
+      return true;
+    }
+    throw_bad_indent();
   }
   else if (ch == ' ' || ch == '\n')
   {
     return true;
   }
+  else if (ch == '\t')
+  {
+    throw_unexpected_character();
+  }
 
   if (column > node_stack.back().column)
   {
-    std::cout << "(detect_node_or_key -> node)";
-    feed = &impl_t::feed_node;
-    return feed_node(ch);
+    throw_bad_indent();
   }
 
-  unread(ch);
-  return finish_value();
+  trace << "(list -> node)";
+  node_stack.pop_back();
+  feed = &impl_t::feed_node;
+  return feed_node(ch);
 }
 
 
@@ -483,9 +570,9 @@ bool yaml_reader_t::impl_t::feed_value (char ch)
   {
     if (ch == '\n' && quote < quote_t::any)
     {
-      return finish_value();
+      return finish_value(false);
     }
-    else if (std::isblank(ch))
+    else if (std::isblank(static_cast<int>(ch)))
     {
       return true;
     }
@@ -495,14 +582,14 @@ bool yaml_reader_t::impl_t::feed_value (char ch)
   {
     if (quote == quote_t::none)
     {
-      std::cout << "{+quote:" << ch << '}';
+      trace << "{+quote:" << ch << '}';
       quote = ch == '\'' ? quote_t::one : quote_t::two;
       return true;
     }
     else if ((ch == '\'' && quote == quote_t::one)
       || (ch == '"' && quote == quote_t::two))
     {
-      std::cout << "{-quote}";
+      trace << "{-quote}";
       quote = quote_t::stop;
       return true;
     }
@@ -525,7 +612,7 @@ bool yaml_reader_t::impl_t::feed_reference (char ch)
   }
   else if (std::isspace(static_cast<int>(ch)))
   {
-    std::cout << "(reference[" << reference << "] -> value)";
+    trace << "(reference[" << reference << "] -> value)";
     feed = &impl_t::feed_value;
     if (ch == '\n')
     {
