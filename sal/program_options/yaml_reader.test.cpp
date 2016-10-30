@@ -37,7 +37,7 @@ struct yaml_reader
 INSTANTIATE_TEST_CASE_P(program_options, yaml_reader, testing::Values(true));
 
 
-// supported constructs: https://goo.gl/2nGFs8
+// supported constructs: https://goo.gl/DY65Sx
 
 
 TEST_P(yaml_reader, comment) //{{{1
@@ -214,6 +214,80 @@ single_quote: 'value_1\nvalue_2'
 
   data_list expected =
   {
+    { "single_quote", "value_1\\nvalue_2" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, all) //{{{1
+{
+  auto cf = R"(
+#
+# to be ignored
+#
+
+simple: value
+
+nested:
+  nested_1: value
+  nested_2: value
+
+deep_nested:
+  deep_nested_1:
+    deep_nested_1_1: value_1_1
+    deep_nested_1_2: value_1_2
+  deep_nested_2:
+    deep_nested_2_1: value_2_1
+    deep_nested_2_2: value_2_2
+
+list:
+  - value_1
+  - value_2
+
+nested_list:
+  nested_list_1:
+    - value_1
+    - value_2
+  nested_list_2:
+    - value_1
+    - value_2
+
+reference: &reference_ref value
+dereference: *reference_ref
+
+list_item_reference:
+  - &list_item_reference_ref value
+  - *list_item_reference_ref
+list_item_reference_deref: *list_item_reference_ref
+
+double_quote: "value_1\nvalue_2"
+
+single_quote: 'value_1\nvalue_2'
+)";
+
+  data_list expected =
+  {
+    { "simple", "value" },
+    { "nested.nested_1", "value" },
+    { "nested.nested_2", "value" },
+    { "deep_nested.deep_nested_1.deep_nested_1_1", "value_1_1" },
+    { "deep_nested.deep_nested_1.deep_nested_1_2", "value_1_2" },
+    { "deep_nested.deep_nested_2.deep_nested_2_1", "value_2_1" },
+    { "deep_nested.deep_nested_2.deep_nested_2_2", "value_2_2" },
+    { "list", "value_1" },
+    { "list", "value_2" },
+    { "nested_list.nested_list_1", "value_1" },
+    { "nested_list.nested_list_1", "value_2" },
+    { "nested_list.nested_list_2", "value_1" },
+    { "nested_list.nested_list_2", "value_2" },
+    { "reference", "value" },
+    { "dereference", "value" },
+    { "list_item_reference", "value" },
+    { "list_item_reference", "value" },
+    { "list_item_reference_deref", "value" },
+    { "double_quote", "value_1\nvalue_2" },
     { "single_quote", "value_1\\nvalue_2" },
   };
 
@@ -698,6 +772,36 @@ all: '\x'
 
 
 //}}}1
+
+
+TEST_P(yaml_reader, list_with_no_indent) //{{{1
+{
+  auto cf = R"(
+list:
+- value_1
+- value_2
+)";
+
+  data_list expected =
+  {
+    { "list", "value_1" },
+    { "list", "value_2" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, list_with_outdented_item) //{{{1
+{
+  auto cf = R"(
+nest:
+ list:
+- value
+)";
+
+  EXPECT_THROW(parse(cf), po::parser_error);
+}
 
 
 TEST_P(yaml_reader, space_in_list_item) //{{{1

@@ -19,7 +19,7 @@ __sal_begin
 
 
 template <typename Arg>
-bool trace (Arg &&arg)
+inline bool trace (Arg &&arg)
 {
 #if defined(TRACE_PARSER)
   std::cout << arg;
@@ -31,7 +31,7 @@ bool trace (Arg &&arg)
 
 
 template <typename... Args>
-void trace (Args &&...args)
+inline void trace (Args &&...args)
 {
   bool unused[] = { trace(args)... };
   (void)unused;
@@ -110,10 +110,10 @@ struct yaml_reader_t::impl_t
   }
 
 
-  // feed function return value:
+  // state function return value:
   //  - false: current key/value pair is completed
   //  - true: keep reading input for current key/value pair
-  bool (yaml_reader_t::impl_t::*feed)(char ch) = &impl_t::feed_node;
+  bool (yaml_reader_t::impl_t::*state)(char ch) = &impl_t::feed_node;
   bool feed_node (char ch);
   bool feed_key (char ch);
   bool feed_assign (char ch);
@@ -132,8 +132,16 @@ struct yaml_reader_t::impl_t
   std::unordered_map<std::string, std::string> references{};
   std::string reference{};
   bool make_reference = true;
-  bool (impl_t::*context)(char ch) = &impl_t::feed_node;
-  bool handle_reference (char ch, bool(impl_t::*return_context)(char));
+  bool (impl_t::*reference_context)(char ch){};
+
+
+  bool handle_reference (char ch, bool(impl_t::*return_context)(char))
+  {
+    make_reference = ch == '&';
+    reference_context = return_context;
+    state = &impl_t::feed_reference;
+    return true;
+  }
 
 
   void throw_not_supported [[noreturn]] (const char *feature) const
@@ -254,13 +262,13 @@ bool yaml_reader_t::impl_t::next (std::string *option, std::string *argument)
   char ch;
   while (read(ch))
   {
-    if (!(this->*feed)(ch))
+    if (!(this->*state)(ch))
     {
       return true;
     }
   }
 
-  if (feed == &impl_t::feed_list)
+  if (state == &impl_t::feed_list)
   {
     node_stack.clear();
   }
@@ -348,14 +356,14 @@ bool yaml_reader_t::impl_t::finish_value (bool is_list_item)
   if (is_list_item)
   {
     trace("{value -> list}");
-    feed = &impl_t::feed_list;
+    state = &impl_t::feed_list;
   }
   else
   {
     // there is always at least one node, key itself
     node_stack.pop_back();
     trace("{value -> node}");
-    feed = &impl_t::feed_node;
+    state = &impl_t::feed_node;
   }
 
   return false;
@@ -426,7 +434,7 @@ bool yaml_reader_t::impl_t::feed_node (char ch)
   node_stack.back().column = column;
 
   trace("(node -> key)");
-  feed = &impl_t::feed_key;
+  state = &impl_t::feed_key;
   return feed_key(ch);
 }
 
@@ -449,7 +457,7 @@ bool yaml_reader_t::impl_t::feed_key (char ch)
     "] -> assign)"
   );
 
-  feed = &impl_t::feed_assign;
+  state = &impl_t::feed_assign;
   return feed_assign(ch);
 }
 
@@ -459,7 +467,7 @@ bool yaml_reader_t::impl_t::feed_assign (char ch)
   if (ch == ':')
   {
     trace("(assign -> detect_value)");
-    feed = &impl_t::feed_detect_value;
+    state = &impl_t::feed_detect_value;
   }
   else if (!std::isblank(static_cast<int>(ch)))
   {
@@ -483,13 +491,13 @@ bool yaml_reader_t::impl_t::feed_detect_value (char ch)
   else if (ch == '\n')
   {
     trace("(detect_value -> detect_next)");
-    feed = &impl_t::feed_detect_next;
+    state = &impl_t::feed_detect_next;
   }
   else if (!std::isblank(static_cast<int>(ch)))
   {
     trace("(detect_value -> value)");
     quote = quote_t::none;
-    feed = &impl_t::feed_value;
+    state = &impl_t::feed_value;
     return feed_value(ch);
   }
   return true;
@@ -506,22 +514,21 @@ bool yaml_reader_t::impl_t::feed_detect_next (char ch)
   {
     throw_unexpected_character();
   }
-
-  if (column > node_stack.back().column)
+  else if (ch == '-')
   {
-    if (ch == '-')
+    if (column >= node_stack.back().column)
     {
       trace("(detect_next -> list_item:", column, ')');
       list_column = column;
-      feed = &impl_t::feed_list_item;
+      state = &impl_t::feed_list_item;
       return true;
     }
-    else
-    {
-      trace("(detect_next -> node)");
-      feed = &impl_t::feed_node;
-      return feed_node(ch);
-    }
+  }
+  else if (column > node_stack.back().column)
+  {
+    trace("(detect_next -> node)");
+    state = &impl_t::feed_node;
+    return feed_node(ch);
   }
 
   unread(ch);
@@ -557,16 +564,6 @@ bool yaml_reader_t::impl_t::feed_list_item (char ch)
 }
 
 
-bool yaml_reader_t::impl_t::handle_reference (char ch,
-  bool(impl_t::*return_context)(char))
-{
-  make_reference = ch == '&';
-  context = return_context;
-  feed = &impl_t::feed_reference;
-  return true;
-}
-
-
 bool yaml_reader_t::impl_t::feed_list (char ch)
 {
   if (ch == '-')
@@ -574,7 +571,7 @@ bool yaml_reader_t::impl_t::feed_list (char ch)
     if (column == list_column)
     {
       trace("(list -> list_item)");
-      feed = &impl_t::feed_list_item;
+      state = &impl_t::feed_list_item;
       return true;
     }
     throw_bad_indent();
@@ -595,7 +592,7 @@ bool yaml_reader_t::impl_t::feed_list (char ch)
 
   trace("(list -> node)");
   node_stack.pop_back();
-  feed = &impl_t::feed_node;
+  state = &impl_t::feed_node;
   return feed_node(ch);
 }
 
@@ -649,10 +646,10 @@ bool yaml_reader_t::impl_t::feed_reference (char ch)
   else if (std::isspace(static_cast<int>(ch)))
   {
     trace("(reference[", reference, "] -> value)");
-    feed = context;
+    state = reference_context;
     if (ch == '\n')
     {
-      return (this->*feed)(ch);
+      return (this->*state)(ch);
     }
   }
   else
