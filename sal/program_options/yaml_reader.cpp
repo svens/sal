@@ -16,7 +16,13 @@ namespace sal { namespace program_options {
 __sal_begin
 
 
-#define trace if (true) /**/; else std::cout
+constexpr bool trace_parser ()
+{
+  return true;
+}
+
+
+#define trace if (!trace_parser()) /**/; else std::cout
 
 
 namespace {
@@ -62,10 +68,6 @@ struct yaml_reader_t::impl_t
     bool had_sub_node = false;
   };
   node_t::stack_t node_stack{};
-
-  std::unordered_map<std::string, std::string> references{};
-  std::string reference{};
-  bool make_reference = true;
 
   size_t list_column = 0;
 
@@ -113,6 +115,12 @@ struct yaml_reader_t::impl_t
   bool finish_value (bool is_list_item);
   void strip_unquoted_value ();
   void update_reference ();
+
+  std::unordered_map<std::string, std::string> references{};
+  std::string reference{};
+  bool make_reference = true;
+  bool (impl_t::*context)(char ch) = &impl_t::feed_node;
+  bool handle_reference (char ch, bool(impl_t::*return_context)(char));
 
 
   void throw_not_supported [[noreturn]] (const char *feature) const
@@ -454,15 +462,13 @@ bool yaml_reader_t::impl_t::feed_detect_value (char ch)
   }
   else if (ch == '&' || ch == '*')
   {
-    make_reference = ch == '&';
     trace << "(detect_value -> reference)";
-    feed = &impl_t::feed_reference;
+    handle_reference(ch, &impl_t::feed_value);
   }
   else if (ch == '\n')
   {
     trace << "(detect_value -> detect_next)";
     feed = &impl_t::feed_detect_next;
-    return true;
   }
   else if (!std::isblank(static_cast<int>(ch)))
   {
@@ -524,9 +530,24 @@ bool yaml_reader_t::impl_t::feed_list_item (char ch)
     {
       throw_not_supported("multiline value");
     }
+    else if (ch == '&' || ch == '*')
+    {
+      trace << "(feed_list_item -> reference)";
+      return handle_reference(ch, &impl_t::feed_list_item);
+    }
   }
 
   value->push_back(ch);
+  return true;
+}
+
+
+bool yaml_reader_t::impl_t::handle_reference (char ch,
+  bool(impl_t::*return_context)(char))
+{
+  make_reference = ch == '&';
+  context = return_context;
+  feed = &impl_t::feed_reference;
   return true;
 }
 
@@ -613,10 +634,10 @@ bool yaml_reader_t::impl_t::feed_reference (char ch)
   else if (std::isspace(static_cast<int>(ch)))
   {
     trace << "(reference[" << reference << "] -> value)";
-    feed = &impl_t::feed_value;
+    feed = context;
     if (ch == '\n')
     {
-      return feed_value(ch);
+      return (this->*feed)(ch);
     }
   }
   else

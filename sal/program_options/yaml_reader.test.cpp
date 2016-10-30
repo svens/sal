@@ -202,7 +202,7 @@ dereference: *reference_ref
 }
 
 
-TEST_P(yaml_reader, DISABLED_list_item_reference) //{{{1
+TEST_P(yaml_reader, list_item_reference) //{{{1
 {
   auto cf = R"(
 list_item_reference:
@@ -949,6 +949,26 @@ list:
   {
     { "list", "val" },
     { "list", "" },
+  };
+
+  EXPECT_EQ(expected, parse(cf));
+}
+
+
+TEST_P(yaml_reader, list_item_reference_without_value) //{{{1
+{
+  auto cf = R"(
+list:
+ - &ref
+ - *ref
+key: *ref
+)";
+
+  data_list expected =
+  {
+    { "list", "" },
+    { "list", "" },
+    { "key", "" },
   };
 
   EXPECT_EQ(expected, parse(cf));
