@@ -2,7 +2,7 @@
 #pragma once
 
 /**
- * \file sal/program_options/json_reader.hpp
+ * \file sal/program_options/config_reader.hpp
  * JSON/SJSON/HJSON config file
  *
  * Different syntaxes are described at:
@@ -67,16 +67,16 @@ class option_set_t;
  * }
  * \endcode
  */
-class json_reader_t
+class config_reader_t
 {
 public:
 
   /**
    * Construct JSON reader using input \a input.
    */
-  json_reader_t (std::istream &input);
+  config_reader_t (std::istream &input);
 
-  ~json_reader_t ();
+  ~config_reader_t ();
 
 
   /**

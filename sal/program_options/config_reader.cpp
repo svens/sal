@@ -1,4 +1,4 @@
-#include <sal/program_options/json_reader.hpp>
+#include <sal/program_options/config_reader.hpp>
 #include <sal/program_options/error.hpp>
 #include <sal/assert.hpp>
 #include <cctype>
@@ -38,7 +38,7 @@ constexpr bool is_bare_key_char (int it)
 } // namespace
 
 
-struct json_reader_t::impl_t
+struct config_reader_t::impl_t
 {
   std::istream &input;
 
@@ -193,15 +193,15 @@ struct json_reader_t::impl_t
 };
 
 
-json_reader_t::json_reader_t (std::istream &input)
+config_reader_t::config_reader_t (std::istream &input)
   : impl_(std::make_unique<impl_t>(input))
 {}
 
 
-json_reader_t::~json_reader_t () = default;
+config_reader_t::~config_reader_t () = default;
 
 
-bool json_reader_t::operator() (const option_set_t &,
+bool config_reader_t::operator() (const option_set_t &,
   std::string *option,
   std::string *argument)
 {
@@ -209,7 +209,7 @@ bool json_reader_t::operator() (const option_set_t &,
 }
 
 
-json_reader_t::impl_t::impl_t (std::istream &input)
+config_reader_t::impl_t::impl_t (std::istream &input)
   : input(input)
 {
   objects.emplace_back();
@@ -220,7 +220,8 @@ json_reader_t::impl_t::impl_t (std::istream &input)
 }
 
 
-bool json_reader_t::impl_t::extract (std::string *option, std::string *argument)
+bool config_reader_t::impl_t::extract (std::string *option,
+  std::string *argument)
 {
   while (skip_spaces_and_comments())
   {
@@ -253,7 +254,7 @@ bool json_reader_t::impl_t::extract (std::string *option, std::string *argument)
 }
 
 
-bool json_reader_t::impl_t::key_and_value (std::string *option,
+bool config_reader_t::impl_t::key_and_value (std::string *option,
   std::string *argument)
 {
   std::string key;
@@ -286,7 +287,7 @@ bool json_reader_t::impl_t::key_and_value (std::string *option,
 }
 
 
-bool json_reader_t::impl_t::any (node_t &node)
+bool config_reader_t::impl_t::any (node_t &node)
 {
   if (it == '}')
   {
@@ -315,7 +316,7 @@ bool json_reader_t::impl_t::any (node_t &node)
 }
 
 
-bool json_reader_t::impl_t::object (node_t &node)
+bool config_reader_t::impl_t::object (node_t &node)
 {
   if (it == '{')
   {
@@ -339,7 +340,7 @@ bool json_reader_t::impl_t::object (node_t &node)
 }
 
 
-bool json_reader_t::impl_t::array (node_t &node)
+bool config_reader_t::impl_t::array (node_t &node)
 {
   if (it == ']')
   {
@@ -369,7 +370,7 @@ bool json_reader_t::impl_t::array (node_t &node)
 }
 
 
-bool json_reader_t::impl_t::assign (node_t &node)
+bool config_reader_t::impl_t::assign (node_t &node)
 {
   if (it == '=' || it == ':')
   {
@@ -380,7 +381,7 @@ bool json_reader_t::impl_t::assign (node_t &node)
 }
 
 
-bool json_reader_t::impl_t::value (node_t &node)
+bool config_reader_t::impl_t::value (node_t &node)
 {
   if (it == '{')
   {
@@ -398,7 +399,7 @@ bool json_reader_t::impl_t::value (node_t &node)
 }
 
 
-std::string json_reader_t::impl_t::extract_string (bool is_key)
+std::string config_reader_t::impl_t::extract_string (bool is_key)
 {
   if (it == '"')
   {
@@ -415,7 +416,7 @@ std::string json_reader_t::impl_t::extract_string (bool is_key)
 }
 
 
-std::string json_reader_t::impl_t::extract_bare_key ()
+std::string config_reader_t::impl_t::extract_bare_key ()
 {
   std::string result;
   while (is_bare_key_char(it))
@@ -428,7 +429,7 @@ std::string json_reader_t::impl_t::extract_bare_key ()
 }
 
 
-std::string json_reader_t::impl_t::extract_quoteless_string ()
+std::string config_reader_t::impl_t::extract_quoteless_string ()
 {
   std::string result;
   while (!is_json_punct(it) && !std::isspace(it))
@@ -449,7 +450,7 @@ std::string json_reader_t::impl_t::extract_quoteless_string ()
 }
 
 
-std::string json_reader_t::impl_t::extract_basic_string (bool allow_multiline)
+std::string config_reader_t::impl_t::extract_basic_string (bool allow_multiline)
 {
   next();
   if (allow_multiline && it == '"' && peek() == '"')
@@ -479,7 +480,7 @@ std::string json_reader_t::impl_t::extract_basic_string (bool allow_multiline)
 }
 
 
-std::string json_reader_t::impl_t::extract_literal_string (bool allow_multiline)
+std::string config_reader_t::impl_t::extract_literal_string (bool allow_multiline)
 {
   next();
   if (allow_multiline && it == '\'' && peek() == '\'')
@@ -504,7 +505,7 @@ std::string json_reader_t::impl_t::extract_literal_string (bool allow_multiline)
 }
 
 
-std::string json_reader_t::impl_t::extract_basic_multiline_string ()
+std::string config_reader_t::impl_t::extract_basic_multiline_string ()
 {
   std::string result;
 
@@ -559,7 +560,7 @@ std::string json_reader_t::impl_t::extract_basic_multiline_string ()
 }
 
 
-std::string json_reader_t::impl_t::extract_literal_multiline_string ()
+std::string config_reader_t::impl_t::extract_literal_multiline_string ()
 {
   std::string result;
 
@@ -594,14 +595,15 @@ std::string json_reader_t::impl_t::extract_literal_multiline_string ()
 }
 
 
-bool json_reader_t::impl_t::load_cache ()
+bool config_reader_t::impl_t::load_cache ()
 {
   if (!std::getline(input, cache))
   {
     return false;
   }
 
-  while (cache.size() && std::isspace(cache.back()))
+  while (cache.size()
+    && std::isspace(static_cast<int>(cache.back())))
   {
     cache.pop_back();
   }
@@ -614,7 +616,7 @@ bool json_reader_t::impl_t::load_cache ()
 }
 
 
-bool json_reader_t::impl_t::skip_spaces_and_comments ()
+bool config_reader_t::impl_t::skip_spaces_and_comments ()
 {
   auto comment_recursion_depth = 0U;
 
