@@ -94,7 +94,7 @@ C++ style comments:
 
 Both colon `:` and assignment `=` can be used to create key/value pairs and
 they can be freely placed (even on separate lines or on same line). Also,
-consequtive pairs can be separated with commas but don't have to:
+consecutive pairs can be separated with commas but don't have to:
 ```
 one = 1
 two: 2

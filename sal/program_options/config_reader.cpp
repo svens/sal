@@ -344,7 +344,7 @@ bool config_reader_t::impl_t::array (node_t &node)
 {
   if (it == ']')
   {
-    objects.pop_back();
+    objects.back().set(&impl_t::any);
     return next();
   }
   else if (it == ',')

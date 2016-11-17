@@ -539,6 +539,22 @@ a = [
 }
 
 
+TEST_P(config_reader, array_consecutive) //{{{1
+{
+  auto input = R"(
+a = [ 1 ], b = [ 2 ]
+)";
+
+  static const data_list expected =
+  {
+    { "a", "1" },
+    { "b", "2" },
+  };
+
+  EXPECT_EQ(expected, parse(input));
+}
+
+
 TEST_P(config_reader, array_in_root) //{{{1
 {
   static const data_list expected =
