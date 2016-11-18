@@ -22,23 +22,24 @@ endif
 # tmux "IDE" {{{1
 #
 
-ide:
-	tmux has-session -t "$(project)" >/dev/null 2>&1 \
-	  && ( tmux detach-client -s "$(project)" || true ) \
-	  || ( tmux new-session -s "$(project)" -n main -d \; \
-	    split-window \; \
-	    select-layout main-vertical \; \
-	    select-pane -L \; \
-	    new-window -n root \; \
+ide-edit:
+	tmux has-session -t "$(project)/edit" >/dev/null 2>&1 \
+	  && ( tmux detach-client -s "$(project)/edit" || true ) \
+	  || tmux new-session -s "$(project)/edit" -n main -d
+	tmux attach-session -t "$(project)/edit"
+
+ide-work:
+	tmux has-session -t "$(project)/work" >/dev/null 2>&1 \
+	  && ( tmux detach-client -s "$(project)/work" || true ) \
+	  || ( tmux new-session -s "$(project)/work" -n main -d \; \
 	    new-window -n gcc-debug -c .work/gcc-debug \; \
 	    new-window -n gcc-release -c .work/gcc-release \; \
 	    new-window -n clang-debug -c .work/clang-debug \; \
 	    new-window -n clang-release -c .work/clang-release \; \
 	    new-window -n infra -c .work/infra \; \
-	    select-window -t "$(project):main" \; \
-	    bind-key . choose-window 'swap-pane -t main.1 -s 1.0; swap-window -d -t 1 -s %%; swap-pane -t main.1 -s 1.0; select-window -t main.1' \
+	    select-window -t "$(project)/work:main" \; \
 	  )
-	tmux attach-session -t "$(project)"
+	tmux attach-session -t "$(project)/work"
 
 
 # Generic editing target {{{1

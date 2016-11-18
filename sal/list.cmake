@@ -1,5 +1,6 @@
 # sources
 list(APPEND sal_sources
+  sal/__bits/member_assign.hpp
   sal/assert.hpp
   sal/builtins.hpp
   sal/error.hpp
@@ -37,3 +38,4 @@ list(APPEND sal_unittests
 
 # submodules
 include(sal/logger/list.cmake)
+include(sal/program_options/list.cmake)

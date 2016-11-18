@@ -1,58 +1,60 @@
 #include <bench/bench.hpp>
+#include <sal/config.hpp>
+#include <sal/program_options/command_line.hpp>
 #include <iomanip>
 #include <iostream>
 
 
-bench::func_list bench_func =
-{
-  { "logger", &bench::logger },
-  { "queue", &bench::queue },
-  { "spinlock", &bench::spinlock },
-  { "str", &bench::str },
-};
+namespace {
 
+// initialised in main()
+static std::string argv0 = "";
 
-int usage (const char *arg0)
-{
-  std::string exe = arg0;
-  auto filename_begin = exe.find_last_of("/\\");
-  if (filename_begin != exe.npos)
-  {
-    exe.erase(exe.begin(), exe.begin() + filename_begin + 1);
-  }
-
-  std::cerr << "usage:"
-    << "\n  " << exe << " module [options]"
-    << "\n\nmodules:"
-    << std::endl;
-
-  for (const auto &f: bench_func)
-  {
-    std::cerr << "  " << f.first << std::endl;
-  }
-
-  std::cerr << "\nFor more information, run"
-    " \"" << exe << " module --help\"\n"
-    << std::endl;
-
-  return EXIT_FAILURE;
-}
+} // namespace
 
 
 int main (int argc, const char *argv[])
 {
-  if (argc < 2)
-  {
-    return usage(argv[0]);
-  }
+  using namespace sal::program_options;
 
-  auto f = bench_func.find(argv[1]);
-  if (f == bench_func.end())
+  try
   {
-    return usage(argv[0]);
-  }
+    argv0 = argv[0];
 
-  return (f->second)({argv + 2, argv + argc});
+    auto options = bench::options();
+    options
+      .add({"h", "help"},
+        help("display this help and exit")
+      )
+      .add({"v", "version"},
+        help("output version information and exit")
+      )
+    ;
+    auto config = options.parse<command_line_t>(argc, argv);
+
+    if (config.has("help"))
+    {
+      std::cout << "usage:\n  "
+        << argv[0] << " [options]\n\n"
+        << "options:"
+        << options
+        << std::endl
+      ;
+      return EXIT_SUCCESS;
+    }
+    else if (config.has("version"))
+    {
+      std::cout << "sal " << sal::version::c_str << std::endl;
+      return EXIT_SUCCESS;
+    }
+
+    return bench::run(options, config);
+  }
+  catch (const std::exception &e)
+  {
+    std::cout << "failed: " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
 }
 
 
@@ -93,6 +95,15 @@ bool in_progress (size_t current, size_t count, size_t &percent)
   }
 
   return current <= count;
+}
+
+
+int usage (const std::string message)
+{
+  std::cout << message << '\n'
+    << "run: '" << argv0 << " --help' for more information"
+    << std::endl;
+  return EXIT_FAILURE;
 }
 
 

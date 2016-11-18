@@ -133,19 +133,28 @@ endif()
 # Benchmarking application {{{1
 
 if(SAL_BENCH)
-  message(STATUS "Building benchmarking application")
+  message(STATUS "Building benchmarking applications")
 
   find_package(Threads)
 
   set(sal_bench "")
+  set(sal_bench_modules "")
   include(bench/list.cmake)
 
-  add_executable(bench ${sal_bench})
-  target_link_libraries(bench
-    sal
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${SAL_DEP_LIBS}
-  )
+  foreach (module ${sal_bench_modules})
+    get_filename_component(name ${module} NAME_WE)
+    set(bench_name "bench_${name}")
+    message("   - ${bench_name}")
+    add_executable(${bench_name}
+      ${sal_bench}
+      ${module}
+    )
+    target_link_libraries(${bench_name}
+      sal
+      ${CMAKE_THREAD_LIBS_INIT}
+      ${SAL_DEP_LIBS}
+    )
+  endforeach()
 endif()
 
 

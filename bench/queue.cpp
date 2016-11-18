@@ -18,32 +18,12 @@ using namespace std::chrono;
 size_t run = 10;
 size_t count = 10'000'000;
 size_t producers = 1, consumers = 1;
-std::string type = "mpmc";
+std::string type = "mpsc";
 
 const std::set<std::string> valid_types{
   "mpsc",
   "spsc",
 };
-
-
-int usage (const std::string message="")
-{
-  if (!message.empty())
-  {
-    std::cerr << message << '\n' << std::endl;
-  }
-
-  std::cerr << "queue:"
-    << "\n  --help         this page"
-    << "\n  --count=N      number of items to push (default: " << count << ')'
-    << "\n  --consumers=N  number of consumer threads (default: " << consumers << ')'
-    << "\n  --producers=N  number of producer threads (default: " << producers << ')'
-    << "\n  --type=S       queue concurrency usage type (default: " << type << ')'
-    << "\n                 valid values are mpsc, spsc"
-    << std::endl;
-
-  return EXIT_FAILURE;
-}
 
 
 template <typename QueueHook>
@@ -167,44 +147,50 @@ int worker ()
 } // namespace
 
 
-int bench::queue (const arg_list &args)
+namespace bench {
+
+
+option_set_t options ()
 {
-  for (auto &arg: args)
+  using namespace sal::program_options;
+
+  option_set_t desc;
+  desc
+    .add({"c", "count"},
+      requires_argument("INT", count),
+      help("number of items to push")
+    )
+    .add({"consumers"},
+      requires_argument("INT", consumers),
+      help("number of consumer threads")
+    )
+    .add({"producers"},
+      requires_argument("INT", producers),
+      help("number of producer threads")
+    )
+    .add({"t", "type"},
+      requires_argument("STRING", type),
+      help("queue concurrency pattern type (mpsc | spsc)")
+    )
+  ;
+  return desc;
+}
+
+
+int run (const option_set_t &options, const argument_map_t &arguments)
+{
+  count = std::stoul(options.back_or_default("count", { arguments }));
+  consumers = std::stoul(options.back_or_default("consumers", { arguments }));
+  producers = std::stoul(options.back_or_default("producers", { arguments }));
+  type = options.back_or_default("type", { arguments });
+
+  if (!valid_types.count(type))
   {
-    if (arg == "--help")
-    {
-      return usage();
-    }
-    else if (arg.find("--consumers=") != arg.npos)
-    {
-      consumers = std::stoul(arg.substr(sizeof("--consumers=") - 1));
-    }
-    else if (arg.find("--count=") != arg.npos)
-    {
-      count = std::stoul(arg.substr(sizeof("--count=") - 1));
-    }
-    else if (arg.find("--producers=") != arg.npos)
-    {
-      producers = std::stoul(arg.substr(sizeof("--producers=") - 1));
-    }
-    else if (arg.find("--run=") != arg.npos)
-    {
-      run = std::stoul(arg.substr(sizeof("--run=") - 1));
-    }
-    else if (arg.find("--type=") != arg.npos)
-    {
-      auto tmp = arg.substr(sizeof("--type=") - 1);
-      if (!valid_types.count(tmp))
-      {
-        return usage("unknown type: " + tmp);
-      }
-      type = tmp;
-    }
-    else
-    {
-      return usage("unknown argument: " + arg);
-    }
+    return usage("unknown type '" + type + '\'');
   }
 
   return worker();
 }
+
+
+} // namespace bench

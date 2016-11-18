@@ -8,6 +8,32 @@ namespace {
 using error = sal_test::fixture;
 
 
+TEST_F(error, error)
+{
+  using error_t = std::range_error;
+
+  bool visited = false;
+  try
+  {
+    sal::throw_error<error_t>(case_name, 42);
+  }
+  catch (const error_t &e)
+  {
+    visited = true;
+    EXPECT_EQ(case_name + "42", e.what());
+  }
+  catch (const std::exception &)
+  {
+    ASSERT_FALSE(true) << "shouldn't reach here";
+  }
+  catch (...)
+  {
+    ASSERT_FALSE(true) << "shouldn't reach here";
+  }
+  EXPECT_TRUE(visited);
+}
+
+
 TEST_F(error, logic_error)
 {
   bool visited = false;

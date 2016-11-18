@@ -24,6 +24,7 @@ linux-clang: &linux-clang
       packages:
         - clang-3.8
         - cmake
+        - g++-6
 
 osx-gcc: &osx-gcc
   os: osx
@@ -75,11 +76,11 @@ before_install: |
     fi
   fi
 
-install:
-  - source scripts/travis_install.sh
+install: |
+  source scripts/travis_install.sh
 
-script:
-  - source scripts/travis_script.sh
+script: |
+  source scripts/travis_script.sh
 
-after_success:
-  - source scripts/travis_success.sh
+after_success: |
+  source scripts/travis_success.sh
