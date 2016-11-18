@@ -96,21 +96,8 @@ struct config_reader_t::impl_t
 
 
   // read next character, caching line if necessary
-  bool next ()
-  {
-    if (cache_it != cache.end() || load_cache())
-    {
-      it = *cache_it++;
-    }
-    else
-    {
-      it = 0;
-    }
-    return it != 0;
-  }
-
-
-  bool load_cache ();
+  bool next ();
+  std::string next_line ();
 
 
   // peek at following char
@@ -595,24 +582,42 @@ std::string config_reader_t::impl_t::extract_literal_multiline_string ()
 }
 
 
-bool config_reader_t::impl_t::load_cache ()
+std::string config_reader_t::impl_t::next_line ()
 {
-  if (!std::getline(input, cache))
+  std::string result;
+
+  if (std::getline(input, result))
   {
-    return false;
+    while (result.size()
+      && std::isspace(static_cast<int>(result.back())))
+    {
+      result.pop_back();
+    }
+    result.push_back('\n');
+    line++;
   }
 
-  while (cache.size()
-    && std::isspace(static_cast<int>(cache.back())))
+  return result;
+}
+
+
+bool config_reader_t::impl_t::next ()
+{
+  if (cache_it == cache.end())
   {
-    cache.pop_back();
+    cache = next_line();
+    cache_it = cache.begin();
   }
 
-  line++;
-  cache.push_back('\n');
-  cache_it = cache.begin();
-
-  return true;
+  if (cache_it != cache.end())
+  {
+    it = *cache_it++;
+  }
+  else
+  {
+    it = 0;
+  }
+  return it != 0;
 }
 
 
