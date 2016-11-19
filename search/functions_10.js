@@ -10,6 +10,5 @@ var searchData=
   ['set_5ffile_5futc_5ftime',['set_file_utc_time',['../file__sink_8hpp.html#a037d0dfe4dd60f2acd788455a79c4573',1,'sal::logger']]],
   ['sink_5fevent_5finit',['sink_event_init',['../classsal_1_1logger_1_1sink__t.html#ac3e45d91a2ab44d82c2e95a0684a13e3',1,'sal::logger::sink_t']]],
   ['sink_5fevent_5fwrite',['sink_event_write',['../classsal_1_1logger_1_1sink__t.html#a5d18c4c0fcbb655321b480f01701eeb3',1,'sal::logger::sink_t']]],
-  ['size',['size',['../classsal_1_1str__t.html#a56d625f2f6bd2722def5ee941f4c8ec3',1,'sal::str_t']]],
-  ['str_5ft',['str_t',['../classsal_1_1str__t.html#af626224d689b70b63d9b7c3e855f3920',1,'sal::str_t::str_t() noexcept'],['../classsal_1_1str__t.html#a982d12f33e0ce5c2b1359c60a9ee5368',1,'sal::str_t::str_t(const str_t &amp;that) noexcept'],['../classsal_1_1str__t.html#ac090c000521cf2d9eaba819d54e7c522',1,'sal::str_t::str_t(const str_t&lt; ThatSize &gt; &amp;that) noexcept']]]
+  ['size',['size',['../classsal_1_1array__string__t.html#af68478ff07a7d386715882776364a8a9',1,'sal::array_string_t']]]
 ];

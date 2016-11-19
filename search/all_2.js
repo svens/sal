@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['cbegin',['cbegin',['../classsal_1_1str__t.html#a43a7f7c28341cb0ce66138fe5b52d9d9',1,'sal::str_t']]],
-  ['cend',['cend',['../classsal_1_1str__t.html#ab3d92c8f04326c19de6d0410cefc6763',1,'sal::str_t']]],
+  ['cbegin',['cbegin',['../classsal_1_1array__string__t.html#a2f5f53bbb2954da5a289643699d443b7',1,'sal::array_string_t']]],
+  ['cend',['cend',['../classsal_1_1array__string__t.html#a0c93c33ad9630a5fc2837e10c6bcea0c',1,'sal::array_string_t']]],
   ['channel_2ehpp',['channel.hpp',['../channel_8hpp.html',1,'']]],
   ['channel_5ft',['channel_t',['../classsal_1_1logger_1_1channel__t.html',1,'sal::logger']]],
   ['channel_5ftype',['channel_type',['../classsal_1_1logger_1_1basic__worker__t.html#aeeeb3c44c9a8e12bc3f4833b6affd14b',1,'sal::logger::basic_worker_t']]],

@@ -24,9 +24,9 @@ var annotated_dup =
         [ "parser_error", "structsal_1_1program__options_1_1parser__error.html", null ],
         [ "unknown_option_error", "structsal_1_1program__options_1_1unknown__option__error.html", null ]
       ] ],
+      [ "array_string_t", "classsal_1_1array__string__t.html", "classsal_1_1array__string__t" ],
       [ "file_t", "classsal_1_1file__t.html", "classsal_1_1file__t" ],
       [ "queue_t", "classsal_1_1queue__t.html", "classsal_1_1queue__t" ],
-      [ "spinlock_t", "classsal_1_1spinlock__t.html", "classsal_1_1spinlock__t" ],
-      [ "str_t", "classsal_1_1str__t.html", "classsal_1_1str__t" ]
+      [ "spinlock_t", "classsal_1_1spinlock__t.html", "classsal_1_1spinlock__t" ]
     ] ]
 ];
