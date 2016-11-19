@@ -19,8 +19,8 @@ struct test
 
 
 using types = testing::Types<
-  //sal::no_sync_t
-  //sal::spsc_sync_t
+  sal::no_sync_t,
+  sal::spsc_sync_t,
   sal::mpsc_sync_t
 >;
 
