@@ -105,7 +105,7 @@ void use_printf ()
 
 void use_str ()
 {
-  sal::str_t<1024> str;
+  sal::array_string_t<1024> str;
   str << "bool=" << p_bool
     << "; char=" << p_char
     << "; schar=" << p_schar

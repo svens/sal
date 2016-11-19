@@ -29,7 +29,7 @@ struct event_t
     - sizeof(time_t)
     - sizeof(sink_t *)
     - sizeof(void *)
-    - sizeof(str_t<1>) - 1
+    - sizeof(array_string_t<1>) - 1
   ;
 
   /// Event creation time
@@ -42,7 +42,7 @@ struct event_t
   void *sink_data{};
 
   /// Event message
-  str_t<max_message_size> message{};
+  array_string_t<max_message_size> message{};
 
 
 private:

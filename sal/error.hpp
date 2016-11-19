@@ -23,7 +23,7 @@ inline void throw_error [[noreturn]] (Args &&...args)
   static_assert(std::is_base_of<std::exception, Error>::value,
     "exceptions should be inherited from std::exception"
   );
-  str_t<1 + 128*sizeof...(Args)> what;
+  array_string_t<1 + 128*sizeof...(Args)> what;
   print(what, std::forward<Args>(args)...);
   throw Error(what.get());
 }
@@ -33,7 +33,7 @@ inline void throw_error [[noreturn]] (Args &&...args)
 template <typename... Args>
 inline void throw_logic_error [[noreturn]] (Args &&...args)
 {
-  str_t<1 + 128*sizeof...(Args)> what;
+  array_string_t<1 + 128*sizeof...(Args)> what;
   print(what, std::forward<Args>(args)...);
   throw std::logic_error(what.get());
 }
@@ -43,7 +43,7 @@ inline void throw_logic_error [[noreturn]] (Args &&...args)
 template <typename... Args>
 inline void throw_runtime_error [[noreturn]] (Args &&...args)
 {
-  str_t<1 + 128*sizeof...(Args)> what;
+  array_string_t<1 + 128*sizeof...(Args)> what;
   print(what, std::forward<Args>(args)...);
   throw std::runtime_error(what.get());
 }
@@ -54,7 +54,7 @@ template <typename... Args>
 inline void throw_system_error [[noreturn]] (const std::error_code &error,
   Args &&...args)
 {
-  str_t<1 + 128*sizeof...(Args)> what;
+  array_string_t<1 + 128*sizeof...(Args)> what;
   print(what, std::forward<Args>(args)...);
   throw std::system_error(error, what.get());
 }
