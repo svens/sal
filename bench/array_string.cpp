@@ -1,6 +1,6 @@
 #include <bench/bench.hpp>
+#include <sal/array_string.hpp>
 #include <sal/fmt.hpp>
-#include <sal/str.hpp>
 #include <cinttypes>
 #include <iostream>
 
@@ -8,7 +8,7 @@
 namespace {
 
 
-std::string function = "str";
+std::string function = "array_string";
 size_t count = 10'000'000;
 
 
@@ -103,9 +103,9 @@ void use_printf ()
 }
 
 
-void use_str ()
+void use_array_string ()
 {
-  sal::str_t<1024> str;
+  sal::array_string_t<1024> str;
   str << "bool=" << p_bool
     << "; char=" << p_char
     << "; schar=" << p_schar
@@ -155,7 +155,7 @@ option_set_t options ()
     )
     .add({"f", "function"},
       requires_argument("STRING", function),
-      help("function to test (str | printf)")
+      help("function to test (array_string | printf)")
     )
   ;
   return desc;
@@ -167,9 +167,9 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   count = std::stoul(options.back_or_default("count", { arguments }));
   function = options.back_or_default("function", { arguments });
 
-  if (function == "str")
+  if (function == "array_string")
   {
-    return worker(use_str);
+    return worker(use_array_string);
   }
   else if (function == "printf")
   {

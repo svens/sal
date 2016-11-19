@@ -68,7 +68,7 @@ namespace __bits {
 namespace {
 
 
-using path_t = str_t<1024>;
+using path_t = array_string_t<1024>;
 
 
 void create_directories (std::string dir, path_t &path)
@@ -168,7 +168,7 @@ size_t get_size_and_filename (path_t &filename, size_t max_size) noexcept
 }
 
 
-void finish (str_t<event_t::max_message_size> &message) noexcept
+void finish (array_string_t<event_t::max_message_size> &message) noexcept
 {
   if (!message.good())
   {
@@ -256,7 +256,7 @@ file_t file_sink_t::make_file ()
   );
 
   // add header to file
-  str_t<1024> header;
+  array_string_t<1024> header;
   header
     << "\n#"
     << "\n# log=" << filename << ';'

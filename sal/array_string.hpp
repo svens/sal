@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/str.hpp
+ * \file sal/array_string.hpp
  * Fixed size char[] to hold formatted text
  */
 
@@ -16,10 +16,10 @@ __sal_begin
 
 
 // fwd
-template <size_t Size> class str_t;
+template <size_t Size> class array_string_t;
 namespace __bits {
 template <size_t Size>
-char *fmt (const str_t<Size> &value, char *first, char *last) noexcept;
+char *fmt (const array_string_t<Size> &value, char *first, char *last) noexcept;
 } // namespace __bits
 
 
@@ -49,37 +49,37 @@ char *fmt (const str_t<Size> &value, char *first, char *last) noexcept;
  * non-mutable std::string_view with internal array.
  */
 template <size_t Size>
-class str_t
+class array_string_t
 {
 public:
 
-  static_assert(Size > 0, "zero-sized str_t not allowed");
+  static_assert(Size > 0, "zero-sized array_string_t not allowed");
 
 
-  /// Construct new empty str_t
-  str_t () noexcept
+  /// Construct new empty array_string_t
+  array_string_t () noexcept
   {
     reset();
   }
 
 
-  /// Construct new str_t with content from \a that
-  str_t (const str_t &that) noexcept
+  /// Construct new array_string_t with content from \a that
+  array_string_t (const array_string_t &that) noexcept
   {
     operator=(that);
   }
 
 
-  /// \copydoc str_t(const str_t &)
+  /// \copydoc array_string_t(const array_string_t &)
   template <size_t ThatSize>
-  str_t (const str_t<ThatSize> &that) noexcept
+  array_string_t (const array_string_t<ThatSize> &that) noexcept
   {
     operator=(that);
   }
 
 
   /// Assign new content to \a this from \a that
-  str_t &operator= (const str_t &that) noexcept
+  array_string_t &operator= (const array_string_t &that) noexcept
   {
     end_ = __bits::fmt(that, begin_, begin_ + Size);
     *(good() ? end_ : begin_) = '\0';
@@ -87,9 +87,9 @@ public:
   }
 
 
-  /// \copydoc operator=(const str_t &that)
+  /// \copydoc operator=(const array_string_t &that)
   template <size_t ThatSize>
-  str_t &operator= (const str_t<ThatSize> &that) noexcept
+  array_string_t &operator= (const array_string_t<ThatSize> &that) noexcept
   {
     static_assert(Size >= ThatSize, "this is smaller than that");
     end_ = __bits::fmt(that, begin_, begin_ + Size);
@@ -243,8 +243,9 @@ public:
 
 
   /**
-   * Move the end of str_t backward by \a n characters (but not before begin).
-   * Calling this method while instance is not good() is undefined behaviour.
+   * Move the end of array_string_t backward by \a n characters (but not
+   * before begin). Calling this method while instance is not good() is
+   * undefined behaviour.
    */
   void remove_suffix (size_t n) noexcept
   {
@@ -279,12 +280,13 @@ public:
 
 
   /**
-   * Insert textual representation of \a value to str_t \a v. If \a v is not
-   * good(), end() pointer is still increased but no content is actually
-   * added.
+   * Insert textual representation of \a value to array_string_t \a v. If \a v
+   * is not good(), end() pointer is still increased but no content is
+   * actually added.
    */
   template <typename T>
-  friend str_t &operator<< (str_t &v, const T &value) noexcept
+  friend array_string_t &operator<< (array_string_t &v, const T &value)
+    noexcept
   {
     v.end_ = __bits::fmt(value, v.end_, v.begin_ + Size);
     if (v.good())
@@ -303,9 +305,10 @@ private:
 
 namespace __bits {
 
-// specialization for fmt(str_t)
+// specialization for fmt(array_string_t)
 template <size_t Size>
-inline char *fmt (const str_t<Size> &value, char *first, char *last) noexcept
+inline char *fmt (const array_string_t<Size> &value, char *first, char *last)
+  noexcept
 {
   return __bits::copy(value.begin(), value.end(), first, last);
 }
@@ -318,7 +321,7 @@ inline char *fmt (const str_t<Size> &value, char *first, char *last) noexcept
  * good(), end() pointer is still increased but no content is actually added.
  */
 template <size_t Size, typename... Args>
-str_t<Size> &print (str_t<Size> &v, Args &&...args) noexcept
+array_string_t<Size> &print (array_string_t<Size> &v, Args &&...args) noexcept
 {
   bool unused[] = { false, (v << args, false)... };
   (void)unused;
@@ -328,7 +331,7 @@ str_t<Size> &print (str_t<Size> &v, Args &&...args) noexcept
 
 /// Insert content of \a v to \a os. This call is valid only if \a v.good()
 template <size_t Size>
-std::ostream &operator<< (std::ostream &os, const str_t<Size> &v)
+std::ostream &operator<< (std::ostream &os, const array_string_t<Size> &v)
 {
   return os.write(v.begin(), v.size());
 }
@@ -339,7 +342,7 @@ std::ostream &operator<< (std::ostream &os, const str_t<Size> &v)
  * only if \a this state is good().
  */
 template <size_t Size>
-std::string to_string (const str_t<Size> &v)
+std::string to_string (const array_string_t<Size> &v)
 {
   return std::string(v.cbegin(), v.cend());
 }
