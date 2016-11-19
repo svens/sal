@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['queue_5ft',['queue_t',['../classsal_1_1queue__t.html',1,'sal']]]
+  ['parser_5ferror',['parser_error',['../structsal_1_1program__options_1_1parser__error.html',1,'sal::program_options']]]
 ];

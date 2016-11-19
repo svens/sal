@@ -1,5 +1,9 @@
 var NAVTREEINDEX1 =
 {
+"structsal_1_1no__sync__t.html#a3482d5b45551e5a51ba750467b2398b5":[6,0,0,6,0],
+"structsal_1_1program__options_1_1duplicate__option__name__error.html":[6,0,0,1,3],
+"structsal_1_1program__options_1_1empty__option__name__error.html":[6,0,0,1,4],
+"structsal_1_1program__options_1_1invalid__option__name__error.html":[6,0,0,1,5],
 "structsal_1_1program__options_1_1no__option__name__error.html":[6,0,0,1,6],
 "structsal_1_1program__options_1_1option__rejects__argument__error.html":[6,0,0,1,7],
 "structsal_1_1program__options_1_1option__requires__argument__error.html":[6,0,0,1,8],
@@ -20,6 +24,10 @@ var NAVTREEINDEX1 =
 "structsal_1_1program__options_1_1option__t.html#af14378aa31770c6eb75649836b1fcfa6":[6,0,0,1,10,5],
 "structsal_1_1program__options_1_1parser__error.html":[6,0,0,1,11],
 "structsal_1_1program__options_1_1unknown__option__error.html":[6,0,0,1,12],
+"structsal_1_1spsc__sync__t.html":[6,0,0,8],
+"structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html":[6,0,0,8,0],
+"structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html#a1213873ed1919ca25dd323f7a7462d0b":[6,0,0,8,0,0],
+"structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html#a279c6ce7d19de5229d710554aada6e9d":[6,0,0,8,0,1],
 "thread_8hpp.html":[7,0,0,10],
 "thread_8hpp.html#a382d3e19b6656ab172c9623be57f3208":[7,0,0,10,1],
 "thread_8hpp.html#a890d2b71743a8c56cbfc258b8b364912":[7,0,0,10,0],

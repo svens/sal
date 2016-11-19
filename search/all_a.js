@@ -7,5 +7,6 @@ var searchData=
   ['max_5fmessage_5fsize',['max_message_size',['../structsal_1_1logger_1_1event__t.html#aca8aa527e14544dd949d4825dd20781a',1,'sal::logger::event_t']]],
   ['max_5fsize',['max_size',['../classsal_1_1array__string__t.html#a38f96249102a2f4789240948403cbed3',1,'sal::array_string_t']]],
   ['merge',['merge',['../classsal_1_1program__options_1_1option__set__t.html#a50deaf23e3540ce7226668f22aff67db',1,'sal::program_options::option_set_t']]],
-  ['message',['message',['../structsal_1_1logger_1_1event__t.html#abf4323e5f86d5e24f6dec8640a37568c',1,'sal::logger::event_t']]]
+  ['message',['message',['../structsal_1_1logger_1_1event__t.html#abf4323e5f86d5e24f6dec8640a37568c',1,'sal::logger::event_t']]],
+  ['mpsc_5fsync_5ft',['mpsc_sync_t',['../structsal_1_1mpsc__sync__t.html',1,'sal']]]
 ];
