@@ -1,6 +1,6 @@
 #include <bench/bench.hpp>
+#include <sal/array_string.hpp>
 #include <sal/fmt.hpp>
-#include <sal/str.hpp>
 #include <cinttypes>
 #include <iostream>
 

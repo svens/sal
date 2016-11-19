@@ -1,4 +1,4 @@
-#include <sal/str.hpp>
+#include <sal/array_string.hpp>
 #include <sal/fmt.hpp>
 #include <sal/common.test.hpp>
 

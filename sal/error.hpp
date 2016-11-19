@@ -6,7 +6,7 @@
  */
 
 #include <sal/config.hpp>
-#include <sal/str.hpp>
+#include <sal/array_string.hpp>
 #include <stdexcept>
 #include <system_error>
 #include <type_traits>

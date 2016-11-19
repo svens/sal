@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/str.hpp
+ * \file sal/array_string.hpp
  * Fixed size char[] to hold formatted text
  */
 

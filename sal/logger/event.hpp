@@ -10,7 +10,7 @@
 
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
-#include <sal/str.hpp>
+#include <sal/array_string.hpp>
 #include <sal/time.hpp>
 
 
