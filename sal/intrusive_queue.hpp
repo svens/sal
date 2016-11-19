@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/queue.hpp
+ * \file sal/intrusive_queue.hpp
  * Intrusive queue (FIFO) with possible concurrent usage
  */
 
@@ -13,14 +13,47 @@ namespace sal {
 __sal_begin
 
 
-/// Intrusive unsynchronised queue
-struct intrusive_t;
+/**
+ * Unsynchronised access policy
+ */
+struct no_sync_t
+{
+  /**
+   * Intrusive_queue_t hook.
+   * Opaque data, not for application layer use
+   */
+  using intrusive_queue_hook_t = void *;
+};
 
-/// Multiple producers, single consumer concurrent queue
-struct mpsc_t;
 
-/// Single producer, single consumer concurrent queue
-struct spsc_t;
+/**
+ * Single-producer, single-consumer access policy
+ */
+struct spsc_sync_t
+{
+  /**
+   * Intrusive_queue_t hook.
+   * Opaque data, not for application layer use
+   */
+  struct intrusive_queue_hook_t
+  {
+    volatile void *next;        ///< Opaque data
+    volatile unsigned seq;      ///< Opaque data
+  };
+};
+
+
+/**
+ * Multi-producer, single-consumer access policy
+ */
+struct mpsc_sync_t
+{
+  /**
+   * Intrusive_queue_t hook.
+   * Opaque data, not for application layer use
+   */
+  using intrusive_queue_hook_t = volatile void *;
+};
 
 
 /**
@@ -43,12 +76,12 @@ struct spsc_t;
  * \code
  * class foo
  * {
- *   sal::mpsc_t hook;
+ *   sal::mpsc_sync_t::intrusive_queue_hook_t hook;
  *   int a;
  *   char b;
  * };
  *
- * sal::queue_t<foo, sal::mpsc_t, &foo::hook> queue;
+ * sal::queue_t<foo, sal::mpsc_sync_t, &foo::hook> queue;
  *
  * foo f;
  * queue.push(&f);
@@ -56,16 +89,23 @@ struct spsc_t;
  * auto fp = queue.try_pop(); // fp == &f
  * \endcode
  */
-template <typename T, typename QueueHook, QueueHook T::*Hook>
-class queue_t
+template <typename T,
+  typename SyncPolicy,
+  typename SyncPolicy::intrusive_queue_hook_t T::*Hook
+>
+class intrusive_queue_t
 {
 public:
 
-  queue_t (const queue_t &) = delete;
-  queue_t &operator= (const queue_t &) = delete;
+  intrusive_queue_t (const intrusive_queue_t &) = delete;
+  intrusive_queue_t &operator= (const intrusive_queue_t &) = delete;
 
 
-  queue_t () noexcept = default;
+  // Construct new queue with no elements
+  intrusive_queue_t () noexcept
+  {
+    next_of(head_) = nullptr;
+  }
 
 
   /**
@@ -75,9 +115,9 @@ public:
    *
    * \note Moving elements out of \a that is not thread-safe.
    */
-  queue_t (queue_t &&that) noexcept
-    : queue_(std::move(that.queue_))
+  intrusive_queue_t (intrusive_queue_t &&that) noexcept
   {
+    operator=(std::move(that));
   }
 
 
@@ -91,9 +131,11 @@ public:
    *
    * \note Moving elements out of \a that is not thread-safe.
    */
-  queue_t &operator= (queue_t &&that) noexcept
+  intrusive_queue_t &operator= (intrusive_queue_t &&that) noexcept
   {
-    queue_ = std::move(that.queue_);
+    next_of(head_) = next_of(that.head_);
+    tail_ = that.tail_ == that.head_ ? head_ : that.tail_;
+    next_of(that.head_) = that.tail_ = nullptr;
     return *this;
   }
 
@@ -101,20 +143,37 @@ public:
   /// Push new \a node into \a this
   void push (T *node) noexcept
   {
-    queue_.push(node);
+    next_of(node) = nullptr;
+    tail_ = next_of(tail_) = node;
   }
 
 
   /// Pop next element from queue. If empty, return nullptr
   T *try_pop () noexcept
   {
-    return queue_.try_pop();
+    if (auto node = next_of(head_))
+    {
+      next_of(head_) = next_of(node);
+      if (!next_of(head_))
+      {
+        tail_ = head_;
+      }
+      return node;
+    }
+    return nullptr;
   }
 
 
 private:
 
-  typename QueueHook::template queue_t<T, Hook> queue_{};
+  char sentry_[sizeof(T)];
+  T * const head_{reinterpret_cast<T *>(&sentry_)};
+  T *tail_{head_};
+
+  static T *&next_of (T *node) noexcept
+  {
+    return reinterpret_cast<T *&>(node->*Hook);
+  }
 };
 
 
@@ -122,6 +181,5 @@ __sal_end
 } // namespace sal
 
 
-#include <sal/__bits/queue_intrusive.hpp>
-#include <sal/__bits/queue_mpsc.hpp>
-#include <sal/__bits/queue_spsc.hpp>
+// specializations for synchronised intrusive queues
+#include <sal/__bits/intrusive_queue.hpp>

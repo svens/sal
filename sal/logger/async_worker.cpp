@@ -1,7 +1,7 @@
 #include <sal/logger/async_worker.hpp>
 #include <sal/logger/event.hpp>
 #include <sal/logger/sink.hpp>
-#include <sal/queue.hpp>
+#include <sal/intrusive_queue.hpp>
 #include <sal/spinlock.hpp>
 #include <deque>
 #include <mutex>
@@ -19,14 +19,18 @@ struct async_worker_t::impl_t
   {
     union
     {
-      spsc_t free_hook;
-      mpsc_t write_hook;
+      spsc_sync_t::intrusive_queue_hook_t free_hook;
+      mpsc_sync_t::intrusive_queue_hook_t write_hook;
     };
 
-    using free_list_t = queue_t<event_ctl_t, spsc_t, &event_ctl_t::free_hook>;
+    using free_list_t = intrusive_queue_t<event_ctl_t,
+      spsc_sync_t, &event_ctl_t::free_hook
+    >;
     free_list_t * const free_list{};
 
-    using write_list_t = queue_t<event_ctl_t, mpsc_t, &event_ctl_t::write_hook>;
+    using write_list_t = intrusive_queue_t<event_ctl_t,
+      mpsc_sync_t, &event_ctl_t::write_hook
+    >;
     write_list_t * const write_list{};
 
     event_ctl_t (free_list_t *free_list, write_list_t *write_list) noexcept
@@ -39,13 +43,11 @@ struct async_worker_t::impl_t
   {
     spinlock_t mutex{};
     std::deque<event_ctl_t> pool{};
-
-    __sal_warning_suppress_aligned_struct_padding
-    alignas(64) event_ctl_t::free_list_t free_list{};
+    event_ctl_t::free_list_t free_list{};
   };
 
   std::thread writer{};
-  alignas(64) event_ctl_t::write_list_t write_list{};
+  event_ctl_t::write_list_t write_list{};
   std::deque<event_pool_t> free_list_segments{2};
 
 
@@ -110,22 +112,6 @@ struct async_worker_t::impl_t
       guard->writer.join();
     }
   }
-
-#if _MSC_VER
-
-  // MSVC: warning C4316: object allocated on the heap may not be aligned 64
-
-  void *operator new (size_t size)
-  {
-    return _mm_malloc(size, 64);
-  }
-
-  void operator delete (void *p)
-  {
-    _mm_free(p);
-  }
-
-#endif
 };
 
 

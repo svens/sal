@@ -1,5 +1,5 @@
 #include <bench/bench.hpp>
-#include <sal/queue.hpp>
+#include <sal/intrusive_queue.hpp>
 #include <sal/spinlock.hpp>
 #include <algorithm>
 #include <atomic>
@@ -26,22 +26,22 @@ const std::set<std::string> valid_types{
 };
 
 
-template <typename QueueHook>
+template <typename SyncPolicy>
 struct foo
 {
   bool stop = false;
-  QueueHook hook{};
-  using queue = sal::queue_t<foo, QueueHook, &foo::hook>;
+  typename SyncPolicy::intrusive_queue_hook_t hook{};
+  using queue = sal::intrusive_queue_t<foo, SyncPolicy, &foo::hook>;
 };
 
 
 
-template <typename QueueHook>
+template <typename SyncPolicy>
 milliseconds single_run ()
 {
   // preallocate items and create queue
-  std::vector<foo<QueueHook>> nodes(count);
-  typename foo<QueueHook>::queue q;
+  std::vector<foo<SyncPolicy>> nodes(count);
+  typename foo<SyncPolicy>::queue q;
 
   std::vector<std::thread> consumer_threads, producer_threads;
   auto start_time = bench::start();
@@ -100,7 +100,7 @@ milliseconds single_run ()
   }
 
   // send stop signal to consumers
-  std::vector<foo<QueueHook>> stop_nodes(consumers);
+  std::vector<foo<SyncPolicy>> stop_nodes(consumers);
   for (size_t i = 0;  i != consumers;  ++i)
   {
     stop_nodes[i].stop = true;
@@ -125,11 +125,11 @@ int worker ()
   {
     if (type == "mpsc")
     {
-      times.emplace_back(single_run<sal::mpsc_t>());
+      times.emplace_back(single_run<sal::mpsc_sync_t>());
     }
     else if (type == "spsc")
     {
-      times.emplace_back(single_run<sal::spsc_t>());
+      times.emplace_back(single_run<sal::spsc_sync_t>());
     }
   }
 
