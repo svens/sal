@@ -9,10 +9,8 @@ list(APPEND sal_sources
   sal/file.cpp
   sal/fmt.hpp
   sal/__bits/fmt.hpp
-  sal/queue.hpp
-  sal/__bits/queue_intrusive.hpp
-  sal/__bits/queue_mpsc.hpp
-  sal/__bits/queue_spsc.hpp
+  sal/intrusive_queue.hpp
+  sal/__bits/intrusive_queue.hpp
   sal/spinlock.hpp
   sal/thread.hpp
   sal/thread.cpp
@@ -29,7 +27,7 @@ list(APPEND sal_unittests
   sal/error.test.cpp
   sal/file.test.cpp
   sal/fmt.test.cpp
-  sal/queue.test.cpp
+  sal/intrusive_queue.test.cpp
   sal/spinlock.test.cpp
   sal/thread.test.cpp
   sal/time.test.cpp
