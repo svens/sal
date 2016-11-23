@@ -5,8 +5,6 @@
  */
 
 #include <sal/config.hpp>
-#include <sal/assert.hpp>
-#include <sal/error.hpp>
 #include <mutex>
 
 

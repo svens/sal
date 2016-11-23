@@ -164,18 +164,18 @@ TEST_F(locked_ptr, move_assign_no_unlock_unlocked)
 
 TEST_F(locked_ptr, swap)
 {
+  int other_data{};
+  std::mutex other_mutex{};
   {
     ptr a(&data, mutex);
     EXPECT_EQ(&data, a.get());
     EXPECT_FALSE(mutex.try_lock());
 
-    int other_data{};
-    std::mutex other_mutex{};
     ptr b(&other_data, other_mutex);
     EXPECT_EQ(&other_data, b.get());
     EXPECT_FALSE(other_mutex.try_lock());
 
-    sal::swap(a, b);
+    swap(a, b);
     EXPECT_EQ(&data, b.get());
     EXPECT_FALSE(mutex.try_lock());
     EXPECT_EQ(&other_data, a.get());
@@ -183,6 +183,8 @@ TEST_F(locked_ptr, swap)
   }
   EXPECT_TRUE(mutex.try_lock());
   mutex.unlock();
+  EXPECT_TRUE(other_mutex.try_lock());
+  other_mutex.unlock();
 }
 
 
