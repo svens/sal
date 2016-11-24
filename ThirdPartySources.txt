@@ -1,7 +1,7 @@
 This library contains following third party sources
 
 
-== sal/__bits/queue_*.hpp {{{1
+== sal/__bits/intrusive_queue.hpp {{{1
 
 * Intrusive MPSC queue
   http://www.1024cores.net/home/lock-free-algorithms/queues/non-intrusive-mpsc-node-based-queue
