@@ -334,21 +334,4 @@ TEST_F(lockable, const_unlocked)
 }
 
 
-TEST_F(lockable, devel)
-{
-  int data = 1;
-
-  using lockable_int = sal::lockable_t<int>;
-  using locked_int_ptr = lockable_int::ptr;
-
-  lockable_int i{data};
-  if (locked_int_ptr ip = i.lock())
-  {
-    *ip = 2;
-  }
-
-  EXPECT_EQ(2, data);
-}
-
-
 } // namespace
