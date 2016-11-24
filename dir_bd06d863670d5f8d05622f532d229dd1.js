@@ -19,6 +19,7 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
       [ "mpsc_sync_t", "structsal_1_1mpsc__sync__t.html", "structsal_1_1mpsc__sync__t" ],
       [ "intrusive_queue_t", "classsal_1_1intrusive__queue__t.html", "classsal_1_1intrusive__queue__t" ]
     ] ],
+    [ "lockable.hpp", "lockable_8hpp.html", "lockable_8hpp" ],
     [ "spinlock.hpp", "spinlock_8hpp.html", "spinlock_8hpp" ],
     [ "thread.hpp", "thread_8hpp.html", "thread_8hpp" ],
     [ "time.hpp", "time_8hpp.html", "time_8hpp" ]

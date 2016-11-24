@@ -96,7 +96,7 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 : <a class="el" href="classsal_1_1program__options_1_1option__set__t.html#a6fc4b54c2701f1af98b50e5ab2d15ee5">sal::program_options::option_set_t</a>
 </li>
 <li>array_string_t()
-: <a class="el" href="classsal_1_1array__string__t.html#a0fbea17a81389b1e02b4715fd72f6cb4">sal::array_string_t&lt; Size &gt;</a>
+: <a class="el" href="classsal_1_1array__string__t.html#ae78864d0e11d3f430886640f1bb208c2">sal::array_string_t&lt; Size &gt;</a>
 </li>
 </ul>
 
@@ -126,7 +126,7 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 : <a class="el" href="classsal_1_1array__string__t.html#a0c93c33ad9630a5fc2837e10c6bcea0c">sal::array_string_t&lt; Size &gt;</a>
 </li>
 <li>close()
-: <a class="el" href="classsal_1_1file__t.html#a39f0ad1c475b6485e32b54eaef78a175">sal::file_t</a>
+: <a class="el" href="classsal_1_1file__t.html#acfb4ab8bd0d8804794d2dfc6d4ca33e5">sal::file_t</a>
 </li>
 <li>command_line_t()
 : <a class="el" href="classsal_1_1program__options_1_1command__line__t.html#ae603c0fbb50d8534f5390d1475a42bf0">sal::program_options::command_line_t</a>
@@ -135,7 +135,7 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 : <a class="el" href="classsal_1_1program__options_1_1config__reader__t.html#a0e952b164a7e09ff2d4f426927b1a713">sal::program_options::config_reader_t</a>
 </li>
 <li>create()
-: <a class="el" href="classsal_1_1file__t.html#ad1591e107ab799d68ba8d26bc3651bbb">sal::file_t</a>
+: <a class="el" href="classsal_1_1file__t.html#a56c67f59794862c8b0e0a1042711d770">sal::file_t</a>
 </li>
 </ul>
 
@@ -183,6 +183,7 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 <h3><a id="index_g"></a>- g -</h3><ul>
 <li>get()
 : <a class="el" href="classsal_1_1array__string__t.html#ac4bfc17c3f1a360c2416f49c503daed5">sal::array_string_t&lt; Size &gt;</a>
+, <a class="el" href="classsal_1_1locked__ptr.html#a8996032e791a8bbe7ad7633f2395597e">sal::locked_ptr&lt; T, Mutex &gt;</a>
 </li>
 <li>get_channel()
 : <a class="el" href="classsal_1_1logger_1_1basic__worker__t.html#adf7d041e83ae694d0359fa70245869ea">sal::logger::basic_worker_t&lt; Worker &gt;</a>
@@ -228,7 +229,14 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 : <a class="el" href="classsal_1_1logger_1_1sink__t.html#a1aca7e0e71e821a05f91d42c9cbce2df">sal::logger::sink_t</a>
 </li>
 <li>lock()
-: <a class="el" href="classsal_1_1spinlock__t.html#adee91d2ef5c73d01576465e883472279">sal::spinlock_t</a>
+: <a class="el" href="classsal_1_1lockable__t.html#a5451f2204a58194036bb0a94e97bad5c">sal::lockable_t&lt; T, Mutex &gt;</a>
+, <a class="el" href="classsal_1_1spinlock__t.html#adee91d2ef5c73d01576465e883472279">sal::spinlock_t</a>
+</li>
+<li>lockable_t()
+: <a class="el" href="classsal_1_1lockable__t.html#ad9d4b1f55ea352e2f84a9848d061bde6">sal::lockable_t&lt; T, Mutex &gt;</a>
+</li>
+<li>locked_ptr()
+: <a class="el" href="classsal_1_1locked__ptr.html#a47f6f88c91c8f76357ce7a38a54c2a20">sal::locked_ptr&lt; T, Mutex &gt;</a>
 </li>
 </ul>
 
@@ -267,19 +275,27 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 : <a class="el" href="classsal_1_1file__t.html#af2ba73de6b2ce015415ac1ae3a7c043d">sal::file_t</a>
 </li>
 <li>open_or_create()
-: <a class="el" href="classsal_1_1file__t.html#a12be2ac5d6cc3adc6d59a56a35ccc0c0">sal::file_t</a>
+: <a class="el" href="classsal_1_1file__t.html#ad53391c3590aeb10d4b73edf23ec95b1">sal::file_t</a>
 </li>
 <li>operator bool()
 : <a class="el" href="classsal_1_1file__t.html#ad65fe7f090f75b49e4fbfd7d6e23fe01">sal::file_t</a>
+, <a class="el" href="classsal_1_1locked__ptr.html#aca3f8fa0a1f1316a5a97dc8c8fd87c53">sal::locked_ptr&lt; T, Mutex &gt;</a>
 </li>
 <li>operator()()
 : <a class="el" href="classsal_1_1program__options_1_1command__line__t.html#afba180d47f7176d80e0596be3ed6f859">sal::program_options::command_line_t</a>
 , <a class="el" href="classsal_1_1program__options_1_1config__reader__t.html#a5cfd8bbcf907bb28a3090645d2aa177d">sal::program_options::config_reader_t</a>
 </li>
+<li>operator*()
+: <a class="el" href="classsal_1_1locked__ptr.html#af458f55977744c062dea6f6375e73ea9">sal::locked_ptr&lt; T, Mutex &gt;</a>
+</li>
+<li>operator-&gt;()
+: <a class="el" href="classsal_1_1locked__ptr.html#ae9274f4ed1e51653c5061ef1eae66e69">sal::locked_ptr&lt; T, Mutex &gt;</a>
+</li>
 <li>operator=()
 : <a class="el" href="classsal_1_1array__string__t.html#aa91199ed37f986dff55ee90865176be4">sal::array_string_t&lt; Size &gt;</a>
 , <a class="el" href="classsal_1_1file__t.html#a069f4671d0a3ee8814b10998ddbc4a94">sal::file_t</a>
 , <a class="el" href="classsal_1_1intrusive__queue__t.html#ab61295bd1e6c94df551b0ece9e64bddc">sal::intrusive_queue_t&lt; T, SyncPolicy, Hook &gt;</a>
+, <a class="el" href="classsal_1_1locked__ptr.html#ace091a7af7e8fe81315c57df8c96fa9a">sal::locked_ptr&lt; T, Mutex &gt;</a>
 </li>
 <li>operator[]()
 : <a class="el" href="classsal_1_1array__string__t.html#acff802c2499553db08de9e1f0fe686da">sal::array_string_t&lt; Size &gt;</a>
@@ -346,12 +362,16 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 <li>size()
 : <a class="el" href="classsal_1_1array__string__t.html#af68478ff07a7d386715882776364a8a9">sal::array_string_t&lt; Size &gt;</a>
 </li>
+<li>swap()
+: <a class="el" href="classsal_1_1locked__ptr.html#af9be5b66f13e4d1d51cffb31e277da03">sal::locked_ptr&lt; T, Mutex &gt;</a>
+</li>
 </ul>
 
 
 <h3><a id="index_t"></a>- t -</h3><ul>
 <li>try_lock()
-: <a class="el" href="classsal_1_1spinlock__t.html#a77e6c62136204f2e856f513dabd72f98">sal::spinlock_t</a>
+: <a class="el" href="classsal_1_1lockable__t.html#a201ec3f6981bb5a29af4fb1c0079c3ee">sal::lockable_t&lt; T, Mutex &gt;</a>
+, <a class="el" href="classsal_1_1spinlock__t.html#a77e6c62136204f2e856f513dabd72f98">sal::spinlock_t</a>
 </li>
 <li>try_pop()
 : <a class="el" href="classsal_1_1intrusive__queue__t.html#adbef7021b05f1580b79df1275e7fe4ab">sal::intrusive_queue_t&lt; T, SyncPolicy, Hook &gt;</a>
@@ -367,7 +387,11 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 : <a class="el" href="structsal_1_1program__options_1_1option__t.html#ab5cbdb1335321af931e5ea7376f383cc">sal::program_options::option_t</a>
 </li>
 <li>unlock()
-: <a class="el" href="classsal_1_1spinlock__t.html#a95149c09cca745af8179fab0728d4687">sal::spinlock_t</a>
+: <a class="el" href="classsal_1_1locked__ptr.html#afb2d09e731e5a627bb4cbeed2261b094">sal::locked_ptr&lt; T, Mutex &gt;</a>
+, <a class="el" href="classsal_1_1spinlock__t.html#a95149c09cca745af8179fab0728d4687">sal::spinlock_t</a>
+</li>
+<li>unlocked()
+: <a class="el" href="classsal_1_1lockable__t.html#afab7fc38783c8686072f6e5275532b79">sal::lockable_t&lt; T, Mutex &gt;</a>
 </li>
 </ul>
 
@@ -375,6 +399,13 @@ $(document).ready(function(){initNavTree('functions_func.html','');});
 <h3><a id="index_w"></a>- w -</h3><ul>
 <li>write()
 : <a class="el" href="classsal_1_1file__t.html#a93cdc694da22e1dc1bb9c5e07abdcec1">sal::file_t</a>
+</li>
+</ul>
+
+
+<h3><a id="index_0x7e"></a>- ~ -</h3><ul>
+<li>~locked_ptr()
+: <a class="el" href="classsal_1_1locked__ptr.html#af9af174f5a7263e951dca08f53b4a461">sal::locked_ptr&lt; T, Mutex &gt;</a>
 </li>
 </ul>
 </div><!-- contents -->

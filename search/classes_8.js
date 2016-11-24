@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['no_5foption_5fname_5ferror',['no_option_name_error',['../structsal_1_1program__options_1_1no__option__name__error.html',1,'sal::program_options']]],
-  ['no_5fsync_5ft',['no_sync_t',['../structsal_1_1no__sync__t.html',1,'sal']]]
+  ['mpsc_5fsync_5ft',['mpsc_sync_t',['../structsal_1_1mpsc__sync__t.html',1,'sal']]]
 ];

@@ -31,6 +31,8 @@ var hierarchy =
     [ "sal::file_t", "classsal_1_1file__t.html", null ],
     [ "sal::spsc_sync_t::intrusive_queue_hook_t", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html", null ],
     [ "sal::intrusive_queue_t< T, SyncPolicy, Hook >", "classsal_1_1intrusive__queue__t.html", null ],
+    [ "sal::lockable_t< T, Mutex >", "classsal_1_1lockable__t.html", null ],
+    [ "sal::locked_ptr< T, Mutex >", "classsal_1_1locked__ptr.html", null ],
     [ "sal::mpsc_sync_t", "structsal_1_1mpsc__sync__t.html", null ],
     [ "sal::no_sync_t", "structsal_1_1no__sync__t.html", null ],
     [ "sal::program_options::option_set_t", "classsal_1_1program__options_1_1option__set__t.html", null ],

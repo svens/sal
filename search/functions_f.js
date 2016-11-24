@@ -10,5 +10,6 @@ var searchData=
   ['set_5ffile_5futc_5ftime',['set_file_utc_time',['../file__sink_8hpp.html#a037d0dfe4dd60f2acd788455a79c4573',1,'sal::logger']]],
   ['sink_5fevent_5finit',['sink_event_init',['../classsal_1_1logger_1_1sink__t.html#ac3e45d91a2ab44d82c2e95a0684a13e3',1,'sal::logger::sink_t']]],
   ['sink_5fevent_5fwrite',['sink_event_write',['../classsal_1_1logger_1_1sink__t.html#a5d18c4c0fcbb655321b480f01701eeb3',1,'sal::logger::sink_t']]],
-  ['size',['size',['../classsal_1_1array__string__t.html#af68478ff07a7d386715882776364a8a9',1,'sal::array_string_t']]]
+  ['size',['size',['../classsal_1_1array__string__t.html#af68478ff07a7d386715882776364a8a9',1,'sal::array_string_t']]],
+  ['swap',['swap',['../classsal_1_1locked__ptr.html#af9be5b66f13e4d1d51cffb31e277da03',1,'sal::locked_ptr::swap()'],['../lockable_8hpp.html#aaecc2ffb1c0e553c0ac549061d80e8f9',1,'sal::swap()']]]
 ];

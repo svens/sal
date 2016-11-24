@@ -8,5 +8,6 @@ var searchData=
   ['max_5fsize',['max_size',['../classsal_1_1array__string__t.html#a38f96249102a2f4789240948403cbed3',1,'sal::array_string_t']]],
   ['merge',['merge',['../classsal_1_1program__options_1_1option__set__t.html#a50deaf23e3540ce7226668f22aff67db',1,'sal::program_options::option_set_t']]],
   ['message',['message',['../structsal_1_1logger_1_1event__t.html#abf4323e5f86d5e24f6dec8640a37568c',1,'sal::logger::event_t']]],
-  ['mpsc_5fsync_5ft',['mpsc_sync_t',['../structsal_1_1mpsc__sync__t.html',1,'sal']]]
+  ['mpsc_5fsync_5ft',['mpsc_sync_t',['../structsal_1_1mpsc__sync__t.html',1,'sal']]],
+  ['mutex_5ft',['mutex_t',['../classsal_1_1locked__ptr.html#aa8bdd103118232a2d0fb0611db454641',1,'sal::locked_ptr::mutex_t()'],['../classsal_1_1lockable__t.html#a659fc18de1d1d3ffaa11e2cf5f360bb7',1,'sal::lockable_t::mutex_t()']]]
 ];

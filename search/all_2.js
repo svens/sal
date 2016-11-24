@@ -13,5 +13,6 @@ var searchData=
   ['config_5freader_2ehpp',['config_reader.hpp',['../config__reader_8hpp.html',1,'']]],
   ['config_5freader_5ft',['config_reader_t',['../classsal_1_1program__options_1_1config__reader__t.html#a0e952b164a7e09ff2d4f426927b1a713',1,'sal::program_options::config_reader_t']]],
   ['config_5freader_5ft',['config_reader_t',['../classsal_1_1program__options_1_1config__reader__t.html',1,'sal::program_options']]],
+  ['const_5fptr',['const_ptr',['../classsal_1_1lockable__t.html#aeb068d737b856ed5c91f8062f75280f7',1,'sal::lockable_t']]],
   ['create',['create',['../classsal_1_1file__t.html#a56c67f59794862c8b0e0a1042711d770',1,'sal::file_t::create(const std::string &amp;name, open_mode mode, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#ad1591e107ab799d68ba8d26bc3651bbb',1,'sal::file_t::create(const std::string &amp;name, open_mode mode)']]]
 ];

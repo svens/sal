@@ -33,6 +33,6 @@ var searchData=
   ['spinlock_5ft',['spinlock_t',['../classsal_1_1spinlock__t.html',1,'sal']]],
   ['spsc_5fsync_5ft',['spsc_sync_t',['../structsal_1_1spsc__sync__t.html',1,'sal']]],
   ['string_5flist_5ft',['string_list_t',['../classsal_1_1program__options_1_1argument__map__t.html#a28a39c2a7fc997dda6571a51aab51817',1,'sal::program_options::argument_map_t']]],
-  ['swap',['swap',['../classsal_1_1file__t.html#a32e3705de9ce5816e9de04b5fd5d28bb',1,'sal::file_t']]],
+  ['swap',['swap',['../classsal_1_1file__t.html#a32e3705de9ce5816e9de04b5fd5d28bb',1,'sal::file_t::swap()'],['../classsal_1_1locked__ptr.html#af9be5b66f13e4d1d51cffb31e277da03',1,'sal::locked_ptr::swap()'],['../lockable_8hpp.html#aaecc2ffb1c0e553c0ac549061d80e8f9',1,'sal::swap()']]],
   ['this_5fthread',['this_thread',['../namespacesal_1_1this__thread.html',1,'sal']]]
 ];
