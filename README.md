@@ -1,9 +1,9 @@
 # Server application library
 
-[![Travis](https://img.shields.io/travis/svens/sal/master.svg?style=flat-square)](https://travis-ci.org/svens/sal)
-[![AppVeyor](https://img.shields.io/appveyor/ci/svens/sal.svg?style=flat-square)](https://ci.appveyor.com/project/svens/sal/branch/master)
-[![Coveralls](https://img.shields.io/coveralls/svens/sal.svg?style=flat-square)](https://coveralls.io/github/svens/sal?branch=master)
-[![Coverity](https://img.shields.io/coverity/scan/10116.svg?style=flat-square)](https://scan.coverity.com/projects/svens-sal)
+[![Build Status](https://travis-ci.org/svens/sal.svg?branch=master)](https://travis-ci.org/svens/sal)
+[![Build status](https://ci.appveyor.com/api/projects/status/2kign69ypgoy6pam/branch/master?svg=true)](https://ci.appveyor.com/project/svens/sal/branch/master)
+[![Coverage](https://coveralls.io/repos/github/svens/sal/badge.svg?branch=master)](https://coveralls.io/github/svens/sal?branch=master)
+[![Coverity](https://scan.coverity.com/projects/10116/badge.svg)](https://scan.coverity.com/projects/svens-sal)
 
 SAL is portable simple application library providing functionality for
 threaded networking applications (configuring, logging, etc). Goal is to cover
