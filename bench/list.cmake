@@ -9,5 +9,6 @@ list(APPEND sal_bench_modules
   bench/array_string.cpp
   bench/intrusive_queue.cpp
   bench/logger.cpp
+  bench/queue.cpp
   bench/spinlock.cpp
 )
