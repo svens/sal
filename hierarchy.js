@@ -37,6 +37,7 @@ var hierarchy =
     [ "sal::no_sync_t", "structsal_1_1no__sync__t.html", null ],
     [ "sal::program_options::option_set_t", "classsal_1_1program__options_1_1option__set__t.html", null ],
     [ "sal::program_options::option_t", "structsal_1_1program__options_1_1option__t.html", null ],
+    [ "sal::queue_t< T, SyncPolicy >", "classsal_1_1queue__t.html", null ],
     [ "sal::logger::sink_t", "classsal_1_1logger_1_1sink__t.html", null ],
     [ "sal::spinlock_t", "classsal_1_1spinlock__t.html", null ],
     [ "sal::spsc_sync_t", "structsal_1_1spsc__sync__t.html", null ]

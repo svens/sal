@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_7elocked_5fptr',['~locked_ptr',['../classsal_1_1locked__ptr.html#af9af174f5a7263e951dca08f53b4a461',1,'sal::locked_ptr']]]
+  ['yield_5fspin',['yield_spin',['../spinlock_8hpp.html#a77cd9b13830c38254ba915032e8b019c',1,'sal']]]
 ];

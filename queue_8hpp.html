@@ -96,24 +96,23 @@ $(document).ready(function(){initNavTree('queue_8hpp.html','');});
 </div><!--header-->
 <div class="contents">
 
-<p>Intrusive queue (FIFO) with possible concurrent usage.  
+<p>Queue (FIFO) with possible concurrent usage.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
-<code>#include &lt;utility&gt;</code><br />
-<code>#include &lt;sal/__bits/queue_intrusive.hpp&gt;</code><br />
-<code>#include &lt;sal/__bits/queue_mpsc.hpp&gt;</code><br />
-<code>#include &lt;sal/__bits/queue_spsc.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="sync__policy_8hpp_source.html">sal/sync_policy.hpp</a>&gt;</code><br />
+<code>#include &lt;queue&gt;</code><br />
+<code>#include &lt;sal/__bits/queue.hpp&gt;</code><br />
 </div>
 <p><a href="queue_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1queue__t.html">sal::queue_t&lt; T, QueueHook, Hook &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Intrusive queue (FIFO) with possible concurrent usage.  <a href="classsal_1_1queue__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1queue__t.html">sal::queue_t&lt; T, SyncPolicy &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue (FIFO) with possible concurrent usage.  <a href="classsal_1_1queue__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Intrusive queue (FIFO) with possible concurrent usage. </p>
+<div class="textblock"><p>Queue (FIFO) with possible concurrent usage. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

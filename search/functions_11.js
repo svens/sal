@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['unique',['unique',['../classsal_1_1file__t.html#a9046c1d53f9d711bd0f2170db8b2e6ae',1,'sal::file_t::unique(std::string &amp;name, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#ad1bd7a0e49c69cdae1b01fde570ad341',1,'sal::file_t::unique(std::string &amp;name)']]],
-  ['unit',['unit',['../structsal_1_1program__options_1_1option__t.html#ab5cbdb1335321af931e5ea7376f383cc',1,'sal::program_options::option_t']]],
-  ['unlock',['unlock',['../classsal_1_1locked__ptr.html#afb2d09e731e5a627bb4cbeed2261b094',1,'sal::locked_ptr::unlock()'],['../classsal_1_1spinlock__t.html#a95149c09cca745af8179fab0728d4687',1,'sal::spinlock_t::unlock()']]],
-  ['unlocked',['unlocked',['../classsal_1_1lockable__t.html#afab7fc38783c8686072f6e5275532b79',1,'sal::lockable_t::unlocked()'],['../classsal_1_1lockable__t.html#a4c79aafc77c44adbb5f4cda840d96d69',1,'sal::lockable_t::unlocked() const']]],
-  ['utc_5ftime',['utc_time',['../time_8hpp.html#a7daf37f0ee0b799edb7b8fc5226ae2f5',1,'sal::utc_time(const std::time_t &amp;time) noexcept'],['../time_8hpp.html#a318d1b20caaf29c8aded8757d225866d',1,'sal::utc_time(const time_t &amp;time) noexcept'],['../time_8hpp.html#abcd94c5945ee31701f6400f0d59b9afb',1,'sal::utc_time() noexcept']]]
+  ['throw_5ferror',['throw_error',['../error_8hpp.html#a9e060548f95c2ad4c7e4ad203caccb59',1,'sal']]],
+  ['throw_5flogic_5ferror',['throw_logic_error',['../error_8hpp.html#ad49dac2e2b342bf180df2674f307b7cd',1,'sal']]],
+  ['throw_5fruntime_5ferror',['throw_runtime_error',['../error_8hpp.html#ad50428ea25505b09cb66ea7ba42f36f4',1,'sal']]],
+  ['throw_5fsystem_5ferror',['throw_system_error',['../error_8hpp.html#a9265f4737048a662d925d28782276192',1,'sal']]],
+  ['to_5fstring',['to_string',['../array__string_8hpp.html#a7569955a4cbf6600ef48bd60e43ad8fd',1,'sal']]],
+  ['try_5flock',['try_lock',['../classsal_1_1lockable__t.html#a201ec3f6981bb5a29af4fb1c0079c3ee',1,'sal::lockable_t::try_lock()'],['../classsal_1_1lockable__t.html#a4b56abb8996aad58d8e4f7a87791cfc9',1,'sal::lockable_t::try_lock() const'],['../classsal_1_1spinlock__t.html#a77e6c62136204f2e856f513dabd72f98',1,'sal::spinlock_t::try_lock()']]],
+  ['try_5fpop',['try_pop',['../classsal_1_1intrusive__queue__t.html#adbef7021b05f1580b79df1275e7fe4ab',1,'sal::intrusive_queue_t::try_pop()'],['../classsal_1_1queue__t.html#a8b7d6d6680e15cd795a161e08bbd338d',1,'sal::queue_t::try_pop()']]]
 ];

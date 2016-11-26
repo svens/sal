@@ -11,16 +11,21 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
     ] ],
     [ "fmt.hpp", "fmt_8hpp.html", "fmt_8hpp" ],
     [ "intrusive_queue.hpp", "intrusive__queue_8hpp.html", [
+      [ "intrusive_queue_t", "classsal_1_1intrusive__queue__t.html", "classsal_1_1intrusive__queue__t" ]
+    ] ],
+    [ "lockable.hpp", "lockable_8hpp.html", "lockable_8hpp" ],
+    [ "queue.hpp", "queue_8hpp.html", [
+      [ "queue_t", "classsal_1_1queue__t.html", "classsal_1_1queue__t" ]
+    ] ],
+    [ "spinlock.hpp", "spinlock_8hpp.html", "spinlock_8hpp" ],
+    [ "sync_policy.hpp", "sync__policy_8hpp.html", [
       [ "no_sync_t", "structsal_1_1no__sync__t.html", "structsal_1_1no__sync__t" ],
       [ "spsc_sync_t", "structsal_1_1spsc__sync__t.html", [
         [ "intrusive_queue_hook_t", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t" ]
       ] ],
       [ "intrusive_queue_hook_t", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t" ],
-      [ "mpsc_sync_t", "structsal_1_1mpsc__sync__t.html", "structsal_1_1mpsc__sync__t" ],
-      [ "intrusive_queue_t", "classsal_1_1intrusive__queue__t.html", "classsal_1_1intrusive__queue__t" ]
+      [ "mpsc_sync_t", "structsal_1_1mpsc__sync__t.html", "structsal_1_1mpsc__sync__t" ]
     ] ],
-    [ "lockable.hpp", "lockable_8hpp.html", "lockable_8hpp" ],
-    [ "spinlock.hpp", "spinlock_8hpp.html", "spinlock_8hpp" ],
     [ "thread.hpp", "thread_8hpp.html", "thread_8hpp" ],
     [ "time.hpp", "time_8hpp.html", "time_8hpp" ]
 ];

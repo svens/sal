@@ -55,7 +55,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 ".html",
-"md___users_sven_src_sal_sal_program_options__options.html#sal_program_options_usage"
+"md___users_sven_src_sal_sal_program_options__options.html#sal_program_options_example"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

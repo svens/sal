@@ -6,5 +6,5 @@ var searchData=
   ['print',['print',['../classsal_1_1program__options_1_1option__set__t.html#a5b7f3783e5b1ee2b333ab4acc8d0c2b5',1,'sal::program_options::option_set_t::print()'],['../array__string_8hpp.html#ae2fab24665666eac34ba37c0eeb72bb7',1,'sal::print()']]],
   ['program_5foptions',['Program_options',['../group__program__options.html',1,'']]],
   ['ptr',['ptr',['../classsal_1_1lockable__t.html#a6d40b153b3f77224cf0a496191cc40ae',1,'sal::lockable_t']]],
-  ['push',['push',['../classsal_1_1intrusive__queue__t.html#ac7ddb75628944019fae56f6293c598d0',1,'sal::intrusive_queue_t']]]
+  ['push',['push',['../classsal_1_1intrusive__queue__t.html#ac7ddb75628944019fae56f6293c598d0',1,'sal::intrusive_queue_t::push()'],['../classsal_1_1queue__t.html#ab01456fea8afdabd681e61c16a2f2ca8',1,'sal::queue_t::push()']]]
 ];

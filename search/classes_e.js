@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['worker_5ft',['worker_t',['../classsal_1_1logger_1_1worker__t.html',1,'sal::logger']]]
+  ['unknown_5foption_5ferror',['unknown_option_error',['../structsal_1_1program__options_1_1unknown__option__error.html',1,'sal::program_options']]]
 ];

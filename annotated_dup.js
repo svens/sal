@@ -31,6 +31,7 @@ var annotated_dup =
       [ "locked_ptr", "classsal_1_1locked__ptr.html", "classsal_1_1locked__ptr" ],
       [ "mpsc_sync_t", "structsal_1_1mpsc__sync__t.html", "structsal_1_1mpsc__sync__t" ],
       [ "no_sync_t", "structsal_1_1no__sync__t.html", "structsal_1_1no__sync__t" ],
+      [ "queue_t", "classsal_1_1queue__t.html", "classsal_1_1queue__t" ],
       [ "spinlock_t", "classsal_1_1spinlock__t.html", "classsal_1_1spinlock__t" ],
       [ "spsc_sync_t", "structsal_1_1spsc__sync__t.html", [
         [ "intrusive_queue_hook_t", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t" ]
