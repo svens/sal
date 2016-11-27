@@ -15,8 +15,10 @@
 #include <string>
 
 
-namespace sal { namespace program_options {
 __sal_begin
+
+
+namespace program_options {
 
 
 class option_set_t;
@@ -75,7 +77,9 @@ private:
 };
 
 
+} // namespace program_options
+
+
 __sal_end
-}} // namespace sal::program_options
 
 /// \}

@@ -10,7 +10,6 @@
 #include <sal/__bits/fmt.hpp>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -152,4 +151,3 @@ inline auto bin (T value) noexcept
 
 
 __sal_end
-} // namespace sal

@@ -11,8 +11,10 @@
 #include <sal/program_options/option_set.hpp>
 
 
-namespace sal { namespace program_options {
 __sal_begin
+
+
+namespace program_options {
 
 
 /**
@@ -79,7 +81,9 @@ private:
 };
 
 
+} // namespace program_options
+
+
 __sal_end
-}} // namespace sal::program_options
 
 /// \}

@@ -6,9 +6,10 @@
 #include <istream>
 
 
-namespace sal { namespace program_options {
 __sal_begin
 
+
+namespace program_options {
 
 namespace {
 
@@ -663,5 +664,7 @@ bool config_reader_t::impl_t::skip_spaces_and_comments ()
 }
 
 
+} // namespace program_options
+
+
 __sal_end
-}} // namespace sal::program_options

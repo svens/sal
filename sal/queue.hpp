@@ -10,7 +10,6 @@
 #include <queue>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -89,7 +88,6 @@ private:
 
 
 __sal_end
-} // namespace sal
 
 
 // specializations for synchronised queues

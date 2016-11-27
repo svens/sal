@@ -9,7 +9,6 @@
 #include <sal/config.hpp>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -58,4 +57,3 @@ inline thread_id get_id () noexcept
 
 
 __sal_end
-} // namespace sal

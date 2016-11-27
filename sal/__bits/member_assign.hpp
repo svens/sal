@@ -4,7 +4,6 @@
 #include <utility>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -51,4 +50,3 @@ inline void assign_members (Class *)
 
 
 __sal_end
-} // namespace sal

@@ -8,8 +8,10 @@
 #include <thread>
 
 
-namespace sal { namespace logger {
 __sal_begin
+
+
+namespace logger {
 
 
 struct async_worker_t::impl_t
@@ -178,5 +180,7 @@ event_ptr async_worker_t::make_event (const channel_type &channel) noexcept
 }
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger

@@ -15,8 +15,10 @@
 #include <iosfwd>
 
 
-namespace sal { namespace logger {
 __sal_begin
+
+
+namespace logger {
 
 
 /**
@@ -98,7 +100,9 @@ protected:
 sink_ptr ostream_sink (std::ostream &os);
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger
 
 /// \}

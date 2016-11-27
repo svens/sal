@@ -14,8 +14,10 @@
 #include <sal/logger/worker.hpp>
 
 
-namespace sal { namespace logger {
 __sal_begin
+
+
+namespace logger {
 
 
 /**
@@ -82,7 +84,9 @@ __sal_begin
 #define sal_print_if(expr) sal_log_if(sal::logger::default_channel(), (expr))
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger
 
 /// \}

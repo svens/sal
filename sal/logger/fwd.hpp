@@ -11,8 +11,10 @@
 #include <memory>
 
 
-namespace sal { namespace logger {
 __sal_begin
+
+
+namespace logger {
 
 
 // sal/logger/event.hpp
@@ -42,7 +44,9 @@ class worker_t;
 class async_worker_t;
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger
 
 /// \}

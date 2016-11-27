@@ -11,7 +11,6 @@
 #include <ostream>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -349,4 +348,3 @@ std::string to_string (const array_string_t<Size> &v)
 
 
 __sal_end
-} // namespace sal

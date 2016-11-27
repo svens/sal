@@ -19,8 +19,10 @@
 #include <tuple>
 
 
-namespace sal { namespace program_options {
 __sal_begin
+
+
+namespace program_options {
 
 
 /**
@@ -445,7 +447,9 @@ inline std::ostream &operator<< (std::ostream &os,
 }
 
 
+} // namespace program_options
+
+
 __sal_end
-}} // namespace sal::program_options
 
 /// \}

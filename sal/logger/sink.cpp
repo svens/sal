@@ -7,11 +7,10 @@
 #include <mutex>
 
 
-namespace sal { namespace logger {
 __sal_begin
 
 
-namespace {
+namespace logger { namespace {
 
 
 inline void split_time_of_day (time_t time,
@@ -167,5 +166,7 @@ sink_ptr ostream_sink (std::ostream &os)
 }
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger

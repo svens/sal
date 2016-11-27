@@ -13,8 +13,10 @@
 #include <sal/logger/__bits/file_sink.hpp>
 
 
-namespace sal { namespace logger {
 __sal_begin
+
+
+namespace logger {
 
 
 /**
@@ -103,7 +105,9 @@ sink_ptr file (const std::string &label, Options &&...options)
 }
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger
 
 /// \}

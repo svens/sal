@@ -30,8 +30,10 @@
 #include <sal/logger/__bits/channel.hpp>
 
 
-namespace sal { namespace logger {
 __sal_begin
+
+
+namespace logger {
 
 
 /**
@@ -108,7 +110,9 @@ private:
 };
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger
 
 /// \}

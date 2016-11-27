@@ -7,7 +7,6 @@
 #include <deque>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -132,4 +131,3 @@ class queue_t<T, mpsc_sync_t>;
 
 
 __sal_end
-} // namespace sal

@@ -12,7 +12,6 @@
 #include <type_traits>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -61,4 +60,3 @@ inline void throw_system_error [[noreturn]] (const std::error_code &error,
 
 
 __sal_end
-} // namespace sal

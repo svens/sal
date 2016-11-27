@@ -11,8 +11,10 @@
 #endif
 
 
-namespace sal { namespace program_options {
 __sal_begin
+
+
+namespace program_options {
 
 
 namespace {
@@ -426,5 +428,7 @@ argument_map_t::string_list_t option_set_t::positional_arguments (
 }
 
 
+} // namespace program_options
+
+
 __sal_end
-}} // namespace sal::program_options

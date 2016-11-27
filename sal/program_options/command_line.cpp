@@ -2,8 +2,10 @@
 #include <sal/assert.hpp>
 
 
-namespace sal { namespace program_options {
 __sal_begin
+
+
+namespace program_options {
 
 
 bool command_line_t::operator() (const option_set_t &option_set,
@@ -153,5 +155,7 @@ bool command_line_t::operator() (const option_set_t &option_set,
 }
 
 
+} // namespace program_options
+
+
 __sal_end
-}} // namespace sal::program_options

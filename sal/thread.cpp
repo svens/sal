@@ -12,7 +12,6 @@
 #endif
 
 
-namespace sal {
 __sal_begin
 
 
@@ -35,4 +34,3 @@ thread_id make_id () noexcept
 
 
 __sal_end
-} // namespace sal

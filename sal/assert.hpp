@@ -9,7 +9,6 @@
 #include <sal/error.hpp>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -98,4 +97,3 @@ inline void *check_ptr (std::nullptr_t, const char (&msg)[Size])
 
 
 __sal_end
-} // namespace sal

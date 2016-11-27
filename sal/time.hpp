@@ -10,7 +10,6 @@
 #include <ctime>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -130,4 +129,3 @@ inline std::chrono::seconds local_offset (const time_t &time) noexcept
 
 
 __sal_end
-} // namespace sal

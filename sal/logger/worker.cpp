@@ -4,8 +4,10 @@
 #include <sal/assert.hpp>
 
 
-namespace sal { namespace logger {
 __sal_begin
+
+
+namespace logger {
 
 
 std::unique_ptr<worker_t> worker_t::default_{};
@@ -99,5 +101,7 @@ event_ptr worker_t::make_event (const channel_type &channel)
 }
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger

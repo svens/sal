@@ -14,11 +14,8 @@
 #include <cstdint>
 
 
-namespace sal {
-
-
-#define __sal_begin inline namespace __0 {
-#define __sal_end   }
+#define __sal_begin namespace sal { inline namespace v0 {
+#define __sal_end   }} // namespace sal::v0
 
 
 __sal_begin
@@ -99,4 +96,3 @@ constexpr uint64_t number = make(@version_major@, @version_minor@, @version_patc
 
 
 __sal_end
-} // namespace sal

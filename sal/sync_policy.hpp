@@ -8,7 +8,6 @@
 #include <sal/config.hpp>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -67,4 +66,3 @@ constexpr size_t hardware_destructive_interference_size ()
 
 
 __sal_end
-} // namespace sal

@@ -16,8 +16,10 @@
 #include <unordered_map>
 
 
-namespace sal { namespace logger {
 __sal_begin
+
+
+namespace logger {
 
 
 /**
@@ -261,7 +263,9 @@ inline channel_t<worker_t> &default_channel ()
 }
 
 
+} // namespace logger
+
+
 __sal_end
-}} // namespace sal::logger
 
 /// \}

@@ -9,7 +9,6 @@
 #include <mutex>
 
 
-namespace sal {
 __sal_begin
 
 
@@ -326,4 +325,3 @@ private:
 
 
 __sal_end
-} // namespace sal

@@ -13,7 +13,6 @@
 #endif
 
 
-namespace sal {
 __sal_begin
 
 
@@ -405,4 +404,3 @@ inline char *fmt (const T &value, char *first, char *last)
 
 
 __sal_end
-} // namespace sal

@@ -11,7 +11,6 @@
 #endif
 
 
-namespace sal {
 __sal_begin
 
 
@@ -88,4 +87,3 @@ namespace __bits {
 
 
 __sal_end
-} // namespace sal

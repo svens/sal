@@ -11,11 +11,10 @@
 #include <string>
 
 
-namespace sal { namespace logger {
 __sal_begin
 
 
-namespace __bits {
+namespace logger { namespace __bits {
 
 
 template <int Tag, typename T>
@@ -156,8 +155,7 @@ private:
 };
 
 
-} // namespace __bits
+}} // namespace logger::__bits
 
 
 __sal_end
-}} // namespace sal::logger

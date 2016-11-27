@@ -9,7 +9,6 @@
 #endif
 
 
-namespace sal {
 __sal_begin
 
 
@@ -403,4 +402,3 @@ int64_t file_t::seek (int64_t offset, seek_dir whence, std::error_code &error)
 
 
 __sal_end
-} // namespace sal

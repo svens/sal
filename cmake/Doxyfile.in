@@ -26,8 +26,8 @@ ENABLE_PREPROCESSING = YES
 MACRO_EXPANSION = YES
 EXPAND_ONLY_PREDEF = YES
 PREDEFINED = \
-  __sal_begin= \
-  __sal_end=
+  __sal_begin="namespace sal {" \
+  __sal_end="}"
 
 #
 # Output

@@ -10,8 +10,10 @@
 #include <sal/error.hpp>
 
 
-namespace sal { namespace program_options {
 __sal_begin
+
+
+namespace program_options {
 
 
 /**
@@ -95,7 +97,9 @@ struct parser_error
 };
 
 
+} // namespace program_options
+
+
 __sal_end
-}} // namespace sal::program_options
 
 /// \}
