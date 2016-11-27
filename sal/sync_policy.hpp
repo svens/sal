@@ -55,5 +55,16 @@ struct mpsc_sync_t
 };
 
 
+namespace __bits {
+
+constexpr size_t hardware_destructive_interference_size ()
+{
+  /// \todo std::hardware_destructive_interference_size
+  return 64;
+}
+
+} // namespace __bits
+
+
 __sal_end
 } // namespace sal

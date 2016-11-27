@@ -13,12 +13,6 @@ __sal_begin
 
 namespace __bits {
 
-constexpr size_t cache_line ()
-{
-  /// \todo std::hardware_destructive_interference_size
-  return 64;
-}
-
 template <typename T>
 inline T load_consume (const T *addr) noexcept
 {
@@ -103,7 +97,7 @@ private:
 
   // consumer
   node_t *head_ = &cache_.back();
-  char pad0_[__bits::cache_line()];
+  char pad0_[__bits::hardware_destructive_interference_size()];
 
   // producer
   node_t *tail_ = head_, *cache_tail_ = head_, *head_copy_ = head_;

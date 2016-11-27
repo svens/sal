@@ -10,17 +10,6 @@ namespace sal {
 __sal_begin
 
 
-namespace __bits {
-
-constexpr size_t cache_line ()
-{
-  /// \todo std::hardware_destructive_interference_size
-  return 64;
-}
-
-} // namespace __bits
-
-
 template <typename T, spsc_sync_t::intrusive_queue_hook_t T::*Hook>
 class intrusive_queue_t<T, spsc_sync_t, Hook>
 {
@@ -87,7 +76,7 @@ private:
   volatile T *tail_{nullptr};
   volatile unsigned seq_{0};
 
-  char pad0_[__bits::cache_line()
+  char pad0_[__bits::hardware_destructive_interference_size()
     - sizeof(decltype(tail_))
     - sizeof(decltype(seq_))
   ];
@@ -223,22 +212,23 @@ private:
 
   // using pad0_ also as sentry_
   T * const sentry_ = reinterpret_cast<T *>(&pad0_);
-  char pad0_[sizeof(T) < __bits::cache_line() - sizeof(decltype(sentry_))
-    ? __bits::cache_line() - sizeof(decltype(sentry_))
+  char pad0_[
+    sizeof(T) < __bits::hardware_destructive_interference_size() - sizeof(decltype(sentry_))
+    ? __bits::hardware_destructive_interference_size() - sizeof(decltype(sentry_))
     : sizeof(T)
   ];
 
   std::atomic<T *> tail_{sentry_};
-  char pad1_[__bits::cache_line() - sizeof(decltype(tail_))];
+  char pad1_[
+    __bits::hardware_destructive_interference_size() - sizeof(decltype(tail_))
+  ];
 
   T *head_ = sentry_;
 
 
   static T *&next_of (T *node) noexcept
   {
-    return reinterpret_cast<T *&>(
-      const_cast<void *&>(node->*Hook)
-    );
+    return reinterpret_cast<T *&>(const_cast<void *&>(node->*Hook));
   }
 };
 
