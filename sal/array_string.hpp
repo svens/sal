@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/__bits/fmt.hpp>
+#include <sal/fmt.hpp>
 #include <ostream>
 
 
@@ -126,14 +126,14 @@ public:
    *
    * \see restore()
    */
-  const char *end () const noexcept
+  constexpr const char *end () const noexcept
   {
     return end_;
   }
 
 
   /// \copydoc end()
-  const char *cend () const noexcept
+  constexpr const char *cend () const noexcept
   {
     return end_;
   }
@@ -184,7 +184,7 @@ public:
    * Return distance between [begin(), end()).
    * \see end() about validity
    */
-  size_t size () const noexcept
+  constexpr size_t size () const noexcept
   {
     return end_ - begin_;
   }
@@ -201,9 +201,16 @@ public:
 
 
   /// Return true if begin() == end() i.e. there is no content in array.
-  bool empty () const noexcept
+  constexpr bool empty () const noexcept
   {
     return end_ == begin_;
+  }
+
+
+  /// Rturn true if array has no more room to write
+  constexpr bool full () const noexcept
+  {
+    return end_ == begin_ + Size;
   }
 
 
@@ -212,9 +219,28 @@ public:
    * end() in [begin(), begin() + max_size()]
    * \see end() about validity
    */
-  bool good () const noexcept
+  constexpr bool good () const noexcept
   {
     return end_ <= begin_ + Size;
+  }
+
+
+  /**
+   * Alias for good()
+   */
+  constexpr explicit operator bool () const noexcept
+  {
+    return good();
+  }
+
+
+  /**
+   * Return true if pointer to end of currently added content is not valid
+   * i.e. end() > begin() + max_size()
+   */
+  constexpr bool bad () const noexcept
+  {
+    return end_ > begin_ + Size;
   }
 
 

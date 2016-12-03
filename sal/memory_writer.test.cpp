@@ -16,8 +16,8 @@ TYPED_TEST_P(member, ctor_array)
   sal::memory_writer_t a{d};
 
   EXPECT_TRUE(bool(a));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_FALSE(a.bad());
 
   EXPECT_EQ(sizeof(d), a.size());
 
@@ -33,8 +33,8 @@ TYPED_TEST_P(member, ctor_range)
   sal::memory_writer_t a{d, d + 32};
 
   EXPECT_TRUE(bool(a));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_FALSE(a.bad());
 
   EXPECT_EQ(sizeof(d), a.size());
 
@@ -49,8 +49,8 @@ TYPED_TEST_P(member, ctor_empty_range)
   TypeParam d[32];
   sal::memory_writer_t a{d, d};
   EXPECT_TRUE(bool(a));
-  EXPECT_TRUE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_TRUE(a.full());
+  EXPECT_FALSE(a.bad());
 }
 
 
@@ -59,8 +59,8 @@ TYPED_TEST_P(member, ctor_invalid_range)
   TypeParam d[32];
   sal::memory_writer_t a{d + 32, d};
   EXPECT_FALSE(bool(a));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_TRUE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_TRUE(a.bad());
 }
 
 
@@ -69,13 +69,13 @@ TYPED_TEST_P(member, ctor_move)
   TypeParam d[32];
   sal::memory_writer_t a{d};
   EXPECT_TRUE(bool(a));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_FALSE(a.bad());
 
   auto b{std::move(a)};
   EXPECT_TRUE(bool(b));
-  EXPECT_FALSE(b.is_full());
-  EXPECT_FALSE(b.is_bad());
+  EXPECT_FALSE(b.full());
+  EXPECT_FALSE(b.bad());
   EXPECT_EQ(sizeof(d), b.size());
 
   auto expected = reinterpret_cast<char *>(&d[0]);
@@ -83,8 +83,8 @@ TYPED_TEST_P(member, ctor_move)
   EXPECT_EQ(expected + sizeof(d), b.end());
 
   EXPECT_FALSE(bool(a));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_TRUE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_TRUE(a.bad());
 }
 
 
@@ -95,15 +95,15 @@ TYPED_TEST_P(member, write)
 
   TypeParam expected = d + 1;
   EXPECT_TRUE(bool(a.write(expected)));
-  EXPECT_TRUE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_TRUE(a.full());
+  EXPECT_FALSE(a.bad());
   EXPECT_EQ(expected, d);
 
   d = 0;
   expected = d + 1;
   EXPECT_FALSE(bool(a.write(expected)));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_TRUE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_TRUE(a.bad());
   EXPECT_NE(expected, d);
 }
 
@@ -118,14 +118,14 @@ TYPED_TEST_P(member, write_range)
   TypeParam expected[] = { {}, {} };
   expected[0]++, expected[1]++, expected[1]++;
   EXPECT_TRUE(bool(a.write(expected, expected + 2)));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_FALSE(a.bad());
   EXPECT_EQ(expected[0], d[0]);
   EXPECT_EQ(expected[1], d[1]);
 
   EXPECT_FALSE(bool(a.write(expected, expected + 2)));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_TRUE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_TRUE(a.bad());
   EXPECT_EQ(TypeParam{}, d[2]);
 }
 
@@ -140,14 +140,14 @@ TYPED_TEST_P(member, write_array)
   TypeParam expected[] = { {}, {} };
   expected[0]++, expected[1]++, expected[1]++;
   EXPECT_TRUE(bool(a.write(expected, expected + 2)));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_FALSE(a.bad());
   EXPECT_EQ(expected[0], d[0]);
   EXPECT_EQ(expected[1], d[1]);
 
   EXPECT_FALSE(bool(a.write(expected)));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_TRUE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_TRUE(a.bad());
   EXPECT_EQ(TypeParam{}, d[2]);
 }
 
@@ -158,16 +158,16 @@ TYPED_TEST_P(member, skip)
   sal::memory_writer_t a{d};
 
   EXPECT_TRUE(bool(a));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_FALSE(a.bad());
 
   EXPECT_TRUE(bool(a.skip(sizeof(TypeParam))));
   EXPECT_EQ(TypeParam{}, d[0]);
 
   TypeParam expected = d[1] + 1;
   EXPECT_TRUE(bool(a.write(expected)));
-  EXPECT_TRUE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_TRUE(a.full());
+  EXPECT_FALSE(a.bad());
   EXPECT_EQ(expected, d[1]);
   EXPECT_EQ(TypeParam{}, d[0]);
 }
@@ -179,12 +179,12 @@ TYPED_TEST_P(member, skip_to_end)
   sal::memory_writer_t a{d};
 
   EXPECT_TRUE(bool(a));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_FALSE(a.bad());
 
   EXPECT_TRUE(bool(a.skip(2*sizeof(TypeParam))));
-  EXPECT_TRUE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_TRUE(a.full());
+  EXPECT_FALSE(a.bad());
   EXPECT_EQ(TypeParam{}, d[0]);
   EXPECT_EQ(TypeParam{}, d[1]);
 }
@@ -196,12 +196,12 @@ TYPED_TEST_P(member, skip_past_end)
   sal::memory_writer_t a{d};
 
   EXPECT_TRUE(bool(a));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_FALSE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_FALSE(a.bad());
 
   EXPECT_FALSE(bool(a.skip(3*sizeof(TypeParam))));
-  EXPECT_FALSE(a.is_full());
-  EXPECT_TRUE(a.is_bad());
+  EXPECT_FALSE(a.full());
+  EXPECT_TRUE(a.bad());
   EXPECT_EQ(TypeParam{}, d[0]);
   EXPECT_EQ(TypeParam{}, d[1]);
 }
@@ -307,14 +307,14 @@ TYPED_TEST_P(inserter, range_empty)
   sal::memory_writer_t w{v, v};
 
   EXPECT_TRUE(bool(w));
-  EXPECT_TRUE(w.is_full());
-  EXPECT_FALSE(w.is_bad());
+  EXPECT_TRUE(w.full());
+  EXPECT_FALSE(w.bad());
 
   std::string e = v;
   w << this->max();
   EXPECT_FALSE(bool(w));
-  EXPECT_FALSE(w.is_full());
-  EXPECT_TRUE(w.is_bad());
+  EXPECT_FALSE(w.full());
+  EXPECT_TRUE(w.bad());
   EXPECT_EQ(e, v);
 }
 
@@ -328,15 +328,15 @@ TYPED_TEST_P(inserter, range_one_less)
   w << this->max();
   auto s = w.begin() - &v[0];
   EXPECT_TRUE(bool(w));
-  EXPECT_FALSE(w.is_full());
-  EXPECT_FALSE(w.is_bad());
+  EXPECT_FALSE(w.full());
+  EXPECT_FALSE(w.bad());
 
   // reinitialize writer, this time with truncated range
   w = sal::memory_writer_t{v, v + s - 1};
   w << this->max();
   EXPECT_FALSE(bool(w));
-  EXPECT_FALSE(w.is_full());
-  EXPECT_TRUE(w.is_bad());
+  EXPECT_FALSE(w.full());
+  EXPECT_TRUE(w.bad());
 }
 
 
@@ -349,15 +349,15 @@ TYPED_TEST_P(inserter, range_exact)
   w << this->max();
   auto s = w.begin() - &v[0];
   EXPECT_TRUE(bool(w));
-  EXPECT_FALSE(w.is_full());
-  EXPECT_FALSE(w.is_bad());
+  EXPECT_FALSE(w.full());
+  EXPECT_FALSE(w.bad());
 
   // reinitialize writer, this time with exact range
   w = sal::memory_writer_t{v, v + s};
   w << this->max();
   EXPECT_TRUE(bool(w));
-  EXPECT_TRUE(w.is_full());
-  EXPECT_FALSE(w.is_bad());
+  EXPECT_TRUE(w.full());
+  EXPECT_FALSE(w.bad());
 }
 
 
@@ -642,8 +642,8 @@ TEST_F(memory_writer, c_str_underflow)
 
   w << "123";
   EXPECT_TRUE(bool(w));
-  EXPECT_FALSE(w.is_full());
-  EXPECT_FALSE(w.is_bad());
+  EXPECT_FALSE(w.full());
+  EXPECT_FALSE(w.bad());
   EXPECT_EQ(2U, w.size());
 
   EXPECT_STREQ("123.", v);
@@ -657,8 +657,8 @@ TEST_F(memory_writer, c_str_exact)
 
   w << "123";
   EXPECT_TRUE(bool(w));
-  EXPECT_TRUE(w.is_full());
-  EXPECT_FALSE(w.is_bad());
+  EXPECT_TRUE(w.full());
+  EXPECT_FALSE(w.bad());
   EXPECT_EQ(0U, w.size());
 
   EXPECT_STREQ("123", v);
@@ -672,8 +672,8 @@ TEST_F(memory_writer, c_str_overflow)
 
   w << "1234";
   EXPECT_TRUE(bool(w));
-  EXPECT_TRUE(w.is_full());
-  EXPECT_FALSE(w.is_bad());
+  EXPECT_TRUE(w.full());
+  EXPECT_FALSE(w.bad());
   EXPECT_EQ(0U, w.size());
 
   EXPECT_STREQ("123", v);

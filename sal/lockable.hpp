@@ -128,9 +128,12 @@ public:
   {
     if (mutex_)
     {
-      unlock();
+      mutex_->unlock();
     }
-    locked_ptr(std::move(that)).swap(*this);
+    mutex_ = that.mutex_;
+    that.mutex_ = nullptr;
+    data_ = that.data_;
+    that.data_ = nullptr;
     return *this;
   }
 

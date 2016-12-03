@@ -54,21 +54,34 @@ public:
   }
 
 
-  constexpr bool is_bad () const noexcept
+  void swap (memory_writer_t &that) noexcept
+  {
+    std::swap(begin_, that.begin_);
+    std::swap(end_, that.end_);
+  }
+
+
+  constexpr bool good () const noexcept
+  {
+    return begin_ <= end_;
+  }
+
+
+  constexpr explicit operator bool () const noexcept
+  {
+    return good();
+  }
+
+
+  constexpr bool bad () const noexcept
   {
     return begin_ > end_;
   }
 
 
-  constexpr bool is_full () const noexcept
+  constexpr bool full () const noexcept
   {
     return begin_ == end_;
-  }
-
-
-  explicit operator bool () const noexcept
-  {
-    return begin_ <= end_;
   }
 
 
