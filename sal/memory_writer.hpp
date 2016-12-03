@@ -7,7 +7,6 @@
 
 #include <sal/config.hpp>
 #include <sal/__bits/memory_writer.hpp>
-#include <memory>
 #include <sstream>
 
 
@@ -126,13 +125,12 @@ public:
   memory_writer_t &write (const T *first, const T *last) noexcept
   {
     enforce_pod<T>();
-    if (begin_ + sizeof(T) * (last - first)  <= end_)
-    {
-      std::uninitialized_copy(first, last,
-        __bits::TODO_make_iterator(reinterpret_cast<T *>(begin_))
-      );
-    }
-    return skip(sizeof(T) * (last - first));
+    return skip(__bits::copy(
+      reinterpret_cast<const char *>(first),
+      reinterpret_cast<const char *>(last),
+      begin_,
+      end_
+    ));
   }
 
 

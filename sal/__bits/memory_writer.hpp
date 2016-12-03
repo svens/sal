@@ -6,12 +6,8 @@
 
 #include <sal/builtins.hpp>
 #include <cstdio>
-#include <memory>
-
-#if defined(_MSC_VER)
-  // see make_iterator()
-  #include <iterator>
-#endif
+#include <cstring>
+#include <type_traits>
 
 
 __sal_begin
@@ -20,7 +16,19 @@ __sal_begin
 namespace __bits {
 
 
-inline unsigned TODO_digit_count (uint64_t v) noexcept
+inline size_t copy (const char *ifirst, const char *ilast,
+  char *ofirst, const char *olast) noexcept
+{
+  auto size = ilast - ifirst;
+  if (ofirst + size <= olast)
+  {
+    std::memcpy(ofirst, ifirst, size);
+  }
+  return size;
+}
+
+
+inline size_t TODO_digit_count (uint64_t v) noexcept
 {
   // http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
 
@@ -48,12 +56,12 @@ inline unsigned TODO_digit_count (uint64_t v) noexcept
     10000000000000000000ULL,
   };
 
-  unsigned t = (64 - sal_clz(v | 1)) * 1233 >> 12;
+  size_t t = (64 - sal_clz(v | 1)) * 1233 >> 12;
   return t - (v < pow10[t]) + 1;
 }
 
 
-inline unsigned fmt (unsigned long long v, char *p, const char * const end)
+inline size_t fmt (unsigned long long v, char *p, const char * const end)
   noexcept
 {
   // https://www.facebook.com/notes/facebook-engineering/three-optimization-tips-for-c/10151361643253920
@@ -93,7 +101,7 @@ inline unsigned fmt (unsigned long long v, char *p, const char * const end)
 }
 
 
-inline unsigned fmt (long long v, char *p, const char * const end) noexcept
+inline size_t fmt (long long v, char *p, const char * const end) noexcept
 {
   if (v > -1)
   {
@@ -109,21 +117,9 @@ inline unsigned fmt (long long v, char *p, const char * const end) noexcept
 }
 
 
-// helper to silence MSVC 'Checked Iterators' warning
-template <typename It>
-constexpr inline auto TODO_make_iterator (It *it) noexcept
-{
-#if defined(_MSC_VER)
-  return stdext::make_unchecked_array_iterator(it);
-#else
-  return it;
-#endif
-}
-
-
 template <typename Float, size_t FormatSize>
-inline unsigned fmt (const Float &v, const char (&f)[FormatSize],
-  char *p, const char * const end) noexcept
+inline size_t fmt (const Float &v, const char (&f)[FormatSize],
+  char *p, const char *end) noexcept
 {
   constexpr auto max_result_size = 26;
   if (end - p >= max_result_size)
@@ -135,13 +131,7 @@ inline unsigned fmt (const Float &v, const char (&f)[FormatSize],
   // result might not fit into specified range, go through temporary buffer
   char buffer[max_result_size + 1];
   auto size = std::snprintf(buffer, sizeof(buffer), f, v);
-  if (p + size <= end)
-  {
-    std::uninitialized_copy(p, const_cast<char *>(end),
-      __bits::TODO_make_iterator(buffer)
-    );
-  }
-  return size;
+  return copy(&buffer[0], &buffer[0] + size, p, end);
 }
 
 
@@ -167,7 +157,7 @@ template <typename T> using bin_t = base_cast_t<T, 2>;
 
 
 template <typename T>
-inline unsigned fmt (hex_t<T> v, char *p, const char * const end) noexcept
+inline size_t fmt (hex_t<T> v, char *p, const char * const end) noexcept
 {
   auto d = v.data;
   auto size = 0U;
@@ -192,7 +182,7 @@ inline unsigned fmt (hex_t<T> v, char *p, const char * const end) noexcept
 
 
 template <typename T>
-inline unsigned fmt (oct_t<T> v, char *p, const char * const end) noexcept
+inline size_t fmt (oct_t<T> v, char *p, const char * const end) noexcept
 {
   auto d = v.data;
   auto size = 0U;
@@ -216,7 +206,7 @@ inline unsigned fmt (oct_t<T> v, char *p, const char * const end) noexcept
 
 
 template <typename T>
-inline unsigned fmt (bin_t<T> v, char *p, const char * const end) noexcept
+inline size_t fmt (bin_t<T> v, char *p, const char * const end) noexcept
 {
   auto d = v.data;
   auto size = 0U;
@@ -239,7 +229,7 @@ inline unsigned fmt (bin_t<T> v, char *p, const char * const end) noexcept
 }
 
 
-inline unsigned fmt (const void *v, char *p, const char *end) noexcept
+inline size_t fmt (const void *v, char *p, const char *end) noexcept
 {
   auto size = fmt(hex_t<uintptr_t>(reinterpret_cast<uintptr_t>(v)), p + 2, end) + 2;
   if (p + size <= end)
