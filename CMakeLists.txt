@@ -111,9 +111,11 @@ if(SAL_UNITTESTS)
   if(NOT GTEST_FOUND)
     add_dependencies(unittests gtest)
   endif()
+
+  # relax compiler warnings for tests, intentionally creating unhappy paths
   if(CMAKE_COMPILER_IS_GNUCXX)
     set_source_files_properties(${sal_unittests}
-      PROPERTIES COMPILE_FLAGS "-Wno-effc++"
+      PROPERTIES COMPILE_FLAGS "-Wno-effc++ -Wno-array-bounds"
     )
   elseif(MSVC)
     set_source_files_properties(${sal_unittests}

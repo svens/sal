@@ -83,6 +83,40 @@ namespace __bits {
 
 #endif // _MSC_VER
 
+
+inline size_t digits (uint64_t v) noexcept
+{
+  // http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
+
+  static constexpr uint64_t pow10[] =
+  {
+    0ULL,
+    10ULL,
+    100ULL,
+    1000ULL,
+    10000ULL,
+    100000ULL,
+    1000000ULL,
+    10000000ULL,
+    100000000ULL,
+    1000000000ULL,
+    10000000000ULL,
+    100000000000ULL,
+    1000000000000ULL,
+    10000000000000ULL,
+    100000000000000ULL,
+    1000000000000000ULL,
+    10000000000000000ULL,
+    100000000000000000ULL,
+    1000000000000000000ULL,
+    10000000000000000000ULL,
+  };
+
+  size_t t = (64 - sal_clz(v | 1)) * 1233 >> 12;
+  return t - (v < pow10[t]) + 1;
+}
+
+
 } // namespace __bits
 
 
