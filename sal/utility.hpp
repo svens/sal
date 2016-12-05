@@ -33,9 +33,9 @@ inline char *copy (char *first, char *last, const char (&in)[N]) noexcept
 }
 
 
-inline char *to_chars (char *first, char *last, bool value) noexcept
+inline char *c_str (char *first, char *last, bool in) noexcept
 {
-  if (value)
+  if (in)
   {
     static constexpr const char label[] = "true";
     return copy(first, last, label);
@@ -45,17 +45,16 @@ inline char *to_chars (char *first, char *last, bool value) noexcept
 }
 
 
-inline char *to_chars (char *first, char *last, std::nullptr_t) noexcept
+inline char *c_str (char *first, char *last, std::nullptr_t) noexcept
 {
   static constexpr const char label[] = "(null)";
   return copy(first, last, label);
 }
 
 
-inline char *to_chars (char *first, char *last, unsigned long long value)
-  noexcept
+inline char *c_str (char *first, char *last, unsigned long long in) noexcept
 {
-  auto size = __bits::digits(value);
+  auto size = __bits::digits(in);
 
   first += size;
   if (first < last)
@@ -70,23 +69,23 @@ inline char *to_chars (char *first, char *last, unsigned long long value)
       "8081828384858687888990919293949596979899"
     ;
 
-    while (value > 99)
+    while (in > 99)
     {
-      const auto i = (value % 100) * 2;
-      value /= 100;
+      const auto i = (in % 100) * 2;
+      in /= 100;
       *--first = digits[i + 1];
       *--first = digits[i];
     }
 
-    if (value > 9)
+    if (in > 9)
     {
-      const auto i = value * 2;
+      const auto i = in * 2;
       *--first = digits[i + 1];
       *--first = digits[i];
     }
     else
     {
-      *--first = static_cast<char>('0' + value);
+      *--first = static_cast<char>('0' + in);
     }
   }
   else
@@ -98,15 +97,15 @@ inline char *to_chars (char *first, char *last, unsigned long long value)
 }
 
 
-inline char *to_chars (char *first, char *last, long long value) noexcept
+inline char *c_str (char *first, char *last, long long in) noexcept
 {
-  if (value > -1)
+  if (in > -1)
   {
-    return to_chars(first, last, static_cast<unsigned long long>(value));
+    return c_str(first, last, static_cast<unsigned long long>(in));
   }
 
-  auto end = to_chars(first + 1, last,
-    0 - static_cast<unsigned long long>(value)
+  auto end = c_str(first + 1, last,
+    0 - static_cast<unsigned long long>(in)
   );
 
   if (end < last)
@@ -118,52 +117,51 @@ inline char *to_chars (char *first, char *last, long long value) noexcept
 }
 
 
-inline char *to_chars (char *first, char *last, unsigned long value) noexcept
+inline char *c_str (char *first, char *last, unsigned long in) noexcept
 {
-  return to_chars(first, last, static_cast<unsigned long long>(value));
+  return c_str(first, last, static_cast<unsigned long long>(in));
 }
 
 
-inline char *to_chars (char *first, char *last, long value) noexcept
+inline char *c_str (char *first, char *last, long in) noexcept
 {
-  return to_chars(first, last, static_cast<long long>(value));
+  return c_str(first, last, static_cast<long long>(in));
 }
 
 
-inline char *to_chars (char *first, char *last, unsigned int value) noexcept
+inline char *c_str (char *first, char *last, unsigned int in) noexcept
 {
-  return to_chars(first, last, static_cast<unsigned long long>(value));
+  return c_str(first, last, static_cast<unsigned long long>(in));
 }
 
 
-inline char *to_chars (char *first, char *last, int value) noexcept
+inline char *c_str (char *first, char *last, int in) noexcept
 {
-  return to_chars(first, last, static_cast<long long>(value));
+  return c_str(first, last, static_cast<long long>(in));
 }
 
 
-
-inline char *to_chars (char *first, char *last, unsigned short value) noexcept
+inline char *c_str (char *first, char *last, unsigned short in) noexcept
 {
-  return to_chars(first, last, static_cast<unsigned long long>(value));
+  return c_str(first, last, static_cast<unsigned long long>(in));
 }
 
 
-inline char *to_chars (char *first, char *last, short value) noexcept
+inline char *c_str (char *first, char *last, short in) noexcept
 {
-  return to_chars(first, last, static_cast<long long>(value));
+  return c_str(first, last, static_cast<long long>(in));
 }
 
 
-inline char *to_chars (char *first, char *last, unsigned char value) noexcept
+inline char *c_str (char *first, char *last, unsigned char in) noexcept
 {
-  return to_chars(first, last, static_cast<unsigned long long>(value));
+  return c_str(first, last, static_cast<unsigned long long>(in));
 }
 
 
-inline char *to_chars (char *first, char *last, char value) noexcept
+inline char *c_str (char *first, char *last, char in) noexcept
 {
-  return to_chars(first, last, static_cast<long long>(value));
+  return c_str(first, last, static_cast<long long>(in));
 }
 
 
@@ -171,18 +169,18 @@ namespace __bits {
 
 template <typename Float, size_t FormatSize>
 inline char *fmt_g (char *first, char *last,
-  const char (&f)[FormatSize], const Float &value) noexcept
+  const char (&f)[FormatSize], const Float &in) noexcept
 {
   constexpr auto max_result_size = 26U;
   if (last - first >= max_result_size)
   {
     // happy path, result fits directly into [first,last)
-    return first + std::snprintf(first, last - first, f, value);
+    return first + std::snprintf(first, last - first, f, in);
   }
 
   // might not fit, go through temporary buffer
   char buffer[max_result_size + 1];
-  auto size = std::snprintf(buffer, sizeof(buffer), f, value);
+  auto size = std::snprintf(buffer, sizeof(buffer), f, in);
 
   // copy to result (if fits), including NUL and return ptr to end
   return copy(first, last, buffer, buffer + size + 1) - 1;
@@ -191,21 +189,21 @@ inline char *fmt_g (char *first, char *last,
 } // namespace __bits
 
 
-inline char *to_chars (char *first, char *last, float value) noexcept
+inline char *c_str (char *first, char *last, float in) noexcept
 {
-  return __bits::fmt_g(first, last, "%g", value);
+  return __bits::fmt_g(first, last, "%g", in);
 }
 
 
-inline char *to_chars (char *first, char *last, double value) noexcept
+inline char *c_str (char *first, char *last, double in) noexcept
 {
-  return __bits::fmt_g(first, last, "%g", value);
+  return __bits::fmt_g(first, last, "%g", in);
 }
 
 
-inline char *to_chars (char *first, char *last, long double value) noexcept
+inline char *c_str (char *first, char *last, long double in) noexcept
 {
-  return __bits::fmt_g(first, last, "%Lg", value);
+  return __bits::fmt_g(first, last, "%Lg", in);
 }
 
 
@@ -233,17 +231,16 @@ template <typename T> using bin_t = int_base_t<T, 2>;
 
 
 template <typename T>
-inline constexpr auto hex (T value) noexcept
+inline constexpr auto hex (T in) noexcept
 {
-  return __bits::hex_t<T>{value};
+  return __bits::hex_t<T>{in};
 }
 
 
 template <typename T>
-inline char *to_chars (char *first, char *last, __bits::hex_t<T> value)
-  noexcept
+inline char *c_str (char *first, char *last, __bits::hex_t<T> in) noexcept
 {
-  auto data = value.data;
+  auto data = in.data;
   auto size = 0U;
   do
   {
@@ -254,7 +251,7 @@ inline char *to_chars (char *first, char *last, __bits::hex_t<T> value)
   if (first < last)
   {
     *(last = first) = '\0';
-    data = value.data;
+    data = in.data;
     do
     {
       static constexpr char digits[] = "0123456789abcdef";
@@ -271,17 +268,16 @@ inline char *to_chars (char *first, char *last, __bits::hex_t<T> value)
 
 
 template <typename T>
-inline constexpr auto oct (T value) noexcept
+inline constexpr auto oct (T in) noexcept
 {
-  return __bits::oct_t<T>{value};
+  return __bits::oct_t<T>{in};
 }
 
 
 template <typename T>
-inline char *to_chars (char *first, char *last, __bits::oct_t<T> value)
-  noexcept
+inline char *c_str (char *first, char *last, __bits::oct_t<T> in) noexcept
 {
-  auto data = value.data;
+  auto data = in.data;
   auto size = 0U;
   do
   {
@@ -292,7 +288,7 @@ inline char *to_chars (char *first, char *last, __bits::oct_t<T> value)
   if (first < last)
   {
     *(last = first) = '\0';
-    data = value.data;
+    data = in.data;
     do
     {
       *--first = (data & 7) + '0';
@@ -308,17 +304,16 @@ inline char *to_chars (char *first, char *last, __bits::oct_t<T> value)
 
 
 template <typename T>
-inline constexpr auto bin (T value) noexcept
+inline constexpr auto bin (T in) noexcept
 {
-  return __bits::bin_t<T>{value};
+  return __bits::bin_t<T>{in};
 }
 
 
 template <typename T>
-inline char *to_chars (char *first, char *last, __bits::bin_t<T> value)
-  noexcept
+inline char *c_str (char *first, char *last, __bits::bin_t<T> in) noexcept
 {
-  auto data = value.data;
+  auto data = in.data;
   auto size = 0U;
   do
   {
@@ -329,7 +324,7 @@ inline char *to_chars (char *first, char *last, __bits::bin_t<T> value)
   if (first < last)
   {
     *(last = first) = '\0';
-    data = value.data;
+    data = in.data;
     do
     {
       *--first = (data & 1) + '0';

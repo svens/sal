@@ -115,7 +115,7 @@ if(SAL_UNITTESTS)
   # relax compiler warnings for tests, intentionally creating unhappy paths
   if(CMAKE_COMPILER_IS_GNUCXX)
     set_source_files_properties(${sal_unittests}
-      PROPERTIES COMPILE_FLAGS "-Wno-effc++ -Wno-array-bounds"
+      PROPERTIES COMPILE_FLAGS "-Wno-effc++"
     )
   elseif(MSVC)
     set_source_files_properties(${sal_unittests}

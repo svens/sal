@@ -28,8 +28,8 @@ TEST_F(utility, copy_exact)
 
 TEST_F(utility, copy_overflow)
 {
-  char src[] = "123", dest[sizeof(src) / 2] = "";
-  auto end = sal::copy(dest, dest + sizeof(dest), src, src + sizeof(src));
+  char src[] = "123", dest[sizeof(src)] = "";
+  auto end = sal::copy(dest, dest + sizeof(dest)/2, src, src + sizeof(src));
   EXPECT_EQ(dest + sizeof(src), end);
   EXPECT_STREQ("", dest);
 }
@@ -55,96 +55,96 @@ TEST_F(utility, copy_n_exact)
 
 TEST_F(utility, copy_n_overflow)
 {
-  char src[] = "123", dest[sizeof(src) / 2] = "";
-  auto end = sal::copy(dest, dest + sizeof(dest), src);
+  char src[] = "123", dest[sizeof(src)] = "";
+  auto end = sal::copy(dest, dest + sizeof(dest)/2, src);
   EXPECT_EQ(dest + sizeof(src), end);
   EXPECT_STREQ("", dest);
 }
 
 
-TEST_F(utility, to_chars_bool_true)
+TEST_F(utility, c_str_bool_true)
 {
   char dest[] = "................";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), true);
+  auto end = sal::c_str(dest, dest + sizeof(dest), true);
   EXPECT_EQ(5U, end - dest);
   EXPECT_STREQ("true", dest);
 }
 
 
-TEST_F(utility, to_chars_bool_true_exact)
+TEST_F(utility, c_str_bool_true_exact)
 {
   char dest[] = "TRUE";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), true);
+  auto end = sal::c_str(dest, dest + sizeof(dest), true);
   EXPECT_EQ(dest + sizeof(dest), end);
   EXPECT_STREQ("true", dest);
 }
 
 
-TEST_F(utility, to_chars_bool_true_overflow)
+TEST_F(utility, c_str_bool_true_overflow)
 {
-  char dest[] = "TR";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), true);
+  char dest[] = "1234";
+  auto end = sal::c_str(dest, dest + sizeof(dest)/2, true);
   EXPECT_EQ(dest + sizeof("true"), end);
-  EXPECT_STREQ("TR", dest);
+  EXPECT_STREQ("1234", dest);
 }
 
 
-TEST_F(utility, to_chars_bool_false)
+TEST_F(utility, c_str_bool_false)
 {
   char dest[] = "................";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), false);
+  auto end = sal::c_str(dest, dest + sizeof(dest), false);
   EXPECT_EQ(6U, end - dest);
   EXPECT_STREQ("false", dest);
 }
 
 
-TEST_F(utility, to_chars_bool_false_exact)
+TEST_F(utility, c_str_bool_false_exact)
 {
   char dest[] = "FALSE";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), false);
+  auto end = sal::c_str(dest, dest + sizeof(dest), false);
   EXPECT_EQ(dest + sizeof(dest), end);
   EXPECT_STREQ("false", dest);
 }
 
 
-TEST_F(utility, to_chars_bool_false_overflow)
+TEST_F(utility, c_str_bool_false_overflow)
 {
-  char dest[] = "FAL";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), false);
+  char dest[] = "12345";
+  auto end = sal::c_str(dest, dest + sizeof(dest)/2, false);
   EXPECT_EQ(dest + sizeof("false"), end);
-  EXPECT_STREQ("FAL", dest);
+  EXPECT_STREQ("12345", dest);
 }
 
 
-TEST_F(utility, to_chars_nullptr)
+TEST_F(utility, c_str_nullptr)
 {
   char dest[] = "................";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), nullptr);
+  auto end = sal::c_str(dest, dest + sizeof(dest), nullptr);
   EXPECT_EQ(7U, end - dest);
   EXPECT_STREQ("(null)", dest);
 }
 
 
-TEST_F(utility, to_chars_nullptr_exact)
+TEST_F(utility, c_str_nullptr_exact)
 {
   char dest[] = "(NULL)";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), nullptr);
+  auto end = sal::c_str(dest, dest + sizeof(dest), nullptr);
   EXPECT_EQ(dest + sizeof(dest), end);
   EXPECT_STREQ("(null)", dest);
 }
 
 
-TEST_F(utility, to_chars_nullptr_overflow)
+TEST_F(utility, c_str_nullptr_overflow)
 {
-  char dest[] = "(NUL)";
-  auto end = sal::to_chars(dest, dest + sizeof(dest), nullptr);
+  char dest[] = "123456";
+  auto end = sal::c_str(dest, dest + sizeof(dest)/2, nullptr);
   EXPECT_EQ(dest + sizeof("(null)"), end);
-  EXPECT_STREQ("(NUL)", dest);
+  EXPECT_STREQ("123456", dest);
 }
 
 
 template <typename T>
-struct to_chars
+struct c_str
   : public sal_test::with_type<T>
 {
   char dest[65] = "................................................................";
@@ -161,7 +161,7 @@ struct to_chars
 
   std::string fill (T value)
   {
-    auto p = sal::to_chars(begin(), end(), value);
+    auto p = sal::c_str(begin(), end(), value);
     if (p <= end())
     {
       return std::string(begin(), p);
@@ -189,7 +189,7 @@ struct to_chars
     return (a + b) / 2;
   }
 };
-TYPED_TEST_CASE_P(to_chars);
+TYPED_TEST_CASE_P(c_str);
 
 
 template <typename T>
@@ -217,7 +217,7 @@ std::string expected (unsigned char value)
 }
 
 
-TYPED_TEST_P(to_chars, value_min)
+TYPED_TEST_P(c_str, value_min)
 {
   EXPECT_EQ(
     expected(this->min()),
@@ -226,7 +226,7 @@ TYPED_TEST_P(to_chars, value_min)
 }
 
 
-TYPED_TEST_P(to_chars, value_zero)
+TYPED_TEST_P(c_str, value_zero)
 {
   EXPECT_EQ(
     expected(this->zero()),
@@ -235,7 +235,7 @@ TYPED_TEST_P(to_chars, value_zero)
 }
 
 
-TYPED_TEST_P(to_chars, value_max)
+TYPED_TEST_P(c_str, value_max)
 {
   EXPECT_EQ(
     expected(this->max()),
@@ -244,21 +244,21 @@ TYPED_TEST_P(to_chars, value_max)
 }
 
 
-TYPED_TEST_P(to_chars, value_between_min_and_zero)
+TYPED_TEST_P(c_str, value_between_min_and_zero)
 {
   TypeParam value = this->between(this->min(), this->zero());
   EXPECT_EQ(expected(value), this->fill(value));
 }
 
 
-TYPED_TEST_P(to_chars, value_between_zero_and_max)
+TYPED_TEST_P(c_str, value_between_zero_and_max)
 {
   TypeParam value = this->between(this->zero(), this->max());
   EXPECT_EQ(expected(value), this->fill(value));
 }
 
 
-TYPED_TEST_P(to_chars, exact_room)
+TYPED_TEST_P(c_str, exact_room)
 {
   auto value = this->max();
   auto as_string = expected(value);
@@ -266,14 +266,14 @@ TYPED_TEST_P(to_chars, exact_room)
   ASSERT_LT(size, sizeof(this->dest));
 
   // +1 for NUL
-  auto last = sal::to_chars(this->begin(), this->begin() + size + 1, value);
+  auto last = sal::c_str(this->begin(), this->begin() + size + 1, value);
   EXPECT_EQ(this->begin() + size, last);
   EXPECT_EQ(as_string, this->begin());
   EXPECT_EQ('\0', *last);
 }
 
 
-TYPED_TEST_P(to_chars, one_char_more_room)
+TYPED_TEST_P(c_str, one_char_more_room)
 {
   auto value = this->max();
   auto as_string = expected(value);
@@ -281,14 +281,14 @@ TYPED_TEST_P(to_chars, one_char_more_room)
   ASSERT_LT(size + 1, sizeof(this->dest));
 
   // +1 for NUL
-  auto last = sal::to_chars(this->begin(), this->begin() + size + 2, value);
+  auto last = sal::c_str(this->begin(), this->begin() + size + 2, value);
   EXPECT_EQ(this->begin() + size, last);
   EXPECT_EQ(as_string, this->begin());
   EXPECT_EQ('\0', *last);
 }
 
 
-TYPED_TEST_P(to_chars, one_char_less_room)
+TYPED_TEST_P(c_str, one_char_less_room)
 {
   auto value = this->max();
   auto as_string = expected(value);
@@ -296,13 +296,13 @@ TYPED_TEST_P(to_chars, one_char_less_room)
   ASSERT_LT(size, sizeof(this->dest));
 
   // no room for NUL
-  auto last = sal::to_chars(this->begin(), this->begin() + size, value);
+  auto last = sal::c_str(this->begin(), this->begin() + size, value);
   EXPECT_EQ(this->begin() + size, last);
   EXPECT_NE(as_string, this->begin());
 }
 
 
-TYPED_TEST_P(to_chars, insufficient_room)
+TYPED_TEST_P(c_str, insufficient_room)
 {
   auto value = this->between(this->min(), this->zero());
   auto as_string = expected(value);
@@ -310,13 +310,13 @@ TYPED_TEST_P(to_chars, insufficient_room)
   ASSERT_LT(size, sizeof(this->dest));
 
   // half of required room
-  auto last = sal::to_chars(this->begin(), this->begin() + size / 2, value);
+  auto last = sal::c_str(this->begin(), this->begin() + size / 2, value);
   EXPECT_EQ(this->begin() + size, last);
   EXPECT_NE(as_string, this->begin());
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(to_chars,
+REGISTER_TYPED_TEST_CASE_P(c_str,
   value_min,
   value_zero,
   value_max,
@@ -335,17 +335,17 @@ using types = testing::Types<
   char, unsigned char,
   float, double, long double
 >;
-INSTANTIATE_TYPED_TEST_CASE_P(utility, to_chars, types);
+INSTANTIATE_TYPED_TEST_CASE_P(utility, c_str, types);
 
 
 template <typename T>
-struct to_chars_base
-  : public to_chars<T>
+struct c_str_base
+  : public c_str<T>
 {
   template <typename ManipValue>
   std::string fill (ManipValue value)
   {
-    auto p = sal::to_chars(this->begin(), this->end(), value);
+    auto p = sal::c_str(this->begin(), this->end(), value);
     if (p <= this->end())
     {
       return std::string(this->begin(), p);
@@ -353,7 +353,7 @@ struct to_chars_base
     return std::string{};
   }
 };
-TYPED_TEST_CASE_P(to_chars_base);
+TYPED_TEST_CASE_P(c_str_base);
 
 
 template <typename T, typename Manip>
@@ -378,7 +378,7 @@ std::string expected_bin (T value)
 }
 
 
-TYPED_TEST_P(to_chars_base, hex_min)
+TYPED_TEST_P(c_str_base, hex_min)
 {
   EXPECT_EQ(
     expected(this->min(), std::hex),
@@ -387,7 +387,7 @@ TYPED_TEST_P(to_chars_base, hex_min)
 }
 
 
-TYPED_TEST_P(to_chars_base, hex_zero)
+TYPED_TEST_P(c_str_base, hex_zero)
 {
   EXPECT_EQ(
     expected(this->zero(), std::hex),
@@ -396,7 +396,7 @@ TYPED_TEST_P(to_chars_base, hex_zero)
 }
 
 
-TYPED_TEST_P(to_chars_base, hex_max)
+TYPED_TEST_P(c_str_base, hex_max)
 {
   EXPECT_EQ(
     expected(this->max(), std::hex),
@@ -405,21 +405,21 @@ TYPED_TEST_P(to_chars_base, hex_max)
 }
 
 
-TYPED_TEST_P(to_chars_base, hex_between_min_and_zero)
+TYPED_TEST_P(c_str_base, hex_between_min_and_zero)
 {
   auto value = this->between(this->min(), this->zero());
   EXPECT_EQ(expected(value, std::hex), this->fill(sal::hex(value)));
 }
 
 
-TYPED_TEST_P(to_chars_base, hex_between_zero_and_max)
+TYPED_TEST_P(c_str_base, hex_between_zero_and_max)
 {
   auto value = this->between(this->zero(), this->max());
   EXPECT_EQ(expected(value, std::hex), this->fill(sal::hex(value)));
 }
 
 
-TYPED_TEST_P(to_chars_base, hex_insufficient_room)
+TYPED_TEST_P(c_str_base, hex_insufficient_room)
 {
   auto value = this->between(this->min(), this->zero());
   auto as_string = expected(value, std::hex);
@@ -427,7 +427,7 @@ TYPED_TEST_P(to_chars_base, hex_insufficient_room)
   ASSERT_LT(size, sizeof(this->dest));
 
   // half of required room
-  auto last = sal::to_chars(this->begin(), this->begin() + size / 2,
+  auto last = sal::c_str(this->begin(), this->begin() + size / 2,
     sal::hex(value)
   );
   EXPECT_EQ(this->begin() + size, last);
@@ -435,7 +435,7 @@ TYPED_TEST_P(to_chars_base, hex_insufficient_room)
 }
 
 
-TYPED_TEST_P(to_chars_base, oct_min)
+TYPED_TEST_P(c_str_base, oct_min)
 {
   EXPECT_EQ(
     expected(this->min(), std::oct),
@@ -444,7 +444,7 @@ TYPED_TEST_P(to_chars_base, oct_min)
 }
 
 
-TYPED_TEST_P(to_chars_base, oct_zero)
+TYPED_TEST_P(c_str_base, oct_zero)
 {
   EXPECT_EQ(
     expected(this->zero(), std::oct),
@@ -453,7 +453,7 @@ TYPED_TEST_P(to_chars_base, oct_zero)
 }
 
 
-TYPED_TEST_P(to_chars_base, oct_max)
+TYPED_TEST_P(c_str_base, oct_max)
 {
   EXPECT_EQ(
     expected(this->max(), std::oct),
@@ -462,21 +462,21 @@ TYPED_TEST_P(to_chars_base, oct_max)
 }
 
 
-TYPED_TEST_P(to_chars_base, oct_between_min_and_zero)
+TYPED_TEST_P(c_str_base, oct_between_min_and_zero)
 {
   auto value = this->between(this->min(), this->zero());
   EXPECT_EQ(expected(value, std::oct), this->fill(sal::oct(value)));
 }
 
 
-TYPED_TEST_P(to_chars_base, oct_between_zero_and_max)
+TYPED_TEST_P(c_str_base, oct_between_zero_and_max)
 {
   auto value = this->between(this->zero(), this->max());
   EXPECT_EQ(expected(value, std::oct), this->fill(sal::oct(value)));
 }
 
 
-TYPED_TEST_P(to_chars_base, oct_insufficient_room)
+TYPED_TEST_P(c_str_base, oct_insufficient_room)
 {
   auto value = this->between(this->min(), this->zero());
   auto as_string = expected(value, std::oct);
@@ -484,7 +484,7 @@ TYPED_TEST_P(to_chars_base, oct_insufficient_room)
   ASSERT_LT(size, sizeof(this->dest));
 
   // half of required room
-  auto last = sal::to_chars(this->begin(), this->begin() + size / 2,
+  auto last = sal::c_str(this->begin(), this->begin() + size / 2,
     sal::oct(value)
   );
   EXPECT_EQ(this->begin() + size, last);
@@ -492,7 +492,7 @@ TYPED_TEST_P(to_chars_base, oct_insufficient_room)
 }
 
 
-TYPED_TEST_P(to_chars_base, bin_min)
+TYPED_TEST_P(c_str_base, bin_min)
 {
   EXPECT_EQ(
     expected_bin(this->min()),
@@ -501,7 +501,7 @@ TYPED_TEST_P(to_chars_base, bin_min)
 }
 
 
-TYPED_TEST_P(to_chars_base, bin_zero)
+TYPED_TEST_P(c_str_base, bin_zero)
 {
   EXPECT_EQ(
     expected_bin(this->zero()),
@@ -510,7 +510,7 @@ TYPED_TEST_P(to_chars_base, bin_zero)
 }
 
 
-TYPED_TEST_P(to_chars_base, bin_max)
+TYPED_TEST_P(c_str_base, bin_max)
 {
   EXPECT_EQ(
     expected_bin(this->max()),
@@ -519,21 +519,21 @@ TYPED_TEST_P(to_chars_base, bin_max)
 }
 
 
-TYPED_TEST_P(to_chars_base, bin_between_min_and_zero)
+TYPED_TEST_P(c_str_base, bin_between_min_and_zero)
 {
   auto value = this->between(this->min(), this->zero());
   EXPECT_EQ(expected_bin(value), this->fill(sal::bin(value)));
 }
 
 
-TYPED_TEST_P(to_chars_base, bin_between_zero_and_max)
+TYPED_TEST_P(c_str_base, bin_between_zero_and_max)
 {
   auto value = this->between(this->zero(), this->max());
   EXPECT_EQ(expected_bin(value), this->fill(sal::bin(value)));
 }
 
 
-TYPED_TEST_P(to_chars_base, bin_insufficient_room)
+TYPED_TEST_P(c_str_base, bin_insufficient_room)
 {
   auto value = this->between(this->min(), this->zero());
   auto as_string = expected_bin(value);
@@ -541,7 +541,7 @@ TYPED_TEST_P(to_chars_base, bin_insufficient_room)
   ASSERT_LT(size, sizeof(this->dest));
 
   // half of required room
-  auto last = sal::to_chars(this->begin(), this->begin() + size / 2,
+  auto last = sal::c_str(this->begin(), this->begin() + size / 2,
     sal::bin(value)
   );
   EXPECT_EQ(this->begin() + size, last);
@@ -549,7 +549,7 @@ TYPED_TEST_P(to_chars_base, bin_insufficient_room)
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(to_chars_base,
+REGISTER_TYPED_TEST_CASE_P(c_str_base,
   hex_min,
   hex_zero,
   hex_max,
@@ -575,7 +575,7 @@ using base_types = testing::Types<
   int, unsigned int,
   short, unsigned short
 >;
-INSTANTIATE_TYPED_TEST_CASE_P(utility, to_chars_base, base_types);
+INSTANTIATE_TYPED_TEST_CASE_P(utility, c_str_base, base_types);
 
 
 } // namespace

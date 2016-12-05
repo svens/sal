@@ -13,7 +13,6 @@ list(APPEND sal_sources
   sal/__bits/intrusive_queue.hpp
   sal/lockable.hpp
   sal/memory_writer.hpp
-  sal/__bits/memory_writer.hpp
   sal/queue.hpp
   sal/__bits/queue.hpp
   sal/spinlock.hpp
