@@ -20,7 +20,6 @@ list(APPEND sal_sources
   sal/thread.hpp
   sal/thread.cpp
   sal/time.hpp
-  sal/utility.hpp
 )
 
 
@@ -40,7 +39,6 @@ list(APPEND sal_unittests
   sal/spinlock.test.cpp
   sal/thread.test.cpp
   sal/time.test.cpp
-  sal/utility.test.cpp
 )
 
 
