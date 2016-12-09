@@ -301,7 +301,7 @@ struct fmt
   void test_hex (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::fmt(sal::hex(value), view, view + view_size);
+    auto end = sal::fmt(sal::thex(value), view, view + view_size);
     EXPECT_EQ(expected_hex(value), std::string(view, end));
   }
 
@@ -315,7 +315,7 @@ struct fmt
   void test_oct (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::fmt(sal::oct(value), view, view + view_size);
+    auto end = sal::fmt(sal::toct(value), view, view + view_size);
     EXPECT_EQ(expected_oct(value), std::string(view, end));
   }
 
@@ -329,7 +329,7 @@ struct fmt
   void test_bin (const T &value, std::true_type /*is_integral<T>*/)
   {
     char view[view_size];
-    auto end = sal::fmt(sal::bin(value), view, view + view_size);
+    auto end = sal::fmt(sal::tbin(value), view, view + view_size);
     EXPECT_EQ(expected_bin(value), std::string(view, end));
   }
 

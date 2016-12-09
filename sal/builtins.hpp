@@ -84,7 +84,7 @@ namespace __bits {
 #endif // _MSC_VER
 
 
-inline size_t digits (uint64_t v) noexcept
+inline size_t digit_count (uint64_t v) noexcept
 {
   // http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
 

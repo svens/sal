@@ -87,7 +87,7 @@ inline char *fmt (unsigned char value, char *first, char *last) noexcept
 
 
 // helper:
-inline unsigned digit_count (uint64_t value) noexcept
+inline unsigned Tdigit_count (uint64_t value) noexcept
 {
   // http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
 
@@ -125,7 +125,7 @@ inline char *fmt (uint64_t value, char *first, char *last) noexcept
 {
   // https://www.facebook.com/notes/facebook-engineering/three-optimization-tips-for-c/10151361643253920
 
-  first += digit_count(value);
+  first += Tdigit_count(value);
   if (first <= last)
   {
     static constexpr char digits[] =
@@ -224,13 +224,13 @@ struct base_cast
 };
 
 
-template <typename T> using hex = base_cast<T, 16>;
-template <typename T> using oct = base_cast<T, 8>;
-template <typename T> using bin = base_cast<T, 2>;
+template <typename T> using thex = base_cast<T, 16>;
+template <typename T> using toct = base_cast<T, 8>;
+template <typename T> using tbin = base_cast<T, 2>;
 
 
 template <typename T>
-inline char *fmt (hex<T> value, char *first, char *last) noexcept
+inline char *fmt (thex<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -254,7 +254,7 @@ inline char *fmt (hex<T> value, char *first, char *last) noexcept
 
 
 template <typename T>
-inline char *fmt (oct<T> value, char *first, char *last) noexcept
+inline char *fmt (toct<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -277,7 +277,7 @@ inline char *fmt (oct<T> value, char *first, char *last) noexcept
 
 
 template <typename T>
-inline char *fmt (bin<T> value, char *first, char *last) noexcept
+inline char *fmt (tbin<T> value, char *first, char *last) noexcept
 {
   auto v = value.data;
   do
@@ -348,7 +348,7 @@ inline char *fmt (std::nullptr_t /**/, char *first, char *last) noexcept
 template <typename T>
 inline char *fmt (const T *value, char *first, char *last) noexcept
 {
-  auto end = fmt(hex<uintptr_t>(reinterpret_cast<uintptr_t>(value)),
+  auto end = fmt(thex<uintptr_t>(reinterpret_cast<uintptr_t>(value)),
     first + 2, last
   );
 

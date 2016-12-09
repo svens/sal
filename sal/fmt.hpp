@@ -102,15 +102,15 @@ inline char *fmt (const char (&src)[src_size], char (&dest)[dest_size])
  *
  * Usage:
  * \code
- * auto end = sal::fmt(sal::hex(42ULL), first, last);
+ * auto end = sal::fmt(sal::thex(42ULL), first, last);
  * \endcode
  *
  * \return Opaque type, do not touch it's internals
  */
 template <typename T>
-inline auto hex (T value) noexcept
+inline auto thex (T value) noexcept
 {
-  return __bits::hex<T>{value};
+  return __bits::thex<T>{value};
 }
 
 
@@ -120,15 +120,15 @@ inline auto hex (T value) noexcept
  *
  * Usage:
  * \code
- * auto end = sal::fmt(sal::oct(42ULL), first, last);
+ * auto end = sal::fmt(sal::toct(42ULL), first, last);
  * \endcode
  *
  * \return Opaque type, do not touch it's internals
  */
 template <typename T>
-inline auto oct (T value) noexcept
+inline auto toct (T value) noexcept
 {
-  return __bits::oct<T>{value};
+  return __bits::toct<T>{value};
 }
 
 
@@ -138,15 +138,15 @@ inline auto oct (T value) noexcept
  *
  * Usage:
  * \code
- * auto end = sal::fmt(sal::bin(42ULL), first, last);
+ * auto end = sal::fmt(sal::tbin(42ULL), first, last);
  * \endcode
  *
  * \return Opaque type, do not touch it's internals
  */
 template <typename T>
-inline auto bin (T value) noexcept
+inline auto tbin (T value) noexcept
 {
-  return __bits::bin<T>{value};
+  return __bits::tbin<T>{value};
 }
 
 
