@@ -213,7 +213,7 @@ inline memory_writer_t &format_float (memory_writer_t &writer,
 
 struct basic_fixed_float_t
 {
-  static size_t pow10 (size_t precision) noexcept
+  constexpr size_t pow10 (size_t precision) const noexcept
   {
     constexpr size_t data_[] =
     {

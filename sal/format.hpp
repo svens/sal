@@ -2,7 +2,14 @@
 
 /**
  * \file sal/format.hpp
- * Memory range formatted content writer
+ * Memory range formatted content writer.
+ *
+ * This header provides list of inserter operator specialisations for
+ * formatted content adding to sal::memory_writer_t. User defined types can
+ * implement their own specialisations as well. Doing it will plug those
+ * types into sal::memory_writer_t::print() ecosystem.
+ *
+ * \see sal/memory_writer.hpp
  */
 
 #include <sal/config.hpp>
@@ -13,6 +20,9 @@
 __sal_begin
 
 
+/**
+ * Insert into \a writer string \c true or \c false depending on \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, bool value)
   noexcept
 {
@@ -20,6 +30,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, bool value)
 }
 
 
+/**
+ * Insert into \a writer string \c (null)
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, std::nullptr_t)
   noexcept
 {
@@ -27,6 +40,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, std::nullptr_t)
 }
 
 
+/**
+ * Insert into \a writer formatted human readable numeric \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   unsigned long long value) noexcept
 {
@@ -34,6 +50,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer formatted human readable numeric \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, long long value)
   noexcept
 {
@@ -41,6 +60,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, long long value)
 }
 
 
+/**
+ * Insert into \a writer formatted human readable numeric \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   unsigned long value) noexcept
 {
@@ -48,6 +70,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer formatted human readable numeric \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, long value)
   noexcept
 {
@@ -55,6 +80,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, long value)
 }
 
 
+/**
+ * Insert into \a writer formatted human readable numeric \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   unsigned int value) noexcept
 {
@@ -62,6 +90,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer formatted human readable numeric \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, int value)
   noexcept
 {
@@ -69,6 +100,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, int value)
 }
 
 
+/**
+ * Insert into \a writer formatted human readable numeric \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   unsigned short value) noexcept
 {
@@ -76,6 +110,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer formatted human readable numeric \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, short value)
   noexcept
 {
@@ -83,6 +120,10 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, short value)
 }
 
 
+/**
+ * Create and return opaque object signalling inserter operator to write
+ * numeric \a value hexadecimal string representation into memory_writer_t.
+ */
 template <typename T>
 inline constexpr auto hex (T value) noexcept
 {
@@ -90,6 +131,10 @@ inline constexpr auto hex (T value) noexcept
 }
 
 
+/**
+ * Create and return opaque object signalling inserter operator to write
+ * numeric \a value octal string representation into memory_writer_t.
+ */
 template <typename T>
 inline constexpr auto oct (T value) noexcept
 {
@@ -97,6 +142,10 @@ inline constexpr auto oct (T value) noexcept
 }
 
 
+/**
+ * Create and return opaque object signalling inserter operator to write
+ * numeric \a value binary string representation into memory_writer_t.
+ */
 template <typename T>
 inline constexpr auto bin (T value) noexcept
 {
@@ -104,6 +153,10 @@ inline constexpr auto bin (T value) noexcept
 }
 
 
+/**
+ * Insert into \a writer formatted human readable hexadecimal representation
+ * of \a value
+ */
 template <typename T>
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const __bits::hex_t<T> &value) noexcept
@@ -112,6 +165,10 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer formatted human readable octal representation of
+ * \a value
+ */
 template <typename T>
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const __bits::oct_t<T> &value) noexcept
@@ -120,6 +177,10 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer formatted human readable binary representation of
+ * \a value
+ */
 template <typename T>
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const __bits::bin_t<T> &value) noexcept
@@ -128,6 +189,10 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer formatted human readable float \a value. It is
+ * formatted using \c printf("%g").
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, float value)
   noexcept
 {
@@ -135,6 +200,10 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, float value)
 }
 
 
+/**
+ * Insert into \a writer formatted human readable float \a value. It is
+ * formatted using \c printf("%g").
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, double value)
   noexcept
 {
@@ -142,6 +211,10 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, double value)
 }
 
 
+/**
+ * Insert into \a writer formatted human readable float \a value. It is
+ * formatted using \c printf("%Lg").
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer, long double value)
   noexcept
 {
@@ -149,6 +222,17 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, long double value)
 }
 
 
+/**
+ * Create and return opaque object signalling inserter operator to write float
+ * \a value textual representation into memory_writer_t.
+ *
+ * \note While faster than directly inserting float values into
+ * memory_writer_t, this approach allows only limited range of \a value
+ * between negative and positive values of
+ * \code
+ * std::numeric_limits<unsigned long long>::max() / (10^precision)
+ * \endcode
+ */
 template <typename T>
 inline constexpr auto fixed_float (T value, size_t precision=2) noexcept
 {
@@ -156,6 +240,10 @@ inline constexpr auto fixed_float (T value, size_t precision=2) noexcept
 }
 
 
+/**
+ * Insert into \a writer formatted human readable float representation of
+ * \a value
+ */
 template <typename T>
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const __bits::fixed_float_t<T> &value) noexcept
@@ -164,6 +252,10 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer formatted human readable pointer \a value. It is
+ * formatted as hexadecimal \a value casted to \c uintptr_t with prefix \c 0x
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const void *value) noexcept
 {
@@ -171,6 +263,9 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer content of \a value
+ */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const std::string &value) noexcept
 {
