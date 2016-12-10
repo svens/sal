@@ -4,6 +4,7 @@ list(APPEND sal_sources
   sal/array_string.hpp
   sal/assert.hpp
   sal/builtins.hpp
+  sal/char_array.hpp
   sal/error.hpp
   sal/file.hpp
   sal/file.cpp
@@ -30,6 +31,7 @@ list(APPEND sal_unittests
   sal/array_string.test.cpp
   sal/assert.test.cpp
   sal/builtins.test.cpp
+  sal/char_array.test.cpp
   sal/common.test.hpp
   sal/error.test.cpp
   sal/file.test.cpp
