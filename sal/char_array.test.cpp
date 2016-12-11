@@ -38,6 +38,265 @@ TEST_F(char_array, ctor)
 }
 
 
+TEST_F(char_array, ctor_assign)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  auto a{chars};
+  EXPECT_EQ(case_name, a.c_str());
+}
+
+
+TEST_F(char_array, ctor_assign_empty)
+{
+  auto a{chars};
+  EXPECT_EQ("", a.to_string());
+}
+
+
+TEST_F(char_array, ctor_assign_bad)
+{
+  EXPECT_TRUE(bool(chars << exact));
+  EXPECT_FALSE(bool(chars << case_name));
+  EXPECT_TRUE(chars.bad());
+
+  auto a{chars};
+  EXPECT_TRUE(a.good());
+  EXPECT_EQ(exact, a.c_str());
+}
+
+
+TEST_F(char_array, ctor_assign_smaller)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  sal::char_array_t<size / 2> a{chars};
+  EXPECT_EQ(case_name, a.c_str());
+}
+
+
+TEST_F(char_array, ctor_assign_smaller_empty)
+{
+  sal::char_array_t<size / 2> a{chars};
+  EXPECT_EQ("", a.to_string());
+}
+
+
+TEST_F(char_array, ctor_assign_smaller_bad)
+{
+  EXPECT_TRUE(bool(chars << exact));
+  EXPECT_FALSE(bool(chars << case_name));
+  EXPECT_TRUE(chars.bad());
+
+  sal::char_array_t<size / 2> a{chars};
+  EXPECT_TRUE(a.good());
+  std::string half_exact(exact, exact.size() / 2);
+  EXPECT_EQ(half_exact, a.c_str());
+}
+
+
+TEST_F(char_array, ctor_assign_bigger)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  sal::char_array_t<size * 2> a{chars};
+  EXPECT_EQ(case_name, a.c_str());
+}
+
+
+TEST_F(char_array, ctor_assign_bigger_empty)
+{
+  sal::char_array_t<size * 2> a{chars};
+  EXPECT_EQ("", a.to_string());
+}
+
+
+TEST_F(char_array, ctor_assign_bigger_bad)
+{
+  EXPECT_TRUE(bool(chars << exact));
+  EXPECT_FALSE(bool(chars << case_name));
+  EXPECT_TRUE(chars.bad());
+
+  sal::char_array_t<size * 2> a{chars};
+  EXPECT_TRUE(a.good());
+  EXPECT_EQ(exact, a.c_str());
+}
+
+
+TEST_F(char_array, copy_assign)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  decltype(chars) a;
+  a = chars;
+  EXPECT_EQ(case_name, a.c_str());
+}
+
+
+TEST_F(char_array, copy_assign_empty)
+{
+  decltype(chars) a;
+  a = chars;
+  EXPECT_EQ("", a.to_string());
+}
+
+
+TEST_F(char_array, copy_assign_bad)
+{
+  EXPECT_TRUE(bool(chars << exact));
+  EXPECT_FALSE(bool(chars << case_name));
+  EXPECT_TRUE(chars.bad());
+
+  decltype(chars) a;
+  a = chars;
+  EXPECT_TRUE(a.good());
+  EXPECT_EQ(exact, a.c_str());
+}
+
+
+TEST_F(char_array, copy_assign_smaller)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  sal::char_array_t<size / 2> a;
+  a = chars;
+  EXPECT_EQ(case_name, a.c_str());
+}
+
+
+TEST_F(char_array, copy_assign_smaller_empty)
+{
+  sal::char_array_t<size / 2> a;
+  a = chars;
+  EXPECT_EQ("", a.to_string());
+}
+
+
+TEST_F(char_array, copy_assign_smaller_bad)
+{
+  EXPECT_TRUE(bool(chars << exact));
+  EXPECT_FALSE(bool(chars << case_name));
+  EXPECT_TRUE(chars.bad());
+
+  sal::char_array_t<size / 2> a;
+  a = chars;
+  EXPECT_TRUE(a.good());
+  std::string half_exact(exact, exact.size() / 2);
+  EXPECT_EQ(half_exact, a.c_str());
+}
+
+
+TEST_F(char_array, copy_assign_bigger)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  sal::char_array_t<size * 2> a;
+  a = chars;
+  EXPECT_EQ(case_name, a.c_str());
+}
+
+
+TEST_F(char_array, copy_assign_bigger_empty)
+{
+  sal::char_array_t<size * 2> a;
+  a = chars;
+  EXPECT_EQ("", a.to_string());
+}
+
+
+TEST_F(char_array, copy_assign_bigger_bad)
+{
+  EXPECT_TRUE(bool(chars << exact));
+  EXPECT_FALSE(bool(chars << case_name));
+  EXPECT_TRUE(chars.bad());
+
+  sal::char_array_t<size * 2> a;
+  a = chars;
+  EXPECT_TRUE(a.good());
+  EXPECT_EQ(exact, a.c_str());
+}
+
+
+TEST_F(char_array, index)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  for (auto i = 0U;  i < case_name.size();  ++i)
+  {
+    EXPECT_EQ(case_name[i], chars[i]);
+  }
+}
+
+
+TEST_F(char_array, front)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  EXPECT_EQ(case_name.front(), chars.front());
+}
+
+
+TEST_F(char_array, back)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  EXPECT_EQ(case_name.back(), chars.back());
+}
+
+
+TEST_F(char_array, iterator)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  EXPECT_EQ(chars.data(), chars.begin());
+  EXPECT_EQ(chars.data() + case_name.size(), chars.end());
+}
+
+
+TEST_F(char_array, iterator_empty)
+{
+  EXPECT_EQ(chars.data(), chars.begin());
+  EXPECT_EQ(chars.data(), chars.end());
+}
+
+
+TEST_F(char_array, iterator_full)
+{
+  ASSERT_TRUE(bool(chars << exact));
+  EXPECT_EQ(chars.data(), chars.begin());
+  EXPECT_EQ(chars.data() + exact.size(), chars.end());
+}
+
+
+TEST_F(char_array, iterator_bad)
+{
+  EXPECT_FALSE(bool(chars << overflow));
+  EXPECT_EQ(chars.data(), chars.begin());
+  EXPECT_EQ(chars.data() + overflow.size(), chars.end());
+}
+
+
+TEST_F(char_array, remove_suffix)
+{
+  EXPECT_TRUE(bool(chars << case_name));
+  chars.remove_suffix(case_name.size() / 2);
+  std::string expected(case_name, 0, case_name.size() / 2);
+  EXPECT_EQ(expected, chars.c_str());
+}
+
+
+TEST_F(char_array, remove_suffix_before_begin)
+{
+  EXPECT_TRUE(bool(chars << case_name));
+  chars.remove_suffix(case_name.size() * 2);
+  EXPECT_EQ(0U, chars.size());
+  EXPECT_EQ(chars.begin(), chars.end());
+}
+
+
+TEST_F(char_array, remove_suffix_from_bad)
+{
+  EXPECT_FALSE(bool(chars << overflow));
+  EXPECT_TRUE(chars.bad());
+
+  chars.remove_suffix(overflow.size() / 3);
+  EXPECT_TRUE(chars.bad());
+
+  chars.remove_suffix(overflow.size() / 3);
+  EXPECT_TRUE(chars.good());
+}
+
+
 TEST_F(char_array, mark_and_revert)
 {
   ASSERT_TRUE(bool(chars << case_name));
@@ -45,7 +304,7 @@ TEST_F(char_array, mark_and_revert)
 
   auto mark = chars.mark();
   ASSERT_TRUE(bool(chars << case_name));
-  EXPECT_EQ(case_name + case_name, chars.to_string());
+  EXPECT_EQ(case_name + case_name, chars.c_str());
 
   chars.revert(mark);
   EXPECT_EQ(case_name, chars.c_str());
@@ -109,61 +368,6 @@ TEST_F(char_array, reset_bad)
   ASSERT_FALSE(chars.bad());
   EXPECT_TRUE(chars.empty());
   EXPECT_STREQ("", chars.c_str());
-}
-
-
-TEST_F(char_array, index)
-{
-  ASSERT_TRUE(bool(chars << case_name));
-  for (auto i = 0U;  i < case_name.size();  ++i)
-  {
-    EXPECT_EQ(case_name[i], chars[i]);
-  }
-}
-
-
-TEST_F(char_array, front)
-{
-  ASSERT_TRUE(bool(chars << case_name));
-  EXPECT_EQ(case_name.front(), chars.front());
-}
-
-
-TEST_F(char_array, back)
-{
-  ASSERT_TRUE(bool(chars << case_name));
-  EXPECT_EQ(case_name.back(), chars.back());
-}
-
-
-TEST_F(char_array, iterator)
-{
-  ASSERT_TRUE(bool(chars << case_name));
-  EXPECT_EQ(chars.data(), chars.begin());
-  EXPECT_EQ(chars.data() + case_name.size(), chars.end());
-}
-
-
-TEST_F(char_array, iterator_empty)
-{
-  EXPECT_EQ(chars.data(), chars.begin());
-  EXPECT_EQ(chars.data(), chars.end());
-}
-
-
-TEST_F(char_array, iterator_full)
-{
-  ASSERT_TRUE(bool(chars << exact));
-  EXPECT_EQ(chars.data(), chars.begin());
-  EXPECT_EQ(chars.data() + exact.size(), chars.end());
-}
-
-
-TEST_F(char_array, iterator_bad)
-{
-  EXPECT_FALSE(bool(chars << overflow));
-  EXPECT_EQ(chars.data(), chars.begin());
-  EXPECT_EQ(chars.data() + overflow.size(), chars.end());
 }
 
 
