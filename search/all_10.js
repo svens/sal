@@ -1,6 +1,7 @@
 var searchData=
 [
   ['server_20application_20library',['Server application library',['../index.html',1,'']]],
+  ['safe_5fsize',['safe_size',['../classsal_1_1char__array__t.html#aeb4a97dfa6ba1e10f0665dd3cc92e677',1,'sal::char_array_t']]],
   ['sal_5fassert',['sal_assert',['../assert_8hpp.html#a3caa23429c00d1ad92ea19db8651f9f6',1,'assert.hpp']]],
   ['sal_5fcheck_5fptr',['sal_check_ptr',['../assert_8hpp.html#abf5b062ed8c5cd8ba4f329f7cba66c50',1,'assert.hpp']]],
   ['sal_5fclz',['sal_clz',['../builtins_8hpp.html#a1657a814d1a834ad8be72f9c7635e27f',1,'builtins.hpp']]],
@@ -28,12 +29,13 @@ var searchData=
   ['sink_5fevent_5fwrite',['sink_event_write',['../classsal_1_1logger_1_1sink__t.html#a5d18c4c0fcbb655321b480f01701eeb3',1,'sal::logger::sink_t']]],
   ['sink_5fptr',['sink_ptr',['../fwd_8hpp.html#a770b24363256a3d7ab3bb0468fe5d5c2',1,'sal::logger']]],
   ['sink_5ft',['sink_t',['../classsal_1_1logger_1_1sink__t.html',1,'sal::logger']]],
-  ['size',['size',['../classsal_1_1array__string__t.html#af68478ff07a7d386715882776364a8a9',1,'sal::array_string_t']]],
+  ['size',['size',['../classsal_1_1char__array__t.html#a5caad28b7a66f2fb069e302e3114e402',1,'sal::char_array_t::size()'],['../classsal_1_1memory__writer__t.html#a5ae46736acfc018331b26a1d5317b966',1,'sal::memory_writer_t::size()']]],
+  ['skip',['skip',['../classsal_1_1memory__writer__t.html#a5bd861760533f8e8f919b7936dc5646d',1,'sal::memory_writer_t']]],
   ['spinlock_2ehpp',['spinlock.hpp',['../spinlock_8hpp.html',1,'']]],
   ['spinlock_5ft',['spinlock_t',['../classsal_1_1spinlock__t.html',1,'sal']]],
   ['spsc_5fsync_5ft',['spsc_sync_t',['../structsal_1_1spsc__sync__t.html',1,'sal']]],
   ['string_5flist_5ft',['string_list_t',['../classsal_1_1program__options_1_1argument__map__t.html#a28a39c2a7fc997dda6571a51aab51817',1,'sal::program_options::argument_map_t']]],
-  ['swap',['swap',['../classsal_1_1file__t.html#a32e3705de9ce5816e9de04b5fd5d28bb',1,'sal::file_t::swap()'],['../classsal_1_1locked__ptr.html#af9be5b66f13e4d1d51cffb31e277da03',1,'sal::locked_ptr::swap()'],['../lockable_8hpp.html#aaecc2ffb1c0e553c0ac549061d80e8f9',1,'sal::swap()']]],
+  ['swap',['swap',['../classsal_1_1file__t.html#a32e3705de9ce5816e9de04b5fd5d28bb',1,'sal::file_t::swap()'],['../classsal_1_1locked__ptr.html#af9be5b66f13e4d1d51cffb31e277da03',1,'sal::locked_ptr::swap()'],['../classsal_1_1memory__writer__t.html#a863afae3195fee65c8442105ccea9e24',1,'sal::memory_writer_t::swap()'],['../lockable_8hpp.html#aaecc2ffb1c0e553c0ac549061d80e8f9',1,'sal::swap()']]],
   ['sync_5fpolicy_2ehpp',['sync_policy.hpp',['../sync__policy_8hpp.html',1,'']]],
   ['this_5fthread',['this_thread',['../namespacesal_1_1this__thread.html',1,'sal']]]
 ];

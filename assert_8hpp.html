@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.2.0</span>
+   &#160;<span id="projectnumber">0.3.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -133,7 +133,7 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">sal::__bits::check(<a class="code" href="builtins_8hpp.html#a4a4028356241c3266930257f1907eb4d">sal_likely</a>(condition), \</div><div class="line">      __sal_at <span class="stringliteral">&quot;: Assertion &#39;&quot;</span> #condition <span class="stringliteral">&quot;&#39; failed&quot;</span> \</div><div class="line">    )</div><div class="ttc" id="builtins_8hpp_html_a4a4028356241c3266930257f1907eb4d"><div class="ttname"><a href="builtins_8hpp.html#a4a4028356241c3266930257f1907eb4d">sal_likely</a></div><div class="ttdeci">#define sal_likely(expr)</div><div class="ttdoc">Wrapper for g++ __builtin_expect. </div><div class="ttdef"><b>Definition:</b> builtins.hpp:34</div></div>
+<b>Value:</b><div class="fragment"><div class="line">sal::__bits::check(<a class="code" href="builtins_8hpp.html#a4a4028356241c3266930257f1907eb4d">sal_likely</a>(condition), \</div><div class="line">      __sal_at <span class="stringliteral">&quot;: Assertion &#39;&quot;</span> #condition <span class="stringliteral">&quot;&#39; failed&quot;</span> \</div><div class="line">    )</div><div class="ttc" id="builtins_8hpp_html_a4a4028356241c3266930257f1907eb4d"><div class="ttname"><a href="builtins_8hpp.html#a4a4028356241c3266930257f1907eb4d">sal_likely</a></div><div class="ttdeci">#define sal_likely(expr)</div><div class="ttdoc">Wrapper for g++ __builtin_expect. </div><div class="ttdef"><b>Definition:</b> builtins.hpp:33</div></div>
 </div><!-- fragment -->
 <p>Check <em>condition</em> to be true. </p>
 <p>On false, throw std::logic_error. Like <code>assert</code>, it is invoked only if <code>NDEBUG</code> is not defined. If <em>condition</em> has desirable side-effects, use <a class="el" href="assert_8hpp.html#a9118f25b5530980e43404cc485d3c817" title="Check condition to be true. ">sal_verify()</a> instead that evaluations always <code>condition</code>. </p>

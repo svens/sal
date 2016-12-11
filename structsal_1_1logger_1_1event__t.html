@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.2.0</span>
+   &#160;<span id="projectnumber">0.3.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -117,10 +117,10 @@ Public Attributes</h2></td></tr>
 void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1logger_1_1event__t.html#a7229563687571ae6cf7854f23af9a399">sink_data</a> {}</td></tr>
 <tr class="memdesc:a7229563687571ae6cf7854f23af9a399"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opaque sink-specific data (should be used only by sink) <br /></td></tr>
 <tr class="separator:a7229563687571ae6cf7854f23af9a399"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf4323e5f86d5e24f6dec8640a37568c"><td class="memItemLeft" align="right" valign="top"><a id="abf4323e5f86d5e24f6dec8640a37568c"></a>
-<a class="el" href="classsal_1_1array__string__t.html">array_string_t</a>&lt; <a class="el" href="structsal_1_1logger_1_1event__t.html#aca8aa527e14544dd949d4825dd20781a">max_message_size</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1logger_1_1event__t.html#abf4323e5f86d5e24f6dec8640a37568c">message</a> {}</td></tr>
-<tr class="memdesc:abf4323e5f86d5e24f6dec8640a37568c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Event message. <br /></td></tr>
-<tr class="separator:abf4323e5f86d5e24f6dec8640a37568c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7cc87e596a383179245026615237d86"><td class="memItemLeft" align="right" valign="top"><a id="aa7cc87e596a383179245026615237d86"></a>
+<a class="el" href="classsal_1_1char__array__t.html">char_array_t</a>&lt; <a class="el" href="structsal_1_1logger_1_1event__t.html#aca8aa527e14544dd949d4825dd20781a">max_message_size</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1logger_1_1event__t.html#aa7cc87e596a383179245026615237d86">message</a> {}</td></tr>
+<tr class="memdesc:aa7cc87e596a383179245026615237d86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Event message. <br /></td></tr>
+<tr class="separator:aa7cc87e596a383179245026615237d86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -151,7 +151,7 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= 4000</div><div class="line">    - <span class="keyword">sizeof</span>(<a class="code" href="time_8hpp.html#a1daf17475fe5f053e657252671a4a060">time_t</a>)</div><div class="line">    - <span class="keyword">sizeof</span>(sink_t *)</div><div class="line">    - <span class="keyword">sizeof</span>(<span class="keywordtype">void</span> *)</div><div class="line">    - <span class="keyword">sizeof</span>(array_string_t&lt;1&gt;) - 1</div></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">= 4000</div><div class="line">    - <span class="keyword">sizeof</span>(<a class="code" href="time_8hpp.html#a1daf17475fe5f053e657252671a4a060">time_t</a>)</div><div class="line">    - <span class="keyword">sizeof</span>(sink_t *)</div><div class="line">    - <span class="keyword">sizeof</span>(<span class="keywordtype">void</span> *)</div><div class="line">    - <span class="keyword">sizeof</span>(char_array_t&lt;1&gt;) - 1</div></div><!-- fragment -->
 <p>Maximum message length. </p>
 
 </div>

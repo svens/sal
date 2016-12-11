@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['empty',['empty',['../classsal_1_1array__string__t.html#ae766a54dc2031f27fb373fd49b658fd3',1,'sal::array_string_t']]],
+  ['empty',['empty',['../classsal_1_1char__array__t.html#a184cd79e5ecc673143f266d48ca9c39d',1,'sal::char_array_t']]],
   ['empty_5foption_5fname_5ferror',['empty_option_name_error',['../structsal_1_1program__options_1_1empty__option__name__error.html',1,'sal::program_options']]],
-  ['end',['end',['../classsal_1_1array__string__t.html#ac653b3ee2cf97a41dfb5027c4ad3f66b',1,'sal::array_string_t']]],
+  ['end',['end',['../classsal_1_1char__array__t.html#ad321bfc7958a9603e7733611c3efc3ec',1,'sal::char_array_t::end()'],['../classsal_1_1memory__writer__t.html#af1c46ec1bf892d22ef38c5cdc3d13729',1,'sal::memory_writer_t::end()']]],
   ['error_2ehpp',['error.hpp',['../program__options_2error_8hpp.html',1,'']]],
   ['error_2ehpp',['error.hpp',['../error_8hpp.html',1,'']]],
   ['event_2ehpp',['event.hpp',['../event_8hpp.html',1,'']]],

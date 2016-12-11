@@ -6,9 +6,10 @@ var searchData=
   ['file_5ft',['file_t',['../classsal_1_1file__t.html',1,'sal']]],
   ['file_5ft',['file_t',['../classsal_1_1file__t.html#aecd5c4e561220d0ce493c9916b54d486',1,'sal::file_t']]],
   ['find',['find',['../classsal_1_1program__options_1_1option__set__t.html#a0939ac3e7568c7920aa84f018534dae4',1,'sal::program_options::option_set_t']]],
-  ['fmt',['fmt',['../fmt_8hpp.html#a636a484031eb06c6e6a8f0727be85a30',1,'sal::fmt(const T &amp;value, char *first, char *last) noexcept(noexcept(__bits::fmt(value, first, last)))'],['../fmt_8hpp.html#aa2f82e529f4c3ee11af55a04386dad1a',1,'sal::fmt(const T &amp;value, char(&amp;dest)[dest_size]) noexcept(noexcept(__bits::fmt(value, dest, dest+dest_size)))'],['../fmt_8hpp.html#a3c1e061b194c65c52ed79b352a1de7c5',1,'sal::fmt(const char(&amp;src)[src_size], char *first, char *last) noexcept(noexcept(__bits::copy(src, src+src_size - 1, first, last)))'],['../fmt_8hpp.html#ada638c97c6f5e69377b185a3e94e9797',1,'sal::fmt(const char(&amp;src)[src_size], char(&amp;dest)[dest_size]) noexcept(noexcept(__bits::copy(src, src+src_size - 1, dest, dest+dest_size)))']]],
-  ['fmt_2ehpp',['fmt.hpp',['../fmt_8hpp.html',1,'']]],
-  ['front',['front',['../classsal_1_1array__string__t.html#ae06b385732c7df7c46b3a3a6a774e5e6',1,'sal::array_string_t::front()'],['../classsal_1_1program__options_1_1option__set__t.html#a9ea998d3fc1765937bc0fe320b2589f0',1,'sal::program_options::option_set_t::front()']]],
+  ['fixed_5ffloat',['fixed_float',['../format_8hpp.html#a5058798d8e322c17cd4458f6adb7c407',1,'sal']]],
+  ['format_2ehpp',['format.hpp',['../format_8hpp.html',1,'']]],
+  ['front',['front',['../classsal_1_1char__array__t.html#a1abef8e8ae2ad1dd1ed732096dc9413e',1,'sal::char_array_t::front()'],['../classsal_1_1program__options_1_1option__set__t.html#a9ea998d3fc1765937bc0fe320b2589f0',1,'sal::program_options::option_set_t::front()']]],
   ['front_5for_5fdefault',['front_or_default',['../classsal_1_1program__options_1_1option__set__t.html#a8a35324aed10ddaaa61c3d2146b610dd',1,'sal::program_options::option_set_t']]],
+  ['full',['full',['../classsal_1_1char__array__t.html#a25df419b2a684f45ae184c3aa6084d20',1,'sal::char_array_t::full()'],['../classsal_1_1memory__writer__t.html#ac88c334294f799c610d19c23b84eac2e',1,'sal::memory_writer_t::full()']]],
   ['fwd_2ehpp',['fwd.hpp',['../fwd_8hpp.html',1,'']]]
 ];

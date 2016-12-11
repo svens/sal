@@ -4,6 +4,8 @@ var searchData=
   ['make_5fdefault',['make_default',['../classsal_1_1logger_1_1worker__t.html#a94464be869b9c79205a2e72ff193db53',1,'sal::logger::worker_t']]],
   ['make_5fdefault_5fworker',['make_default_worker',['../worker_8hpp.html#a1c01829d09303514c312238ffa7ef55b',1,'sal::logger']]],
   ['make_5fevent',['make_event',['../classsal_1_1logger_1_1channel__t.html#ad173533954d7e29b4e9346c210dc30b0',1,'sal::logger::channel_t']]],
-  ['max_5fsize',['max_size',['../classsal_1_1array__string__t.html#a38f96249102a2f4789240948403cbed3',1,'sal::array_string_t']]],
+  ['mark',['mark',['../classsal_1_1char__array__t.html#a1eb81cb9d24ddf4027d38bac94895191',1,'sal::char_array_t']]],
+  ['max_5fsize',['max_size',['../classsal_1_1char__array__t.html#a7c3c18bb1c52f8d620f3e86f8f81167a',1,'sal::char_array_t']]],
+  ['memory_5fwriter_5ft',['memory_writer_t',['../classsal_1_1memory__writer__t.html#afd3e84e426341cab2e59deac9da81212',1,'sal::memory_writer_t::memory_writer_t(T *begin, const T *end) noexcept'],['../classsal_1_1memory__writer__t.html#a778caa3f5a4beecb6f3786b9a3455427',1,'sal::memory_writer_t::memory_writer_t(T(&amp;array)[N]) noexcept'],['../classsal_1_1memory__writer__t.html#acd9e2748e1212254400b79b7458487a1',1,'sal::memory_writer_t::memory_writer_t(memory_writer_t &amp;&amp;that) noexcept']]],
   ['merge',['merge',['../classsal_1_1program__options_1_1option__set__t.html#a50deaf23e3540ce7226668f22aff67db',1,'sal::program_options::option_set_t']]]
 ];
