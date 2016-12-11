@@ -67,7 +67,7 @@ namespace logger { namespace __bits {
 namespace {
 
 
-using path_t = array_string_t<1024>;
+using path_t = char_array_t<1024>;
 
 
 void create_directories (std::string dir, path_t &path)
@@ -81,7 +81,7 @@ void create_directories (std::string dir, path_t &path)
   {
     if (is_dir_sep(ch) && !path.empty() && !is_drive_sep(path.back()))
     {
-      if (mkdir(path.data(), 0700) == -1 && errno != EEXIST)
+      if (mkdir(path.c_str(), 0700) == -1 && errno != EEXIST)
       {
         throw_system_error(std::error_code(errno, std::system_category()),
           "create_directories: ",
@@ -136,7 +136,7 @@ size_t get_size_and_filename (path_t &filename, size_t max_size) noexcept
   for (size_t i = 0;  i < 1000;  ++i)
   {
     struct stat st;
-    if (::stat(filename.data(), &st) == 0)
+    if (::stat(filename.c_str(), &st) == 0)
     {
       if (st.st_size + event_t::max_message_size < max_size)
       {
@@ -167,24 +167,14 @@ size_t get_size_and_filename (path_t &filename, size_t max_size) noexcept
 }
 
 
-void finish (array_string_t<event_t::max_message_size> &message) noexcept
+void finish (char_array_t<event_t::max_message_size> &message) noexcept
 {
   if (!message.good())
   {
-    // overflow: restore good state and append truncate marker
-    // (overwrite last part of message if necessary)
-    message.restore();
-
-    static const char marker[] = "<...>";
-    if (message.size() + sizeof(marker) > message.max_size())
-    {
-      // after restoring still doesn't fit, make room for marker
-      message.remove_suffix(sizeof(marker) - 1);
-    }
-
+    static constexpr const char marker[] = "<...>";
+    message.reset();
     message << marker;
   }
-
   message << '\n';
 }
 
@@ -250,12 +240,12 @@ file_t file_sink_t::make_file ()
     size_ = get_size_and_filename(filename, max_size_);
   }
 
-  auto file = file_t::open_or_create(filename.data(),
+  auto file = file_t::open_or_create(filename.c_str(),
     std::ios::out | std::ios::app
   );
 
   // add header to file
-  array_string_t<1024> header;
+  char_array_t<1024> header;
   header
     << "\n#"
     << "\n# log=" << filename << ';'
@@ -294,7 +284,7 @@ void file_sink_t::sink_event_write (event_t &event)
     {
       flush();
     }
-    buffer_->append(event.message.cbegin(), event.message.cend());
+    buffer_->append(event.message.begin(), event.message.end());
   }
   else
   {

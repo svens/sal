@@ -6,7 +6,7 @@
  */
 
 #include <sal/config.hpp>
-#include <sal/array_string.hpp>
+#include <sal/char_array.hpp>
 #include <stdexcept>
 #include <system_error>
 #include <type_traits>
@@ -22,9 +22,9 @@ inline void throw_error [[noreturn]] (Args &&...args)
   static_assert(std::is_base_of<std::exception, Error>::value,
     "exceptions should be inherited from std::exception"
   );
-  array_string_t<1 + 128*sizeof...(Args)> what;
-  print(what, std::forward<Args>(args)...);
-  throw Error(what.get());
+  char_array_t<1 + 128*sizeof...(Args)> what;
+  what.print(std::forward<Args>(args)...);
+  throw Error(what.c_str());
 }
 
 
@@ -32,9 +32,9 @@ inline void throw_error [[noreturn]] (Args &&...args)
 template <typename... Args>
 inline void throw_logic_error [[noreturn]] (Args &&...args)
 {
-  array_string_t<1 + 128*sizeof...(Args)> what;
-  print(what, std::forward<Args>(args)...);
-  throw std::logic_error(what.get());
+  char_array_t<1 + 128*sizeof...(Args)> what;
+  what.print(std::forward<Args>(args)...);
+  throw std::logic_error(what.c_str());
 }
 
 
@@ -42,9 +42,9 @@ inline void throw_logic_error [[noreturn]] (Args &&...args)
 template <typename... Args>
 inline void throw_runtime_error [[noreturn]] (Args &&...args)
 {
-  array_string_t<1 + 128*sizeof...(Args)> what;
-  print(what, std::forward<Args>(args)...);
-  throw std::runtime_error(what.get());
+  char_array_t<1 + 128*sizeof...(Args)> what;
+  what.print(std::forward<Args>(args)...);
+  throw std::runtime_error(what.c_str());
 }
 
 
@@ -53,9 +53,9 @@ template <typename... Args>
 inline void throw_system_error [[noreturn]] (const std::error_code &error,
   Args &&...args)
 {
-  array_string_t<1 + 128*sizeof...(Args)> what;
-  print(what, std::forward<Args>(args)...);
-  throw std::system_error(error, what.get());
+  char_array_t<1 + 128*sizeof...(Args)> what;
+  what.print(std::forward<Args>(args)...);
+  throw std::system_error(error, what.c_str());
 }
 
 

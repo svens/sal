@@ -10,7 +10,7 @@
 
 #include <sal/config.hpp>
 #include <sal/logger/fwd.hpp>
-#include <sal/array_string.hpp>
+#include <sal/char_array.hpp>
 #include <sal/time.hpp>
 
 
@@ -31,7 +31,7 @@ struct event_t
     - sizeof(time_t)
     - sizeof(sink_t *)
     - sizeof(void *)
-    - sizeof(array_string_t<1>) - 1
+    - sizeof(char_array_t<1>) - 1
   ;
 
   /// Event creation time
@@ -44,7 +44,7 @@ struct event_t
   void *sink_data{};
 
   /// Event message
-  array_string_t<max_message_size> message{};
+  char_array_t<max_message_size> message{};
 
 
 private:
