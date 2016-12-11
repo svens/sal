@@ -135,13 +135,13 @@ struct ostream_sink_t final
   {
     if (event.message.good())
     {
-      ostream << event.message << '\n';
+      ostream << event.message.c_str() << '\n';
     }
     else
     {
       // message is truncated, append marker
       // (message itself is always NUL-terminated)
-      ostream << event.message << "<...>\n";
+      ostream << event.message.c_str() << "<...>\n";
     }
   }
 };

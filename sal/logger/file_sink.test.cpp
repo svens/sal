@@ -203,7 +203,7 @@ TYPED_TEST_P(file_sink, log_overflow)
   EXPECT_EQ(1U, log_files.size());
   auto log_content = read_file(log_files[0]);
 
-  EXPECT_NE(log_content.npos, log_content.find(this->case_name));
+  EXPECT_EQ(log_content.npos, log_content.find(this->case_name));
   EXPECT_EQ(log_content.npos, log_content.find(overflowed_message));
   EXPECT_NE(log_content.npos, log_content.find("<...>"));
 }

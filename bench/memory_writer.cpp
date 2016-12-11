@@ -1,5 +1,5 @@
 #include <bench/bench.hpp>
-#include <sal/array_string.hpp>
+#include <sal/memory_writer.hpp>
 #include <cinttypes>
 #include <iostream>
 
@@ -7,7 +7,7 @@
 namespace {
 
 
-std::string function = "array_string";
+std::string function = "memory_writer";
 size_t count = 10'000'000;
 
 
@@ -102,36 +102,39 @@ void use_printf ()
 }
 
 
-void use_array_string ()
+void use_char_array ()
 {
-  sal::array_string_t<1024> str;
-  str << "bool=" << p_bool
-    << "; char=" << p_char
-    << "; schar=" << p_schar
-    << "; uchar=" << p_uchar
-    << "; i16=" << p_i16
-    << "; u16=" << p_u16
-    << "; u16:o=" << sal::oct(p_u16)
-    << "; u16:h=" << sal::hex(p_u16)
-    << "; i32=" << p_i32
-    << "; u32=" << p_u32
-    << "; u32:o=" << sal::oct(p_u32)
-    << "; u32:h=" << sal::hex(p_u32)
-    << "; i64=" << p_i64
-    << "; u64=" << p_u64
-    << "; u64:o=" << sal::oct(p_u64)
-    << "; u64:h=" << sal::hex(p_u64)
-    << "; float=" << p_float
-    << "; double=" << p_double
-    << "; ldouble=" << p_ldouble
-    << "; ptr=" << p_ptr
-    << "; str='" << p_cstr << '\''
-    << "; str='" << p_str << '\''
-  ;
+  char data[1024];
+  sal::memory_writer_t str{data};
+  str.print(
+    "bool=", p_bool,
+    "; char=", p_char,
+    "; schar=", p_schar,
+    "; uchar=", p_uchar,
+    "; i16=", p_i16,
+    "; u16=", p_u16,
+    "; u16:o=", sal::oct(p_u16),
+    "; u16:h=", sal::hex(p_u16),
+    "; i32=", p_i32,
+    "; u32=", p_u32,
+    "; u32:o=", sal::oct(p_u32),
+    "; u32:h=", sal::hex(p_u32),
+    "; i64=", p_i64,
+    "; u64=", p_u64,
+    "; u64:o=", sal::oct(p_u64),
+    "; u64:h=", sal::hex(p_u64),
+    "; float=", sal::fixed_float(p_float),
+    "; double=", sal::fixed_float(p_double),
+    "; ldouble=", sal::fixed_float(p_ldouble),
+    "; ptr=", p_ptr,
+    "; str='", p_cstr, '\'',
+    "; str='", p_str, '\'',
+    '\0'
+  );
 
   if (count == 1)
   {
-    printf("%s\n", str.get());
+    printf("%s\n", data);
   }
 }
 
@@ -154,7 +157,7 @@ option_set_t options ()
     )
     .add({"f", "function"},
       requires_argument("STRING", function),
-      help("function to test (array_string | printf)")
+      help("function to test (memory_writer | printf)")
     )
   ;
   return desc;
@@ -166,9 +169,9 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   count = std::stoul(options.back_or_default("count", { arguments }));
   function = options.back_or_default("function", { arguments });
 
-  if (function == "array_string")
+  if (function == "memory_writer")
   {
-    return worker(use_array_string);
+    return worker(use_char_array);
   }
   else if (function == "printf")
   {

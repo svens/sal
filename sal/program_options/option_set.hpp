@@ -12,9 +12,9 @@
 #include <sal/program_options/argument_map.hpp>
 #include <sal/program_options/error.hpp>
 #include <initializer_list>
-#include <iosfwd>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <tuple>
 

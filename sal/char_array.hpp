@@ -44,10 +44,7 @@ public:
 
 
   /// Construct new empty char_array_t
-  char_array_t () noexcept
-  {
-    data_[Size] = '\0';
-  }
+  char_array_t () noexcept = default;
 
 
   /**

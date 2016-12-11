@@ -1,15 +1,12 @@
 # sources
 list(APPEND sal_sources
   sal/__bits/member_assign.hpp
-  sal/array_string.hpp
   sal/assert.hpp
   sal/builtins.hpp
   sal/char_array.hpp
   sal/error.hpp
   sal/file.hpp
   sal/file.cpp
-  sal/fmt.hpp
-  sal/__bits/fmt.hpp
   sal/format.hpp
   sal/__bits/format.hpp
   sal/intrusive_queue.hpp
@@ -28,14 +25,12 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests
-  sal/array_string.test.cpp
   sal/assert.test.cpp
   sal/builtins.test.cpp
   sal/char_array.test.cpp
   sal/common.test.hpp
   sal/error.test.cpp
   sal/file.test.cpp
-  sal/fmt.test.cpp
   sal/format.test.cpp
   sal/intrusive_queue.test.cpp
   sal/lockable.test.cpp
