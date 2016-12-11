@@ -133,16 +133,9 @@ struct ostream_sink_t final
 
   void sink_event_write (event_t &event) final override
   {
-    if (event.message.good())
-    {
-      ostream << event.message.c_str() << '\n';
-    }
-    else
-    {
-      // message is truncated, append marker
-      // (message itself is always NUL-terminated)
-      ostream << event.message.c_str() << "<...>\n";
-    }
+    ostream
+      << (event.message.good() ? event.message.c_str() : "<...>")
+      << '\n';
   }
 };
 

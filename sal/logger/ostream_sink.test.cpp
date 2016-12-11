@@ -51,8 +51,8 @@ struct ostream_sink
 
     // check content
     auto content = oss.str();
-    EXPECT_NE(content.npos, content.find("test_channel"));
-    EXPECT_NE(content.npos, content.find(this->case_name));
+    EXPECT_EQ(content.npos, content.find("test_channel"));
+    EXPECT_EQ(content.npos, content.find(this->case_name));
     EXPECT_NE(content.npos, content.find("<...>"));
   }
 };
