@@ -44,4 +44,5 @@ list(APPEND sal_unittests
 
 # submodules
 include(sal/logger/list.cmake)
+include(sal/net/list.cmake)
 include(sal/program_options/list.cmake)
