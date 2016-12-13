@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/ip/__bits/platform.hpp>
+#include <sal/net/__bits/platform.hpp>
 #include <sal/char_array.hpp>
 #include <array>
 #include <cstdint>
@@ -180,7 +180,7 @@ public:
   friend memory_writer_t &operator<< (memory_writer_t &writer,
     const address_v4_t &address) noexcept
   {
-    if (__bits::ntop(&address.addr_.in, writer.begin(), writer.safe_size()))
+    if (__bits::ntop(address.addr_.in, writer.begin(), writer.safe_size()))
     {
       writer.skip_until('\0');
     }

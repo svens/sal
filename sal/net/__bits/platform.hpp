@@ -15,28 +15,36 @@
 __sal_begin
 
 
-namespace net { namespace ip { namespace __bits {
+namespace net { namespace __bits {
 
 
 class lib_t
 {
 public:
 
-  static lib_t instance;
+  static void startup () noexcept;
+
 
 private:
 
-  lib_t ();
+  static lib_t instance;
+
+  lib_t () noexcept
+  {
+    startup();
+  }
+
+  ~lib_t () noexcept;
 };
 
 
-inline bool ntop (const void *addr, char *dest, size_t size) noexcept
+inline bool ntop (const in_addr &addr, char *dest, size_t size) noexcept
 {
-  return ::inet_ntop(AF_INET, addr, dest, size) != nullptr;
+  return ::inet_ntop(AF_INET, &addr, dest, size) != nullptr;
 }
 
 
-}}} // namespace net::ip::__bits
+}} // namespace net::__bits
 
 
 __sal_end
