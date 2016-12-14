@@ -10,14 +10,14 @@ configuration:
   - Debug
   - Release
 
-before_build: |
-  cmake . -DSAL_UNITTESTS=yes -G "Visual Studio 14 2015 Win64"
+before_build:
+  - cmake . -DSAL_UNITTESTS=yes -G "Visual Studio 14 2015 Win64"
 
-build_script: |
-  cmake --build . --config %CONFIGURATION%
+build_script:
+  - cmake --build . --config %CONFIGURATION%
 
-test_script: |
-  ps: scripts\appveyor_test_script.ps1 -Config %CONFIGURATION% -Output unittests.xml
+test_script:
+  - ps: scripts\appveyor_test_script.ps1 -Config %CONFIGURATION% -Output unittests.xml
 
-on_finish: |
-  ps: (New-Object "Net.WebClient").UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\unittests.xml))
+on_finish:
+  - ps: (New-Object "Net.WebClient").UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\unittests.xml))
