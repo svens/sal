@@ -18,14 +18,20 @@ __sal_begin
 namespace net { namespace __bits {
 
 
-inline bool ntop (const in_addr &addr, char *dest, size_t size) noexcept
+inline bool ntop (const in_addr &src, char *dest, size_t size) noexcept
 {
 #if __sal_os_windows
-  auto a = addr;
-  return ::inet_ntop(AF_INET, &a, dest, size) != nullptr;
-#else
+  auto addr = src;
   return ::inet_ntop(AF_INET, &addr, dest, size) != nullptr;
+#else
+  return ::inet_ntop(AF_INET, &src, dest, size) != nullptr;
 #endif
+}
+
+
+inline bool pton (const char *src, in_addr &dest) noexcept
+{
+  return ::inet_pton(AF_INET, src, &dest) == 1;
 }
 
 

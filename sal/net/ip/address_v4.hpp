@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/net/__bits/platform.hpp>
 #include <sal/char_array.hpp>
+#include <sal/error.hpp>
 #include <array>
 #include <cstdint>
 #include <ostream>
@@ -77,7 +78,7 @@ public:
   /**
    * Return binary representation of \a this address
    */
-  constexpr bytes_t to_bytes () const noexcept
+  constexpr const bytes_t &to_bytes () const noexcept
   {
     return addr_.bytes;
   }
@@ -174,24 +175,6 @@ public:
   }
 
 
-  /**
-   * Create and insert human readable \a address into \a writer
-   */
-  friend memory_writer_t &operator<< (memory_writer_t &writer,
-    const address_v4_t &address) noexcept
-  {
-    if (__bits::ntop(address.addr_.in, writer.begin(), writer.safe_size()))
-    {
-      writer.skip_until('\0');
-    }
-    else
-    {
-      writer.skip(INET_ADDRSTRLEN);
-    }
-    return writer;
-  }
-
-
 private:
 
   union storage_t
@@ -216,6 +199,13 @@ private:
         }}
     {}
   } addr_{};
+
+  friend memory_writer_t &operator<< (memory_writer_t &writer,
+    const address_v4_t &address
+  ) noexcept;
+
+  friend address_v4_t make_address_v4 (const char *str, std::error_code &ec)
+    noexcept;
 };
 
 
@@ -264,6 +254,24 @@ inline bool operator>= (const address_v4_t &a, const address_v4_t &b) noexcept
 /**
  * Create and insert human readable \a address into \a writer
  */
+inline memory_writer_t &operator<< (memory_writer_t &writer,
+  const address_v4_t &address) noexcept
+{
+  if (__bits::ntop(address.addr_.in, writer.begin(), writer.safe_size()))
+  {
+    writer.skip_until('\0');
+  }
+  else
+  {
+    writer.skip(INET_ADDRSTRLEN);
+  }
+  return writer;
+}
+
+
+/**
+ * Create and insert human readable \a address into \a writer
+ */
 inline std::ostream &operator<< (std::ostream &os, const address_v4_t &a)
 {
   char_array_t<sizeof("255.255.255.255")> buf;
@@ -273,43 +281,78 @@ inline std::ostream &operator<< (std::ostream &os, const address_v4_t &a)
 
 
 
-/*
+/**
+ * Create and return IPv4 address from \a bytes
+ */
 constexpr address_v4_t make_address_v4 (const address_v4_t::bytes_t &bytes)
 {
+  return address_v4_t{bytes};
 }
 
 
+/**
+ * Create and return IPv4 address from \a val
+ */
 constexpr address_v4_t make_address_v4 (const address_v4_t::uint_t &val)
 {
+  return address_v4_t{val};
 }
 
 
-constexpr address_v4_t make_address_v4 (v4_mapped_t, const address_v6_t &a);
-{
-}
-
-
-constexpr address_v4_t make_address_v4 (const char *str)
-{
-}
-
-
-constexpr address_v4_t make_address_v4 (const char *str, std::error_code &ec)
+/**
+ * Create and return IPv4 address from textual representation \a str. On
+ * failure, set \a ec to \c std::errc::invalid_argument and return empty
+ * address.
+ */
+inline address_v4_t make_address_v4 (const char *str, std::error_code &ec)
   noexcept
 {
+  address_v4_t address;
+  if (__bits::pton(str, address.addr_.in))
+  {
+    return address;
+  }
+  ec = std::make_error_code(std::errc::invalid_argument);
+  return address_v4_t{};
 }
 
 
-constexpr address_v4_t make_address_v4 (const std::string &str)
+/**
+ * Create and return IPv4 address from textual representation \a str. On
+ * failure, throw std::system_error.
+ */
+inline address_v4_t make_address_v4 (const char *str)
 {
+  std::error_code ec;
+  auto address = make_address_v4(str, ec);
+  if (!ec)
+  {
+    return address;
+  }
+  throw_system_error(ec, "make_address_v4: ", str);
 }
 
 
-constexpr address_v4_t make_address_v4 (const std::string &str, std::error_code &ec)
+/**
+ * Create and return IPv4 address from textual representation \a str. On
+ * failure, set \a ec to \c std::errc::invalid_argument and return empty
+ * address.
+ */
+inline address_v4_t make_address_v4 (const std::string &str, std::error_code &ec)
   noexcept
 {
+  return make_address_v4(str.c_str(), ec);
 }
-*/
+
+
+/**
+ * Create and return IPv4 address from textual representation \a str. On
+ * failure, throw std::system_error.
+ */
+inline address_v4_t make_address_v4 (const std::string &str)
+{
+  return make_address_v4(str.c_str());
+}
 
 
 }} // namespace net::ip

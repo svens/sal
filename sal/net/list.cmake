@@ -14,5 +14,6 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests
+  sal/net/platform.test.cpp
   sal/net/ip/address_v4.test.cpp
 )

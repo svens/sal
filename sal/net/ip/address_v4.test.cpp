@@ -260,4 +260,86 @@ TEST_F(net_ip_address_v4, comparisons)
 }
 
 
+TEST_F(net_ip_address_v4, make_address_bytes)
+{
+  auto a = sal::net::ip::make_address_v4(addr_t::loopback().to_bytes());
+  EXPECT_EQ(addr_t::loopback(), a);
+}
+
+
+TEST_F(net_ip_address_v4, make_address_uint)
+{
+  auto a = sal::net::ip::make_address_v4(addr_t::loopback().to_uint());
+  EXPECT_EQ(addr_t::loopback(), a);
+}
+
+
+TEST_F(net_ip_address_v4, make_address_cstr)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v4("127.0.0.1", ec);
+  EXPECT_EQ(addr_t::loopback(), a);
+  EXPECT_FALSE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v4, make_address_cstr_invalid)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v4(case_name.c_str(), ec);
+  EXPECT_EQ(addr_t::any(), a);
+  EXPECT_TRUE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v4, make_address_string)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v4(std::string("127.0.0.1"), ec);
+  EXPECT_EQ(addr_t::loopback(), a);
+  EXPECT_FALSE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v4, make_address_string_invalid)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v4(case_name, ec);
+  EXPECT_EQ(addr_t::any(), a);
+  EXPECT_TRUE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v4, make_address_cstr_throw)
+{
+  auto a = sal::net::ip::make_address_v4("127.0.0.1");
+  EXPECT_EQ(addr_t::loopback(), a);
+}
+
+
+TEST_F(net_ip_address_v4, make_address_cstr_invalid_throw)
+{
+  EXPECT_THROW(
+    sal::net::ip::make_address_v4(case_name.c_str()),
+    std::system_error
+  );
+}
+
+
+TEST_F(net_ip_address_v4, make_address_string_throw)
+{
+  auto a = sal::net::ip::make_address_v4(std::string("127.0.0.1"));
+  EXPECT_EQ(addr_t::loopback(), a);
+}
+
+
+TEST_F(net_ip_address_v4, make_address_string_invalid_throw)
+{
+  EXPECT_THROW(
+    sal::net::ip::make_address_v4(case_name),
+    std::system_error
+  );
+}
+
+
 } // namespace
