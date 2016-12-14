@@ -7,6 +7,7 @@ list(APPEND sal_docs
 list(APPEND sal_sources
   sal/net/__bits/platform.hpp
   sal/net/__bits/platform.cpp
+  sal/net/fwd.hpp
   sal/net/ip/address_v4.hpp
 )
 

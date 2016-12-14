@@ -441,7 +441,7 @@ argument_map_t option_set_t::load_from (Parser &parser) const
 inline std::ostream &operator<< (std::ostream &os,
   const option_set_t &option_set)
 {
-  auto width = os.width();
+  auto width = static_cast<size_t>(os.width());
   os.width(0);
   return option_set.print(os, width);
 }

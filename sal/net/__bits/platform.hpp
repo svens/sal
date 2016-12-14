@@ -18,29 +18,14 @@ __sal_begin
 namespace net { namespace __bits {
 
 
-class lib_t
-{
-public:
-
-  static void startup () noexcept;
-
-
-private:
-
-  static lib_t instance;
-
-  lib_t () noexcept
-  {
-    startup();
-  }
-
-  ~lib_t () noexcept;
-};
-
-
 inline bool ntop (const in_addr &addr, char *dest, size_t size) noexcept
 {
+#if __sal_os_windows
+  auto a = addr;
+  return ::inet_ntop(AF_INET, &a, dest, size) != nullptr;
+#else
   return ::inet_ntop(AF_INET, &addr, dest, size) != nullptr;
+#endif
 }
 
 

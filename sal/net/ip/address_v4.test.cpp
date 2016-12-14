@@ -1,4 +1,5 @@
 #include <sal/net/ip/address_v4.hpp>
+#include <sal/net/fwd.hpp>
 #include <sal/common.test.hpp>
 
 

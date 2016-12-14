@@ -1,45 +1,86 @@
 #include <sal/net/__bits/platform.hpp>
-#include <mutex>
+#include <sal/net/fwd.hpp>
+
+#if __sal_os_windows
+  #include <mutex>
+#endif
 
 
 __sal_begin
 
 
-namespace net { namespace __bits {
+namespace net {
 
 
-lib_t lib_t::instance;
-
+#if __sal_os_windows
 
 namespace {
 
-void internal_startup () noexcept
+
+struct lib_t
 {
-#if __sal_os_windows
-  static WSADATA wsa;
-  WSAStartup(MAKEWORD(2, 2), &wsa);
-#endif
+  lib_t () noexcept
+  {
+    setup();
+  }
+
+  ~lib_t () noexcept
+  {
+    cleanup();
+  }
+
+  static std::error_code setup_result;
+  static lib_t lib;
+
+  static void setup () noexcept;
+  static void cleanup () noexcept;
+};
+
+std::error_code lib_t::setup_result{};
+lib_t lib_t::lib;
+
+
+void internal_setup (std::error_code &result) noexcept
+{
+  WSADATA wsa;
+  result.assign(
+    ::WSAStartup(MAKEWORD(2, 2), &wsa),
+    std::system_category()
+  );
 }
+
+
+void lib_t::setup () noexcept
+{
+  static std::once_flag flag;
+  std::call_once(flag, &internal_setup, setup_result);
+}
+
+
+void lib_t::cleanup () noexcept
+{
+  ::WSACleanup();
+}
+
 
 } // namespace
 
-
-void lib_t::startup () noexcept
-{
-  static std::once_flag initialized;
-  std::call_once(initialized, &internal_startup);
-}
+#endif
 
 
-lib_t::~lib_t () noexcept
+const std::error_code &init () noexcept
 {
 #if __sal_os_windows
-  WSACleanup();
+  lib_t::setup();
+  return lib_t::setup_result;
+#else
+  static std::error_code result{};
+  return result;
 #endif
 }
 
 
-}} // namespace net::__bits
+} // namespace net
 
 
 __sal_end
