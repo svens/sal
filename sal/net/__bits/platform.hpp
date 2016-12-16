@@ -35,6 +35,23 @@ inline bool pton (const char *src, in_addr &dest) noexcept
 }
 
 
+inline bool ntop (const in6_addr &src, char *dest, size_t size) noexcept
+{
+#if __sal_os_windows
+  auto addr = src;
+  return ::inet_ntop(AF_INET6, &addr, dest, size) != nullptr;
+#else
+  return ::inet_ntop(AF_INET6, &src, dest, size) != nullptr;
+#endif
+}
+
+
+inline bool pton (const char *src, in6_addr &dest) noexcept
+{
+  return ::inet_pton(AF_INET6, src, &dest) == 1;
+}
+
+
 }} // namespace net::__bits
 
 

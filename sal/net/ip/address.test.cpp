@@ -544,4 +544,64 @@ TEST_F(net_ip_address_v6, is_multicast_global)
 }
 
 
+TEST_F(net_ip_address_v6, to_string)
+{
+  EXPECT_EQ("::", addr_t::any().to_string());
+  EXPECT_EQ("::1", addr_t::loopback().to_string());
+  EXPECT_EQ("ff00::1", addr_t{multicast}.to_string());
+}
+
+
+TEST_F(net_ip_address_v6, memory_writer_inserter)
+{
+  char data[1024];
+  sal::memory_writer_t writer{data, data + INET6_ADDRSTRLEN};
+
+  writer << addr_t::any();
+  EXPECT_STREQ("::", data);
+
+  writer.first = data;
+  writer << addr_t::loopback();
+  EXPECT_STREQ("::1", data);
+
+  writer.first = data;
+  writer << addr_t{multicast};
+  EXPECT_STREQ("ff00::1", data);
+}
+
+
+TEST_F(net_ip_address_v6, memory_writer_inserter_exact)
+{
+  char data[1024];
+  sal::memory_writer_t writer{data, data + sizeof("::")};
+  EXPECT_TRUE(bool(writer << addr_t::any()));
+  EXPECT_STREQ("::", data);
+}
+
+
+TEST_F(net_ip_address_v6, memory_writer_inserter_overflow)
+{
+  char data[1024];
+  sal::memory_writer_t writer{data, data + sizeof("..")};
+  EXPECT_FALSE(bool(writer << addr_t{multicast}));
+}
+
+
+TEST_F(net_ip_address_v6, ostream_inserter)
+{
+  std::ostringstream oss;
+
+  oss << addr_t::any();
+  EXPECT_EQ("::", oss.str());
+
+  oss.str("");
+  oss << addr_t::loopback();
+  EXPECT_EQ("::1", oss.str());
+
+  oss.str("");
+  oss << addr_t{multicast};
+  EXPECT_EQ("ff00::1", oss.str());
+}
+
+
 } // namespace

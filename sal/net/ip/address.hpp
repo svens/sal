@@ -68,11 +68,7 @@ public:
   /**
    * Assign \a this fields from \a that
    */
-  address_v4_t &operator= (const address_v4_t &that) noexcept
-  {
-    addr_.in.s_addr = that.addr_.in.s_addr;
-    return *this;
-  }
+  address_v4_t &operator= (const address_v4_t &that) noexcept = default;
 
 
   /**
@@ -98,7 +94,7 @@ public:
    */
   constexpr bool is_unspecified () const noexcept
   {
-    return addr_.in.s_addr == 0;
+    return addr_.in.s_addr == INADDR_ANY;
   }
 
 
@@ -279,7 +275,7 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
  */
 inline std::ostream &operator<< (std::ostream &os, const address_v4_t &a)
 {
-  char_array_t<sizeof("255.255.255.255")> buf;
+  char_array_t<INET_ADDRSTRLEN> buf;
   buf << a;
   return (os << buf.c_str());
 }
@@ -392,6 +388,12 @@ public:
     : addr_{bytes}
     , scope_{scope}
   {}
+
+
+  /**
+   * Assign \a this fields from \a that
+   */
+  address_v6_t &operator= (const address_v6_t &that) noexcept = default;
 
 
   /**
@@ -530,6 +532,17 @@ public:
 
 
   /**
+   * Return human readable textual representation of \a this address
+   */
+  std::string to_string () const
+  {
+    char_array_t<INET6_ADDRSTRLEN> buf;
+    buf << *this;
+    return buf.to_string();
+  }
+
+
+  /**
    * Return unspecified address
    */
   static const address_v6_t &any () noexcept
@@ -575,7 +588,40 @@ private:
   constexpr address_v6_t (const in6_addr &addr) noexcept
     : addr_{addr}
   {}
+
+  friend memory_writer_t &operator<< (memory_writer_t &writer,
+    const address_v6_t &address
+  ) noexcept;
 };
+
+
+/**
+ * Create and insert human readable \a address into \a writer
+ */
+inline memory_writer_t &operator<< (memory_writer_t &writer,
+  const address_v6_t &address) noexcept
+{
+  if (__bits::ntop(address.addr_.in, writer.begin(), writer.safe_size()))
+  {
+    writer.skip_until('\0');
+  }
+  else
+  {
+    writer.skip(INET6_ADDRSTRLEN);
+  }
+  return writer;
+}
+
+
+/**
+ * Create and insert human readable \a address into \a writer
+ */
+inline std::ostream &operator<< (std::ostream &os, const address_v6_t &a)
+{
+  char_array_t<INET6_ADDRSTRLEN> buf;
+  buf << a;
+  return (os << buf.c_str());
+}
 
 
 }} // namespace net::ip
