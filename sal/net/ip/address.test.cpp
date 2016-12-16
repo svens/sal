@@ -446,6 +446,16 @@ TEST_F(net_ip_address_v6, operator_assign)
 }
 
 
+TEST_F(net_ip_address_v6, scope)
+{
+  addr_t a{bytes};
+  EXPECT_EQ(0U, a.scope_id());
+
+  a.scope_id(scope);
+  EXPECT_EQ(scope, a.scope_id());
+}
+
+
 TEST_F(net_ip_address_v6, is_unspecified)
 {
   addr_t a;
@@ -601,6 +611,134 @@ TEST_F(net_ip_address_v6, ostream_inserter)
   oss.str("");
   oss << addr_t{multicast};
   EXPECT_EQ("ff00::1", oss.str());
+}
+
+
+TEST_F(net_ip_address_v6, comparisons)
+{
+  auto a = addr_t::any();
+  auto b = addr_t::loopback();
+  auto c = a;
+
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a == c);
+
+  EXPECT_TRUE(a != b);
+  EXPECT_FALSE(a != c);
+
+  EXPECT_TRUE(a < b);
+  EXPECT_FALSE(a < c);
+
+  EXPECT_FALSE(a > b);
+  EXPECT_FALSE(a > c);
+
+  EXPECT_TRUE(a <= b);
+  EXPECT_TRUE(a <= c);
+
+  EXPECT_FALSE(a >= b);
+  EXPECT_TRUE(a >= c);
+}
+
+
+TEST_F(net_ip_address_v6, make_address_bytes)
+{
+  auto a = sal::net::ip::make_address_v6(addr_t::loopback().to_bytes());
+  EXPECT_EQ(addr_t::loopback(), a);
+}
+
+
+TEST_F(net_ip_address_v6, make_address_cstr)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v6("::1", ec);
+  EXPECT_EQ(addr_t::loopback(), a);
+  EXPECT_FALSE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v6, make_address_cstr_invalid)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v6(case_name.c_str(), ec);
+  EXPECT_EQ(addr_t::any(), a);
+  EXPECT_TRUE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v6, make_address_string)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v6(std::string("::1"), ec);
+  EXPECT_EQ(addr_t::loopback(), a);
+  EXPECT_FALSE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v6, make_address_string_invalid)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v6(case_name, ec);
+  EXPECT_EQ(addr_t::any(), a);
+  EXPECT_TRUE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v6, make_address_cstr_throw)
+{
+  auto a = sal::net::ip::make_address_v6("::1");
+  EXPECT_EQ(addr_t::loopback(), a);
+}
+
+
+TEST_F(net_ip_address_v6, make_address_cstr_invalid_throw)
+{
+  EXPECT_THROW(
+    sal::net::ip::make_address_v6(case_name.c_str()),
+    std::system_error
+  );
+}
+
+
+TEST_F(net_ip_address_v6, make_address_string_throw)
+{
+  auto a = sal::net::ip::make_address_v6(std::string("::1"));
+  EXPECT_EQ(addr_t::loopback(), a);
+}
+
+
+TEST_F(net_ip_address_v6, make_address_string_invalid_throw)
+{
+  EXPECT_THROW(
+    sal::net::ip::make_address_v6(case_name),
+    std::system_error
+  );
+}
+
+
+TEST_F(net_ip_address_v6, make_address_v4_mapped)
+{
+  auto a4 = sal::net::ip::address_v4_t::loopback();
+  auto a6 = sal::net::ip::make_address_v6(a4);
+  auto b = sal::net::ip::make_address_v4(a6);
+  EXPECT_EQ(a4, b);
+}
+
+
+TEST_F(net_ip_address_v6, make_address_v4_mapped_invalid)
+{
+  std::error_code ec{};
+  auto a = sal::net::ip::make_address_v4(addr_t::any(), ec);
+  EXPECT_TRUE(a.is_unspecified());
+  EXPECT_TRUE(bool(ec));
+}
+
+
+TEST_F(net_ip_address_v6, make_address_v4_mapped_invalid_throw)
+{
+  EXPECT_THROW(
+    sal::net::ip::make_address_v4(addr_t::any()),
+    std::system_error
+  );
 }
 
 

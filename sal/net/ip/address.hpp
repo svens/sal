@@ -361,8 +361,6 @@ inline address_v4_t make_address_v4 (const std::string &str)
  *
  * Address type identification is defined by RFC4291
  * (https://tools.ietf.org/html/rfc4291)
- *
- * TODO http://pubs.opengroup.org/onlinepubs/000095399/basedefs/netinet/in.h.html
  */
 class address_v6_t // {{{1
 {
@@ -562,6 +560,15 @@ public:
   }
 
 
+  /**
+   * Compare \a this to \a that. Return value is same as for std::memcmp
+   */
+  int compare (const address_v6_t &that) const noexcept
+  {
+    return std::memcmp(&addr_.in, &that.addr_.in, sizeof(addr_.in));
+  }
+
+
 private:
 
   union storage_t
@@ -592,7 +599,64 @@ private:
   friend memory_writer_t &operator<< (memory_writer_t &writer,
     const address_v6_t &address
   ) noexcept;
+
+  friend address_v6_t make_address_v6 (const char *str, std::error_code &ec)
+    noexcept;
 };
+
+
+/**
+ * Return true if \a a == \a b
+ */
+inline bool operator== (const address_v6_t &a, const address_v6_t &b) noexcept
+{
+  return a.compare(b) == 0;
+}
+
+
+/**
+ * Return true if \a a < \a b
+ */
+bool operator< (const address_v6_t &a, const address_v6_t &b) noexcept
+{
+  return a.compare(b) < 0;
+}
+
+
+/**
+ * Return true if \a a != \a b
+ */
+inline bool operator!= (const address_v6_t &a, const address_v6_t &b) noexcept
+{
+  return a.compare(b) != 0;
+}
+
+
+/**
+ * Return true if \a a > \a b
+ */
+inline bool operator> (const address_v6_t &a, const address_v6_t &b) noexcept
+{
+  return a.compare(b) > 0;
+}
+
+
+/**
+ * Return true if \a a <= \a b
+ */
+inline bool operator<= (const address_v6_t &a, const address_v6_t &b) noexcept
+{
+  return a.compare(b) <= 0;
+}
+
+
+/**
+ * Return true if \a a >= \a b
+ */
+inline bool operator>= (const address_v6_t &a, const address_v6_t &b) noexcept
+{
+  return a.compare(b) >= 0;
+}
 
 
 /**
@@ -621,6 +685,128 @@ inline std::ostream &operator<< (std::ostream &os, const address_v6_t &a)
   char_array_t<INET6_ADDRSTRLEN> buf;
   buf << a;
   return (os << buf.c_str());
+}
+
+
+/**
+ * Create and return IPv6 address from \a bytes
+ */
+constexpr address_v6_t make_address_v6 (const address_v6_t::bytes_t &bytes,
+  address_v6_t::scope_id_t scope=0) noexcept
+{
+  return address_v6_t{bytes, scope};
+}
+
+
+/**
+ * Create and return IPv6 address from textual representation \a str. On
+ * failure, set \a ec to \c std::errc::invalid_argument and return empty
+ * address.
+ */
+inline address_v6_t make_address_v6 (const char *str, std::error_code &ec)
+  noexcept
+{
+  address_v6_t address;
+  if (__bits::pton(str, address.addr_.in))
+  {
+    return address;
+  }
+  ec = std::make_error_code(std::errc::invalid_argument);
+  return address_v6_t{};
+}
+
+
+/**
+ * Create and return IPv6 address from textual representation \a str. On
+ * failure, throw std::system_error.
+ */
+inline address_v6_t make_address_v6 (const char *str)
+{
+  std::error_code ec;
+  auto address = make_address_v6(str, ec);
+  if (!ec)
+  {
+    return address;
+  }
+  throw_system_error(ec, "make_address_v6: ", str);
+}
+
+
+/**
+ * Create and return IPv4 address from textual representation \a str. On
+ * failure, set \a ec to \c std::errc::invalid_argument and return empty
+ * address.
+ */
+inline address_v6_t make_address_v6 (const std::string &str, std::error_code &ec)
+  noexcept
+{
+  return make_address_v6(str.c_str(), ec);
+}
+
+
+/**
+ * Create and return IPv4 address from textual representation \a str. On
+ * failure, throw std::system_error.
+ */
+inline address_v6_t make_address_v6 (const std::string &str)
+{
+  return make_address_v6(str.c_str());
+}
+
+
+/**
+ * Return address_v4_t object corresponding to the IPv4-mapped IPv6 address.
+ * If \a a.is_v4_mapped() is false, return unspecified IPv4 address and set
+ * \a ec to \c std::errc::invalid_argument.
+ */
+inline address_v4_t make_address_v4 (const address_v6_t &a, std::error_code &ec)
+  noexcept
+{
+  if (a.is_v4_mapped())
+  {
+    const auto &v6b = a.to_bytes();
+    address_v4_t::bytes_t bytes =
+    {
+      { v6b[12], v6b[13], v6b[14], v6b[15] }
+    };
+    return address_v4_t{bytes};
+  }
+  ec = std::make_error_code(std::errc::invalid_argument);
+  return address_v4_t{};
+}
+
+
+/**
+ * Return address_v4_t object corresponding to the IPv4-mapped IPv6 address.
+ * If \a a.is_v4_mapped() is false, throw std::system_error
+ */
+inline address_v4_t make_address_v4 (const address_v6_t &a)
+{
+  std::error_code ec;
+  auto address = make_address_v4(a, ec);
+  if (!ec)
+  {
+    return address;
+  }
+  throw_system_error(ec, "make_address_v4: ", a);
+}
+
+
+/**
+ * Return address_v6_t object containing IPv4-mapped IPv6 address
+ * corresponding to \a a.
+ */
+inline address_v6_t make_address_v6 (const address_v4_t &a)
+  noexcept
+{
+  const auto &v4b = a.to_bytes();
+  address_v6_t::bytes_t bytes =
+  {
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0xff, 0xff,
+      v4b[0], v4b[1], v4b[2], v4b[3] }
+  };
+  return address_v6_t{bytes};
 }
 
 
