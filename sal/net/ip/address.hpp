@@ -1,8 +1,8 @@
 #pragma once
 
 /**
- * \file sal/net/ip/address_v4.hpp
- * Representation of IPv4 address.
+ * \file sal/net/ip/address.hpp
+ * IP addresses (v4, v6)
  */
 
 
@@ -24,7 +24,7 @@ namespace net { namespace ip {
 /**
  * IPv4 address.
  */
-class address_v4_t
+class address_v4_t // {{{1
 {
 public:
 
@@ -96,43 +96,45 @@ public:
   /**
    * Return true if \a this is unspecified address (0.0.0.0)
    */
-  bool is_unspecified () const noexcept
+  constexpr bool is_unspecified () const noexcept
   {
-    return to_uint() == 0;
+    return addr_.in.s_addr == 0;
   }
 
 
   /**
    * Return true if \a this is loopback address (127.0.0.0 - 127.255.255.255)
    */
-  bool is_loopback () const noexcept
+  constexpr bool is_loopback () const noexcept
   {
-    return (to_uint() & 0xff000000) == 0x7f000000;
+    return (addr_.bytes[0] & 0xff) == 0x7f;
   }
 
 
   /**
    * Return true if \a this is multicast address (224.0.0.0 - 239.255.255.255)
    */
-  bool is_multicast () const noexcept
+  constexpr bool is_multicast () const noexcept
   {
-    return (to_uint() & 0xf0000000) == 0xe0000000;
+    return (addr_.bytes[0] & 0xf0) == 0xe0;
   }
 
 
   /**
    * Return true if \a this is private address (RFC1918)
    */
-  bool is_private () const noexcept
+  constexpr bool is_private () const noexcept
   {
-    auto as_uint = to_uint();
     return
       // 10.0.0.0 - 10.255.255.255
-      (as_uint >= 0x0a000000 && as_uint <= 0x0affffff)
+      (addr_.bytes[0] == 0x0a)
+
       // 172.16.0.0 - 172.31.255.255
-      || (as_uint >= 0xac100000 && as_uint <= 0xac1fffff)
+      || (addr_.bytes[0] == 0xac
+        && (addr_.bytes[1] >= 0x10 && addr_.bytes[1] <= 0x1f))
+
       // 192.168.0.0 - 192.168.255.255
-      || (as_uint >= 0xc0a80000 && as_uint <= 0xc0a8ffff)
+      || (addr_.bytes[0] == 0xc0 && addr_.bytes[1] == 0xa8)
     ;
   }
 
@@ -151,27 +153,30 @@ public:
   /**
    * Return unspecified address
    */
-  static constexpr address_v4_t any () noexcept
+  static const address_v4_t &any () noexcept
   {
-    return address_v4_t{INADDR_ANY};
+    static const address_v4_t addr_{INADDR_ANY};
+    return addr_;
   }
 
 
   /**
    * Return loopback address
    */
-  static constexpr address_v4_t loopback () noexcept
+  static const address_v4_t &loopback () noexcept
   {
-    return address_v4_t{INADDR_LOOPBACK};
+    static const address_v4_t addr_{INADDR_LOOPBACK};
+    return addr_;
   }
 
 
   /**
    * Return broadcast address
    */
-  static constexpr address_v4_t broadcast () noexcept
+  static const address_v4_t &broadcast () noexcept
   {
-    return address_v4_t(INADDR_BROADCAST);
+    static const address_v4_t addr_{INADDR_BROADCAST};
+    return addr_;
   }
 
 
@@ -183,7 +188,7 @@ private:
     bytes_t bytes;
 
     constexpr storage_t () noexcept
-      : bytes{{0, 0, 0, 0}}
+      : bytes{}
     {}
 
     explicit constexpr storage_t (const bytes_t &bytes) noexcept
@@ -353,6 +358,224 @@ inline address_v4_t make_address_v4 (const std::string &str)
 {
   return make_address_v4(str.c_str());
 }
+
+
+/**
+ * IPv6 address.
+ *
+ * Address type identification is defined by RFC4291
+ * (https://tools.ietf.org/html/rfc4291)
+ *
+ * TODO http://pubs.opengroup.org/onlinepubs/000095399/basedefs/netinet/in.h.html
+ */
+class address_v6_t // {{{1
+{
+public:
+
+  /// Binary representation of IPv6 address
+  using bytes_t = std::array<uint8_t, 16>;
+
+  /// Scope ID
+  using scope_id_t = uint_least32_t;
+
+
+  /**
+   * Construct unspecified address
+   */
+  constexpr address_v6_t () noexcept = default;
+
+
+  /**
+   * Construct new address from \a bytes
+   */
+  constexpr address_v6_t (const bytes_t &bytes, scope_id_t scope=0) noexcept
+    : addr_{bytes}
+    , scope_{scope}
+  {}
+
+
+  /**
+   * Construct new address as copy of \a that
+   */
+  constexpr address_v6_t (const address_v6_t &that) noexcept
+    : addr_{that.addr_.bytes}
+    , scope_{that.scope_}
+  {}
+
+
+  /**
+   * Return binary representation of \a this address
+   */
+  constexpr const bytes_t &to_bytes () const noexcept
+  {
+    return addr_.bytes;
+  }
+
+
+  /**
+   * Set scope id
+   */
+  void scope_id (scope_id_t id) noexcept
+  {
+    scope_ = id;
+  }
+
+
+  /**
+   * Get scope id
+   */
+  constexpr scope_id_t scope_id () const noexcept
+  {
+    return scope_;
+  }
+
+
+  /**
+   * Return true if \a this is unspecified address (::)
+   */
+  bool is_unspecified () const noexcept
+  {
+    return IN6_IS_ADDR_UNSPECIFIED(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is loopback address (::1)
+   */
+  bool is_loopback () const noexcept
+  {
+    return IN6_IS_ADDR_LOOPBACK(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is unicast link-local address
+   */
+  bool is_link_local () const noexcept
+  {
+    return IN6_IS_ADDR_LINKLOCAL(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is unicast site-local address
+   */
+  bool is_site_local () const noexcept
+  {
+    return IN6_IS_ADDR_SITELOCAL(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this represents IPv4-mapped IPv6 address
+   */
+  bool is_v4_mapped () const noexcept
+  {
+    return IN6_IS_ADDR_V4MAPPED(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is multicast address
+   */
+  bool is_multicast () const noexcept
+  {
+    return IN6_IS_ADDR_MULTICAST(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is multicast node-local address
+   */
+  bool is_multicast_node_local () const noexcept
+  {
+    return IN6_IS_ADDR_MC_NODELOCAL(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is multicast link-local address
+   */
+  bool is_multicast_link_local () const noexcept
+  {
+    return IN6_IS_ADDR_MC_LINKLOCAL(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is multicast site-local address
+   */
+  bool is_multicast_site_local () const noexcept
+  {
+    return IN6_IS_ADDR_MC_SITELOCAL(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is multicast organisation-local address
+   */
+  bool is_multicast_org_local () const noexcept
+  {
+    return IN6_IS_ADDR_MC_ORGLOCAL(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return true if \a this is multicat global address
+   */
+  bool is_multicast_global () const noexcept
+  {
+    return IN6_IS_ADDR_MC_GLOBAL(&addr_.in) != 0;
+  }
+
+
+  /**
+   * Return unspecified address
+   */
+  static const address_v6_t &any () noexcept
+  {
+    static const address_v6_t addr_{in6addr_any};
+    return addr_;
+  }
+
+
+  /**
+   * Return loopback address
+   */
+  static const address_v6_t &loopback () noexcept
+  {
+    static const address_v6_t addr_{in6addr_loopback};
+    return addr_;
+  }
+
+
+private:
+
+  union storage_t
+  {
+    in6_addr in;
+    bytes_t bytes;
+
+    constexpr storage_t () noexcept
+      : bytes{}
+    {}
+
+    explicit constexpr storage_t (const bytes_t &bytes) noexcept
+      : bytes{bytes}
+    {}
+
+    explicit constexpr storage_t (const in6_addr &addr) noexcept
+      : in{addr}
+    {}
+  } addr_{};
+
+  scope_id_t scope_{};
+
+
+  constexpr address_v6_t (const in6_addr &addr) noexcept
+    : addr_{addr}
+  {}
+};
 
 
 }} // namespace net::ip

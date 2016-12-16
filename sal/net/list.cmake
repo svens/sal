@@ -8,12 +8,12 @@ list(APPEND sal_sources
   sal/net/__bits/platform.hpp
   sal/net/__bits/platform.cpp
   sal/net/fwd.hpp
-  sal/net/ip/address_v4.hpp
+  sal/net/ip/address.hpp
 )
 
 
 # unittests
 list(APPEND sal_unittests
   sal/net/platform.test.cpp
-  sal/net/ip/address_v4.test.cpp
+  sal/net/ip/address.test.cpp
 )

@@ -1,4 +1,4 @@
-#include <sal/net/ip/address_v4.hpp>
+#include <sal/net/ip/address.hpp>
 #include <sal/net/fwd.hpp>
 #include <sal/common.test.hpp>
 
@@ -6,67 +6,71 @@
 namespace {
 
 
-namespace ip = sal::net::ip;
-
-using net_ip_address_v4 = sal_test::fixture;
-using addr_t = sal::net::ip::address_v4_t;
-
-
-constexpr addr_t::uint_t to_uint (const addr_t::bytes_t &b)
+struct net_ip_address_v4 // {{{1
+  : public sal_test::fixture
 {
-  return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
-}
+  using addr_t = sal::net::ip::address_v4_t;
 
+  addr_t::bytes_t null =
+  {
+    { 0, 0, 0, 0 }
+  };
 
-constexpr addr_t::bytes_t
-  null_bytes{{0, 0, 0, 0}},
-  some_bytes{{1, 2, 3, 4}},
-  loopback_bytes{addr_t::loopback().to_bytes()},
-  multicast_bytes{{224, 1, 2, 3}};
+  addr_t::bytes_t bytes =
+  {
+    { 1, 2, 3, 4 }
+  };
 
-constexpr addr_t::uint_t
-  null_uint = to_uint(null_bytes),
-  some_uint = to_uint(some_bytes);
+  addr_t::bytes_t multicast =
+  {
+    { 224, 1, 2, 3 }
+  };
+
+  static constexpr addr_t::uint_t to_uint (const addr_t::bytes_t &b) noexcept
+  {
+    return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
+  }
+};
 
 
 TEST_F(net_ip_address_v4, ctor)
 {
   addr_t a;
-  EXPECT_EQ(null_uint, a.to_uint());
-  EXPECT_EQ(null_bytes, a.to_bytes());
+  EXPECT_EQ(to_uint(null), a.to_uint());
+  EXPECT_EQ(null, a.to_bytes());
 }
 
 
 TEST_F(net_ip_address_v4, ctor_bytes)
 {
-  addr_t a{some_bytes};
-  EXPECT_EQ(some_bytes, a.to_bytes());
-  EXPECT_EQ(some_uint, a.to_uint());
+  addr_t a{bytes};
+  EXPECT_EQ(bytes, a.to_bytes());
+  EXPECT_EQ(to_uint(bytes), a.to_uint());
 }
 
 
 TEST_F(net_ip_address_v4, ctor_uint)
 {
-  addr_t a{some_uint};
-  EXPECT_EQ(some_uint, a.to_uint());
-  EXPECT_EQ(some_bytes, a.to_bytes());
+  addr_t a{to_uint(bytes)};
+  EXPECT_EQ(to_uint(bytes), a.to_uint());
+  EXPECT_EQ(bytes, a.to_bytes());
 }
 
 
 TEST_F(net_ip_address_v4, ctor_address_v4)
 {
-  addr_t a{some_bytes}, b{a};
-  EXPECT_EQ(some_bytes, b.to_bytes());
-  EXPECT_EQ(some_uint, b.to_uint());
+  addr_t a{bytes}, b{a};
+  EXPECT_EQ(bytes, b.to_bytes());
+  EXPECT_EQ(to_uint(bytes), b.to_uint());
 }
 
 
 TEST_F(net_ip_address_v4, operator_assign)
 {
-  addr_t a{some_bytes}, b;
+  addr_t a{bytes}, b;
   b = a;
-  EXPECT_EQ(some_bytes, b.to_bytes());
-  EXPECT_EQ(some_uint, b.to_uint());
+  EXPECT_EQ(bytes, b.to_bytes());
+  EXPECT_EQ(to_uint(bytes), b.to_uint());
 }
 
 
@@ -75,7 +79,7 @@ TEST_F(net_ip_address_v4, is_unspecified)
   addr_t a;
   EXPECT_TRUE(a.is_unspecified());
 
-  addr_t b{some_bytes};
+  addr_t b{bytes};
   EXPECT_FALSE(b.is_unspecified());
 
   EXPECT_TRUE(addr_t::any().is_unspecified());
@@ -89,8 +93,8 @@ TEST_F(net_ip_address_v4, is_loopback)
   addr_t a;
   EXPECT_FALSE(a.is_loopback());
 
-  addr_t b{loopback_bytes};
-  EXPECT_TRUE(b.is_loopback());
+  addr_t b{bytes};
+  EXPECT_FALSE(b.is_loopback());
 
   EXPECT_FALSE(addr_t::any().is_loopback());
   EXPECT_TRUE(addr_t::loopback().is_loopback());
@@ -103,7 +107,7 @@ TEST_F(net_ip_address_v4, is_multicast)
   addr_t a;
   EXPECT_FALSE(a.is_multicast());
 
-  addr_t b{multicast_bytes};
+  addr_t b{multicast};
   EXPECT_TRUE(b.is_multicast());
 
   EXPECT_FALSE(addr_t::any().is_multicast());
@@ -161,8 +165,8 @@ TEST_F(net_ip_address_v4, to_string)
   EXPECT_EQ("0.0.0.0", addr_t::any().to_string());
   EXPECT_EQ("127.0.0.1", addr_t::loopback().to_string());
   EXPECT_EQ("255.255.255.255", addr_t::broadcast().to_string());
-  EXPECT_EQ("1.2.3.4", addr_t{some_bytes}.to_string());
-  EXPECT_EQ("224.1.2.3", addr_t{multicast_bytes}.to_string());
+  EXPECT_EQ("1.2.3.4", addr_t{bytes}.to_string());
+  EXPECT_EQ("224.1.2.3", addr_t{multicast}.to_string());
 }
 
 
@@ -183,11 +187,11 @@ TEST_F(net_ip_address_v4, memory_writer_inserter)
   EXPECT_STREQ("255.255.255.255", data);
 
   writer.first = data;
-  writer << addr_t{some_bytes};
+  writer << addr_t{bytes};
   EXPECT_STREQ("1.2.3.4", data);
 
   writer.first = data;
-  writer << addr_t{multicast_bytes};
+  writer << addr_t{multicast};
   EXPECT_STREQ("224.1.2.3", data);
 }
 
@@ -225,11 +229,11 @@ TEST_F(net_ip_address_v4, ostream_inserter)
   EXPECT_EQ("255.255.255.255", oss.str());
 
   oss.str("");
-  oss << addr_t{some_bytes};
+  oss << addr_t{bytes};
   EXPECT_EQ("1.2.3.4", oss.str());
 
   oss.str("");
-  oss << addr_t{multicast_bytes};
+  oss << addr_t{multicast};
   EXPECT_EQ("224.1.2.3", oss.str());
 }
 
@@ -339,6 +343,204 @@ TEST_F(net_ip_address_v4, make_address_string_invalid_throw)
     sal::net::ip::make_address_v4(case_name),
     std::system_error
   );
+}
+
+
+struct net_ip_address_v6 // {{{1
+  : public sal_test::fixture
+{
+  using addr_t = sal::net::ip::address_v6_t;
+
+  addr_t::scope_id_t scope{1};
+
+  addr_t::bytes_t bytes =
+  {
+    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
+  };
+
+  addr_t::bytes_t link_local =
+  {
+    { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
+  };
+
+  addr_t::bytes_t site_local =
+  {
+    { 0xfe, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
+  };
+
+  addr_t::bytes_t v4_mapped =
+  {
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 }
+  };
+
+  addr_t::bytes_t multicast =
+  {
+    { 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
+  };
+
+  addr_t::bytes_t multicast_node_local =
+  {
+    { 0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
+  };
+
+  addr_t::bytes_t multicast_link_local =
+  {
+    { 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
+  };
+
+  addr_t::bytes_t multicast_site_local =
+  {
+    { 0xff, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
+  };
+
+  addr_t::bytes_t multicast_org_local =
+  {
+    { 0xff, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
+  };
+
+  addr_t::bytes_t multicast_global =
+  {
+    { 0xff, 0x0e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }
+  };
+};
+
+
+TEST_F(net_ip_address_v6, ctor)
+{
+  addr_t a;
+  EXPECT_TRUE(a.is_unspecified());
+  EXPECT_EQ(0U, a.scope_id());
+}
+
+
+TEST_F(net_ip_address_v6, ctor_bytes)
+{
+  addr_t a{bytes, scope};
+  EXPECT_EQ(bytes, a.to_bytes());
+  EXPECT_EQ(scope, a.scope_id());
+}
+
+
+TEST_F(net_ip_address_v6, ctor_address_v6)
+{
+  addr_t a{bytes, scope}, b{a};
+  EXPECT_EQ(bytes, b.to_bytes());
+  EXPECT_EQ(scope, b.scope_id());
+}
+
+
+TEST_F(net_ip_address_v6, operator_assign)
+{
+  addr_t a{bytes}, b;
+  b = a;
+  EXPECT_EQ(bytes, b.to_bytes());
+}
+
+
+TEST_F(net_ip_address_v6, is_unspecified)
+{
+  addr_t a;
+  EXPECT_TRUE(a.is_unspecified());
+
+  addr_t b{bytes};
+  EXPECT_FALSE(b.is_unspecified());
+
+  EXPECT_TRUE(addr_t::any().is_unspecified());
+  EXPECT_FALSE(addr_t::loopback().is_unspecified());
+}
+
+
+TEST_F(net_ip_address_v6, is_loopback)
+{
+  addr_t a;
+  EXPECT_FALSE(a.is_loopback());
+
+  addr_t b{bytes};
+  EXPECT_FALSE(b.is_loopback());
+
+  EXPECT_FALSE(addr_t::any().is_loopback());
+  EXPECT_TRUE(addr_t::loopback().is_loopback());
+}
+
+
+TEST_F(net_ip_address_v6, is_link_local)
+{
+  EXPECT_TRUE(addr_t{link_local}.is_link_local());
+  EXPECT_FALSE(addr_t::any().is_link_local());
+  EXPECT_FALSE(addr_t::loopback().is_link_local());
+}
+
+
+TEST_F(net_ip_address_v6, is_site_local)
+{
+  EXPECT_TRUE(addr_t{site_local}.is_site_local());
+  EXPECT_FALSE(addr_t::any().is_site_local());
+  EXPECT_FALSE(addr_t::loopback().is_site_local());
+}
+
+
+TEST_F(net_ip_address_v6, is_v4_mapped)
+{
+  EXPECT_TRUE(addr_t{v4_mapped}.is_v4_mapped());
+  EXPECT_FALSE(addr_t::any().is_v4_mapped());
+  EXPECT_FALSE(addr_t::loopback().is_v4_mapped());
+}
+
+
+TEST_F(net_ip_address_v6, is_multicast)
+{
+  EXPECT_TRUE(addr_t{multicast}.is_multicast());
+  EXPECT_FALSE(addr_t::any().is_multicast());
+  EXPECT_FALSE(addr_t::loopback().is_multicast());
+}
+
+
+TEST_F(net_ip_address_v6, is_multicast_node_local)
+{
+  EXPECT_TRUE(addr_t{multicast_node_local}.is_multicast_node_local());
+  EXPECT_FALSE(addr_t::any().is_multicast_node_local());
+  EXPECT_FALSE(addr_t::loopback().is_multicast_node_local());
+}
+
+
+TEST_F(net_ip_address_v6, is_multicast_link_local)
+{
+  EXPECT_TRUE(addr_t{multicast_link_local}.is_multicast_link_local());
+  EXPECT_FALSE(addr_t::any().is_multicast_link_local());
+  EXPECT_FALSE(addr_t::loopback().is_multicast_link_local());
+}
+
+
+TEST_F(net_ip_address_v6, is_multicast_site_local)
+{
+  EXPECT_TRUE(addr_t{multicast_site_local}.is_multicast_site_local());
+  EXPECT_FALSE(addr_t::any().is_multicast_site_local());
+  EXPECT_FALSE(addr_t::loopback().is_multicast_site_local());
+}
+
+
+TEST_F(net_ip_address_v6, is_multicast_org_local)
+{
+  EXPECT_TRUE(addr_t{multicast_org_local}.is_multicast_org_local());
+  EXPECT_FALSE(addr_t::any().is_multicast_org_local());
+  EXPECT_FALSE(addr_t::loopback().is_multicast_org_local());
+}
+
+
+TEST_F(net_ip_address_v6, is_multicast_global)
+{
+  EXPECT_TRUE(addr_t{multicast_global}.is_multicast_global());
+  EXPECT_FALSE(addr_t::any().is_multicast_global());
+  EXPECT_FALSE(addr_t::loopback().is_multicast_global());
 }
 
 
