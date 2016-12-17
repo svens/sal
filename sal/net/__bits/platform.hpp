@@ -61,6 +61,39 @@ inline bool pton (const char *src, in6_addr &dest) noexcept
 }
 
 
+#if defined(_MSC_VER)
+inline
+#else
+constexpr
+#endif
+uint64_t fnv_1a (const uint8_t *first, const uint8_t *last) noexcept
+{
+  auto h = 0xcbf29ce484222325ULL;
+  while (first != last)
+  {
+    h ^= *first++;
+    h += (h << 1) + (h << 4) + (h << 5) + (h << 7) + (h << 8) + (h << 40);
+  }
+  return h;
+}
+
+
+#if defined(_MSC_VER)
+inline
+#else
+constexpr
+#endif
+uint64_t combine (uint64_t h, uint64_t l) noexcept
+{
+  constexpr uint64_t mul = 0x9ddfea08eb382d69ULL;
+  uint64_t a = (l ^ h) * mul;
+  a ^= (a >> 47);
+  uint64_t b = (h ^ a) * mul;
+  b ^= (b >> 47);
+  return b * mul;
+}
+
+
 }}} // namespace net::ip::__bits
 
 

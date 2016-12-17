@@ -230,6 +230,45 @@ TEST_F(net_ip_address, to_string_v6)
 }
 
 
+TEST_F(net_ip_address, hash_v4)
+{
+  EXPECT_EQ(
+    addr_t{addr_v4_t::any()}.hash(),
+    addr_t{addr_v4_t::any()}.hash()
+  );
+  EXPECT_NE(
+    addr_t{addr_v4_t::any()}.hash(),
+    addr_t{addr_v4_t::loopback()}.hash()
+  );
+}
+
+
+TEST_F(net_ip_address, hash_v6)
+{
+  EXPECT_EQ(
+    addr_t{addr_v6_t::any()}.hash(),
+    addr_t{addr_v6_t::any()}.hash()
+  );
+  EXPECT_NE(
+    addr_t{addr_v6_t::any()}.hash(),
+    addr_t{addr_v6_t::loopback()}.hash()
+  );
+}
+
+
+TEST_F(net_ip_address, hash_v4_v6)
+{
+  EXPECT_NE(
+    addr_t{addr_v4_t::any()}.hash(),
+    addr_t{addr_v6_t::any()}.hash()
+  );
+  EXPECT_NE(
+    addr_t{addr_v4_t::any()}.hash(),
+    addr_t{addr_v6_t::loopback()}.hash()
+  );
+}
+
+
 TEST_F(net_ip_address, memory_writer_inserter_v4)
 {
   char data[1024];

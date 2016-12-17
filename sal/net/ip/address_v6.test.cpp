@@ -221,6 +221,13 @@ TEST_F(net_ip_address_v6, to_string)
 }
 
 
+TEST_F(net_ip_address_v6, hash)
+{
+  EXPECT_EQ(addr_t::any().hash(), addr_t::any().hash());
+  EXPECT_NE(addr_t::any().hash(), addr_t::loopback().hash());
+}
+
+
 TEST_F(net_ip_address_v6, memory_writer_inserter)
 {
   char data[1024];

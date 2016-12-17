@@ -180,6 +180,17 @@ public:
   }
 
 
+  /**
+   * Calculate hash value for \a this.
+   */
+  size_t hash () const noexcept
+  {
+    return __bits::combine(AF_INET,
+      __bits::fnv_1a(addr_.bytes.data(), addr_.bytes.data() + addr_.bytes.size())
+    );
+  }
+
+
 private:
 
   union storage_t
@@ -376,3 +387,19 @@ inline address_v4_t make_address_v4 (const std::string &str)
 
 
 __sal_end
+
+
+namespace std {
+
+
+template <>
+struct hash<sal::net::ip::address_v4_t>
+{
+  size_t operator() (const sal::net::ip::address_v4_t &a) const noexcept
+  {
+    return a.hash();
+  }
+};
+
+
+} // namespace std

@@ -169,6 +169,13 @@ TEST_F(net_ip_address_v4, to_string)
 }
 
 
+TEST_F(net_ip_address_v4, hash)
+{
+  EXPECT_EQ(addr_t::any().hash(), addr_t::any().hash());
+  EXPECT_NE(addr_t::any().hash(), addr_t::loopback().hash());
+}
+
+
 TEST_F(net_ip_address_v4, memory_writer_inserter)
 {
   char data[1024];

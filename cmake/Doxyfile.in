@@ -18,7 +18,7 @@ USE_MDFILE_AS_MAINPAGE = README.md
 FILE_PATTERNS = *.hpp *.md
 EXCLUDE_PATTERNS = *.test.hpp **/__bits/*
 
-EXCLUDE_SYMBOLS = sal::__bits sal::*::__bits __*
+EXCLUDE_SYMBOLS = sal::__bits sal::*::__bits __* std
 JAVADOC_AUTOBRIEF = YES
 INLINE_INHERITED_MEMB = YES
 BUILTIN_STL_SUPPORT = YES
