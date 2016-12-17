@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/net/ip/address.hpp
+ * \file sal/net/ip/address_v4.hpp
  * IPv4 address
  */
 
@@ -55,20 +55,6 @@ public:
   explicit constexpr address_v4_t (uint_t val) noexcept
     : addr_{val}
   {}
-
-
-  /**
-   * Construct new address as copy of \a that
-   */
-  constexpr address_v4_t (const address_v4_t &that) noexcept
-    : addr_{that.addr_.bytes}
-  {}
-
-
-  /**
-   * Assign \a this fields from \a that
-   */
-  address_v4_t &operator= (const address_v4_t &that) noexcept = default;
 
 
   /**

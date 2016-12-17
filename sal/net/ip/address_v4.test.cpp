@@ -172,7 +172,7 @@ TEST_F(net_ip_address_v4, to_string)
 TEST_F(net_ip_address_v4, memory_writer_inserter)
 {
   char data[1024];
-  sal::memory_writer_t writer{data, data + sizeof("255.255.255.255")};
+  sal::memory_writer_t writer{data, data + INET_ADDRSTRLEN};
 
   writer << addr_t::any();
   EXPECT_STREQ("0.0.0.0", data);
@@ -244,21 +244,27 @@ TEST_F(net_ip_address_v4, comparisons)
   auto c = a;
 
   EXPECT_FALSE(a == b);
+  EXPECT_FALSE(b == a);
   EXPECT_TRUE(a == c);
 
   EXPECT_TRUE(a != b);
+  EXPECT_TRUE(b != a);
   EXPECT_FALSE(a != c);
 
   EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
   EXPECT_FALSE(a < c);
 
   EXPECT_FALSE(a > b);
+  EXPECT_TRUE(b > a);
   EXPECT_FALSE(a > c);
 
   EXPECT_TRUE(a <= b);
+  EXPECT_FALSE(b <= a);
   EXPECT_TRUE(a <= c);
 
   EXPECT_FALSE(a >= b);
+  EXPECT_TRUE(b >= a);
   EXPECT_TRUE(a >= c);
 }
 

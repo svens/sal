@@ -15,7 +15,14 @@
 __sal_begin
 
 
-namespace net { namespace __bits {
+namespace net { namespace ip { namespace __bits {
+
+
+#if __sal_os_windows
+  using sa_family_t = ::ADDRESS_FAMILY;
+#else
+  using sa_family_t = ::sa_family_t;
+#endif
 
 
 inline bool ntop (const in_addr &src, char *dest, size_t size) noexcept
@@ -54,7 +61,7 @@ inline bool pton (const char *src, in6_addr &dest) noexcept
 }
 
 
-}} // namespace net::__bits
+}}} // namespace net::ip::__bits
 
 
 __sal_end

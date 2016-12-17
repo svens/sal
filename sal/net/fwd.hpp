@@ -26,6 +26,16 @@ namespace net {
 const std::error_code &init () noexcept;
 
 
+namespace ip {
+
+class address_t;
+class address_v4_t;
+class address_v6_t;
+class bad_address_cast_t;
+
+} // namespace ip
+
+
 } // namespace net
 
 

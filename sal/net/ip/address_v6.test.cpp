@@ -280,21 +280,27 @@ TEST_F(net_ip_address_v6, comparisons)
   auto c = a;
 
   EXPECT_FALSE(a == b);
+  EXPECT_FALSE(b == a);
   EXPECT_TRUE(a == c);
 
   EXPECT_TRUE(a != b);
+  EXPECT_TRUE(b != a);
   EXPECT_FALSE(a != c);
 
   EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
   EXPECT_FALSE(a < c);
 
   EXPECT_FALSE(a > b);
+  EXPECT_TRUE(b > a);
   EXPECT_FALSE(a > c);
 
   EXPECT_TRUE(a <= b);
+  EXPECT_FALSE(b <= a);
   EXPECT_TRUE(a <= c);
 
   EXPECT_FALSE(a >= b);
+  EXPECT_TRUE(b >= a);
   EXPECT_TRUE(a >= c);
 }
 
@@ -396,7 +402,7 @@ TEST_F(net_ip_address_v6, make_address_v4_mapped_invalid_throw)
 {
   EXPECT_THROW(
     sal::net::ip::make_address_v4(addr_t::any()),
-    std::system_error
+    sal::net::ip::bad_address_cast_t
   );
 }
 

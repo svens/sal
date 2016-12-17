@@ -1,13 +1,14 @@
 #pragma once
 
 /**
- * \file sal/net/ip/address.hpp
+ * \file sal/net/ip/address_v6.hpp
  * IPv6 address
  */
 
 
 #include <sal/config.hpp>
 #include <sal/net/__bits/platform.hpp>
+#include <sal/net/error.hpp>
 #include <sal/net/ip/address_v4.hpp>
 #include <sal/char_array.hpp>
 #include <sal/error.hpp>
@@ -51,21 +52,6 @@ public:
   constexpr address_v6_t (const bytes_t &bytes, scope_id_t scope=0) noexcept
     : addr_{bytes}
     , scope_{scope}
-  {}
-
-
-  /**
-   * Assign \a this fields from \a that
-   */
-  address_v6_t &operator= (const address_v6_t &that) noexcept = default;
-
-
-  /**
-   * Construct new address as copy of \a that
-   */
-  constexpr address_v6_t (const address_v6_t &that) noexcept
-    : addr_{that.addr_.bytes}
-    , scope_{that.scope_}
   {}
 
 
@@ -444,7 +430,7 @@ inline address_v4_t make_address_v4 (const address_v6_t &a, std::error_code &ec)
 
 /**
  * Return address_v4_t object corresponding to the IPv4-mapped IPv6 address.
- * If \a a.is_v4_mapped() is false, throw std::system_error
+ * If \a a.is_v4_mapped() is false, throw bad_address_cast_t.
  */
 inline address_v4_t make_address_v4 (const address_v6_t &a)
 {
@@ -454,7 +440,7 @@ inline address_v4_t make_address_v4 (const address_v6_t &a)
   {
     return address;
   }
-  throw_system_error(ec, "make_address_v4: ", a);
+  __bits::bad_address_cast();
 }
 
 
