@@ -38,8 +38,10 @@ inline bool pton (const char *src, in_addr &dest) noexcept
 inline bool ntop (const in6_addr &src, char *dest, size_t size) noexcept
 {
 #if __sal_os_windows
-  auto addr = src;
-  return ::inet_ntop(AF_INET6, &addr, dest, size) != nullptr;
+  // depending on SDK version, it's API parameter is const or not
+  // make it "void *" regardless
+  auto addr = &const_cast<in6_addr &>(src);
+  return ::inet_ntop(AF_INET6, addr, dest, size) != nullptr;
 #else
   return ::inet_ntop(AF_INET6, &src, dest, size) != nullptr;
 #endif
