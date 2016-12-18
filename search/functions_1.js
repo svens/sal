@@ -6,5 +6,6 @@ var searchData=
   ['basic_5fworker_5ft',['basic_worker_t',['../classsal_1_1logger_1_1basic__worker__t.html#a0c4ce3c346bef9f19c3e5d332b11915b',1,'sal::logger::basic_worker_t']]],
   ['begin',['begin',['../classsal_1_1char__array__t.html#a946e2bd38539867780a05df4d7ba5a64',1,'sal::char_array_t::begin()'],['../classsal_1_1memory__writer__t.html#acdfc74e98b3d8f11c1db8675d19166c4',1,'sal::memory_writer_t::begin()']]],
   ['bin',['bin',['../format_8hpp.html#a8f1e2c6dff9584bbcd004bad19f3c646',1,'sal']]],
+  ['broadcast',['broadcast',['../classsal_1_1net_1_1ip_1_1address__v4__t.html#a1af9b253ec90706b3a0812d3d5707513',1,'sal::net::ip::address_v4_t']]],
   ['busy_5fspin',['busy_spin',['../spinlock_8hpp.html#aa459b804c32cb6bd0ee5f80a353861d6',1,'sal']]]
 ];

@@ -12,5 +12,6 @@ var searchData=
   ['locked_5fptr',['locked_ptr',['../classsal_1_1locked__ptr.html',1,'sal']]],
   ['logger',['Logger',['../group__logger.html',1,'']]],
   ['logger_2ehpp',['logger.hpp',['../logger_8hpp.html',1,'']]],
+  ['loopback',['loopback',['../classsal_1_1net_1_1ip_1_1address__v4__t.html#ad253f811de65cafd6bb71ccfb254be04',1,'sal::net::ip::address_v4_t::loopback()'],['../classsal_1_1net_1_1ip_1_1address__v6__t.html#a6ee954172bc35ef8ad4aca6aabdb29da',1,'sal::net::ip::address_v6_t::loopback()']]],
   ['logger',['Logger',['../md___users_sven_src_sal_sal_logger__logger.html',1,'']]]
 ];

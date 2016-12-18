@@ -9,6 +9,13 @@ var annotated_dup =
         [ "sink_t", "classsal_1_1logger_1_1sink__t.html", "classsal_1_1logger_1_1sink__t" ],
         [ "worker_t", "classsal_1_1logger_1_1worker__t.html", "classsal_1_1logger_1_1worker__t" ]
       ] ],
+      [ "net", null, [
+        [ "ip", null, [
+          [ "address_t", "classsal_1_1net_1_1ip_1_1address__t.html", "classsal_1_1net_1_1ip_1_1address__t" ],
+          [ "address_v4_t", "classsal_1_1net_1_1ip_1_1address__v4__t.html", "classsal_1_1net_1_1ip_1_1address__v4__t" ],
+          [ "address_v6_t", "classsal_1_1net_1_1ip_1_1address__v6__t.html", "classsal_1_1net_1_1ip_1_1address__v6__t" ]
+        ] ]
+      ] ],
       [ "program_options", null, [
         [ "argument_map_t", "classsal_1_1program__options_1_1argument__map__t.html", "classsal_1_1program__options_1_1argument__map__t" ],
         [ "command_line_t", "classsal_1_1program__options_1_1command__line__t.html", "classsal_1_1program__options_1_1command__line__t" ],

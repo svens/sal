@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.3.0</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -140,7 +140,7 @@ class sal::logger::basic_worker_t&lt; Worker &gt;</h3>
 <p>Base class for different worker implementations. </p>
 <p>This class provides functionality to create, configure and query channels. Each channel is identified by name (e.g. module names that use it to log events etc). Worker remains owner of channel throughout whole lifetime.</p>
 <p>Each worker owns default channel that is created and configured during worker construction. It's attributes are used as defaults when adding new channels. Also, when querying for non-existing channel, default one is returned.</p>
-<p>Inherited classes should provide method to allocate and initialise event: </p><div class="fragment"><div class="line"><a class="code" href="fwd_8hpp.html#a0f30a474c4b1f96ebc2e6620234538c2">event_ptr</a> make_event (<span class="keyword">const</span> channel_t&lt;Worker&gt; &amp;channel);</div></div><!-- fragment --><p> Create new event (or fetch from pool) and initialize it's members. Inherited implementation should also provide custom deleter that writes event message to final destination and releases (or returns to poool) used event.</p>
+<p>Inherited classes should provide method to allocate and initialise event: </p><div class="fragment"><div class="line"><a class="code" href="logger_2fwd_8hpp.html#a0f30a474c4b1f96ebc2e6620234538c2">event_ptr</a> make_event (<span class="keyword">const</span> channel_t&lt;Worker&gt; &amp;channel);</div></div><!-- fragment --><p> Create new event (or fetch from pool) and initialize it's members. Inherited implementation should also provide custom deleter that writes event message to final destination and releases (or returns to poool) used event.</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1logger_1_1worker__t.html" title="Simple synchronous logger. ">worker_t</a> </dd>
 <dd>
 <a class="el" href="classsal_1_1logger_1_1async__worker__t.html" title="Asynchronous logger worker. ">async_worker_t</a></dd></dl>

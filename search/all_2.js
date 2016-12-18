@@ -13,9 +13,10 @@ var searchData=
   ['command_5fline_2ehpp',['command_line.hpp',['../command__line_8hpp.html',1,'']]],
   ['command_5fline_5ft',['command_line_t',['../classsal_1_1program__options_1_1command__line__t.html',1,'sal::program_options']]],
   ['command_5fline_5ft',['command_line_t',['../classsal_1_1program__options_1_1command__line__t.html#ae603c0fbb50d8534f5390d1475a42bf0',1,'sal::program_options::command_line_t']]],
+  ['compare',['compare',['../classsal_1_1net_1_1ip_1_1address__t.html#aaa24cc0cb1a3dee8f08d07fecea7467d',1,'sal::net::ip::address_t::compare()'],['../classsal_1_1net_1_1ip_1_1address__v4__t.html#a04cd64bb8a81f83dcfa4f5951991a916',1,'sal::net::ip::address_v4_t::compare()'],['../classsal_1_1net_1_1ip_1_1address__v6__t.html#a27aa8890ca22f1a6b3aa555feceb00a8',1,'sal::net::ip::address_v6_t::compare()']]],
   ['config_5freader_2ehpp',['config_reader.hpp',['../config__reader_8hpp.html',1,'']]],
-  ['config_5freader_5ft',['config_reader_t',['../classsal_1_1program__options_1_1config__reader__t.html#a0e952b164a7e09ff2d4f426927b1a713',1,'sal::program_options::config_reader_t']]],
   ['config_5freader_5ft',['config_reader_t',['../classsal_1_1program__options_1_1config__reader__t.html',1,'sal::program_options']]],
+  ['config_5freader_5ft',['config_reader_t',['../classsal_1_1program__options_1_1config__reader__t.html#a0e952b164a7e09ff2d4f426927b1a713',1,'sal::program_options::config_reader_t']]],
   ['const_5fptr',['const_ptr',['../classsal_1_1lockable__t.html#aeb068d737b856ed5c91f8062f75280f7',1,'sal::lockable_t']]],
   ['create',['create',['../classsal_1_1file__t.html#a56c67f59794862c8b0e0a1042711d770',1,'sal::file_t::create(const std::string &amp;name, open_mode mode, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#ad1591e107ab799d68ba8d26bc3651bbb',1,'sal::file_t::create(const std::string &amp;name, open_mode mode)']]]
 ];

@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.3.0</span>
+   &#160;<span id="projectnumber">0.4.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -152,6 +152,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a5ae46736acfc018331b26a1d5317b966"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1memory__writer__t.html#a5ae46736acfc018331b26a1d5317b966">size</a> () const noexcept</td></tr>
 <tr class="memdesc:a5ae46736acfc018331b26a1d5317b966"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes between writer pointer and upper limit.  <a href="#a5ae46736acfc018331b26a1d5317b966">More...</a><br /></td></tr>
 <tr class="separator:a5ae46736acfc018331b26a1d5317b966"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeba66fc1d834fae9fdbc42e3be422ebe"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1memory__writer__t.html#aeba66fc1d834fae9fdbc42e3be422ebe">safe_size</a> () const noexcept</td></tr>
+<tr class="memdesc:aeba66fc1d834fae9fdbc42e3be422ebe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes between writer pointer and upper limit.  <a href="#aeba66fc1d834fae9fdbc42e3be422ebe">More...</a><br /></td></tr>
+<tr class="separator:aeba66fc1d834fae9fdbc42e3be422ebe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acdfc74e98b3d8f11c1db8675d19166c4"><td class="memItemLeft" align="right" valign="top"><a id="acdfc74e98b3d8f11c1db8675d19166c4"></a>
 constexpr char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1memory__writer__t.html#acdfc74e98b3d8f11c1db8675d19166c4">begin</a> () const noexcept</td></tr>
 <tr class="memdesc:acdfc74e98b3d8f11c1db8675d19166c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return current write pointer. <br /></td></tr>
@@ -164,6 +167,9 @@ constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a cla
 <a class="el" href="classsal_1_1memory__writer__t.html">memory_writer_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1memory__writer__t.html#a5bd861760533f8e8f919b7936dc5646d">skip</a> (size_t n) noexcept</td></tr>
 <tr class="memdesc:a5bd861760533f8e8f919b7936dc5646d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move write pointer towards upper limit <em>n</em> bytes without adding any new content. <br /></td></tr>
 <tr class="separator:a5bd861760533f8e8f919b7936dc5646d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d043e291505ccb4416a47cc8b09deb9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1memory__writer__t.html">memory_writer_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1memory__writer__t.html#a7d043e291505ccb4416a47cc8b09deb9">skip_until</a> (char ch) noexcept</td></tr>
+<tr class="memdesc:a7d043e291505ccb4416a47cc8b09deb9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move write pointer towards upper limit until character <em>ch</em> is found.  <a href="#a7d043e291505ccb4416a47cc8b09deb9">More...</a><br /></td></tr>
+<tr class="separator:a7d043e291505ccb4416a47cc8b09deb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94fba5b3bc60e76d5215ffcec407d2a2"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a94fba5b3bc60e76d5215ffcec407d2a2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1memory__writer__t.html">memory_writer_t</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1memory__writer__t.html#a94fba5b3bc60e76d5215ffcec407d2a2">write</a> (T v) noexcept</td></tr>
 <tr class="memdesc:a94fba5b3bc60e76d5215ffcec407d2a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy memory content of <em>v</em> to <em>this</em> memory writer area and move write pointer towards upper limit by <code>sizeof(v)</code>.  <a href="#a94fba5b3bc60e76d5215ffcec407d2a2">More...</a><br /></td></tr>
@@ -519,6 +525,34 @@ template&lt;typename Arg , typename... Args&gt; </div>
 
 </div>
 </div>
+<a id="aeba66fc1d834fae9fdbc42e3be422ebe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeba66fc1d834fae9fdbc42e3be422ebe">&sect;&nbsp;</a></span>safe_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t sal::memory_writer_t::safe_size </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return number of bytes between writer pointer and upper limit. </p>
+<p>In <a class="el" href="classsal_1_1memory__writer__t.html#a3e515b35c3d5a411e09084e531883a00" title="Return true if write pointer has moved past upper limit. ">bad()</a> state it returns 0. </p>
+
+</div>
+</div>
 <a id="a5ae46736acfc018331b26a1d5317b966"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5ae46736acfc018331b26a1d5317b966">&sect;&nbsp;</a></span>size()</h2>
 
@@ -544,6 +578,35 @@ template&lt;typename Arg , typename... Args&gt; </div>
 
 <p>Return number of bytes between writer pointer and upper limit. </p>
 <p>While in <a class="el" href="classsal_1_1memory__writer__t.html#a3e515b35c3d5a411e09084e531883a00" title="Return true if write pointer has moved past upper limit. ">bad()</a> state, this method's returned value is undefined. </p>
+
+</div>
+</div>
+<a id="a7d043e291505ccb4416a47cc8b09deb9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d043e291505ccb4416a47cc8b09deb9">&sect;&nbsp;</a></span>skip_until()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classsal_1_1memory__writer__t.html">memory_writer_t</a>&amp; sal::memory_writer_t::skip_until </td>
+          <td>(</td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>ch</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Move write pointer towards upper limit until character <em>ch</em> is found. </p>
+<p>If there is no <em>ch</em> before <a class="el" href="classsal_1_1memory__writer__t.html#af1c46ec1bf892d22ef38c5cdc3d13729" title="Return upper limit pointer (one byte past actual fillable memory area) ">end()</a>, search stops there. </p>
 
 </div>
 </div>

@@ -1,5 +1,8 @@
 var hierarchy =
 [
+    [ "sal::net::ip::address_t", "classsal_1_1net_1_1ip_1_1address__t.html", null ],
+    [ "sal::net::ip::address_v4_t", "classsal_1_1net_1_1ip_1_1address__v4__t.html", null ],
+    [ "sal::net::ip::address_v6_t", "classsal_1_1net_1_1ip_1_1address__v6__t.html", null ],
     [ "sal::program_options::argument_map_t", "classsal_1_1program__options_1_1argument__map__t.html", null ],
     [ "sal::logger::basic_worker_t< Worker >", "classsal_1_1logger_1_1basic__worker__t.html", null ],
     [ "sal::logger::basic_worker_t< async_worker_t >", "classsal_1_1logger_1_1basic__worker__t.html", [

@@ -11,5 +11,6 @@ var searchData=
   ['front',['front',['../classsal_1_1char__array__t.html#a1abef8e8ae2ad1dd1ed732096dc9413e',1,'sal::char_array_t::front()'],['../classsal_1_1program__options_1_1option__set__t.html#a9ea998d3fc1765937bc0fe320b2589f0',1,'sal::program_options::option_set_t::front()']]],
   ['front_5for_5fdefault',['front_or_default',['../classsal_1_1program__options_1_1option__set__t.html#a8a35324aed10ddaaa61c3d2146b610dd',1,'sal::program_options::option_set_t']]],
   ['full',['full',['../classsal_1_1char__array__t.html#a25df419b2a684f45ae184c3aa6084d20',1,'sal::char_array_t::full()'],['../classsal_1_1memory__writer__t.html#ac88c334294f799c610d19c23b84eac2e',1,'sal::memory_writer_t::full()']]],
-  ['fwd_2ehpp',['fwd.hpp',['../fwd_8hpp.html',1,'']]]
+  ['fwd_2ehpp',['fwd.hpp',['../net_2fwd_8hpp.html',1,'']]],
+  ['fwd_2ehpp',['fwd.hpp',['../logger_2fwd_8hpp.html',1,'']]]
 ];
