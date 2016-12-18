@@ -62,11 +62,13 @@ inline bool pton (const char *src, in6_addr &dest) noexcept
 
 
 #if defined(_MSC_VER)
-inline
+  #define CONSTEXPR inline
 #else
-constexpr
+  #define CONSTEXPR constexpr
 #endif
-uint64_t fnv_1a (const uint8_t *first, const uint8_t *last) noexcept
+
+
+CONSTEXPR uint64_t fnv_1a (const uint8_t *first, const uint8_t *last) noexcept
 {
   auto h = 0xcbf29ce484222325ULL;
   while (first != last)
@@ -78,12 +80,7 @@ uint64_t fnv_1a (const uint8_t *first, const uint8_t *last) noexcept
 }
 
 
-#if defined(_MSC_VER)
-inline
-#else
-constexpr
-#endif
-uint64_t combine (uint64_t h, uint64_t l) noexcept
+CONSTEXPR uint64_t combine (uint64_t h, uint64_t l) noexcept
 {
   constexpr uint64_t mul = 0x9ddfea08eb382d69ULL;
   uint64_t a = (l ^ h) * mul;
