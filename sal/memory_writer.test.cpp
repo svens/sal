@@ -30,6 +30,7 @@ TEST_F(memory_writer, ctor_range)
   EXPECT_FALSE(a.bad());
 
   EXPECT_EQ(size, a.size());
+  EXPECT_EQ(size, a.safe_size());
   EXPECT_EQ(begin, a.begin());
   EXPECT_EQ(end, a.end());
 }
@@ -45,6 +46,7 @@ TEST_F(memory_writer, ctor_array)
   EXPECT_FALSE(a.bad());
 
   EXPECT_EQ(size, a.size());
+  EXPECT_EQ(size, a.safe_size());
   EXPECT_EQ(begin, a.begin());
   EXPECT_EQ(end, a.end());
 }
@@ -60,6 +62,7 @@ TEST_F(memory_writer, ctor_empty_range)
   EXPECT_FALSE(a.bad());
 
   EXPECT_EQ(0U, a.size());
+  EXPECT_EQ(0U, a.safe_size());
   EXPECT_EQ(begin, a.begin());
   EXPECT_EQ(begin, a.end());
 }
@@ -72,6 +75,7 @@ TEST_F(memory_writer, ctor_invalid_range)
   EXPECT_FALSE(a.good());
   EXPECT_FALSE(a.full());
   EXPECT_TRUE(a.bad());
+  EXPECT_EQ(0U, a.safe_size());
 }
 
 
@@ -85,6 +89,7 @@ TEST_F(memory_writer, ctor_move)
   EXPECT_FALSE(a.bad());
 
   EXPECT_EQ(size, a.size());
+  EXPECT_EQ(size, a.safe_size());
   EXPECT_EQ(begin, a.begin());
   EXPECT_EQ(end, a.end());
 }
@@ -102,6 +107,7 @@ TEST_F(memory_writer, assign_move)
   EXPECT_FALSE(a.bad());
 
   EXPECT_EQ(size, a.size());
+  EXPECT_EQ(size, a.safe_size());
   EXPECT_EQ(begin, a.begin());
   EXPECT_EQ(end, a.end());
 }
@@ -119,6 +125,7 @@ TEST_F(memory_writer, swap)
   EXPECT_FALSE(a.bad());
 
   EXPECT_EQ(size, a.size());
+  EXPECT_EQ(size, a.safe_size());
   EXPECT_EQ(begin, a.begin());
   EXPECT_EQ(end, a.end());
 
@@ -176,6 +183,7 @@ TEST_F(memory_writer, write_exact)
   EXPECT_TRUE(a.full());
   EXPECT_FALSE(a.bad());
   EXPECT_EQ(0U, a.size());
+  EXPECT_EQ(0U, a.safe_size());
   EXPECT_EQ(expected, *data);
 }
 
@@ -186,6 +194,7 @@ TEST_F(memory_writer, write_overflow)
   sal::memory_writer_t a{data, data + sizeof(expected) / 2};
   EXPECT_FALSE(bool(a.write(expected)));
   EXPECT_TRUE(a.bad());
+  EXPECT_EQ(0U, a.safe_size());
   EXPECT_EQ(
     std::string(sizeof(expected), '.'),
     std::string(data, sizeof(expected))
@@ -225,6 +234,7 @@ TEST_F(memory_writer, write_range_overflow)
   sal::memory_writer_t a{data, data + expected_size / 2};
   EXPECT_FALSE(bool(a.write(expected, expected + expected_size)));
   EXPECT_TRUE(a.bad());
+  EXPECT_EQ(0U, a.safe_size());
   EXPECT_EQ(
     std::string(expected_size, '.'),
     std::string(data, expected_size)
@@ -264,6 +274,7 @@ TEST_F(memory_writer, write_array_overflow)
   sal::memory_writer_t a{data, data + expected_size / 2};
   EXPECT_FALSE(bool(a.write(expected)));
   EXPECT_TRUE(a.bad());
+  EXPECT_EQ(0U, a.safe_size());
   EXPECT_EQ(
     std::string(expected_size, '.'),
     std::string(data, expected_size)
@@ -286,6 +297,7 @@ TEST_F(memory_writer, skip_exact)
   EXPECT_EQ(0U, writer.size());
   EXPECT_FALSE(bool(writer.write('a')));
   EXPECT_TRUE(writer.bad());
+  EXPECT_EQ(0U, writer.safe_size());
   EXPECT_EQ(std::string(size, '.'), std::string(data, size));
 }
 
@@ -294,7 +306,31 @@ TEST_F(memory_writer, skip_overflow)
 {
   EXPECT_FALSE(bool(writer.skip(2 * sizeof(data))));
   EXPECT_TRUE(writer.bad());
+  EXPECT_EQ(0U, writer.safe_size());
   EXPECT_EQ(std::string(size, '.'), std::string(data, size));
+}
+
+
+TEST_F(memory_writer, skip_until)
+{
+  data[1] = 'a';
+  EXPECT_TRUE(bool(writer.skip_until('a')));
+  EXPECT_EQ(sizeof(data) - 1, writer.size());
+}
+
+
+TEST_F(memory_writer, skip_until_exact)
+{
+  data[sizeof(data) - 1] = 'a';
+  EXPECT_TRUE(bool(writer.skip_until('a')));
+  EXPECT_EQ(1U, writer.size());
+}
+
+
+TEST_F(memory_writer, skip_until_overflow)
+{
+  EXPECT_TRUE(bool(writer.skip_until('a')));
+  EXPECT_EQ(0U, writer.size());
 }
 
 
@@ -332,6 +368,7 @@ TEST_F(memory_writer, inserter_c_str_one_char_less)
   sal::memory_writer_t w{data, data + sizeof(expected) - 2};
   EXPECT_FALSE(bool(w << expected));
   EXPECT_TRUE(w.bad());
+  EXPECT_EQ(0U, w.safe_size());
   EXPECT_EQ("12..", std::string(data, data + sizeof(expected)));
 }
 
@@ -342,6 +379,7 @@ TEST_F(memory_writer, inserter_c_str_overflow)
   sal::memory_writer_t w{data, data + sizeof(expected) / 2};
   EXPECT_FALSE(bool(w << expected));
   EXPECT_TRUE(w.bad());
+  EXPECT_EQ(0U, w.safe_size());
   EXPECT_EQ("123...", std::string(data, data + sizeof(expected)));
 }
 

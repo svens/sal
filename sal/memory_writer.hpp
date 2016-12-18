@@ -137,6 +137,16 @@ public:
 
 
   /**
+   * Return number of bytes between writer pointer and upper limit. In bad()
+   * state it returns 0.
+   */
+  constexpr size_t safe_size () const noexcept
+  {
+    return good() ? size() : 0;
+  }
+
+
+  /**
    * Return current write pointer
    */
   constexpr char *begin () const noexcept
@@ -161,6 +171,20 @@ public:
   memory_writer_t &skip (size_t n) noexcept
   {
     first += n;
+    return *this;
+  }
+
+
+  /**
+   * Move write pointer towards upper limit until character \a ch is found.
+   * If there is no \a ch before end(), search stops there.
+   */
+  memory_writer_t &skip_until (char ch) noexcept
+  {
+    while (first < second && *first != ch)
+    {
+      ++first;
+    }
     return *this;
   }
 
