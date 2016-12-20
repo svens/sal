@@ -10,7 +10,7 @@ struct net_ip_address_v6
 {
   using addr_t = sal::net::ip::address_v6_t;
 
-  addr_t::scope_id_t scope{1};
+  sal::net::ip::scope_id_t scope{1};
 
   addr_t::bytes_t bytes =
   {
@@ -94,6 +94,31 @@ TEST_F(net_ip_address_v6, ctor_address_v6)
   addr_t a{bytes, scope}, b{a};
   EXPECT_EQ(bytes, b.to_bytes());
   EXPECT_EQ(scope, b.scope_id());
+}
+
+
+TEST_F(net_ip_address_v6, ctor_in6_addr)
+{
+  in6_addr a = IN6ADDR_LOOPBACK_INIT;
+  addr_t addr{a};
+  EXPECT_EQ(addr_t::loopback(), addr);
+}
+
+
+TEST_F(net_ip_address_v6, load)
+{
+  in6_addr a = IN6ADDR_LOOPBACK_INIT;
+  addr_t addr;
+  addr.load(a);
+  EXPECT_EQ(addr_t::loopback(), addr);
+}
+
+
+TEST_F(net_ip_address_v6, store)
+{
+  in6_addr a;
+  addr_t::loopback().store(a);
+  EXPECT_TRUE(IN6_IS_ADDR_LOOPBACK(&a) != 0);
 }
 
 

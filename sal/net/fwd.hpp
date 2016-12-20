@@ -7,6 +7,7 @@
 
 
 #include <sal/config.hpp>
+#include <sal/net/__bits/platform.hpp>
 #include <system_error>
 
 
@@ -27,6 +28,9 @@ const std::error_code &init () noexcept;
 
 
 namespace ip {
+
+using port_t =  uint_least16_t;
+using scope_id_t = uint_least32_t;
 
 class address_t;
 class address_v4_t;

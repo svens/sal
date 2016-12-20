@@ -58,6 +58,33 @@ public:
 
 
   /**
+   * Construct new address directly from in_addr \a that
+   */
+  address_v4_t (const in_addr &that) noexcept
+  {
+    load(that);
+  }
+
+
+  /**
+   * Copy IPv4 address data from low-level in_addr \a a
+   */
+  void load (const in_addr &a) noexcept
+  {
+    addr_.in.s_addr = a.s_addr;
+  }
+
+
+  /**
+   * Copy this IPv4 address data into low-level in_addr \a a.
+   */
+  void store (in_addr &a) const noexcept
+  {
+    a.s_addr = addr_.in.s_addr;
+  }
+
+
+  /**
    * Return binary representation of \a this address
    */
   constexpr const bytes_t &to_bytes () const noexcept

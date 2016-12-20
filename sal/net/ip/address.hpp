@@ -51,6 +51,53 @@ public:
 
 
   /**
+   * Construct new address directly from sockaddr_storage \a that
+   */
+  address_t (const sockaddr_storage &that)
+  {
+    load(that);
+  }
+
+
+  /**
+   * Copy IP address data from low-level sockaddr_storage \a a
+   */
+  void load (const sockaddr_storage &a)
+  {
+    family_ = a.ss_family;
+    if (family_ == AF_INET)
+    {
+      addr_.v4.load(reinterpret_cast<const sockaddr_in &>(a).sin_addr);
+    }
+    else if (family_ == AF_INET6)
+    {
+      addr_.v6.load(reinterpret_cast<const sockaddr_in6 &>(a).sin6_addr);
+    }
+    else
+    {
+      __bits::bad_address_cast();
+    }
+  }
+
+
+  /**
+   * Copy this IP address data into low-level sockaddr_storage \a a.
+   */
+  void store (sockaddr_storage &a) const noexcept
+  {
+    a.ss_family = family_;
+    if (family_ == AF_INET)
+    {
+      addr_.v4.store(reinterpret_cast<sockaddr_in &>(a).sin_addr);
+    }
+    else
+    {
+      addr_.v6.store(reinterpret_cast<sockaddr_in6 &>(a).sin6_addr);
+    }
+  }
+
+
+  /**
    * Return \c true if object contains IPv4 address, otherwise \c false
    */
   constexpr bool is_v4 () const noexcept
@@ -193,7 +240,6 @@ private:
       : v6{that}
     {}
   } addr_{};
-
 
   friend memory_writer_t &operator<< (memory_writer_t &writer,
     const address_t &address

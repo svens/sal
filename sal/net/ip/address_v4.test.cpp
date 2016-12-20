@@ -64,6 +64,35 @@ TEST_F(net_ip_address_v4, ctor_address_v4)
 }
 
 
+TEST_F(net_ip_address_v4, ctor_in_addr)
+{
+  in_addr a;
+  a.s_addr = htonl(INADDR_LOOPBACK);
+
+  addr_t addr{a};
+  EXPECT_EQ(addr_t::loopback(), addr);
+}
+
+
+TEST_F(net_ip_address_v4, load)
+{
+  in_addr a;
+  a.s_addr = htonl(INADDR_LOOPBACK);
+
+  addr_t addr;
+  addr.load(a);
+  EXPECT_EQ(addr_t::loopback(), addr);
+}
+
+
+TEST_F(net_ip_address_v4, store)
+{
+  in_addr a;
+  addr_t::loopback().store(a);
+  EXPECT_EQ(INADDR_LOOPBACK, ntohl(a.s_addr));
+}
+
+
 TEST_F(net_ip_address_v4, operator_assign)
 {
   addr_t a{bytes}, b;

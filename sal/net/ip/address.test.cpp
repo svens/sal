@@ -88,6 +88,103 @@ TEST_F(net_ip_address, ctor_v6_multicast)
 }
 
 
+TEST_F(net_ip_address, ctor_sockaddr_v4)
+{
+  sockaddr_storage buf;
+  auto &a{reinterpret_cast<sockaddr_in &>(buf)};
+  a.sin_family = AF_INET;
+  a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+  addr_t addr{buf};
+  ASSERT_TRUE(addr.is_v4());
+  EXPECT_EQ(addr_v4_t::loopback(), addr.to_v4());
+}
+
+
+TEST_F(net_ip_address, ctor_sockaddr_v6)
+{
+  sockaddr_storage buf;
+  auto &a{reinterpret_cast<sockaddr_in6 &>(buf)};
+  a.sin6_family = AF_INET6;
+  a.sin6_addr = IN6ADDR_LOOPBACK_INIT;
+
+  addr_t addr{buf};
+  ASSERT_TRUE(addr.is_v6());
+  EXPECT_EQ(addr_v6_t::loopback(), addr.to_v6());
+}
+
+
+TEST_F(net_ip_address, ctor_sockaddr_invalid)
+{
+  sockaddr_storage a;
+  a.ss_family = AF_UNIX;
+  EXPECT_THROW(addr_t{a}, sal::net::ip::bad_address_cast_t);
+}
+
+
+TEST_F(net_ip_address, load_v4)
+{
+  sockaddr_storage buf;
+  auto &a{reinterpret_cast<sockaddr_in &>(buf)};
+  a.sin_family = AF_INET;
+  a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+  addr_t addr;
+  addr.load(buf);
+  ASSERT_TRUE(addr.is_v4());
+  EXPECT_EQ(addr_v4_t::loopback(), addr.to_v4());
+}
+
+
+TEST_F(net_ip_address, load_v6)
+{
+  sockaddr_storage buf;
+  auto &a{reinterpret_cast<sockaddr_in6 &>(buf)};
+  a.sin6_family = AF_INET6;
+  a.sin6_addr = IN6ADDR_LOOPBACK_INIT;
+
+  addr_t addr;
+  addr.load(buf);
+  ASSERT_TRUE(addr.is_v6());
+  EXPECT_EQ(addr_v6_t::loopback(), addr.to_v6());
+}
+
+
+TEST_F(net_ip_address, load_invalid)
+{
+  sockaddr_storage a;
+  a.ss_family = AF_UNIX;
+  addr_t addr;
+  EXPECT_THROW(addr.load(a), sal::net::ip::bad_address_cast_t);
+}
+
+
+TEST_F(net_ip_address, store_v4)
+{
+  addr_t addr{addr_v4_t::loopback()};
+
+  sockaddr_storage buf;
+  addr.store(buf);
+  auto &a{reinterpret_cast<sockaddr_in &>(buf)};
+
+  ASSERT_EQ(AF_INET, a.sin_family);
+  EXPECT_EQ(INADDR_LOOPBACK, ntohl(a.sin_addr.s_addr));
+}
+
+
+TEST_F(net_ip_address, store_v6)
+{
+  addr_t addr{addr_v6_t::loopback()};
+
+  sockaddr_storage buf;
+  addr.store(buf);
+  auto &a{reinterpret_cast<sockaddr_in6 &>(buf)};
+
+  ASSERT_EQ(AF_INET6, a.sin6_family);
+  EXPECT_TRUE(IN6_IS_ADDR_LOOPBACK(&a.sin6_addr) != 0);
+}
+
+
 TEST_F(net_ip_address, assign)
 {
   addr_t a, b{addr_v4_t{}};

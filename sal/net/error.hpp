@@ -6,13 +6,14 @@
 
 
 #include <sal/config.hpp>
+#include <sal/error.hpp>
 #include <typeinfo>
 
 
 __sal_begin
 
 
-namespace net { 
+namespace net {
 namespace ip {
 
 
@@ -20,7 +21,10 @@ namespace ip {
  * Exception type thrown when invalid address casting between IPv4 and IPv6 is
  * attempted.
  */
-using bad_address_cast_t = std::bad_cast;
+class bad_address_cast_t
+  : public std::bad_cast
+{
+};
 
 
 namespace __bits {
