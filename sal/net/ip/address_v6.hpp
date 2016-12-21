@@ -46,9 +46,8 @@ public:
   /**
    * Construct new address from \a bytes
    */
-  constexpr address_v6_t (const bytes_t &bytes, scope_id_t scope=0) noexcept
+  constexpr address_v6_t (const bytes_t &bytes) noexcept
     : addr_{bytes}
-    , scope_{scope}
   {}
 
 
@@ -85,24 +84,6 @@ public:
   constexpr const bytes_t &to_bytes () const noexcept
   {
     return addr_.bytes;
-  }
-
-
-  /**
-   * Set scope id
-   */
-  void scope_id (scope_id_t id) noexcept
-  {
-    scope_ = id;
-  }
-
-
-  /**
-   * Get scope id
-   */
-  constexpr scope_id_t scope_id () const noexcept
-  {
-    return scope_;
   }
 
 
@@ -276,8 +257,6 @@ private:
     {}
   } addr_{};
 
-  scope_id_t scope_{};
-
   friend memory_writer_t &operator<< (memory_writer_t &writer,
     const address_v6_t &address
   ) noexcept;
@@ -373,10 +352,10 @@ inline std::ostream &operator<< (std::ostream &os, const address_v6_t &a)
 /**
  * Create and return IPv6 address from \a bytes
  */
-constexpr address_v6_t make_address_v6 (const address_v6_t::bytes_t &bytes,
-  scope_id_t scope=0) noexcept
+constexpr address_v6_t make_address_v6 (const address_v6_t::bytes_t &bytes)
+  noexcept
 {
-  return address_v6_t{bytes, scope};
+  return address_v6_t{bytes};
 }
 
 
