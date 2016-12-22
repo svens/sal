@@ -233,12 +233,187 @@ TYPED_TEST(net_ip_endpoint, capacity_v6)
 }
 
 
+TYPED_TEST(net_ip_endpoint, comparisons_v4)
+{
+  typename TypeParam::endpoint_t
+    a(addr_v4_t::any(), 123),
+    b(addr_v4_t::loopback(), 123);
+  auto c = a;
+
+  EXPECT_FALSE(a == b);
+  EXPECT_FALSE(b == a);
+  EXPECT_TRUE(a == c);
+
+  EXPECT_TRUE(a != b);
+  EXPECT_TRUE(b != a);
+  EXPECT_FALSE(a != c);
+
+  EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
+  EXPECT_FALSE(a < c);
+
+  EXPECT_FALSE(a > b);
+  EXPECT_TRUE(b > a);
+  EXPECT_FALSE(a > c);
+
+  EXPECT_TRUE(a <= b);
+  EXPECT_FALSE(b <= a);
+  EXPECT_TRUE(a <= c);
+
+  EXPECT_FALSE(a >= b);
+  EXPECT_TRUE(b >= a);
+  EXPECT_TRUE(a >= c);
+
+  c.port(c.port() + 1);
+  EXPECT_TRUE(a < c);
+}
+
+
+TYPED_TEST(net_ip_endpoint, comparisons_v6)
+{
+  typename TypeParam::endpoint_t
+    a(addr_v6_t::any(), 123),
+    b(addr_v6_t::loopback(), 123);
+  auto c = a;
+
+  EXPECT_FALSE(a == b);
+  EXPECT_FALSE(b == a);
+  EXPECT_TRUE(a == c);
+
+  EXPECT_TRUE(a != b);
+  EXPECT_TRUE(b != a);
+  EXPECT_FALSE(a != c);
+
+  EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
+  EXPECT_FALSE(a < c);
+
+  EXPECT_FALSE(a > b);
+  EXPECT_TRUE(b > a);
+  EXPECT_FALSE(a > c);
+
+  EXPECT_TRUE(a <= b);
+  EXPECT_FALSE(b <= a);
+  EXPECT_TRUE(a <= c);
+
+  EXPECT_FALSE(a >= b);
+  EXPECT_TRUE(b >= a);
+  EXPECT_TRUE(a >= c);
+
+  c.port(c.port() + 1);
+  EXPECT_TRUE(a < c);
+}
+
+
+TYPED_TEST(net_ip_endpoint, comparisons_v4_v6)
+{
+  typename TypeParam::endpoint_t
+    a(addr_v4_t::loopback(), 123),
+    b(addr_v6_t::loopback(), 123);
+  auto c = a;
+
+  EXPECT_FALSE(a == b);
+  EXPECT_FALSE(b == a);
+  EXPECT_TRUE(a == c);
+
+  EXPECT_TRUE(a != b);
+  EXPECT_TRUE(b != a);
+  EXPECT_FALSE(a != c);
+
+  EXPECT_TRUE(a < b);
+  EXPECT_FALSE(b < a);
+  EXPECT_FALSE(a < c);
+
+  EXPECT_FALSE(a > b);
+  EXPECT_TRUE(b > a);
+  EXPECT_FALSE(a > c);
+
+  EXPECT_TRUE(a <= b);
+  EXPECT_FALSE(b <= a);
+  EXPECT_TRUE(a <= c);
+
+  EXPECT_FALSE(a >= b);
+  EXPECT_TRUE(b >= a);
+  EXPECT_TRUE(a >= c);
+}
+
+
+TYPED_TEST(net_ip_endpoint, comparisons_v6_v4)
+{
+  typename TypeParam::endpoint_t
+    a(addr_v6_t::loopback(), 123),
+    b(addr_v4_t::loopback(), 123);
+  auto c = a;
+
+  EXPECT_FALSE(a == b);
+  EXPECT_FALSE(b == a);
+  EXPECT_TRUE(a == c);
+
+  EXPECT_TRUE(a != b);
+  EXPECT_TRUE(b != a);
+  EXPECT_FALSE(a != c);
+
+  EXPECT_FALSE(a < b);
+  EXPECT_TRUE(b < a);
+  EXPECT_FALSE(a < c);
+
+  EXPECT_TRUE(a > b);
+  EXPECT_FALSE(b > a);
+  EXPECT_FALSE(a > c);
+
+  EXPECT_FALSE(a <= b);
+  EXPECT_TRUE(b <= a);
+  EXPECT_TRUE(a <= c);
+
+  EXPECT_TRUE(a >= b);
+  EXPECT_FALSE(b >= a);
+  EXPECT_TRUE(a >= c);
+}
+
+
+TYPED_TEST(net_ip_endpoint, hash_v4)
+{
+  typename TypeParam::endpoint_t
+    any(addr_v4_t::any(), 123),
+    loopback(addr_v4_t::loopback(), 123);
+
+  EXPECT_NE(any.hash(), loopback.hash());
+
+  auto h = any.hash();
+  any.port(any.port() + 1);
+  EXPECT_NE(h, any.hash());
+}
+
+
+TYPED_TEST(net_ip_endpoint, hash_v6)
+{
+  typename TypeParam::endpoint_t
+    any(addr_v6_t::any(), 123),
+    loopback(addr_v6_t::loopback(), 123);
+
+  EXPECT_NE(any.hash(), loopback.hash());
+
+  auto h = any.hash();
+  any.port(any.port() + 1);
+  EXPECT_NE(h, any.hash());
+}
+
+
+TYPED_TEST(net_ip_endpoint, hash_v4_v6)
+{
+  typename TypeParam::endpoint_t
+    v4(addr_v4_t::any(), 123),
+    v6(addr_v6_t::any(), 123);
+  EXPECT_NE(v4.hash(), v6.hash());
+}
+
+
 TYPED_TEST(net_ip_endpoint, memory_writer_inserter_v4)
 {
   char data[1024];
   sal::memory_writer_t writer{data, data + sizeof(data)};
   writer << typename TypeParam::endpoint_t{addr_v4_t::loopback(), 12345};
-  EXPECT_STREQ("127.0.0.1:12345", data);
+  EXPECT_EQ("127.0.0.1:12345", std::string(data, writer.begin()));
 }
 
 
@@ -249,7 +424,7 @@ TYPED_TEST(net_ip_endpoint, memory_writer_inserter_v6)
   EXPECT_TRUE(
     bool(writer << typename TypeParam::endpoint_t{addr_v6_t::loopback(), 12345})
   );
-  EXPECT_STREQ("[::1]:12345", data);
+  EXPECT_EQ("[::1]:12345", std::string(data, writer.begin()));
 }
 
 
@@ -260,7 +435,7 @@ TYPED_TEST(net_ip_endpoint, memory_writer_inserter_exact_v4)
   EXPECT_TRUE(
     bool(writer << typename TypeParam::endpoint_t{addr_v4_t::loopback(), 12345})
   );
-  EXPECT_STREQ("127.0.0.1:12345", data);
+  EXPECT_EQ("127.0.0.1:12345", std::string(data, writer.begin()));
 }
 
 
@@ -271,7 +446,7 @@ TYPED_TEST(net_ip_endpoint, memory_writer_inserter_exact_v6)
   EXPECT_TRUE(
     bool(writer << typename TypeParam::endpoint_t{addr_v6_t::loopback(), 12345})
   );
-  EXPECT_STREQ("[::1]:12345", data);
+  EXPECT_EQ("[::1]:12345", std::string(data, writer.begin()));
 }
 
 

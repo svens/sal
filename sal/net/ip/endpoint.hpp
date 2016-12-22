@@ -7,9 +7,9 @@
 
 
 #include <sal/config.hpp>
+#include <sal/net/error.hpp>
 #include <sal/net/ip/address.hpp>
 #include <sal/memory_writer.hpp>
-#include <sal/net/error.hpp>
 #include <ostream>
 
 
@@ -51,19 +51,19 @@ public:
    */
   constexpr basic_endpoint_t (const protocol_t &protocol, port_t port) noexcept
   {
-    if (protocol.family() == AF_INET)
+    addr_.data.ss_family = static_cast<short>(protocol.family());
+    if (addr_.data.ss_family == AF_INET)
     {
-      addr_.v4.sin_family = AF_INET;
       addr_.v4.sin_port = htons(port);
       addr_.v4.sin_addr.s_addr = INADDR_ANY;
-      return;
     }
-
-    addr_.v6.sin6_family = AF_INET6;
-    addr_.v6.sin6_port = htons(port);
-    addr_.v6.sin6_flowinfo = 0;
-    addr_.v6.sin6_addr = IN6ADDR_ANY_INIT;
-    addr_.v6.sin6_scope_id = 0;
+    else
+    {
+      addr_.v6.sin6_port = htons(port);
+      addr_.v6.sin6_flowinfo = 0;
+      addr_.v6.sin6_addr = IN6ADDR_ANY_INIT;
+      addr_.v6.sin6_scope_id = 0;
+    }
   }
 
 
@@ -72,20 +72,17 @@ public:
    */
   constexpr basic_endpoint_t (const address_t &address, port_t port) noexcept
   {
-    if (const auto *addr = address.as_v4())
+    address.store(addr_.data);
+    if (addr_.data.ss_family == AF_INET)
     {
-      addr_.v4.sin_family = AF_INET;
       addr_.v4.sin_port = htons(port);
-      addr->store(addr_.v4.sin_addr);
-      return;
     }
-
-    const auto *addr = address.as_v6();
-    addr_.v6.sin6_family = AF_INET6;
-    addr_.v6.sin6_port = htons(port);
-    addr_.v6.sin6_flowinfo = 0;
-    addr_.v6.sin6_scope_id = 0;
-    addr->store(addr_.v6.sin6_addr);
+    else
+    {
+      addr_.v6.sin6_port = htons(port);
+      addr_.v6.sin6_flowinfo = 0;
+      addr_.v6.sin6_scope_id = 0;
+    }
   }
 
 
@@ -113,16 +110,7 @@ public:
    */
   void address (const address_t &address) noexcept
   {
-    if (const auto *addr = address.as_v4())
-    {
-      addr_.v4.sin_family = AF_INET;
-      addr->store(addr_.v4.sin_addr);
-      return;
-    }
-
-    const auto *addr = address.as_v6();
-    addr_.v6.sin6_family = AF_INET6;
-    addr->store(addr_.v6.sin6_addr);
+    address.store(addr_.data);
   }
 
 
@@ -131,11 +119,10 @@ public:
    */
   constexpr port_t port () const noexcept
   {
-    if (addr_.data.ss_family == AF_INET)
-    {
-      return ntohs(addr_.v4.sin_port);
-    }
-    return ntohs(addr_.v6.sin6_port);
+    return addr_.data.ss_family == AF_INET
+      ? ntohs(addr_.v4.sin_port)
+      : ntohs(addr_.v6.sin6_port)
+    ;
   }
 
 
@@ -147,9 +134,11 @@ public:
     if (addr_.data.ss_family == AF_INET)
     {
       addr_.v4.sin_port = htons(port);
-      return;
     }
-    addr_.v6.sin6_port = htons(port);
+    else
+    {
+      addr_.v6.sin6_port = htons(port);
+    }
   }
 
 
@@ -176,11 +165,10 @@ public:
    */
   constexpr size_t size () const noexcept
   {
-    if (addr_.data.ss_family == AF_INET)
-    {
-      return sizeof(addr_.v4);
-    }
-    return sizeof(addr_.v6);
+    return addr_.data.ss_family == AF_INET
+      ? sizeof(addr_.v4)
+      : sizeof(addr_.v6)
+    ;
   }
 
 
@@ -208,16 +196,38 @@ public:
 
 
   /**
+   * Compare \a this to \a that. Return value has same meaning as std::memcmp
+   */
+  int compare (const basic_endpoint_t &that) const noexcept
+  {
+    if (addr_.data.ss_family != that.addr_.data.ss_family)
+    {
+      return addr_.data.ss_family - that.addr_.data.ss_family;
+    }
+    return std::memcmp(&addr_.data, &that.addr_.data, size());
+  }
+
+
+  /**
+   * Calculate hash value for \a this.
+   */
+  size_t hash () const noexcept
+  {
+    auto p = reinterpret_cast<const uint8_t *>(data());
+    return __bits::fnv_1a(p, p + size());
+  }
+
+
+  /**
    * Insert human readable \a endpoint representation into \a writer.
    */
   friend memory_writer_t &operator<< (memory_writer_t &writer,
     const basic_endpoint_t &endpoint) noexcept
   {
-    if (endpoint.addr_.data.ss_family == AF_INET)
-    {
-      return writer.print(endpoint.address(), ':', endpoint.port());
-    }
-    return writer.print('[', endpoint.address(), "]:", endpoint.port());
+    return endpoint.addr_.data.ss_family == AF_INET
+      ? writer.print(endpoint.address(), ':', endpoint.port())
+      : writer.print('[', endpoint.address(), "]:", endpoint.port())
+    ;
   }
 
 
@@ -230,6 +240,72 @@ private:
     sockaddr_in6 v6;
   } addr_{};
 };
+
+
+/**
+ * Return true if \a a == \a b
+ */
+template <typename Protocol>
+inline bool operator== (const basic_endpoint_t<Protocol> &a,
+  const basic_endpoint_t<Protocol> &b) noexcept
+{
+  return a.compare(b) == 0;
+}
+
+
+/**
+ * Return true if \a a < \a b
+ */
+template <typename Protocol>
+inline bool operator< (const basic_endpoint_t<Protocol> &a,
+  const basic_endpoint_t<Protocol> &b) noexcept
+{
+  return a.compare(b) < 0;
+}
+
+
+/**
+ * Return true if \a a != \a b
+ */
+template <typename Protocol>
+inline bool operator!= (const basic_endpoint_t<Protocol> &a,
+  const basic_endpoint_t<Protocol> &b) noexcept
+{
+  return a.compare(b) != 0;
+}
+
+
+/**
+ * Return true if \a a > \a b
+ */
+template <typename Protocol>
+inline bool operator> (const basic_endpoint_t<Protocol> &a,
+  const basic_endpoint_t<Protocol> &b) noexcept
+{
+  return a.compare(b) > 0;
+}
+
+
+/**
+ * Return true if \a a <= \a b
+ */
+template <typename Protocol>
+inline bool operator<= (const basic_endpoint_t<Protocol> &a,
+  const basic_endpoint_t<Protocol> &b) noexcept
+{
+  return a.compare(b) <= 0;
+}
+
+
+/**
+ * Return true if \a a >= \a b
+ */
+template <typename Protocol>
+inline bool operator>= (const basic_endpoint_t<Protocol> &a,
+  const basic_endpoint_t<Protocol> &b) noexcept
+{
+  return a.compare(b) >= 0;
+}
 
 
 /**
