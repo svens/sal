@@ -38,10 +38,10 @@ public:
   /**
    * Construct endpoint with unspecified address and port 0.
    */
-  constexpr basic_endpoint_t () noexcept
+  basic_endpoint_t () noexcept
   {
     addr_.v4.sin_family = AF_INET;
-    addr_.v4.sin_port = 0;
+    addr_.v4.sin_port = htons(0);
     addr_.v4.sin_addr.s_addr = INADDR_ANY;
   }
 
@@ -49,7 +49,7 @@ public:
   /**
    * Construct endpoint with specified \a protocol and \a port
    */
-  constexpr basic_endpoint_t (const protocol_t &protocol, port_t port) noexcept
+  basic_endpoint_t (const protocol_t &protocol, port_t port) noexcept
   {
     addr_.data.ss_family = static_cast<short>(protocol.family());
     if (addr_.data.ss_family == AF_INET)
@@ -70,7 +70,7 @@ public:
   /**
    * Construct endpoint with specified \a address and \a port
    */
-  constexpr basic_endpoint_t (const address_t &address, port_t port) noexcept
+  basic_endpoint_t (const address_t &address, port_t port) noexcept
   {
     address.store(addr_.data);
     if (addr_.data.ss_family == AF_INET)
@@ -117,7 +117,7 @@ public:
   /**
    * Return endpoint's port (in host byte order).
    */
-  constexpr port_t port () const noexcept
+  port_t port () const noexcept
   {
     return addr_.data.ss_family == AF_INET
       ? ntohs(addr_.v4.sin_port)
