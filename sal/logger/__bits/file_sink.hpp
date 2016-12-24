@@ -51,9 +51,16 @@ public:
   }
 
 
-  virtual ~file_sink_t ()
+  virtual ~file_sink_t () noexcept
   {
-    flush();
+    try
+    {
+      flush();
+    }
+    catch (...)
+    {
+      // silently ignore, nothing to do
+    }
   }
 
 
