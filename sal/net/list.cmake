@@ -12,6 +12,9 @@ list(APPEND sal_sources
   sal/net/ip/address.hpp
   sal/net/ip/address_v4.hpp
   sal/net/ip/address_v6.hpp
+  sal/net/ip/endpoint.hpp
+  sal/net/ip/tcp.hpp
+  sal/net/ip/udp.hpp
 )
 
 
@@ -21,4 +24,5 @@ list(APPEND sal_unittests
   sal/net/ip/address.test.cpp
   sal/net/ip/address_v4.test.cpp
   sal/net/ip/address_v6.test.cpp
+  sal/net/ip/endpoint.test.cpp
 )

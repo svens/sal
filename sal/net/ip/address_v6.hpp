@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/platform.hpp>
+#include <sal/net/fwd.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/ip/address_v4.hpp>
 #include <sal/char_array.hpp>
@@ -36,9 +36,6 @@ public:
   /// Binary representation of IPv6 address
   using bytes_t = std::array<uint8_t, 16>;
 
-  /// Scope ID
-  using scope_id_t = uint_least32_t;
-
 
   /**
    * Construct unspecified address
@@ -49,10 +46,36 @@ public:
   /**
    * Construct new address from \a bytes
    */
-  constexpr address_v6_t (const bytes_t &bytes, scope_id_t scope=0) noexcept
+  constexpr address_v6_t (const bytes_t &bytes) noexcept
     : addr_{bytes}
-    , scope_{scope}
   {}
+
+
+  /**
+   * Construct new address directly from in6_addr \a that
+   */
+  address_v6_t (const in6_addr &that) noexcept
+  {
+    load(that);
+  }
+
+
+  /**
+   * Copy IPv6 address data from low-level in6_addr \a a
+   */
+  void load (const in6_addr &a) noexcept
+  {
+    std::memcpy(&addr_.in, &a, sizeof(addr_.in));
+  }
+
+
+  /**
+   * Copy this IPv4 address data into low-level in6_addr \a a.
+   */
+  void store (in6_addr &a) const noexcept
+  {
+    std::memcpy(&a, &addr_.in, sizeof(a));
+  }
 
 
   /**
@@ -61,24 +84,6 @@ public:
   constexpr const bytes_t &to_bytes () const noexcept
   {
     return addr_.bytes;
-  }
-
-
-  /**
-   * Set scope id
-   */
-  void scope_id (scope_id_t id) noexcept
-  {
-    scope_ = id;
-  }
-
-
-  /**
-   * Get scope id
-   */
-  constexpr scope_id_t scope_id () const noexcept
-  {
-    return scope_;
   }
 
 
@@ -252,13 +257,6 @@ private:
     {}
   } addr_{};
 
-  scope_id_t scope_{};
-
-
-  constexpr address_v6_t (const in6_addr &addr) noexcept
-    : addr_{addr}
-  {}
-
   friend memory_writer_t &operator<< (memory_writer_t &writer,
     const address_v6_t &address
   ) noexcept;
@@ -354,10 +352,10 @@ inline std::ostream &operator<< (std::ostream &os, const address_v6_t &a)
 /**
  * Create and return IPv6 address from \a bytes
  */
-constexpr address_v6_t make_address_v6 (const address_v6_t::bytes_t &bytes,
-  address_v6_t::scope_id_t scope=0) noexcept
+constexpr address_v6_t make_address_v6 (const address_v6_t::bytes_t &bytes)
+  noexcept
 {
-  return address_v6_t{bytes, scope};
+  return address_v6_t{bytes};
 }
 
 

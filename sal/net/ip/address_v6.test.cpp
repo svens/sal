@@ -10,8 +10,6 @@ struct net_ip_address_v6
 {
   using addr_t = sal::net::ip::address_v6_t;
 
-  addr_t::scope_id_t scope{1};
-
   addr_t::bytes_t bytes =
   {
     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
@@ -77,23 +75,45 @@ TEST_F(net_ip_address_v6, ctor)
 {
   addr_t a;
   EXPECT_TRUE(a.is_unspecified());
-  EXPECT_EQ(0U, a.scope_id());
 }
 
 
 TEST_F(net_ip_address_v6, ctor_bytes)
 {
-  addr_t a{bytes, scope};
+  addr_t a{bytes};
   EXPECT_EQ(bytes, a.to_bytes());
-  EXPECT_EQ(scope, a.scope_id());
 }
 
 
 TEST_F(net_ip_address_v6, ctor_address_v6)
 {
-  addr_t a{bytes, scope}, b{a};
+  addr_t a{bytes}, b{a};
   EXPECT_EQ(bytes, b.to_bytes());
-  EXPECT_EQ(scope, b.scope_id());
+}
+
+
+TEST_F(net_ip_address_v6, ctor_in6_addr)
+{
+  in6_addr a = IN6ADDR_LOOPBACK_INIT;
+  addr_t addr{a};
+  EXPECT_EQ(addr_t::loopback(), addr);
+}
+
+
+TEST_F(net_ip_address_v6, load)
+{
+  in6_addr a = IN6ADDR_LOOPBACK_INIT;
+  addr_t addr;
+  addr.load(a);
+  EXPECT_EQ(addr_t::loopback(), addr);
+}
+
+
+TEST_F(net_ip_address_v6, store)
+{
+  in6_addr a;
+  addr_t::loopback().store(a);
+  EXPECT_TRUE(IN6_IS_ADDR_LOOPBACK(&a) != 0);
 }
 
 
@@ -102,16 +122,6 @@ TEST_F(net_ip_address_v6, operator_assign)
   addr_t a{bytes}, b;
   b = a;
   EXPECT_EQ(bytes, b.to_bytes());
-}
-
-
-TEST_F(net_ip_address_v6, scope)
-{
-  addr_t a{bytes};
-  EXPECT_EQ(0U, a.scope_id());
-
-  a.scope_id(scope);
-  EXPECT_EQ(scope, a.scope_id());
 }
 
 
