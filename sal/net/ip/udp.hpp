@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/platform.hpp>
+#include <sal/net/ip/endpoint.hpp>
 
 
 __sal_begin
