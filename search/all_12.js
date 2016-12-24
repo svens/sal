@@ -1,5 +1,7 @@
 var searchData=
 [
+  ['udp_2ehpp',['udp.hpp',['../udp_8hpp.html',1,'']]],
+  ['udp_5ft',['udp_t',['../classsal_1_1net_1_1ip_1_1udp__t.html',1,'sal::net::ip']]],
   ['uint_5ft',['uint_t',['../classsal_1_1net_1_1ip_1_1address__v4__t.html#a28966c7a948fa6529430fe8058dff8a2',1,'sal::net::ip::address_v4_t']]],
   ['unique',['unique',['../classsal_1_1file__t.html#a9046c1d53f9d711bd0f2170db8b2e6ae',1,'sal::file_t::unique(std::string &amp;name, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#ad1bd7a0e49c69cdae1b01fde570ad341',1,'sal::file_t::unique(std::string &amp;name)']]],
   ['unit',['unit',['../structsal_1_1program__options_1_1option__t.html#ab5cbdb1335321af931e5ea7376f383cc',1,'sal::program_options::option_t']]],

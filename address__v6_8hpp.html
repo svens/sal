@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.4.0</span>
+   &#160;<span id="projectnumber">0.5.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('address__v6_8hpp.html','');});
 <p>IPv6 address.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
-<code>#include &lt;sal/net/__bits/platform.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="net_2fwd_8hpp_source.html">sal/net/fwd.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="net_2error_8hpp_source.html">sal/net/error.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="address__v4_8hpp_source.html">sal/net/ip/address_v4.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="char__array_8hpp_source.html">sal/char_array.hpp</a>&gt;</code><br />
@@ -151,10 +151,10 @@ memory_writer_t &amp;&#160;</td><td class="memItemRight" valign="bottom"><a clas
 std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="address__v6_8hpp.html#a3e9bf14309f3fa5709103e3c958a91e8">sal::net::ip::operator&lt;&lt;</a> (std::ostream &amp;os, const address_v6_t &amp;a)</td></tr>
 <tr class="memdesc:a3e9bf14309f3fa5709103e3c958a91e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and insert human readable <em>address</em> into <em>writer</em>. <br /></td></tr>
 <tr class="separator:a3e9bf14309f3fa5709103e3c958a91e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaeda2f46ce83255f689e25b0b11f7c96"><td class="memItemLeft" align="right" valign="top"><a id="aaeda2f46ce83255f689e25b0b11f7c96"></a>
-constexpr address_v6_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="address__v6_8hpp.html#aaeda2f46ce83255f689e25b0b11f7c96">sal::net::ip::make_address_v6</a> (const address_v6_t::bytes_t &amp;bytes, address_v6_t::scope_id_t scope=0) noexcept</td></tr>
-<tr class="memdesc:aaeda2f46ce83255f689e25b0b11f7c96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and return IPv6 address from <em>bytes</em>. <br /></td></tr>
-<tr class="separator:aaeda2f46ce83255f689e25b0b11f7c96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a675cd4d9799bdca882fd5bd21a27babd"><td class="memItemLeft" align="right" valign="top"><a id="a675cd4d9799bdca882fd5bd21a27babd"></a>
+constexpr address_v6_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="address__v6_8hpp.html#a675cd4d9799bdca882fd5bd21a27babd">sal::net::ip::make_address_v6</a> (const address_v6_t::bytes_t &amp;bytes) noexcept</td></tr>
+<tr class="memdesc:a675cd4d9799bdca882fd5bd21a27babd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and return IPv6 address from <em>bytes</em>. <br /></td></tr>
+<tr class="separator:a675cd4d9799bdca882fd5bd21a27babd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2553198d8c18fa069be2d404369091a7"><td class="memItemLeft" align="right" valign="top">address_v6_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="address__v6_8hpp.html#a2553198d8c18fa069be2d404369091a7">sal::net::ip::make_address_v6</a> (const char *str, std::error_code &amp;ec) noexcept</td></tr>
 <tr class="memdesc:a2553198d8c18fa069be2d404369091a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and return IPv6 address from textual representation <em>str</em>.  <a href="address__v6_8hpp.html#a2553198d8c18fa069be2d404369091a7">More...</a><br /></td></tr>
 <tr class="separator:a2553198d8c18fa069be2d404369091a7"><td class="memSeparator" colspan="2">&#160;</td></tr>

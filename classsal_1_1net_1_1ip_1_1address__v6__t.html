@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.4.0</span>
+   &#160;<span id="projectnumber">0.5.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -112,10 +112,6 @@ Public Types</h2></td></tr>
 using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a65e0c8361aa60d75f66ccc0fc8828014">bytes_t</a> = std::array&lt; uint8_t, 16 &gt;</td></tr>
 <tr class="memdesc:a65e0c8361aa60d75f66ccc0fc8828014"><td class="mdescLeft">&#160;</td><td class="mdescRight">Binary representation of IPv6 address. <br /></td></tr>
 <tr class="separator:a65e0c8361aa60d75f66ccc0fc8828014"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2906ded930c4e9f4cc74a37ff7f4b99e"><td class="memItemLeft" align="right" valign="top"><a id="a2906ded930c4e9f4cc74a37ff7f4b99e"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a2906ded930c4e9f4cc74a37ff7f4b99e">scope_id_t</a> = uint_least32_t</td></tr>
-<tr class="memdesc:a2906ded930c4e9f4cc74a37ff7f4b99e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scope ID. <br /></td></tr>
-<tr class="separator:a2906ded930c4e9f4cc74a37ff7f4b99e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -123,22 +119,26 @@ Public Member Functions</h2></td></tr>
 constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a0388b014e318ffd5c544d280f171e8d2">address_v6_t</a> () noexcept=default</td></tr>
 <tr class="memdesc:a0388b014e318ffd5c544d280f171e8d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct unspecified address. <br /></td></tr>
 <tr class="separator:a0388b014e318ffd5c544d280f171e8d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff9f9d9dbb2cd56361ad1f008bc8327b"><td class="memItemLeft" align="right" valign="top"><a id="aff9f9d9dbb2cd56361ad1f008bc8327b"></a>
-constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#aff9f9d9dbb2cd56361ad1f008bc8327b">address_v6_t</a> (const <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a65e0c8361aa60d75f66ccc0fc8828014">bytes_t</a> &amp;bytes, <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a2906ded930c4e9f4cc74a37ff7f4b99e">scope_id_t</a> scope=0) noexcept</td></tr>
-<tr class="memdesc:aff9f9d9dbb2cd56361ad1f008bc8327b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new address from <em>bytes</em>. <br /></td></tr>
-<tr class="separator:aff9f9d9dbb2cd56361ad1f008bc8327b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a090f6f093d7e52fe6eb6b11b16369387"><td class="memItemLeft" align="right" valign="top"><a id="a090f6f093d7e52fe6eb6b11b16369387"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a090f6f093d7e52fe6eb6b11b16369387">address_v6_t</a> (const <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a65e0c8361aa60d75f66ccc0fc8828014">bytes_t</a> &amp;bytes) noexcept</td></tr>
+<tr class="memdesc:a090f6f093d7e52fe6eb6b11b16369387"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new address from <em>bytes</em>. <br /></td></tr>
+<tr class="separator:a090f6f093d7e52fe6eb6b11b16369387"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15950f65c1ae8002df509a5a9407656d"><td class="memItemLeft" align="right" valign="top"><a id="a15950f65c1ae8002df509a5a9407656d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a15950f65c1ae8002df509a5a9407656d">address_v6_t</a> (const in6_addr &amp;that) noexcept</td></tr>
+<tr class="memdesc:a15950f65c1ae8002df509a5a9407656d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new address directly from in6_addr <em>that</em>. <br /></td></tr>
+<tr class="separator:a15950f65c1ae8002df509a5a9407656d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac98a1aa10074caafe68852095f881cbb"><td class="memItemLeft" align="right" valign="top"><a id="ac98a1aa10074caafe68852095f881cbb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#ac98a1aa10074caafe68852095f881cbb">load</a> (const in6_addr &amp;a) noexcept</td></tr>
+<tr class="memdesc:ac98a1aa10074caafe68852095f881cbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy IPv6 address data from low-level in6_addr <em>a</em>. <br /></td></tr>
+<tr class="separator:ac98a1aa10074caafe68852095f881cbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e4d402eca7cf3588905ec45f01f975c"><td class="memItemLeft" align="right" valign="top"><a id="a7e4d402eca7cf3588905ec45f01f975c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a7e4d402eca7cf3588905ec45f01f975c">store</a> (in6_addr &amp;a) const noexcept</td></tr>
+<tr class="memdesc:a7e4d402eca7cf3588905ec45f01f975c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy this IPv4 address data into low-level in6_addr <em>a</em>. <br /></td></tr>
+<tr class="separator:a7e4d402eca7cf3588905ec45f01f975c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c193e815112c2a89175a5b70cbc877a"><td class="memItemLeft" align="right" valign="top"><a id="a6c193e815112c2a89175a5b70cbc877a"></a>
 constexpr const <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a65e0c8361aa60d75f66ccc0fc8828014">bytes_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a6c193e815112c2a89175a5b70cbc877a">to_bytes</a> () const noexcept</td></tr>
 <tr class="memdesc:a6c193e815112c2a89175a5b70cbc877a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return binary representation of <em>this</em> address. <br /></td></tr>
 <tr class="separator:a6c193e815112c2a89175a5b70cbc877a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa196476a88ca0a631e02eaf4d1fa0421"><td class="memItemLeft" align="right" valign="top"><a id="aa196476a88ca0a631e02eaf4d1fa0421"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#aa196476a88ca0a631e02eaf4d1fa0421">scope_id</a> (<a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a2906ded930c4e9f4cc74a37ff7f4b99e">scope_id_t</a> id) noexcept</td></tr>
-<tr class="memdesc:aa196476a88ca0a631e02eaf4d1fa0421"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set scope id. <br /></td></tr>
-<tr class="separator:aa196476a88ca0a631e02eaf4d1fa0421"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ed052f23a994df97e219762169a8c63"><td class="memItemLeft" align="right" valign="top"><a id="a4ed052f23a994df97e219762169a8c63"></a>
-constexpr <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a2906ded930c4e9f4cc74a37ff7f4b99e">scope_id_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a4ed052f23a994df97e219762169a8c63">scope_id</a> () const noexcept</td></tr>
-<tr class="memdesc:a4ed052f23a994df97e219762169a8c63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get scope id. <br /></td></tr>
-<tr class="separator:a4ed052f23a994df97e219762169a8c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e12b77f9dce3dbf6822c77e0a365590"><td class="memItemLeft" align="right" valign="top"><a id="a5e12b77f9dce3dbf6822c77e0a365590"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a5e12b77f9dce3dbf6822c77e0a365590">is_unspecified</a> () const noexcept</td></tr>
 <tr class="memdesc:a5e12b77f9dce3dbf6822c77e0a365590"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>this</em> is unspecified address (::) <br /></td></tr>

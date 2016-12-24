@@ -4,5 +4,6 @@ var searchData=
   ['remove_5fsuffix',['remove_suffix',['../classsal_1_1char__array__t.html#a85284a6e79cba6210236ddb85a55e482',1,'sal::char_array_t']]],
   ['requires_5fargument',['requires_argument',['../structsal_1_1program__options_1_1option__t.html#a36ac7d5b6bf0914603bf0eafe50ad9a5',1,'sal::program_options::option_t::requires_argument()'],['../option__set_8hpp.html#add4852e6aca54ba4ec3820359d4ad35e',1,'sal::program_options::requires_argument(const std::string &amp;unit)'],['../option__set_8hpp.html#a1af6770bec5b1cd66736e5c66a66eda9',1,'sal::program_options::requires_argument(const std::string &amp;unit, const T &amp;default_value)']]],
   ['reset',['reset',['../classsal_1_1char__array__t.html#af1dcf126d155428893dccc2a0b2b7c9e',1,'sal::char_array_t']]],
+  ['resize',['resize',['../classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#aef36a124e2de27f53b3424b4e315e2ee',1,'sal::net::ip::basic_endpoint_t']]],
   ['revert',['revert',['../classsal_1_1char__array__t.html#a30a8d55646eab35be6b9b5a60a69278e',1,'sal::char_array_t']]]
 ];

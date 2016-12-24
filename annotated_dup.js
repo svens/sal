@@ -13,7 +13,11 @@ var annotated_dup =
         [ "ip", null, [
           [ "address_t", "classsal_1_1net_1_1ip_1_1address__t.html", "classsal_1_1net_1_1ip_1_1address__t" ],
           [ "address_v4_t", "classsal_1_1net_1_1ip_1_1address__v4__t.html", "classsal_1_1net_1_1ip_1_1address__v4__t" ],
-          [ "address_v6_t", "classsal_1_1net_1_1ip_1_1address__v6__t.html", "classsal_1_1net_1_1ip_1_1address__v6__t" ]
+          [ "address_v6_t", "classsal_1_1net_1_1ip_1_1address__v6__t.html", "classsal_1_1net_1_1ip_1_1address__v6__t" ],
+          [ "bad_address_cast_t", "classsal_1_1net_1_1ip_1_1bad__address__cast__t.html", null ],
+          [ "basic_endpoint_t", "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html", "classsal_1_1net_1_1ip_1_1basic__endpoint__t" ],
+          [ "tcp_t", "classsal_1_1net_1_1ip_1_1tcp__t.html", "classsal_1_1net_1_1ip_1_1tcp__t" ],
+          [ "udp_t", "classsal_1_1net_1_1ip_1_1udp__t.html", "classsal_1_1net_1_1ip_1_1udp__t" ]
         ] ]
       ] ],
       [ "program_options", null, [

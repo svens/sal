@@ -4,6 +4,7 @@ var hierarchy =
     [ "sal::net::ip::address_v4_t", "classsal_1_1net_1_1ip_1_1address__v4__t.html", null ],
     [ "sal::net::ip::address_v6_t", "classsal_1_1net_1_1ip_1_1address__v6__t.html", null ],
     [ "sal::program_options::argument_map_t", "classsal_1_1program__options_1_1argument__map__t.html", null ],
+    [ "sal::net::ip::basic_endpoint_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html", null ],
     [ "sal::logger::basic_worker_t< Worker >", "classsal_1_1logger_1_1basic__worker__t.html", null ],
     [ "sal::logger::basic_worker_t< async_worker_t >", "classsal_1_1logger_1_1basic__worker__t.html", [
       [ "sal::logger::async_worker_t", "classsal_1_1logger_1_1async__worker__t.html", null ]
@@ -18,6 +19,9 @@ var hierarchy =
     [ "sal::program_options::config_reader_t", "classsal_1_1program__options_1_1config__reader__t.html", null ],
     [ "sal::logger::event_t", "structsal_1_1logger_1_1event__t.html", null ],
     [ "std::exception", null, [
+      [ "std::bad_cast", null, [
+        [ "sal::net::ip::bad_address_cast_t", "classsal_1_1net_1_1ip_1_1bad__address__cast__t.html", null ]
+      ] ],
       [ "std::logic_error", null, [
         [ "sal::program_options::duplicate_option_name_error", "structsal_1_1program__options_1_1duplicate__option__name__error.html", null ],
         [ "sal::program_options::empty_option_name_error", "structsal_1_1program__options_1_1empty__option__name__error.html", null ],
@@ -46,5 +50,7 @@ var hierarchy =
     [ "sal::queue_t< T, SyncPolicy >", "classsal_1_1queue__t.html", null ],
     [ "sal::logger::sink_t", "classsal_1_1logger_1_1sink__t.html", null ],
     [ "sal::spinlock_t", "classsal_1_1spinlock__t.html", null ],
-    [ "sal::spsc_sync_t", "structsal_1_1spsc__sync__t.html", null ]
+    [ "sal::spsc_sync_t", "structsal_1_1spsc__sync__t.html", null ],
+    [ "sal::net::ip::tcp_t", "classsal_1_1net_1_1ip_1_1tcp__t.html", null ],
+    [ "sal::net::ip::udp_t", "classsal_1_1net_1_1ip_1_1udp__t.html", null ]
 ];

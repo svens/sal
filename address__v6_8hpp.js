@@ -3,7 +3,7 @@ var address__v6_8hpp =
     [ "address_v6_t", "classsal_1_1net_1_1ip_1_1address__v6__t.html", "classsal_1_1net_1_1ip_1_1address__v6__t" ],
     [ "make_address_v4", "address__v6_8hpp.html#a216babac1d6808bc1a19f9a0eb69bde7", null ],
     [ "make_address_v4", "address__v6_8hpp.html#a082e8a8e1f6ffce6e8b93358ec07446f", null ],
-    [ "make_address_v6", "address__v6_8hpp.html#aaeda2f46ce83255f689e25b0b11f7c96", null ],
+    [ "make_address_v6", "address__v6_8hpp.html#a675cd4d9799bdca882fd5bd21a27babd", null ],
     [ "make_address_v6", "address__v6_8hpp.html#a2553198d8c18fa069be2d404369091a7", null ],
     [ "make_address_v6", "address__v6_8hpp.html#a24cadcbf650e7455604dc6fc186368c1", null ],
     [ "make_address_v6", "address__v6_8hpp.html#a2877f769439f8e229627e28658d710c3", null ],

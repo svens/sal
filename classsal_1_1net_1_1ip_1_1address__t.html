@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.4.0</span>
+   &#160;<span id="projectnumber">0.5.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -118,6 +118,18 @@ constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href=
 constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#aa2c2aef9a999b8233253648e8e1fcfd4">address_t</a> (const <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html">address_v6_t</a> &amp;that) noexcept</td></tr>
 <tr class="memdesc:aa2c2aef9a999b8233253648e8e1fcfd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new address as copy of <em>that</em>. <br /></td></tr>
 <tr class="separator:aa2c2aef9a999b8233253648e8e1fcfd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a064815f5c4c1c1a30ac97edf6696f5b8"><td class="memItemLeft" align="right" valign="top"><a id="a064815f5c4c1c1a30ac97edf6696f5b8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a064815f5c4c1c1a30ac97edf6696f5b8">address_t</a> (const sockaddr_storage &amp;that)</td></tr>
+<tr class="memdesc:a064815f5c4c1c1a30ac97edf6696f5b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new address directly from sockaddr_storage <em>that</em>. <br /></td></tr>
+<tr class="separator:a064815f5c4c1c1a30ac97edf6696f5b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89e39e8e389f1ad16da7b4aa9b4ea4c1"><td class="memItemLeft" align="right" valign="top"><a id="a89e39e8e389f1ad16da7b4aa9b4ea4c1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a89e39e8e389f1ad16da7b4aa9b4ea4c1">load</a> (const sockaddr_storage &amp;a)</td></tr>
+<tr class="memdesc:a89e39e8e389f1ad16da7b4aa9b4ea4c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy IP address data from low-level sockaddr_storage <em>a</em>. <br /></td></tr>
+<tr class="separator:a89e39e8e389f1ad16da7b4aa9b4ea4c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bb1b9b09ba068dd1cc182497e08d96a"><td class="memItemLeft" align="right" valign="top"><a id="a9bb1b9b09ba068dd1cc182497e08d96a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a9bb1b9b09ba068dd1cc182497e08d96a">store</a> (sockaddr_storage &amp;a) const noexcept</td></tr>
+<tr class="memdesc:a9bb1b9b09ba068dd1cc182497e08d96a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy this IP address data into low-level sockaddr_storage <em>a</em>. <br /></td></tr>
+<tr class="separator:a9bb1b9b09ba068dd1cc182497e08d96a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23dfb88d0c2d66bab96de10540824d17"><td class="memItemLeft" align="right" valign="top"><a id="a23dfb88d0c2d66bab96de10540824d17"></a>
 constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a23dfb88d0c2d66bab96de10540824d17">is_v4</a> () const noexcept</td></tr>
 <tr class="memdesc:a23dfb88d0c2d66bab96de10540824d17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return <code>true</code> if object contains IPv4 address, otherwise <code>false</code>. <br /></td></tr>
@@ -228,7 +240,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Return IPv4 address. </p>
-<p>Throws bad_address_cast_t if <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a23dfb88d0c2d66bab96de10540824d17" title="Return true if object contains IPv4 address, otherwise false. ">is_v4()</a> == false </p>
+<p>Throws <a class="el" href="classsal_1_1net_1_1ip_1_1bad__address__cast__t.html" title="Exception type thrown when invalid address casting between IPv4 and IPv6 is attempted. ">bad_address_cast_t</a> if <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a23dfb88d0c2d66bab96de10540824d17" title="Return true if object contains IPv4 address, otherwise false. ">is_v4()</a> == false </p>
 
 </div>
 </div>
@@ -256,7 +268,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Return IPv6 address. </p>
-<p>Throws bad_address_cast_t if <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a70b79dde1a71fa796c6a8ecd207666bb" title="Return true if object contains IPv6 address, otherwise false. ">is_v6()</a> == false </p>
+<p>Throws <a class="el" href="classsal_1_1net_1_1ip_1_1bad__address__cast__t.html" title="Exception type thrown when invalid address casting between IPv4 and IPv6 is attempted. ">bad_address_cast_t</a> if <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a70b79dde1a71fa796c6a8ecd207666bb" title="Return true if object contains IPv6 address, otherwise false. ">is_v6()</a> == false </p>
 
 </div>
 </div>

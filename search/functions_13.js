@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['write',['write',['../classsal_1_1file__t.html#a93cdc694da22e1dc1bb9c5e07abdcec1',1,'sal::file_t::write(const char *data, size_t size, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#a552afd00f984f28810502db993fd3bc0',1,'sal::file_t::write(const char *data, size_t size)'],['../classsal_1_1memory__writer__t.html#a94fba5b3bc60e76d5215ffcec407d2a2',1,'sal::memory_writer_t::write(T v) noexcept'],['../classsal_1_1memory__writer__t.html#a3af46b74477ba689ca7eeed97078a7ff',1,'sal::memory_writer_t::write(const T *begin, const T *end) noexcept'],['../classsal_1_1memory__writer__t.html#af14a85578dbfb8ea5a6919ecf9be9ad8',1,'sal::memory_writer_t::write(const T(&amp;array)[N]) noexcept']]]
+  ['v4',['v4',['../classsal_1_1net_1_1ip_1_1tcp__t.html#a10e59a23653898f60deed945a91fc9f5',1,'sal::net::ip::tcp_t::v4()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#a03ab99d1070cd7e348ceaae2c01d6fc4',1,'sal::net::ip::udp_t::v4()']]],
+  ['v6',['v6',['../classsal_1_1net_1_1ip_1_1tcp__t.html#a89f6d881f32aaf85535adfd3f2413ad2',1,'sal::net::ip::tcp_t::v6()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#aa8dd298d7bf93fc32aac5168f02f4ffc',1,'sal::net::ip::udp_t::v6()']]]
 ];
