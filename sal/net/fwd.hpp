@@ -45,8 +45,15 @@ class tcp_t;
 class udp_t;
 
 // Endpoint
-template <typename Protocol>
-class basic_endpoint_t;
+template <typename Protocol> class basic_endpoint_t;
+
+// Resolver
+class resolver_base_t;
+template <typename Protocol> class basic_resolver_entry_t;
+template <typename Protocol> class basic_resolver_results_iterator_t;
+template <typename Protocol> class basic_resolver_results_t;
+template <typename Protocol> class basic_resolver_t;
+
 
 } // namespace ip
 

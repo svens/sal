@@ -4,6 +4,7 @@
 #if __sal_os_linux || __sal_os_darwin
   #include <netinet/ip.h>
   #include <arpa/inet.h>
+  #include <netdb.h>
 #elif __sal_os_windows
   #include <ws2tcpip.h>
   #pragma comment(lib, "ws2_32")
