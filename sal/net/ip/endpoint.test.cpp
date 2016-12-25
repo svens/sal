@@ -77,6 +77,163 @@ TYPED_TEST(net_ip_endpoint, ctor_address_v6)
 }
 
 
+TYPED_TEST(net_ip_endpoint, ctor_sockaddr_storage_v4)
+{
+  sockaddr_storage ss;
+  auto &sa = reinterpret_cast<sockaddr_in &>(ss);
+  sa.sin_family = AF_INET;
+  sa.sin_port = htons(123);
+  sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+  typename TypeParam::endpoint_t endpoint(ss);
+  EXPECT_EQ(TypeParam::v4(), endpoint.protocol());
+  EXPECT_EQ(addr_v4_t::loopback(), endpoint.address());
+  EXPECT_EQ(123U, endpoint.port());
+}
+
+
+TYPED_TEST(net_ip_endpoint, ctor_sockaddr_storage_v6)
+{
+  sockaddr_storage ss;
+  auto &sa = reinterpret_cast<sockaddr_in6 &>(ss);
+  sa.sin6_family = AF_INET6;
+  sa.sin6_port = htons(123);
+  sa.sin6_addr = IN6ADDR_LOOPBACK_INIT;
+
+  typename TypeParam::endpoint_t endpoint(ss);
+  EXPECT_EQ(TypeParam::v6(), endpoint.protocol());
+  EXPECT_EQ(addr_v6_t::loopback(), endpoint.address());
+  EXPECT_EQ(123U, endpoint.port());
+}
+
+
+TYPED_TEST(net_ip_endpoint, ctor_sockaddr_storage_invalid)
+{
+  sockaddr_storage ss;
+  ss.ss_family = AF_INET + AF_INET6;
+
+  EXPECT_THROW(
+    typename TypeParam::endpoint_t endpoint(ss),
+    sal::net::ip::bad_address_cast_t
+  );
+}
+
+
+TYPED_TEST(net_ip_endpoint, try_load_v4)
+{
+  sockaddr_storage ss;
+  auto &sa = reinterpret_cast<sockaddr_in &>(ss);
+  sa.sin_family = AF_INET;
+  sa.sin_port = htons(123);
+  sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+  typename TypeParam::endpoint_t endpoint;
+  ASSERT_TRUE(endpoint.try_load(ss));
+  EXPECT_EQ(TypeParam::v4(), endpoint.protocol());
+  EXPECT_EQ(addr_v4_t::loopback(), endpoint.address());
+  EXPECT_EQ(123U, endpoint.port());
+}
+
+
+TYPED_TEST(net_ip_endpoint, try_load_v6)
+{
+  sockaddr_storage ss;
+  auto &sa = reinterpret_cast<sockaddr_in6 &>(ss);
+  sa.sin6_family = AF_INET6;
+  sa.sin6_port = htons(123);
+  sa.sin6_addr = IN6ADDR_LOOPBACK_INIT;
+
+  typename TypeParam::endpoint_t endpoint;
+  ASSERT_TRUE(endpoint.try_load(ss));
+  EXPECT_EQ(TypeParam::v6(), endpoint.protocol());
+  EXPECT_EQ(addr_v6_t::loopback(), endpoint.address());
+  EXPECT_EQ(123U, endpoint.port());
+}
+
+
+TYPED_TEST(net_ip_endpoint, try_load_invalid)
+{
+  sockaddr_storage ss;
+  ss.ss_family = AF_INET + AF_INET6;
+
+  typename TypeParam::endpoint_t endpoint;
+  EXPECT_FALSE(endpoint.try_load(ss));
+}
+
+
+TYPED_TEST(net_ip_endpoint, load_v4)
+{
+  sockaddr_storage ss;
+  auto &sa = reinterpret_cast<sockaddr_in &>(ss);
+  sa.sin_family = AF_INET;
+  sa.sin_port = htons(123);
+  sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+  typename TypeParam::endpoint_t endpoint;
+  endpoint.load(ss);
+  EXPECT_EQ(TypeParam::v4(), endpoint.protocol());
+  EXPECT_EQ(addr_v4_t::loopback(), endpoint.address());
+  EXPECT_EQ(123U, endpoint.port());
+}
+
+
+TYPED_TEST(net_ip_endpoint, load_v6)
+{
+  sockaddr_storage ss;
+  auto &sa = reinterpret_cast<sockaddr_in6 &>(ss);
+  sa.sin6_family = AF_INET6;
+  sa.sin6_port = htons(123);
+  sa.sin6_addr = IN6ADDR_LOOPBACK_INIT;
+
+  typename TypeParam::endpoint_t endpoint;
+  endpoint.load(ss);
+  EXPECT_EQ(TypeParam::v6(), endpoint.protocol());
+  EXPECT_EQ(addr_v6_t::loopback(), endpoint.address());
+  EXPECT_EQ(123U, endpoint.port());
+}
+
+
+TYPED_TEST(net_ip_endpoint, load_invalid)
+{
+  sockaddr_storage ss;
+  ss.ss_family = AF_INET + AF_INET6;
+
+  typename TypeParam::endpoint_t endpoint;
+  EXPECT_THROW(
+    endpoint.load(ss),
+    sal::net::ip::bad_address_cast_t
+  );
+}
+
+
+TYPED_TEST(net_ip_endpoint, store_v4)
+{
+  typename TypeParam::endpoint_t endpoint(addr_v4_t::loopback(), 123);
+
+  sockaddr_storage ss;
+  endpoint.store(ss);
+
+  auto &sa = reinterpret_cast<sockaddr_in &>(ss);
+  EXPECT_EQ(AF_INET, sa.sin_family);
+  EXPECT_EQ(123U, ntohs(sa.sin_port));
+  EXPECT_EQ(INADDR_LOOPBACK, ntohl(sa.sin_addr.s_addr));
+}
+
+
+TYPED_TEST(net_ip_endpoint, store_v6)
+{
+  typename TypeParam::endpoint_t endpoint(addr_v6_t::loopback(), 123);
+
+  sockaddr_storage ss;
+  endpoint.store(ss);
+
+  auto &sa = reinterpret_cast<sockaddr_in6 &>(ss);
+  EXPECT_EQ(AF_INET6, sa.sin6_family);
+  EXPECT_EQ(123U, ntohs(sa.sin6_port));
+  EXPECT_TRUE(IN6_IS_ADDR_LOOPBACK(&sa.sin6_addr) != 0);
+}
+
+
 TYPED_TEST(net_ip_endpoint, address_v4)
 {
   typename TypeParam::endpoint_t endpoint(addr_v6_t(), 123);
