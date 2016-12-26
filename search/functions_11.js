@@ -9,6 +9,7 @@ var searchData=
   ['to_5fuint',['to_uint',['../classsal_1_1net_1_1ip_1_1address__v4__t.html#a28246776b68b72a86dbca44c4a9418e7',1,'sal::net::ip::address_v4_t']]],
   ['to_5fv4',['to_v4',['../classsal_1_1net_1_1ip_1_1address__t.html#ae20b6cad1d64ee5419e74d881963da44',1,'sal::net::ip::address_t']]],
   ['to_5fv6',['to_v6',['../classsal_1_1net_1_1ip_1_1address__t.html#a5b7faa556c153cce894fa521ab11cf68',1,'sal::net::ip::address_t']]],
+  ['try_5fload',['try_load',['../classsal_1_1net_1_1ip_1_1address__t.html#a56ec436f2a3981d5a3ed8b72d9b858a0',1,'sal::net::ip::address_t::try_load()'],['../classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a1f96a094fa415bd53778ef8e0ad3979b',1,'sal::net::ip::basic_endpoint_t::try_load()']]],
   ['try_5flock',['try_lock',['../classsal_1_1lockable__t.html#a201ec3f6981bb5a29af4fb1c0079c3ee',1,'sal::lockable_t::try_lock()'],['../classsal_1_1lockable__t.html#a4b56abb8996aad58d8e4f7a87791cfc9',1,'sal::lockable_t::try_lock() const'],['../classsal_1_1spinlock__t.html#a77e6c62136204f2e856f513dabd72f98',1,'sal::spinlock_t::try_lock()']]],
   ['try_5fpop',['try_pop',['../classsal_1_1intrusive__queue__t.html#adbef7021b05f1580b79df1275e7fe4ab',1,'sal::intrusive_queue_t::try_pop()'],['../classsal_1_1queue__t.html#a8b7d6d6680e15cd795a161e08bbd338d',1,'sal::queue_t::try_pop()']]],
   ['type',['type',['../classsal_1_1net_1_1ip_1_1tcp__t.html#afbf239b5f0074fd8229c03349ac101fa',1,'sal::net::ip::tcp_t::type()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#a664d522407e5283fb0ff2fdc4478ebbe',1,'sal::net::ip::udp_t::type()']]]

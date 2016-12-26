@@ -6,6 +6,8 @@ var searchData=
   ['make_5fchannel',['make_channel',['../classsal_1_1logger_1_1basic__worker__t.html#a6ef3a6fca86ba802792e2d444b2193e5',1,'sal::logger::basic_worker_t']]],
   ['make_5fdefault',['make_default',['../classsal_1_1logger_1_1worker__t.html#a94464be869b9c79205a2e72ff193db53',1,'sal::logger::worker_t']]],
   ['make_5fdefault_5fworker',['make_default_worker',['../worker_8hpp.html#a1c01829d09303514c312238ffa7ef55b',1,'sal::logger']]],
+  ['make_5ferror_5fcode',['make_error_code',['../net_2error_8hpp.html#a5c0a5c601cb4396a2d28adfaea1b44c4',1,'sal::net::ip']]],
+  ['make_5ferror_5fcondition',['make_error_condition',['../net_2error_8hpp.html#af86abe1eca647f437d75b996956a9cf6',1,'sal::net::ip']]],
   ['make_5fevent',['make_event',['../classsal_1_1logger_1_1channel__t.html#ad173533954d7e29b4e9346c210dc30b0',1,'sal::logger::channel_t']]],
   ['mark',['mark',['../classsal_1_1char__array__t.html#a1eb81cb9d24ddf4027d38bac94895191',1,'sal::char_array_t']]],
   ['max_5fsize',['max_size',['../classsal_1_1char__array__t.html#a7c3c18bb1c52f8d620f3e86f8f81167a',1,'sal::char_array_t']]],

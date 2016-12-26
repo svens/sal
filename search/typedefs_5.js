@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['mutex_5ft',['mutex_t',['../classsal_1_1locked__ptr.html#aa8bdd103118232a2d0fb0611db454641',1,'sal::locked_ptr::mutex_t()'],['../classsal_1_1lockable__t.html#a659fc18de1d1d3ffaa11e2cf5f360bb7',1,'sal::lockable_t::mutex_t()']]]
+  ['intrusive_5fqueue_5fhook_5ft',['intrusive_queue_hook_t',['../structsal_1_1no__sync__t.html#a3482d5b45551e5a51ba750467b2398b5',1,'sal::no_sync_t::intrusive_queue_hook_t()'],['../structsal_1_1mpsc__sync__t.html#a451764ca69e667381e96bbdad3b4b7cb',1,'sal::mpsc_sync_t::intrusive_queue_hook_t()']]],
+  ['iterator',['iterator',['../classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#a80f4a0c87912460e6f6b5b5aedc2b4d9',1,'sal::net::ip::basic_resolver_results_t']]]
 ];

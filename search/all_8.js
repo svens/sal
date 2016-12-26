@@ -22,5 +22,6 @@ var searchData=
   ['is_5funspecified',['is_unspecified',['../classsal_1_1net_1_1ip_1_1address__t.html#ab30cc631dc09ce6b4cf4c429b5a6a0fc',1,'sal::net::ip::address_t::is_unspecified()'],['../classsal_1_1net_1_1ip_1_1address__v4__t.html#aacf0464da7521e0574ae6cbef71d644a',1,'sal::net::ip::address_v4_t::is_unspecified()'],['../classsal_1_1net_1_1ip_1_1address__v6__t.html#a5e12b77f9dce3dbf6822c77e0a365590',1,'sal::net::ip::address_v6_t::is_unspecified()']]],
   ['is_5fv4',['is_v4',['../classsal_1_1net_1_1ip_1_1address__t.html#a23dfb88d0c2d66bab96de10540824d17',1,'sal::net::ip::address_t']]],
   ['is_5fv4_5fmapped',['is_v4_mapped',['../classsal_1_1net_1_1ip_1_1address__v6__t.html#aa4e444c034fe0037ebae2a9ad8c0249a',1,'sal::net::ip::address_v6_t']]],
-  ['is_5fv6',['is_v6',['../classsal_1_1net_1_1ip_1_1address__t.html#a70b79dde1a71fa796c6a8ecd207666bb',1,'sal::net::ip::address_t']]]
+  ['is_5fv6',['is_v6',['../classsal_1_1net_1_1ip_1_1address__t.html#a70b79dde1a71fa796c6a8ecd207666bb',1,'sal::net::ip::address_t']]],
+  ['iterator',['iterator',['../classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#a80f4a0c87912460e6f6b5b5aedc2b4d9',1,'sal::net::ip::basic_resolver_results_t']]]
 ];

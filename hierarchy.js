@@ -5,6 +5,9 @@ var hierarchy =
     [ "sal::net::ip::address_v6_t", "classsal_1_1net_1_1ip_1_1address__v6__t.html", null ],
     [ "sal::program_options::argument_map_t", "classsal_1_1program__options_1_1argument__map__t.html", null ],
     [ "sal::net::ip::basic_endpoint_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html", null ],
+    [ "sal::net::ip::basic_resolver_entry_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__resolver__entry__t.html", null ],
+    [ "sal::net::ip::basic_resolver_results_iterator_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__resolver__results__iterator__t.html", null ],
+    [ "sal::net::ip::basic_resolver_results_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html", null ],
     [ "sal::logger::basic_worker_t< Worker >", "classsal_1_1logger_1_1basic__worker__t.html", null ],
     [ "sal::logger::basic_worker_t< async_worker_t >", "classsal_1_1logger_1_1basic__worker__t.html", [
       [ "sal::logger::async_worker_t", "classsal_1_1logger_1_1async__worker__t.html", null ]
@@ -48,6 +51,9 @@ var hierarchy =
       [ "sal::memory_writer_t", "classsal_1_1memory__writer__t.html", null ]
     ] ],
     [ "sal::queue_t< T, SyncPolicy >", "classsal_1_1queue__t.html", null ],
+    [ "sal::net::ip::resolver_base_t", "classsal_1_1net_1_1ip_1_1resolver__base__t.html", [
+      [ "sal::net::ip::basic_resolver_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__resolver__t.html", null ]
+    ] ],
     [ "sal::logger::sink_t", "classsal_1_1logger_1_1sink__t.html", null ],
     [ "sal::spinlock_t", "classsal_1_1spinlock__t.html", null ],
     [ "sal::spsc_sync_t", "structsal_1_1spsc__sync__t.html", null ],

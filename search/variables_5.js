@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['time',['time',['../structsal_1_1logger_1_1event__t.html#a5fc9dc58fd57ee535f9cfced07dd8d59',1,'sal::logger::event_t']]]
+  ['passive',['passive',['../classsal_1_1net_1_1ip_1_1resolver__base__t.html#aba414955ec9ac021517214c99cbc1b27',1,'sal::net::ip::resolver_base_t']]]
 ];

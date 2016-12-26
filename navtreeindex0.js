@@ -3,9 +3,9 @@ var NAVTREEINDEX0 =
 ".html":[5,0,0],
 ".html":[6,0,0,1],
 ".html":[6,0,0,1,0],
-".html":[6,0,0,2],
 ".html":[6,0,0],
 ".html":[6,0,0,0],
+".html":[6,0,0,2],
 "address_8hpp.html":[7,0,0,1,0,0],
 "address_8hpp.html#a0fa559a3f3165987012f909a09e46e83":[7,0,0,1,0,0,7],
 "address_8hpp.html#a35d5da1730e64d807428b15abc16ef2b":[7,0,0,1,0,0,9],
@@ -222,10 +222,11 @@ var NAVTREEINDEX0 =
 "classsal_1_1memory__writer__t.html#afd3e84e426341cab2e59deac9da81212":[6,0,0,8,1],
 "classsal_1_1net_1_1ip_1_1address__t.html":[6,0,0,1,0,0],
 "classsal_1_1net_1_1ip_1_1address__t.html#a064815f5c4c1c1a30ac97edf6696f5b8":[6,0,0,1,0,0,3],
-"classsal_1_1net_1_1ip_1_1address__t.html#a14d56d51ecc5f99b97d94fb58aec435c":[6,0,0,1,0,0,18],
+"classsal_1_1net_1_1ip_1_1address__t.html#a14d56d51ecc5f99b97d94fb58aec435c":[6,0,0,1,0,0,19],
 "classsal_1_1net_1_1ip_1_1address__t.html#a23dfb88d0c2d66bab96de10540824d17":[6,0,0,1,0,0,11],
 "classsal_1_1net_1_1ip_1_1address__t.html#a26fdb1d97c3b96193657234838946065":[6,0,0,1,0,0,7],
 "classsal_1_1net_1_1ip_1_1address__t.html#a4b728c392e851ac7627a078e39304c2d":[6,0,0,1,0,0,15],
+"classsal_1_1net_1_1ip_1_1address__t.html#a56ec436f2a3981d5a3ed8b72d9b858a0":[6,0,0,1,0,0,18],
 "classsal_1_1net_1_1ip_1_1address__t.html#a5b7faa556c153cce894fa521ab11cf68":[6,0,0,1,0,0,17],
 "classsal_1_1net_1_1ip_1_1address__t.html#a69ef87fda72d1e523b04a55a27b55a32":[6,0,0,1,0,0,4],
 "classsal_1_1net_1_1ip_1_1address__t.html#a70b79dde1a71fa796c6a8ecd207666bb":[6,0,0,1,0,0,12],
@@ -248,6 +249,5 @@ var NAVTREEINDEX0 =
 "classsal_1_1net_1_1ip_1_1address__v4__t.html#a19b1b37e3b8d739f1efa822f11931999":[6,0,0,1,0,1,3],
 "classsal_1_1net_1_1ip_1_1address__v4__t.html#a1ef910ba35c5d6ea964c377d293e628b":[6,0,0,1,0,1,18],
 "classsal_1_1net_1_1ip_1_1address__v4__t.html#a28246776b68b72a86dbca44c4a9418e7":[6,0,0,1,0,1,16],
-"classsal_1_1net_1_1ip_1_1address__v4__t.html#a28966c7a948fa6529430fe8058dff8a2":[6,0,0,1,0,1,1],
-"classsal_1_1net_1_1ip_1_1address__v4__t.html#a3a6cb088fc9ca617e6b5394c00d0aa22":[6,0,0,1,0,1,8]
+"classsal_1_1net_1_1ip_1_1address__v4__t.html#a28966c7a948fa6529430fe8058dff8a2":[6,0,0,1,0,1,1]
 };

@@ -18,5 +18,6 @@ var classsal_1_1net_1_1ip_1_1address__t =
     [ "to_string", "classsal_1_1net_1_1ip_1_1address__t.html#a4b728c392e851ac7627a078e39304c2d", null ],
     [ "to_v4", "classsal_1_1net_1_1ip_1_1address__t.html#ae20b6cad1d64ee5419e74d881963da44", null ],
     [ "to_v6", "classsal_1_1net_1_1ip_1_1address__t.html#a5b7faa556c153cce894fa521ab11cf68", null ],
+    [ "try_load", "classsal_1_1net_1_1ip_1_1address__t.html#a56ec436f2a3981d5a3ed8b72d9b858a0", null ],
     [ "operator<<", "classsal_1_1net_1_1ip_1_1address__t.html#a14d56d51ecc5f99b97d94fb58aec435c", null ]
 ];

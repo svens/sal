@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['load',['load',['../classsal_1_1net_1_1ip_1_1address__t.html#a89e39e8e389f1ad16da7b4aa9b4ea4c1',1,'sal::net::ip::address_t::load()'],['../classsal_1_1net_1_1ip_1_1address__v4__t.html#ab7faf8a514f860c0ac9ab26fc165f427',1,'sal::net::ip::address_v4_t::load()'],['../classsal_1_1net_1_1ip_1_1address__v6__t.html#ac98a1aa10074caafe68852095f881cbb',1,'sal::net::ip::address_v6_t::load()']]],
+  ['load',['load',['../classsal_1_1net_1_1ip_1_1address__t.html#a89e39e8e389f1ad16da7b4aa9b4ea4c1',1,'sal::net::ip::address_t::load()'],['../classsal_1_1net_1_1ip_1_1address__v4__t.html#ab7faf8a514f860c0ac9ab26fc165f427',1,'sal::net::ip::address_v4_t::load()'],['../classsal_1_1net_1_1ip_1_1address__v6__t.html#ac98a1aa10074caafe68852095f881cbb',1,'sal::net::ip::address_v6_t::load()'],['../classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a88b14386f1544241ce1c3879e1f96ab0',1,'sal::net::ip::basic_endpoint_t::load()']]],
   ['load_5ffrom',['load_from',['../classsal_1_1program__options_1_1option__set__t.html#a84768fda6e54f9f22711fe4d9f0207fb',1,'sal::program_options::option_set_t']]],
   ['local_5fnow',['local_now',['../classsal_1_1logger_1_1sink__t.html#a1aca7e0e71e821a05f91d42c9cbce2df',1,'sal::logger::sink_t']]],
   ['local_5foffset',['local_offset',['../time_8hpp.html#a4cebc13cf35fe4667e18b2a429e14fa7',1,'sal']]],

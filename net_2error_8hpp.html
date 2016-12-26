@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.5.0</span>
+   &#160;<span id="projectnumber">0.6.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -90,12 +90,15 @@ $(document).ready(function(){initNavTree('net_2error_8hpp.html','');});
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">error.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
+<code>#include &lt;sal/net/__bits/platform.hpp&gt;</code><br />
 <code>#include &lt;<a class="el" href="error_8hpp_source.html">sal/error.hpp</a>&gt;</code><br />
 <code>#include &lt;typeinfo&gt;</code><br />
 </div>
@@ -106,7 +109,59 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1bad__address__cast__t.html">sal::net::ip::bad_address_cast_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exception type thrown when invalid address casting between IPv4 and IPv6 is attempted.  <a href="classsal_1_1net_1_1ip_1_1bad__address__cast__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a2eaa40bb1f08dbdc3e0ecb4eca4e69f4"><td class="memItemLeft" align="right" valign="top"><a id="a2eaa40bb1f08dbdc3e0ecb4eca4e69f4"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net_2error_8hpp.html#a2eaa40bb1f08dbdc3e0ecb4eca4e69f4">sal::net::ip::resolver_errc_t</a> { <b>host_not_found</b> = EAI_NONAME, 
+<b>host_not_found_try_again</b> = EAI_AGAIN, 
+<b>service_not_found</b> = EAI_SERVICE
+ }<tr class="memdesc:a2eaa40bb1f08dbdc3e0ecb4eca4e69f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolver error codes. <br /></td></tr>
+</td></tr>
+<tr class="separator:a2eaa40bb1f08dbdc3e0ecb4eca4e69f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a7148bb8c91a3ee2f5a8f7080a929ebf4"><td class="memItemLeft" align="right" valign="top">const std::error_category &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net_2error_8hpp.html#a7148bb8c91a3ee2f5a8f7080a929ebf4">sal::net::ip::resolver_category</a> () noexcept</td></tr>
+<tr class="memdesc:a7148bb8c91a3ee2f5a8f7080a929ebf4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return reference to resolver error category.  <a href="net_2error_8hpp.html#a7148bb8c91a3ee2f5a8f7080a929ebf4">More...</a><br /></td></tr>
+<tr class="separator:a7148bb8c91a3ee2f5a8f7080a929ebf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c0a5c601cb4396a2d28adfaea1b44c4"><td class="memItemLeft" align="right" valign="top"><a id="a5c0a5c601cb4396a2d28adfaea1b44c4"></a>
+std::error_code&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net_2error_8hpp.html#a5c0a5c601cb4396a2d28adfaea1b44c4">sal::net::ip::make_error_code</a> (resolver_errc_t e) noexcept</td></tr>
+<tr class="memdesc:a5c0a5c601cb4396a2d28adfaea1b44c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make std::error_code from resolver_errc_t <em>e</em>. <br /></td></tr>
+<tr class="separator:a5c0a5c601cb4396a2d28adfaea1b44c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af86abe1eca647f437d75b996956a9cf6"><td class="memItemLeft" align="right" valign="top"><a id="af86abe1eca647f437d75b996956a9cf6"></a>
+std::error_condition&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net_2error_8hpp.html#af86abe1eca647f437d75b996956a9cf6">sal::net::ip::make_error_condition</a> (resolver_errc_t e) noexcept</td></tr>
+<tr class="memdesc:af86abe1eca647f437d75b996956a9cf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make std::error_condition from resolver_errc_t <em>e</em>. <br /></td></tr>
+<tr class="separator:af86abe1eca647f437d75b996956a9cf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="file_a7148bb8c91a3ee2f5a8f7080a929ebf4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a7148bb8c91a3ee2f5a8f7080a929ebf4">&sect;&nbsp;</a></span>resolver_category()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::error_category&amp; sal::net::ip::resolver_category </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return reference to resolver error category. </p>
+<p>The name virtual function returns pointer to string "sal::net::ip::resolver" </p>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

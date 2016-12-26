@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['next',['next',['../structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html#a1213873ed1919ca25dd323f7a7462d0b',1,'sal::spsc_sync_t::intrusive_queue_hook_t']]],
-  ['null',['null',['../classsal_1_1file__t.html#aeb6bd72ba8816dbd6bfe6f2ec46adab0',1,'sal::file_t']]],
-  ['null_5fthread',['null_thread',['../thread_8hpp.html#abf3b9b2da3146da68f451310be8a2889',1,'sal']]]
+  ['max_5fmessage_5fsize',['max_message_size',['../structsal_1_1logger_1_1event__t.html#aca8aa527e14544dd949d4825dd20781a',1,'sal::logger::event_t']]],
+  ['message',['message',['../structsal_1_1logger_1_1event__t.html#aa7cc87e596a383179245026615237d86',1,'sal::logger::event_t']]]
 ];

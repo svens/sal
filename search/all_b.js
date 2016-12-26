@@ -8,5 +8,7 @@ var searchData=
   ['no_5fsync_5ft',['no_sync_t',['../structsal_1_1no__sync__t.html',1,'sal']]],
   ['now',['now',['../time_8hpp.html#a01e9a581c51efb1a38e25dd937021597',1,'sal']]],
   ['null',['null',['../classsal_1_1file__t.html#aeb6bd72ba8816dbd6bfe6f2ec46adab0',1,'sal::file_t']]],
-  ['null_5fthread',['null_thread',['../thread_8hpp.html#abf3b9b2da3146da68f451310be8a2889',1,'sal']]]
+  ['null_5fthread',['null_thread',['../thread_8hpp.html#abf3b9b2da3146da68f451310be8a2889',1,'sal']]],
+  ['numeric_5fhost',['numeric_host',['../classsal_1_1net_1_1ip_1_1resolver__base__t.html#a73db7428dcbf816927323ad22f8a7a5c',1,'sal::net::ip::resolver_base_t']]],
+  ['numeric_5fservice',['numeric_service',['../classsal_1_1net_1_1ip_1_1resolver__base__t.html#a40382b0cf03b7f0d12741c5144279b16',1,'sal::net::ip::resolver_base_t']]]
 ];

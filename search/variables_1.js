@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['help',['help',['../structsal_1_1program__options_1_1option__t.html#a3691f1b2b86db645ff87e8a4ab3c4d59',1,'sal::program_options::option_t']]]
+  ['canonical_5fname',['canonical_name',['../classsal_1_1net_1_1ip_1_1resolver__base__t.html#a06b74a2ed2c6df34e3ea425fb87cba4e',1,'sal::net::ip::resolver_base_t']]]
 ];

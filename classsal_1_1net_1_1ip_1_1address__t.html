@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.5.0</span>
+   &#160;<span id="projectnumber">0.6.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -122,9 +122,11 @@ constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href=
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a064815f5c4c1c1a30ac97edf6696f5b8">address_t</a> (const sockaddr_storage &amp;that)</td></tr>
 <tr class="memdesc:a064815f5c4c1c1a30ac97edf6696f5b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new address directly from sockaddr_storage <em>that</em>. <br /></td></tr>
 <tr class="separator:a064815f5c4c1c1a30ac97edf6696f5b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89e39e8e389f1ad16da7b4aa9b4ea4c1"><td class="memItemLeft" align="right" valign="top"><a id="a89e39e8e389f1ad16da7b4aa9b4ea4c1"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a89e39e8e389f1ad16da7b4aa9b4ea4c1">load</a> (const sockaddr_storage &amp;a)</td></tr>
-<tr class="memdesc:a89e39e8e389f1ad16da7b4aa9b4ea4c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy IP address data from low-level sockaddr_storage <em>a</em>. <br /></td></tr>
+<tr class="memitem:a56ec436f2a3981d5a3ed8b72d9b858a0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a56ec436f2a3981d5a3ed8b72d9b858a0">try_load</a> (const sockaddr_storage &amp;a) noexcept</td></tr>
+<tr class="memdesc:a56ec436f2a3981d5a3ed8b72d9b858a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Try to copy IP address data from low-level sockaddr_storage.  <a href="#a56ec436f2a3981d5a3ed8b72d9b858a0">More...</a><br /></td></tr>
+<tr class="separator:a56ec436f2a3981d5a3ed8b72d9b858a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89e39e8e389f1ad16da7b4aa9b4ea4c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a89e39e8e389f1ad16da7b4aa9b4ea4c1">load</a> (const sockaddr_storage &amp;a)</td></tr>
+<tr class="memdesc:a89e39e8e389f1ad16da7b4aa9b4ea4c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy IP address data from low-level sockaddr_storage <em>a</em>.  <a href="#a89e39e8e389f1ad16da7b4aa9b4ea4c1">More...</a><br /></td></tr>
 <tr class="separator:a89e39e8e389f1ad16da7b4aa9b4ea4c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9bb1b9b09ba068dd1cc182497e08d96a"><td class="memItemLeft" align="right" valign="top"><a id="a9bb1b9b09ba068dd1cc182497e08d96a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a9bb1b9b09ba068dd1cc182497e08d96a">store</a> (sockaddr_storage &amp;a) const noexcept</td></tr>
@@ -216,6 +218,35 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a id="a89e39e8e389f1ad16da7b4aa9b4ea4c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89e39e8e389f1ad16da7b4aa9b4ea4c1">&sect;&nbsp;</a></span>load()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void sal::net::ip::address_t::load </td>
+          <td>(</td>
+          <td class="paramtype">const sockaddr_storage &amp;&#160;</td>
+          <td class="paramname"><em>a</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copy IP address data from low-level sockaddr_storage <em>a</em>. </p>
+<p>Throw <a class="el" href="classsal_1_1net_1_1ip_1_1bad__address__cast__t.html" title="Exception type thrown when invalid address casting between IPv4 and IPv6 is attempted. ">bad_address_cast_t</a> if address family is not recognised. </p>
+
+</div>
+</div>
 <a id="ae20b6cad1d64ee5419e74d881963da44"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae20b6cad1d64ee5419e74d881963da44">&sect;&nbsp;</a></span>to_v4()</h2>
 
@@ -269,6 +300,35 @@ Friends</h2></td></tr>
 
 <p>Return IPv6 address. </p>
 <p>Throws <a class="el" href="classsal_1_1net_1_1ip_1_1bad__address__cast__t.html" title="Exception type thrown when invalid address casting between IPv4 and IPv6 is attempted. ">bad_address_cast_t</a> if <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a70b79dde1a71fa796c6a8ecd207666bb" title="Return true if object contains IPv6 address, otherwise false. ">is_v6()</a> == false </p>
+
+</div>
+</div>
+<a id="a56ec436f2a3981d5a3ed8b72d9b858a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56ec436f2a3981d5a3ed8b72d9b858a0">&sect;&nbsp;</a></span>try_load()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool sal::net::ip::address_t::try_load </td>
+          <td>(</td>
+          <td class="paramtype">const sockaddr_storage &amp;&#160;</td>
+          <td class="paramname"><em>a</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Try to copy IP address data from low-level sockaddr_storage. </p>
+<p>Return true on success, and false if <em>a</em> family is not recognised. </p>
 
 </div>
 </div>

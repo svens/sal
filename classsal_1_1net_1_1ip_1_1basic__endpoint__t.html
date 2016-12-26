@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.5.0</span>
+   &#160;<span id="projectnumber">0.6.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -125,6 +125,21 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a5531b5e8154c2b0bcf8010a82f864ccb">basic_endpoint_t</a> (const <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html">address_t</a> &amp;<a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a9e975ed6150143304e7ce799b973d96d">address</a>, <a class="el" href="net_2fwd_8hpp.html#aaebff83a523fdb80b96c49ac054963f9">port_t</a> <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a912892bd14897dea761af60a97b371d3">port</a>) noexcept</td></tr>
 <tr class="memdesc:a5531b5e8154c2b0bcf8010a82f864ccb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct endpoint with specified <em>address</em> and <em>port</em>. <br /></td></tr>
 <tr class="separator:a5531b5e8154c2b0bcf8010a82f864ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f2b253530cc74b2966a7ca66dcf48de"><td class="memItemLeft" align="right" valign="top"><a id="a7f2b253530cc74b2966a7ca66dcf48de"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a7f2b253530cc74b2966a7ca66dcf48de">basic_endpoint_t</a> (const sockaddr_storage &amp;that)</td></tr>
+<tr class="memdesc:a7f2b253530cc74b2966a7ca66dcf48de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new address directly from sockaddr_storage <em>that</em>. <br /></td></tr>
+<tr class="separator:a7f2b253530cc74b2966a7ca66dcf48de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f96a094fa415bd53778ef8e0ad3979b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a1f96a094fa415bd53778ef8e0ad3979b">try_load</a> (const sockaddr_storage &amp;a) noexcept</td></tr>
+<tr class="memdesc:a1f96a094fa415bd53778ef8e0ad3979b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Try to copy IP address data from low-level sockaddr_storage <em>a</em>.  <a href="#a1f96a094fa415bd53778ef8e0ad3979b">More...</a><br /></td></tr>
+<tr class="separator:a1f96a094fa415bd53778ef8e0ad3979b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88b14386f1544241ce1c3879e1f96ab0"><td class="memItemLeft" align="right" valign="top"><a id="a88b14386f1544241ce1c3879e1f96ab0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a88b14386f1544241ce1c3879e1f96ab0">load</a> (const sockaddr_storage &amp;a)</td></tr>
+<tr class="memdesc:a88b14386f1544241ce1c3879e1f96ab0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy IP address data from low-level sockaddr_storage <em>a</em>. <br /></td></tr>
+<tr class="separator:a88b14386f1544241ce1c3879e1f96ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9008d242958e4017768357849c99d2d"><td class="memItemLeft" align="right" valign="top"><a id="ab9008d242958e4017768357849c99d2d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#ab9008d242958e4017768357849c99d2d">store</a> (sockaddr_storage &amp;a) const noexcept</td></tr>
+<tr class="memdesc:ab9008d242958e4017768357849c99d2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy this IP address data into low-level sockaddr_storage <em>a</em>. <br /></td></tr>
+<tr class="separator:ab9008d242958e4017768357849c99d2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afaacf9427714178b819f890882038f3d"><td class="memItemLeft" align="right" valign="top"><a id="afaacf9427714178b819f890882038f3d"></a>
 constexpr <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#ad5b59188c63c55a7b895fa2caa21737e">protocol_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#afaacf9427714178b819f890882038f3d">protocol</a> () const noexcept</td></tr>
 <tr class="memdesc:afaacf9427714178b819f890882038f3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return instance of endpoint's protocol. <br /></td></tr>
@@ -144,6 +159,12 @@ constexpr <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html">address_
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a6da489000e4b8ec47f6f69cd1782baa6">port</a> (<a class="el" href="net_2fwd_8hpp.html#aaebff83a523fdb80b96c49ac054963f9">port_t</a> port) noexcept</td></tr>
 <tr class="memdesc:a6da489000e4b8ec47f6f69cd1782baa6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set endpoint's port (in host byte order). <br /></td></tr>
 <tr class="separator:a6da489000e4b8ec47f6f69cd1782baa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1a236b8abc12178d05cd349842464d2"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#ab1a236b8abc12178d05cd349842464d2">host_name</a> () const</td></tr>
+<tr class="memdesc:ab1a236b8abc12178d05cd349842464d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return host name for <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a9e975ed6150143304e7ce799b973d96d" title="Return endpoint&#39;s address. ">address()</a>.  <a href="#ab1a236b8abc12178d05cd349842464d2">More...</a><br /></td></tr>
+<tr class="separator:ab1a236b8abc12178d05cd349842464d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89020f16554daa023f067880fd9d9539"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a89020f16554daa023f067880fd9d9539">service_name</a> () const</td></tr>
+<tr class="memdesc:a89020f16554daa023f067880fd9d9539"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return service name for <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a9e975ed6150143304e7ce799b973d96d" title="Return endpoint&#39;s address. ">address()</a>.  <a href="#a89020f16554daa023f067880fd9d9539">More...</a><br /></td></tr>
+<tr class="separator:a89020f16554daa023f067880fd9d9539"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd19b9aea6c545e00cd3f97ccd15e443"><td class="memItemLeft" align="right" valign="top"><a id="acd19b9aea6c545e00cd3f97ccd15e443"></a>
 void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#acd19b9aea6c545e00cd3f97ccd15e443">data</a> () noexcept</td></tr>
 <tr class="memdesc:acd19b9aea6c545e00cd3f97ccd15e443"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to internal socket address data. <br /></td></tr>
@@ -191,7 +212,7 @@ class sal::net::ip::basic_endpoint_t&lt; Protocol &gt;</h3>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Protocol&gt; </div>
+template&lt;typename Protocol &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -222,7 +243,7 @@ template&lt;typename Protocol&gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Protocol&gt; </div>
+template&lt;typename Protocol &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -247,13 +268,43 @@ template&lt;typename Protocol&gt; </div>
 
 </div>
 </div>
+<a id="ab1a236b8abc12178d05cd349842464d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1a236b8abc12178d05cd349842464d2">&sect;&nbsp;</a></span>host_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html">sal::net::ip::basic_endpoint_t</a>&lt; Protocol &gt;::host_name </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return host name for <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a9e975ed6150143304e7ce799b973d96d" title="Return endpoint&#39;s address. ">address()</a>. </p>
+<p>On error, return empty string </p>
+
+</div>
+</div>
 <a id="aef36a124e2de27f53b3424b4e315e2ee"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aef36a124e2de27f53b3424b4e315e2ee">&sect;&nbsp;</a></span>resize()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Protocol&gt; </div>
+template&lt;typename Protocol &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -275,6 +326,67 @@ template&lt;typename Protocol&gt; </div>
 
 <p>Set new size for internal socket address data structure. </p>
 <p>This is no-op and throws <code>std::length_error</code> if <em>s</em> is different from family's sockaddr size. </p>
+
+</div>
+</div>
+<a id="a89020f16554daa023f067880fd9d9539"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89020f16554daa023f067880fd9d9539">&sect;&nbsp;</a></span>service_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html">sal::net::ip::basic_endpoint_t</a>&lt; Protocol &gt;::service_name </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return service name for <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a9e975ed6150143304e7ce799b973d96d" title="Return endpoint&#39;s address. ">address()</a>. </p>
+<p>On error, return empty string </p>
+
+</div>
+</div>
+<a id="a1f96a094fa415bd53778ef8e0ad3979b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f96a094fa415bd53778ef8e0ad3979b">&sect;&nbsp;</a></span>try_load()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html">sal::net::ip::basic_endpoint_t</a>&lt; Protocol &gt;::try_load </td>
+          <td>(</td>
+          <td class="paramtype">const sockaddr_storage &amp;&#160;</td>
+          <td class="paramname"><em>a</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Try to copy IP address data from low-level sockaddr_storage <em>a</em>. </p>
+<p>On success return true. Returns false if address family is not recognised. </p>
 
 </div>
 </div>
