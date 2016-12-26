@@ -60,7 +60,7 @@ if(SAL_COVERAGE)
     COMMAND ${CMAKE_COMMAND} --build . --target test
     COMMAND ${LCOV} ${LCOV_ARGS} --capture --no-external --derive-func-data --output-file sal-tests.info
     COMMAND ${LCOV} ${LCOV_ARGS} --add-tracefile sal-base.info --add-tracefile sal-tests.info --output-file sal.info
-    COMMAND ${LCOV} ${LCOV_ARGS} --remove sal.info '*.test.?pp' 'gtest/*' --output-file sal.info
+    COMMAND ${LCOV} ${LCOV_ARGS} --remove sal.info '*.test.?pp' '*/gtest/*' --output-file sal.info
     COMMAND ${LCOV} ${LCOV_ARGS} --list sal.info
     COMMAND ${LCOV} ${LCOV_ARGS} --summary sal.info
   )
