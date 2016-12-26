@@ -457,7 +457,10 @@ basic_resolver_results_t<Protocol> basic_resolver_t<Protocol>::resolve (
   auto error_code = ::getaddrinfo(host_name, service_name, &hints, &results);
   if (error_code)
   {
-    error.assign(__bits::to_gai_error(error_code), resolver_category());
+    error.assign(
+      __bits::to_gai_error(error_code, host_name, service_name),
+      resolver_category()
+    );
   }
 
   return results_t{host_name, service_name, results};
@@ -483,7 +486,10 @@ basic_resolver_results_t<Protocol> basic_resolver_t<Protocol>::resolve (
   auto error_code = ::getaddrinfo(host_name, service_name, &hints, &results);
   if (error_code)
   {
-    error.assign(__bits::to_gai_error(error_code), resolver_category());
+    error.assign(
+      __bits::to_gai_error(error_code, host_name, service_name),
+      resolver_category()
+    );
   }
 
   return results_t{host_name, service_name, results};

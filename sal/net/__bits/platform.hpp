@@ -92,8 +92,13 @@ CONSTEXPR uint64_t combine (uint64_t h, uint64_t l) noexcept
 }
 
 
-inline int to_gai_error (int sys_error) noexcept
+inline int to_gai_error (int sys_error,
+  const char *host_name,
+  const char *service_name) noexcept
 {
+  (void)host_name;
+  (void)service_name;
+
 #if __sal_os_windows
 
   switch (sys_error)
@@ -114,6 +119,16 @@ inline int to_gai_error (int sys_error) noexcept
       return EAI_SERVICE;
     case WSAESOCKTNOSUPPORT:
       return EAI_SOCKTYPE;
+  }
+
+#elif __sal_os_darwin
+
+  if (sys_error == EAI_NONAME && (!host_name || !*host_name))
+  {
+    // Darwin returns EAI_NONAME if either host or service is not found
+    // other platforms return EAI_SERVICE if service is not found
+    // align Darwin to other platforms
+    sys_error = EAI_SERVICE;
   }
 
 #endif
