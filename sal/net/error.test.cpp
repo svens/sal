@@ -16,7 +16,7 @@ TEST_P(net_error, make_error_code_resolver)
   EXPECT_NE(0, error.value());
   EXPECT_EQ(sal::net::ip::resolver_category(), error.category());
   EXPECT_FALSE(error.message().empty());
-  EXPECT_STREQ("sal::net::ip::resolver", error.category().name());
+  EXPECT_STREQ("resolver", error.category().name());
 }
 
 
@@ -30,15 +30,14 @@ TEST_F(net_error, make_error_code_resolver_invalid)
   EXPECT_NE(0, error.value());
   EXPECT_EQ(sal::net::ip::resolver_category(), error.category());
   EXPECT_FALSE(error.message().empty());
-  EXPECT_STREQ("sal::net::ip::resolver", error.category().name());
+  EXPECT_STREQ("resolver", error.category().name());
 }
 
 
 INSTANTIATE_TEST_CASE_P(net_error, net_error,
   ::testing::Values(
-    sal::net::ip::resolver_errc_t::host_not_found,
-    sal::net::ip::resolver_errc_t::host_not_found_try_again,
-    sal::net::ip::resolver_errc_t::service_not_found
+    sal::net::ip::resolver_errc_t::name_not_found,
+    sal::net::ip::resolver_errc_t::name_not_found_try_again
   )
 );
 

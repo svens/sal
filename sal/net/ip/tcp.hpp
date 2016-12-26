@@ -8,6 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/ip/endpoint.hpp>
+#include <sal/net/ip/resolver.hpp>
 
 
 __sal_begin
@@ -27,6 +28,11 @@ public:
    * TCP socket endpoint
    */
   using endpoint_t = basic_endpoint_t<tcp_t>;
+
+  /**
+   * TCP endpoint resolver
+   */
+  using resolver_t = basic_resolver_t<tcp_t>;
 
 
   tcp_t () = delete;

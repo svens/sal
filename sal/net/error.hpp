@@ -42,9 +42,8 @@ inline void bad_address_cast [[noreturn]] ()
  */
 enum class resolver_errc_t
 {
-  host_not_found = EAI_NONAME,
-  host_not_found_try_again = EAI_AGAIN,
-  service_not_found = EAI_SERVICE,
+  name_not_found = EAI_NONAME,
+  name_not_found_try_again = EAI_AGAIN,
 };
 
 
@@ -81,19 +80,9 @@ __sal_end
 
 namespace std {
 
-
 template <>
 struct is_error_condition_enum<sal::net::ip::resolver_errc_t>
   : public true_type
 {};
-
-
-inline std::error_code make_error_code (sal::net::ip::resolver_errc_t e)
-{
-  return std::error_code(static_cast<int>(e),
-    sal::net::ip::resolver_category()
-  );
-}
-
 
 } // namespace std

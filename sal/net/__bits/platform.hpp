@@ -92,6 +92,39 @@ CONSTEXPR uint64_t combine (uint64_t h, uint64_t l) noexcept
 }
 
 
+inline int to_gai_error (int sys_error) noexcept
+{
+#if __sal_os_windows
+
+  switch (sys_error)
+  {
+    case WSATRY_AGAIN:
+      return EAI_AGAIN;
+    case WSAEINVAL:
+      return EAI_BADFLAGS;
+    case WSANO_RECOVERY:
+      return EAI_FAIL;
+    case WSAEAFNOSUPPORT:
+      return EAI_FAMILY;
+    case WSA_NOT_ENOUGH_MEMORY:
+      return EAI_MEMORY;
+    case WSAHOST_NOT_FOUND:
+      return EAI_NONAME;
+    case WSATYPE_NOT_FOUND:
+      // according to MSDN docs for getaddrinfo, this error should translate
+      // to EAI_SERVICE but that contradicts RFC 2553 where EAI_SERVICE is
+      // meant for error "service not available for requested socket type"
+      return EAI_NONAME;
+    case WSAESOCKTNOSUPPORT:
+      return EAI_SOCKTYPE;
+  }
+
+#endif
+
+  return sys_error;
+}
+
+
 }}} // namespace net::ip::__bits
 
 
