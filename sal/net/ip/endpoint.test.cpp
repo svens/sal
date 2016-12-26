@@ -404,15 +404,6 @@ TYPED_TEST(net_ip_endpoint, host_name_v6)
 }
 
 
-TYPED_TEST(net_ip_endpoint, host_name_v4_numeric)
-{
-  typename TypeParam::endpoint_t endpoint(
-    sal::net::ip::make_address_v4("10.255.255.1"), 7
-  );
-  EXPECT_EQ("10.255.255.1", endpoint.host_name());
-}
-
-
 TYPED_TEST(net_ip_endpoint, service_name_v4)
 {
   typename TypeParam::endpoint_t endpoint(addr_v4_t::loopback(), 7);
