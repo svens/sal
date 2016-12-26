@@ -42,8 +42,9 @@ inline void bad_address_cast [[noreturn]] ()
  */
 enum class resolver_errc_t
 {
-  name_not_found = EAI_NONAME,
-  name_not_found_try_again = EAI_AGAIN,
+  host_not_found = EAI_NONAME,
+  host_not_found_try_again = EAI_AGAIN,
+  service_not_found = EAI_SERVICE,
 };
 
 

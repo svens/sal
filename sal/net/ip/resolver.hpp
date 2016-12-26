@@ -96,7 +96,7 @@ class basic_resolver_results_iterator_t
 {
 public:
 
-  constexpr basic_resolver_results_iterator_t () noexcept = default;
+  constexpr basic_resolver_results_iterator_t () = default;
 
 
   const basic_resolver_entry_t<Protocol> &operator* () const noexcept
@@ -175,7 +175,7 @@ public:
   using iterator = const_iterator;
 
 
-  basic_resolver_results_t () noexcept = default;
+  constexpr basic_resolver_results_t () = default;
 
 
   ~basic_resolver_results_t () noexcept

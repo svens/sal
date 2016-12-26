@@ -36,8 +36,9 @@ TEST_F(net_error, make_error_code_resolver_invalid)
 
 INSTANTIATE_TEST_CASE_P(net_error, net_error,
   ::testing::Values(
-    sal::net::ip::resolver_errc_t::name_not_found,
-    sal::net::ip::resolver_errc_t::name_not_found_try_again
+    sal::net::ip::resolver_errc_t::host_not_found,
+    sal::net::ip::resolver_errc_t::host_not_found_try_again,
+    sal::net::ip::resolver_errc_t::service_not_found
   )
 );
 

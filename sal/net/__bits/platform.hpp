@@ -111,10 +111,7 @@ inline int to_gai_error (int sys_error) noexcept
     case WSAHOST_NOT_FOUND:
       return EAI_NONAME;
     case WSATYPE_NOT_FOUND:
-      // according to MSDN docs for getaddrinfo, this error should translate
-      // to EAI_SERVICE but that contradicts RFC 2553 where EAI_SERVICE is
-      // meant for error "service not available for requested socket type"
-      return EAI_NONAME;
+      return EAI_SERVICE;
     case WSAESOCKTNOSUPPORT:
       return EAI_SOCKTYPE;
   }

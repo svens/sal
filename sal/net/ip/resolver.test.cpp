@@ -181,7 +181,7 @@ TYPED_TEST(net_ip_resolver, resolve_host_invalid)
   );
   EXPECT_TRUE(results.empty());
   EXPECT_TRUE(bool(error));
-  EXPECT_EQ(sal::net::ip::resolver_errc_t::name_not_found, error);
+  EXPECT_EQ(sal::net::ip::resolver_errc_t::host_not_found, error);
 }
 
 
@@ -195,7 +195,7 @@ TYPED_TEST(net_ip_resolver, resolve_service_invalid)
   );
   EXPECT_TRUE(results.empty());
   EXPECT_TRUE(bool(error));
-  EXPECT_EQ(sal::net::ip::resolver_errc_t::name_not_found, error);
+  EXPECT_EQ(sal::net::ip::resolver_errc_t::service_not_found, error);
 }
 
 
@@ -527,7 +527,7 @@ TYPED_TEST(net_ip_resolver, resolve_v4_host_invalid)
   );
   EXPECT_TRUE(results.empty());
   EXPECT_TRUE(bool(error));
-  EXPECT_EQ(sal::net::ip::resolver_errc_t::name_not_found, error);
+  EXPECT_EQ(sal::net::ip::resolver_errc_t::host_not_found, error);
 }
 
 
@@ -542,7 +542,7 @@ TYPED_TEST(net_ip_resolver, resolve_v6_host_invalid)
   );
   EXPECT_TRUE(results.empty());
   EXPECT_TRUE(bool(error));
-  EXPECT_EQ(sal::net::ip::resolver_errc_t::name_not_found, error);
+  EXPECT_EQ(sal::net::ip::resolver_errc_t::host_not_found, error);
 }
 
 
