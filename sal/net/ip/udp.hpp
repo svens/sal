@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/platform.hpp>
+#include <sal/net/ip/endpoint.hpp>
 
 
 __sal_begin
@@ -28,6 +28,11 @@ public:
    */
   using endpoint_t = basic_endpoint_t<udp_t>;
 
+  /**
+   * UDP endpoint resolver
+   */
+  using resolver_t = basic_resolver_t<udp_t>;
+
 
   udp_t () = delete;
 
@@ -46,7 +51,7 @@ public:
    */
   constexpr int type () const noexcept
   {
-    return SOCK_STREAM;
+    return SOCK_DGRAM;
   }
 
 

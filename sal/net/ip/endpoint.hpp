@@ -87,6 +87,63 @@ public:
 
 
   /**
+   * Construct new address directly from sockaddr_storage \a that
+   */
+  basic_endpoint_t (const sockaddr_storage &that)
+  {
+    load(that);
+  }
+
+
+  /**
+   * Try to copy IP address data from low-level sockaddr_storage \a a. On
+   * success return true. Returns false if address family is not recognised.
+   */
+  bool try_load (const sockaddr_storage &a) noexcept
+  {
+    if (a.ss_family == AF_INET)
+    {
+      std::memcpy(&addr_.v4, &a, sizeof(addr_.v4));
+      return true;
+    }
+    else if (a.ss_family == AF_INET6)
+    {
+      std::memcpy(&addr_.v6, &a, sizeof(addr_.v6));
+      return true;
+    }
+    return false;
+  }
+
+
+  /**
+   * Copy IP address data from low-level sockaddr_storage \a a
+   */
+  void load (const sockaddr_storage &a)
+  {
+    if (!try_load(a))
+    {
+      __bits::bad_address_cast();
+    }
+  }
+
+
+  /**
+   * Copy this IP address data into low-level sockaddr_storage \a a.
+   */
+  void store (sockaddr_storage &a) const noexcept
+  {
+    if (addr_.data.ss_family == AF_INET)
+    {
+      std::memcpy(&a, &addr_.v4, sizeof(addr_.v4));
+    }
+    else
+    {
+      std::memcpy(&a, &addr_.v6, sizeof(addr_.v6));
+    }
+  }
+
+
+  /**
    * Return instance of endpoint's protocol.
    */
   constexpr protocol_t protocol () const noexcept
@@ -139,6 +196,38 @@ public:
     {
       addr_.v6.sin6_port = htons(port);
     }
+  }
+
+
+  /**
+   * Return host name for address(). On error, return empty string
+   */
+  std::string host_name () const
+  {
+    char name[NI_MAXHOST] = { '\0' };
+    ::getnameinfo(
+      static_cast<const sockaddr *>(data()), static_cast<socklen_t>(size()),
+      name, sizeof(name),
+      nullptr, 0,
+      (protocol().type() == SOCK_DGRAM ? NI_DGRAM : 0)
+    );
+    return name;
+  }
+
+
+  /**
+   * Return service name for address(). On error, return empty string
+   */
+  std::string service_name () const
+  {
+    char name[NI_MAXSERV] = { '\0' };
+    ::getnameinfo(
+      static_cast<const sockaddr *>(data()), static_cast<socklen_t>(size()),
+      nullptr, 0,
+      name, sizeof(name),
+      (protocol().type() == SOCK_DGRAM ? NI_DGRAM : 0)
+    );
+    return name;
   }
 
 

@@ -4,6 +4,7 @@
 #if __sal_os_linux || __sal_os_darwin
   #include <netinet/ip.h>
   #include <arpa/inet.h>
+  #include <netdb.h>
 #elif __sal_os_windows
   #include <ws2tcpip.h>
   #pragma comment(lib, "ws2_32")
@@ -88,6 +89,51 @@ CONSTEXPR uint64_t combine (uint64_t h, uint64_t l) noexcept
   uint64_t b = (h ^ a) * mul;
   b ^= (b >> 47);
   return b * mul;
+}
+
+
+inline int to_gai_error (int sys_error,
+  const char *host_name,
+  const char *service_name) noexcept
+{
+  (void)host_name;
+  (void)service_name;
+
+#if __sal_os_windows
+
+  switch (sys_error)
+  {
+    case WSATRY_AGAIN:
+      return EAI_AGAIN;
+    case WSAEINVAL:
+      return EAI_BADFLAGS;
+    case WSANO_RECOVERY:
+      return EAI_FAIL;
+    case WSAEAFNOSUPPORT:
+      return EAI_FAMILY;
+    case WSA_NOT_ENOUGH_MEMORY:
+      return EAI_MEMORY;
+    case WSAHOST_NOT_FOUND:
+      return EAI_NONAME;
+    case WSATYPE_NOT_FOUND:
+      return EAI_SERVICE;
+    case WSAESOCKTNOSUPPORT:
+      return EAI_SOCKTYPE;
+  }
+
+#elif __sal_os_darwin
+
+  if (sys_error == EAI_NONAME && (!host_name || !*host_name))
+  {
+    // Darwin returns EAI_NONAME if either host or service is not found
+    // other platforms return EAI_SERVICE if service is not found
+    // align Darwin to other platforms
+    sys_error = EAI_SERVICE;
+  }
+
+#endif
+
+  return sys_error;
 }
 
 

@@ -60,20 +60,34 @@ public:
 
 
   /**
-   * Copy IP address data from low-level sockaddr_storage \a a
+   * Try to copy IP address data from low-level sockaddr_storage. Return true
+   * on success, and false if \a a family is not recognised.
+   */
+  bool try_load (const sockaddr_storage &a) noexcept
+  {
+    if (a.ss_family == AF_INET)
+    {
+      family_ = AF_INET;
+      addr_.v4.load(reinterpret_cast<const sockaddr_in &>(a).sin_addr);
+      return true;
+    }
+    else if (a.ss_family == AF_INET6)
+    {
+      family_ = AF_INET6;
+      addr_.v6.load(reinterpret_cast<const sockaddr_in6 &>(a).sin6_addr);
+      return true;
+    }
+    return false;
+  }
+
+
+  /**
+   * Copy IP address data from low-level sockaddr_storage \a a. Throw
+   * bad_address_cast_t if address family is not recognised.
    */
   void load (const sockaddr_storage &a)
   {
-    family_ = a.ss_family;
-    if (family_ == AF_INET)
-    {
-      addr_.v4.load(reinterpret_cast<const sockaddr_in &>(a).sin_addr);
-    }
-    else if (family_ == AF_INET6)
-    {
-      addr_.v6.load(reinterpret_cast<const sockaddr_in6 &>(a).sin6_addr);
-    }
-    else
+    if (!try_load(a))
     {
       __bits::bad_address_cast();
     }
@@ -85,7 +99,6 @@ public:
    */
   void store (sockaddr_storage &a) const noexcept
   {
-    a.ss_family = family_;
     if (family_ == AF_INET)
     {
       addr_.v4.store(reinterpret_cast<sockaddr_in &>(a).sin_addr);
@@ -94,6 +107,7 @@ public:
     {
       addr_.v6.store(reinterpret_cast<sockaddr_in6 &>(a).sin6_addr);
     }
+    a.ss_family = family_;
   }
 
 

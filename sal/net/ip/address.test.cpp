@@ -122,6 +122,43 @@ TEST_F(net_ip_address, ctor_sockaddr_invalid)
 }
 
 
+TEST_F(net_ip_address, try_load_v4)
+{
+  sockaddr_storage buf;
+  auto &a{reinterpret_cast<sockaddr_in &>(buf)};
+  a.sin_family = AF_INET;
+  a.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+  addr_t addr;
+  ASSERT_TRUE(addr.try_load(buf));
+  EXPECT_TRUE(addr.is_v4());
+  EXPECT_EQ(addr_v4_t::loopback(), addr.to_v4());
+}
+
+
+TEST_F(net_ip_address, try_load_v6)
+{
+  sockaddr_storage buf;
+  auto &a{reinterpret_cast<sockaddr_in6 &>(buf)};
+  a.sin6_family = AF_INET6;
+  a.sin6_addr = IN6ADDR_LOOPBACK_INIT;
+
+  addr_t addr;
+  ASSERT_TRUE(addr.try_load(buf));
+  EXPECT_TRUE(addr.is_v6());
+  EXPECT_EQ(addr_v6_t::loopback(), addr.to_v6());
+}
+
+
+TEST_F(net_ip_address, try_load_invalid)
+{
+  sockaddr_storage a;
+  a.ss_family = AF_INET + AF_INET6;
+  addr_t addr;
+  EXPECT_FALSE(addr.try_load(a));
+}
+
+
 TEST_F(net_ip_address, load_v4)
 {
   sockaddr_storage buf;
