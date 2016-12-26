@@ -390,6 +390,57 @@ TYPED_TEST(net_ip_endpoint, capacity_v6)
 }
 
 
+TYPED_TEST(net_ip_endpoint, host_name_v4)
+{
+  typename TypeParam::endpoint_t endpoint(addr_v4_t::loopback(), 7);
+  EXPECT_FALSE(endpoint.host_name().empty());
+}
+
+
+TYPED_TEST(net_ip_endpoint, host_name_v6)
+{
+  typename TypeParam::endpoint_t endpoint(addr_v6_t::loopback(), 7);
+  EXPECT_FALSE(endpoint.host_name().empty());
+}
+
+
+TYPED_TEST(net_ip_endpoint, host_name_v4_numeric)
+{
+  typename TypeParam::endpoint_t endpoint(
+    sal::net::ip::make_address_v4("10.255.255.1"), 7
+  );
+  EXPECT_EQ("10.255.255.1", endpoint.host_name());
+}
+
+
+TYPED_TEST(net_ip_endpoint, service_name_v4)
+{
+  typename TypeParam::endpoint_t endpoint(addr_v4_t::loopback(), 7);
+  EXPECT_EQ("echo", endpoint.service_name());
+}
+
+
+TYPED_TEST(net_ip_endpoint, service_name_v6)
+{
+  typename TypeParam::endpoint_t endpoint(addr_v6_t::loopback(), 7);
+  EXPECT_EQ("echo", endpoint.service_name());
+}
+
+
+TYPED_TEST(net_ip_endpoint, service_name_v4_numeric)
+{
+  typename TypeParam::endpoint_t endpoint(addr_v4_t::loopback(), 65535);
+  EXPECT_EQ("65535", endpoint.service_name());
+}
+
+
+TYPED_TEST(net_ip_endpoint, service_name_v6_numeric)
+{
+  typename TypeParam::endpoint_t endpoint(addr_v6_t::loopback(), 65535);
+  EXPECT_EQ("65535", endpoint.service_name());
+}
+
+
 TYPED_TEST(net_ip_endpoint, comparisons_v4)
 {
   typename TypeParam::endpoint_t

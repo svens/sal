@@ -200,6 +200,38 @@ public:
 
 
   /**
+   * Return host name for address(). On error, return empty string
+   */
+  std::string host_name () const
+  {
+    char name[NI_MAXHOST] = { '\0' };
+    ::getnameinfo(
+      static_cast<const sockaddr *>(data()), static_cast<socklen_t>(size()),
+      name, sizeof(name),
+      nullptr, 0,
+      (protocol().type() == SOCK_DGRAM ? NI_DGRAM : 0)
+    );
+    return name;
+  }
+
+
+  /**
+   * Return service name for address(). On error, return empty string
+   */
+  std::string service_name () const
+  {
+    char name[NI_MAXSERV] = { '\0' };
+    ::getnameinfo(
+      static_cast<const sockaddr *>(data()), static_cast<socklen_t>(size()),
+      nullptr, 0,
+      name, sizeof(name),
+      (protocol().type() == SOCK_DGRAM ? NI_DGRAM : 0)
+    );
+    return name;
+  }
+
+
+  /**
    * Return pointer to internal socket address data.
    */
   void *data () noexcept
