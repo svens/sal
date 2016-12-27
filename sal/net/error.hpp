@@ -14,7 +14,44 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net {
+
+/**
+ * Socket error codes
+ */
+enum class socket_errc_t
+{
+  already_open = 1,
+  not_found,
+};
+
+
+/**
+ * Return reference to socket error category. The name virtual function
+ * returns pointer to string "socket"
+ */
+const std::error_category &socket_category () noexcept;
+
+
+/**
+ * Make std::error_code from socket_errc_t \a e
+ */
+inline std::error_code make_error_code (socket_errc_t e) noexcept
+{
+  return std::error_code(static_cast<int>(e), socket_category());
+}
+
+
+/**
+ * Make std::error_condition from socket_errc_t \a e
+ */
+inline std::error_condition make_error_condition (socket_errc_t e) noexcept
+{
+  return std::error_condition(static_cast<int>(e), socket_category());
+}
+
+
+namespace ip {
 
 
 /**
@@ -46,10 +83,9 @@ enum class resolver_errc_t
   service_not_found = EAI_SERVICE,
 };
 
-
 /**
  * Return reference to resolver error category. The name virtual function
- * returns pointer to string "sal::net::ip::resolver"
+ * returns pointer to string "resolver"
  */
 const std::error_category &resolver_category () noexcept;
 
@@ -72,13 +108,19 @@ inline std::error_condition make_error_condition (resolver_errc_t e) noexcept
 }
 
 
-}} // namespace net::ip
+} // namespace ip
+} // namespace net
 
 
 __sal_end
 
 
 namespace std {
+
+template <>
+struct is_error_condition_enum<sal::net::socket_errc_t>
+  : public true_type
+{};
 
 template <>
 struct is_error_condition_enum<sal::net::ip::resolver_errc_t>
