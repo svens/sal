@@ -6,7 +6,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/platform.hpp>
+#include <sal/net/fwd.hpp>
 #include <sal/error.hpp>
 #include <typeinfo>
 
@@ -23,8 +23,7 @@ namespace net { namespace ip {
  */
 class bad_address_cast_t
   : public std::bad_cast
-{
-};
+{};
 
 
 namespace __bits {

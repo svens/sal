@@ -35,6 +35,7 @@ using port_t =  uint_least16_t;
 /// IPv6 endpoint scope id
 using scope_id_t = uint_least32_t;
 
+// Address
 class address_t;
 class address_v4_t;
 class address_v6_t;

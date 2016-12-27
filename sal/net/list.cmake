@@ -10,11 +10,17 @@ list(APPEND sal_sources
   sal/net/error.hpp
   sal/net/error.cpp
   sal/net/fwd.hpp
+  sal/net/internet.hpp
   sal/net/ip/address.hpp
   sal/net/ip/address_v4.hpp
   sal/net/ip/address_v6.hpp
-  sal/net/ip/endpoint.hpp
+  sal/net/ip/basic_resolver_entry.hpp
+  sal/net/ip/basic_resolver_results_iterator.hpp
+  sal/net/ip/basic_resolver_results.hpp
+  sal/net/ip/basic_resolver.hpp
+  sal/net/ip/basic_endpoint.hpp
   sal/net/ip/resolver.hpp
+  sal/net/ip/resolver_base.hpp
   sal/net/ip/tcp.hpp
   sal/net/ip/udp.hpp
 )

@@ -1,4 +1,3 @@
-#include <sal/net/ip/resolver.hpp>
 #include <sal/net/ip/tcp.hpp>
 #include <sal/net/ip/udp.hpp>
 #include <sal/common.test.hpp>

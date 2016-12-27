@@ -7,8 +7,8 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/ip/endpoint.hpp>
-#include <sal/net/ip/resolver.hpp>
+#include <sal/net/ip/basic_endpoint.hpp>
+#include <sal/net/ip/basic_resolver.hpp>
 
 
 __sal_begin

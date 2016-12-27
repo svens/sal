@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/net/ip/endpoint.hpp
+ * \file sal/net/ip/basic_endpoint.hpp
  * IP endpoint (address/port pair)
  */
 

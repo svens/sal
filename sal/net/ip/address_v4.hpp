@@ -7,9 +7,9 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/platform.hpp>
+#include <sal/net/fwd.hpp>
+#include <sal/net/error.hpp>
 #include <sal/char_array.hpp>
-#include <sal/error.hpp>
 #include <array>
 #include <cstdint>
 #include <ostream>

@@ -11,7 +11,6 @@
 #include <sal/net/error.hpp>
 #include <sal/net/ip/address_v4.hpp>
 #include <sal/char_array.hpp>
-#include <sal/error.hpp>
 #include <array>
 #include <cstdint>
 #include <ostream>
