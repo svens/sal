@@ -21,8 +21,14 @@ public:
 
   std::string message (int value) const final override
   {
-    (void)value;
-    return "hello";
+    switch (static_cast<socket_errc_t>(value))
+    {
+      case socket_errc_t::already_open:
+        return "Already open";
+      case socket_errc_t::not_found:
+        return "Not found";
+    }
+    return "Unknown error";
   }
 };
 

@@ -7,18 +7,24 @@ list(APPEND sal_docs
 list(APPEND sal_sources
   sal/net/__bits/platform.hpp
   sal/net/__bits/platform.cpp
+  sal/net/fwd.hpp
+
+  sal/net/basic_socket.hpp
   sal/net/error.hpp
   sal/net/error.cpp
-  sal/net/fwd.hpp
+  sal/net/socket.hpp
+  sal/net/socket_base.hpp
+  sal/net/socket_base.cpp
+
   sal/net/internet.hpp
   sal/net/ip/address.hpp
   sal/net/ip/address_v4.hpp
   sal/net/ip/address_v6.hpp
-  sal/net/ip/basic_resolver_entry.hpp
-  sal/net/ip/basic_resolver_results_iterator.hpp
-  sal/net/ip/basic_resolver_results.hpp
-  sal/net/ip/basic_resolver.hpp
   sal/net/ip/basic_endpoint.hpp
+  sal/net/ip/basic_resolver.hpp
+  sal/net/ip/basic_resolver_entry.hpp
+  sal/net/ip/basic_resolver_results.hpp
+  sal/net/ip/basic_resolver_results_iterator.hpp
   sal/net/ip/resolver.hpp
   sal/net/ip/resolver_base.hpp
   sal/net/ip/tcp.hpp
@@ -28,8 +34,11 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests
-  sal/net/error.test.cpp
   sal/net/platform.test.cpp
+
+  sal/net/error.test.cpp
+  sal/net/socket.test.cpp
+
   sal/net/ip/address.test.cpp
   sal/net/ip/address_v4.test.cpp
   sal/net/ip/address_v6.test.cpp

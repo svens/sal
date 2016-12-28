@@ -27,6 +27,11 @@ namespace net {
 const std::error_code &init () noexcept;
 
 
+/// Socket
+class socket_base_t;
+template <typename Protocol> class basic_socket_t;
+
+
 namespace ip {
 
 /// Port number

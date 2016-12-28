@@ -16,7 +16,23 @@
 __sal_begin
 
 
-namespace net { namespace ip { namespace __bits {
+namespace net {
+
+namespace __bits {
+
+#if __sal_os_windows
+  using native_socket_handle_t = SOCKET;
+  #define SHUT_RD SD_RECEIVE
+  #define SHUT_WR SD_SEND
+  #define SHUT_RDWR SD_BOTH
+#else
+  using native_socket_handle_t = int;
+#endif
+
+} // namespace __bits
+
+
+namespace ip { namespace __bits {
 
 
 #if __sal_os_windows
