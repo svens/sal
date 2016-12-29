@@ -10,6 +10,8 @@
 #include <sal/net/fwd.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/socket_base.hpp>
+#include <sal/net/socket_options.hpp>
+
 
 __sal_begin
 
@@ -65,7 +67,7 @@ public:
     open(protocol, error);
     if (error)
     {
-      throw_system_error(error, "open");
+      throw_system_error(error, "basic_socket::open");
     }
   }
 
@@ -95,7 +97,7 @@ public:
     assign(protocol, handle, error);
     if (error)
     {
-      throw_system_error(error, "assign");
+      throw_system_error(error, "basic_socket::assign");
     }
   }
 
@@ -120,9 +122,81 @@ public:
     close(error);
     if (error)
     {
-      throw_system_error(error, "close");
+      throw_system_error(error, "basic_socket::close");
     }
   }
+
+
+  template <typename GettableSocketOption>
+  void get_option (const GettableSocketOption &option, std::error_code &error)
+    const noexcept
+  {
+    typename GettableSocketOption::native_t data;
+    socklen_t size = sizeof(data);
+    socket_base_t::get_opt(handle_,
+      option.level, option.name,
+      &data, &size,
+      error
+    );
+    if (!error)
+    {
+      option.load(data, size);
+    }
+  }
+
+
+  template <typename GettableSocketOption>
+  void get_option (const GettableSocketOption &option) const
+  {
+    std::error_code error;
+    get_option(option, error);
+    if (error)
+    {
+      throw_system_error(error, "basic_socket::get_option");
+    }
+  }
+
+
+  template <typename SettableSocketOption>
+  void set_option (const SettableSocketOption &option,
+    std::error_code &error) noexcept
+  {
+    typename SettableSocketOption::native_t data;
+    option.store(data);
+    socket_base_t::set_opt(handle_,
+      option.level, option.name,
+      &data, sizeof(data),
+      error
+    );
+  }
+
+
+  template <typename SettableSocketOption>
+  void set_option (const SettableSocketOption &option)
+  {
+    std::error_code error;
+    set_option(option, error);
+    if (error)
+    {
+      throw_system_error(error, "basic_socket::set_option");
+    }
+  }
+
+
+#if 0
+  set_option;
+  io_control;
+  non_blocking;
+  native_non_blocking;
+  at_mark;
+  available;
+  bind;
+  shutdown;
+  local_endpoint;
+  remote_endpoint;
+  connect;
+  wait;
+#endif
 
 
 protected:
@@ -160,13 +234,13 @@ protected:
 
 
 #if 0
-  basic_socket_t (const endpoint_t &)
+  basic_socket_t (const endpoint_t &endpoint)
+    : basic_socket_t(endpoint.protocol())
   {
+    bind(endpoint);
   }
-#endif
 
 
-#if 0
   template <typename OtherProtocol>
   basic_socket_t (basic_socket_t<OtherProtocol> &&)
   {

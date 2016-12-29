@@ -363,4 +363,209 @@ TYPED_TEST(net_socket, close_bad_file_descriptor_v6)
 }
 
 
+TYPED_TEST(net_socket, reuse_address_v4)
+{
+  socket_t<TypeParam> socket(TypeParam::v4());
+  bool value{false};
+
+  socket.get_option(sal::net::reuse_address(&value));
+  EXPECT_FALSE(value);
+
+  socket.set_option(sal::net::reuse_address(true));
+
+  socket.get_option(sal::net::reuse_address(&value));
+  EXPECT_TRUE(value);
+}
+
+
+TYPED_TEST(net_socket, reuse_address_v6)
+{
+  socket_t<TypeParam> socket(TypeParam::v6());
+  bool value{false};
+
+  socket.get_option(sal::net::reuse_address(&value));
+  EXPECT_FALSE(value);
+
+  socket.set_option(sal::net::reuse_address(true));
+
+  socket.get_option(sal::net::reuse_address(&value));
+  EXPECT_TRUE(value);
+}
+
+
+TYPED_TEST(net_socket, reuse_address_invalid)
+{
+  socket_t<TypeParam> socket;
+  bool value{false};
+
+  {
+    std::error_code error;
+    socket.get_option(sal::net::reuse_address(&value), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.get_option(sal::net::reuse_address(&value)),
+      std::system_error
+    );
+  }
+
+  {
+    std::error_code error;
+    socket.set_option(sal::net::reuse_address(value), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.set_option(sal::net::reuse_address(value)),
+      std::system_error
+    );
+  }
+}
+
+
+TYPED_TEST(net_socket, receive_buffer_size_v4)
+{
+  socket_t<TypeParam> socket(TypeParam::v4());
+  int value{};
+
+  socket.get_option(sal::net::receive_buffer_size(&value));
+  EXPECT_NE(0, value);
+
+  socket.set_option(sal::net::receive_buffer_size(64 * 1024));
+
+  socket.get_option(sal::net::receive_buffer_size(&value));
+  EXPECT_NE(0, value);
+}
+
+
+TYPED_TEST(net_socket, receive_buffer_size_v6)
+{
+  socket_t<TypeParam> socket(TypeParam::v6());
+  int value{};
+
+  socket.get_option(sal::net::receive_buffer_size(&value));
+  EXPECT_NE(0, value);
+
+  socket.set_option(sal::net::receive_buffer_size(64 * 1024));
+
+  socket.get_option(sal::net::receive_buffer_size(&value));
+  EXPECT_NE(0, value);
+}
+
+
+TYPED_TEST(net_socket, receive_buffer_size_invalid)
+{
+  socket_t<TypeParam> socket;
+  int value{0};
+
+  {
+    std::error_code error;
+    socket.get_option(sal::net::receive_buffer_size(&value), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.get_option(sal::net::receive_buffer_size(&value)),
+      std::system_error
+    );
+  }
+
+  {
+    std::error_code error;
+    socket.set_option(sal::net::receive_buffer_size(value), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.set_option(sal::net::receive_buffer_size(value)),
+      std::system_error
+    );
+  }
+}
+
+
+template <typename Protocol>
+void test_linger (const Protocol &protocol)
+{
+  using namespace std::chrono_literals;
+
+  socket_t<Protocol> socket(protocol);
+  bool linger{};
+  std::chrono::seconds timeout{};
+
+  socket.get_option(sal::net::linger(&linger, &timeout));
+  EXPECT_FALSE(linger);
+  EXPECT_EQ(0s, timeout);
+
+  socket.set_option(sal::net::linger(true, 3s));
+
+  socket.get_option(sal::net::linger(&linger, &timeout));
+  EXPECT_TRUE(linger);
+  EXPECT_EQ(3s, timeout);
+}
+
+
+#if __sal_os_windows
+
+// linger is valid only for reliable, connection-oriented protocols
+template <>
+void test_linger (const sal::net::ip::udp_t &)
+{}
+
+#endif
+
+
+TYPED_TEST(net_socket, linger_v4)
+{
+  test_linger(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, linger_v6)
+{
+  test_linger(TypeParam::v6());
+}
+
+
+TYPED_TEST(net_socket, linger_invalid)
+{
+  using namespace std::chrono_literals;
+
+  socket_t<TypeParam> socket;
+  bool linger{};
+  std::chrono::seconds timeout{};
+
+  {
+    std::error_code error;
+    socket.get_option(sal::net::linger(&linger, &timeout), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.get_option(sal::net::linger(&linger, &timeout)),
+      std::system_error
+    );
+  }
+
+  {
+    std::error_code error;
+    socket.set_option(sal::net::linger(true, 3s), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.set_option(sal::net::linger(true, 3s)),
+      std::system_error
+    );
+  }
+}
+
+
 } // namespace

@@ -80,7 +80,25 @@ protected:
     std::error_code &error
   ) noexcept;
 
-  static void close (native_handle_t handle, std::error_code &error) noexcept;
+  static void close (native_handle_t handle,
+    std::error_code &error
+  ) noexcept;
+
+  static void get_opt (native_handle_t handle,
+    int level,
+    int name,
+    void *data,
+    socklen_t *size,
+    std::error_code &error
+  ) noexcept;
+
+  static void set_opt (native_handle_t handle,
+    int level,
+    int name,
+    const void *data,
+    socklen_t size,
+    std::error_code &error
+  ) noexcept;
 };
 
 
