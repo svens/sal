@@ -434,6 +434,12 @@ TYPED_TEST(net_socket, broadcast_invalid)
 template <typename Protocol>
 void debug (const Protocol &protocol)
 {
+#if __sal_os_linux
+
+  (void)protocol;
+
+#else
+
   socket_t<Protocol> socket(protocol);
 
   bool original, value;
@@ -441,6 +447,8 @@ void debug (const Protocol &protocol)
   socket.set_option(sal::net::debug(!original));
   socket.get_option(sal::net::debug(&value));
   EXPECT_NE(original, value);
+
+#endif
 }
 
 
@@ -939,7 +947,7 @@ TYPED_TEST(net_socket, send_buffer_size_invalid)
 template <typename Protocol>
 void send_low_watermark (const Protocol &protocol)
 {
-#if __sal_os_windows
+#if __sal_os_windows || __sal_os_linux
 
   (void)protocol;
 
