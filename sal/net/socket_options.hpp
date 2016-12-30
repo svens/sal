@@ -76,6 +76,96 @@ struct socket_option_getter_t
 
 
 //
+// broadcast
+//
+
+auto broadcast (bool value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_BROADCAST, bool>
+{
+  return value;
+}
+
+
+auto broadcast (bool *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_BROADCAST, bool>
+{
+  return value;
+}
+
+
+//
+// debug
+//
+
+auto debug (bool value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_DEBUG, bool>
+{
+  return value;
+}
+
+
+auto debug (bool *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_DEBUG, bool>
+{
+  return value;
+}
+
+
+//
+// do_not_route
+//
+
+auto do_not_route (bool value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_DONTROUTE, bool>
+{
+  return value;
+}
+
+
+auto do_not_route (bool *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_DONTROUTE, bool>
+{
+  return value;
+}
+
+
+//
+// keep_alive
+//
+
+auto keep_alive (bool value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_KEEPALIVE, bool>
+{
+  return value;
+}
+
+
+auto keep_alive (bool *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_KEEPALIVE, bool>
+{
+  return value;
+}
+
+
+//
+// out_of_band_inline
+//
+
+auto out_of_band_inline (bool value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_OOBINLINE, bool>
+{
+  return value;
+}
+
+
+auto out_of_band_inline (bool *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_OOBINLINE, bool>
+{
+  return value;
+}
+
+
+//
 // reuse_address
 //
 
@@ -106,6 +196,60 @@ auto receive_buffer_size (int value) noexcept
 
 auto receive_buffer_size (int *value) noexcept
   -> __bits::socket_option_getter_t<SOL_SOCKET, SO_RCVBUF, int>
+{
+  return value;
+}
+
+
+//
+// receive_low_watermark
+//
+
+auto receive_low_watermark (int value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_RCVLOWAT, int>
+{
+  return value;
+}
+
+
+auto receive_low_watermark (int *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_RCVLOWAT, int>
+{
+  return value;
+}
+
+
+//
+// send_buffer_size
+//
+
+auto send_buffer_size (int value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_SNDBUF, int>
+{
+  return value;
+}
+
+
+auto send_buffer_size (int *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_SNDBUF, int>
+{
+  return value;
+}
+
+
+//
+// send_low_watermark
+//
+
+auto send_low_watermark (int value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_SNDLOWAT, int>
+{
+  return value;
+}
+
+
+auto send_low_watermark (int *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_SNDLOWAT, int>
 {
   return value;
 }

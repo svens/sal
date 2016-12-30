@@ -26,8 +26,9 @@ public:
   using native_handle_t = __bits::native_socket_handle_t;
 
   /// Invalid native socket handle
-  static constexpr native_handle_t no_handle = static_cast<native_handle_t>(-1);
+  static constexpr native_handle_t invalid_socket = __bits::invalid_socket;
 
+  // LCOV_EXCL_START
 
   /// Socket shutdown flags
   enum class shutdown_t
@@ -63,6 +64,9 @@ public:
     /// Send without using routing tables
     do_not_route = MSG_DONTROUTE,
   };
+
+
+  // LCOV_EXCL_STOP
 
 
   /// Limit on length of the queue of pending incoming connections

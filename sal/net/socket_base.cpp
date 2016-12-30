@@ -10,7 +10,7 @@ __sal_begin
 namespace net {
 
 
-constexpr socket_base_t::native_handle_t socket_base_t::no_handle;
+constexpr socket_base_t::native_handle_t socket_base_t::invalid_socket;
 constexpr int socket_base_t::max_listen_connections;
 
 

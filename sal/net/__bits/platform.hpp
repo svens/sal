@@ -22,11 +22,13 @@ namespace __bits {
 
 #if __sal_os_windows
   using native_socket_handle_t = SOCKET;
+  const native_socket_handle_t invalid_socket = INVALID_SOCKET;
   #define SHUT_RD SD_RECEIVE
   #define SHUT_WR SD_SEND
   #define SHUT_RDWR SD_BOTH
 #else
   using native_socket_handle_t = int;
+  const native_socket_handle_t invalid_socket = -1;
 #endif
 
 } // namespace __bits

@@ -40,7 +40,7 @@ public:
 
   bool is_open () const noexcept
   {
-    return handle_ != no_handle;
+    return handle_ != invalid_socket;
   }
 
 
@@ -76,7 +76,7 @@ public:
     const native_handle_t &handle,
     std::error_code &error) noexcept
   {
-    if (handle == no_handle)
+    if (handle == invalid_socket)
     {
       error = make_error_code(std::errc::bad_file_descriptor);
     }
@@ -107,7 +107,7 @@ public:
     if (is_open())
     {
       socket_base_t::close(handle_, error);
-      handle_ = no_handle;
+      handle_ = invalid_socket;
     }
     else
     {
@@ -184,7 +184,6 @@ public:
 
 
 #if 0
-  set_option;
   io_control;
   non_blocking;
   native_non_blocking;
@@ -207,7 +206,7 @@ protected:
   basic_socket_t (basic_socket_t &&that) noexcept
     : handle_(that.handle_)
   {
-    that.handle_ = no_handle;
+    that.handle_ = invalid_socket;
   }
 
 
@@ -259,7 +258,7 @@ protected:
   {
     auto tmp{std::move(*this)};
     handle_ = that.handle_;
-    that.handle_ = no_handle;
+    that.handle_ = invalid_socket;
     return *this;
   }
 
@@ -270,7 +269,7 @@ protected:
 
 private:
 
-  native_handle_t handle_ = no_handle;
+  native_handle_t handle_ = invalid_socket;
 };
 
 
