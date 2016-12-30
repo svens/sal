@@ -48,7 +48,7 @@ public:
   {
     if (!is_open())
     {
-      handle_ = socket_base_t::open(protocol.family(),
+      handle_ = __bits::open(protocol.family(),
         protocol.type(),
         protocol.protocol(),
         error
@@ -106,7 +106,7 @@ public:
   {
     if (is_open())
     {
-      socket_base_t::close(handle_, error);
+      __bits::close(handle_, error);
       handle_ = invalid_socket;
     }
     else
@@ -133,7 +133,7 @@ public:
   {
     typename GettableSocketOption::native_t data;
     socklen_t size = sizeof(data);
-    socket_base_t::get_opt(handle_,
+    __bits::get_opt(handle_,
       option.level, option.name,
       &data, &size,
       error
@@ -163,7 +163,7 @@ public:
   {
     typename SettableSocketOption::native_t data;
     option.store(data);
-    socket_base_t::set_opt(handle_,
+    __bits::set_opt(handle_,
       option.level, option.name,
       &data, sizeof(data),
       error
@@ -183,12 +183,44 @@ public:
   }
 
 
+  void non_blocking (bool mode, std::error_code &error) noexcept
+  {
+    __bits::non_blocking(handle_, mode, error);
+  }
+
+
+  void non_blocking (bool mode)
+  {
+    std::error_code error;
+    non_blocking(mode, error);
+    if (error)
+    {
+      throw_system_error(error, "basic_socket::non_blocking");
+    }
+  }
+
+
+  bool non_blocking (std::error_code &error) const noexcept
+  {
+    return __bits::non_blocking(handle_, error);
+  }
+
+
+  bool non_blocking () const
+  {
+    std::error_code error;
+    auto mode = non_blocking(error);
+    if (!error)
+    {
+      return mode;
+    }
+    throw_system_error(error, "basic_socket::non_blocking");
+  }
+
+
 #if 0
-  io_control;
-  non_blocking;
-  native_non_blocking;
-  at_mark;
   available;
+  at_mark;
   bind;
   shutdown;
   local_endpoint;

@@ -1077,4 +1077,74 @@ TYPED_TEST(net_socket, linger_invalid)
 }
 
 
+template <typename Protocol>
+void non_blocking (const Protocol &protocol)
+{
+  socket_t<Protocol> socket(protocol);
+
+#if __sal_os_windows
+
+  socket.non_blocking(false);
+  socket.non_blocking(true);
+
+#else
+
+  bool non_blocking = socket.non_blocking();
+  socket.non_blocking(!non_blocking);
+  EXPECT_NE(non_blocking, socket.non_blocking());
+  socket.non_blocking(non_blocking);
+  EXPECT_EQ(non_blocking, socket.non_blocking());
+
+#endif
+}
+
+
+TYPED_TEST(net_socket, non_blocking_v4)
+{
+  non_blocking(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, non_blocking_v6)
+{
+  non_blocking(TypeParam::v6());
+}
+
+
+TYPED_TEST(net_socket, non_blocking_invalid)
+{
+  socket_t<TypeParam> socket;
+
+  {
+    std::error_code error;
+    socket.non_blocking(true, error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.non_blocking(true),
+      std::system_error
+    );
+  }
+
+  {
+    std::error_code error;
+    (void)socket.non_blocking(error);
+#if __sal_os_windows
+    EXPECT_EQ(std::errc::operation_not_supported, error);
+#else
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+#endif
+  }
+
+  {
+    EXPECT_THROW(
+      socket.non_blocking(),
+      std::system_error
+    );
+  }
+}
+
+
 } // namespace

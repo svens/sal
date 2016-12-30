@@ -3,6 +3,9 @@
 
 #if __sal_os_windows
   #include <mutex>
+#else
+  #include <fcntl.h>
+  #include <unistd.h>
 #endif
 
 
@@ -78,6 +81,168 @@ const std::error_code &init () noexcept
   return result;
 #endif
 }
+
+
+namespace __bits {
+
+
+namespace {
+
+inline void get_last (std::error_code &error, bool align_with_posix=true)
+  noexcept
+{
+#if __sal_os_windows
+
+  auto e = ::WSAGetLastError();
+  if (align_with_posix && e == WSAENOTSOCK)
+  {
+    e = WSAEBADF;
+  }
+  error.assign(e, std::system_category());
+
+#else
+
+  (void)align_with_posix;
+  error.assign(errno, std::generic_category());
+
+#endif
+}
+
+} // namespace
+
+
+native_handle_t open (int domain,
+  int type,
+  int protocol,
+  std::error_code &error) noexcept
+{
+  auto handle = ::socket(domain, type, protocol);
+  // ignore error handling, API doesn't let trigger invalid case
+  // LCOV_EXCL_START
+  if (handle == -1)
+  {
+    get_last(error, false);
+  }
+  // LCOV_EXCL_STOP
+  return handle;
+}
+
+
+void close (native_handle_t handle,
+  std::error_code &error) noexcept
+{
+#if __sal_os_windows
+
+  if (::closesocket(handle) == 0)
+  {
+    return;
+  }
+
+#else
+
+  for (errno = EINTR;  errno == EINTR;  /**/)
+  {
+    if (::close(handle) == 0)
+    {
+      return;
+    }
+  }
+
+#endif
+
+  get_last(error);
+}
+
+
+void get_opt (native_handle_t handle,
+  int level,
+  int name,
+  void *data,
+  socklen_t *size,
+  std::error_code &error) noexcept
+{
+  if (::getsockopt(handle, level, name, reinterpret_cast<char *>(data), size))
+  {
+    get_last(error);
+  }
+}
+
+
+void set_opt (native_handle_t handle,
+  int level,
+  int name,
+  const void *data,
+  socklen_t size,
+  std::error_code &error) noexcept
+{
+  if (::setsockopt(handle, level, name, reinterpret_cast<const char *>(data), size))
+  {
+    get_last(error);
+  }
+}
+
+
+bool non_blocking (native_handle_t handle, std::error_code &error) noexcept
+{
+#if __sal_os_windows
+
+  (void)handle;
+  error.assign(WSAEOPNOTSUPP, std::system_category());
+  return true;
+
+#else
+
+  auto flags = ::fcntl(handle, F_GETFL, 0);
+  if (flags == -1)
+  {
+    get_last(error);
+  }
+
+  // it'll be unusable value
+  return flags & O_NONBLOCK;
+
+#endif
+}
+
+
+void non_blocking (native_handle_t handle,
+  bool mode,
+  std::error_code &error) noexcept
+{
+#if __sal_os_windows
+
+  unsigned long arg = mode ? 1 : 0;
+  if (::ioctlsocket(handle, FIONBIO, &arg) != SOCKET_ERROR)
+  {
+    return;
+  }
+
+#else
+
+  int flags = ::fcntl(handle, F_GETFL, 0);
+  if (flags >= 0)
+  {
+    if (mode)
+    {
+      flags |= O_NONBLOCK;
+    }
+    else
+    {
+      flags &= ~O_NONBLOCK;
+    }
+    if (::fcntl(handle, F_SETFL, flags) != -1)
+    {
+      return;
+    }
+  }
+
+#endif
+
+  get_last(error);
+}
+
+
+} // namespace __bits
 
 
 } // namespace net

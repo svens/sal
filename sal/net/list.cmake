@@ -14,7 +14,6 @@ list(APPEND sal_sources
   sal/net/error.cpp
   sal/net/socket.hpp
   sal/net/socket_base.hpp
-  sal/net/socket_base.cpp
   sal/net/socket_options.hpp
 
   sal/net/internet.hpp

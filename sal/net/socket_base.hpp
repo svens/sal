@@ -8,7 +8,6 @@
 
 #include <sal/config.hpp>
 #include <sal/net/fwd.hpp>
-#include <system_error>
 
 
 __sal_begin
@@ -23,7 +22,7 @@ class socket_base_t
 public:
 
   /// Native socket handle type
-  using native_handle_t = __bits::native_socket_handle_t;
+  using native_handle_t = __bits::native_handle_t;
 
   /// Invalid native socket handle
   static constexpr native_handle_t invalid_socket = __bits::invalid_socket;
@@ -77,32 +76,6 @@ protected:
 
   ~socket_base_t ()
   {}
-
-  static native_handle_t open (int domain,
-    int type,
-    int protocol,
-    std::error_code &error
-  ) noexcept;
-
-  static void close (native_handle_t handle,
-    std::error_code &error
-  ) noexcept;
-
-  static void get_opt (native_handle_t handle,
-    int level,
-    int name,
-    void *data,
-    socklen_t *size,
-    std::error_code &error
-  ) noexcept;
-
-  static void set_opt (native_handle_t handle,
-    int level,
-    int name,
-    const void *data,
-    socklen_t size,
-    std::error_code &error
-  ) noexcept;
 };
 
 

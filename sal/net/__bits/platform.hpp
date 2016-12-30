@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sal/config.hpp>
+#include <system_error>
 #if __sal_os_linux || __sal_os_darwin
   #include <netinet/ip.h>
   #include <arpa/inet.h>
@@ -21,15 +22,50 @@ namespace net {
 namespace __bits {
 
 #if __sal_os_windows
-  using native_socket_handle_t = SOCKET;
-  const native_socket_handle_t invalid_socket = INVALID_SOCKET;
+  using native_handle_t = SOCKET;
+  const native_handle_t invalid_socket = INVALID_SOCKET;
   #define SHUT_RD SD_RECEIVE
   #define SHUT_WR SD_SEND
   #define SHUT_RDWR SD_BOTH
 #else
-  using native_socket_handle_t = int;
-  const native_socket_handle_t invalid_socket = -1;
+  using native_handle_t = int;
+  const native_handle_t invalid_socket = -1;
 #endif
+
+native_handle_t open (int domain,
+  int type,
+  int protocol,
+  std::error_code &error
+) noexcept;
+
+void close (native_handle_t handle,
+  std::error_code &error
+) noexcept;
+
+void get_opt (native_handle_t handle,
+  int level,
+  int name,
+  void *data,
+  socklen_t *size,
+  std::error_code &error
+) noexcept;
+
+void set_opt (native_handle_t handle,
+  int level,
+  int name,
+  const void *data,
+  socklen_t size,
+  std::error_code &error
+) noexcept;
+
+bool non_blocking (native_handle_t handle,
+  std::error_code &error
+) noexcept;
+
+void non_blocking (native_handle_t handle,
+  bool mode,
+  std::error_code &error
+) noexcept;
 
 } // namespace __bits
 

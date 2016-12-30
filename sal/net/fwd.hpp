@@ -8,7 +8,6 @@
 
 #include <sal/config.hpp>
 #include <sal/net/__bits/platform.hpp>
-#include <system_error>
 
 
 __sal_begin
