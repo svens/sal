@@ -376,14 +376,10 @@ void broadcast (const Protocol &protocol)
 }
 
 
-#if __sal_os_windows
-
 // broadcast is valid only for datagram sockets
 template <>
 void broadcast (const sal::net::ip::tcp_t &)
 {}
-
-#endif
 
 
 TYPED_TEST(net_socket, broadcast_v4)
@@ -581,14 +577,10 @@ void keep_alive (const Protocol &protocol)
 }
 
 
-#if __sal_os_windows
-
 // keep_alive is valid only for connection-oriented protocols
 template <>
 void keep_alive (const sal::net::ip::udp_t &)
 {}
-
-#endif
 
 
 TYPED_TEST(net_socket, keep_alive_v4)
@@ -649,14 +641,10 @@ void out_of_band_inline (const Protocol &protocol)
 }
 
 
-#if __sal_os_windows
-
 // out_of_band_inline is valid only for connection-oriented protocols
 template <>
 void out_of_band_inline (const sal::net::ip::udp_t &)
 {}
-
-#endif
 
 
 TYPED_TEST(net_socket, out_of_band_inline_v4)
