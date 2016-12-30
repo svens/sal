@@ -192,31 +192,6 @@ inline auto keep_alive (bool *value) noexcept
 
 
 /**
- * Set whether out-of-bad data (also known as urgent data) is received inline.
- *
- * \note Valid only for connection-oriented sockets
- */
-inline auto out_of_band_inline (bool value) noexcept
-  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_OOBINLINE, bool>
-{
-  return value;
-}
-
-
-/**
- * Query whether out-of-bad data (also known as urgent data) is received
- * inline.
- *
- * \note Valid only for connection-oriented sockets
- */
-inline auto out_of_band_inline (bool *value) noexcept
-  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_OOBINLINE, bool>
-{
-  return value;
-}
-
-
-/**
  * Set whether the validation of endpoint used for binding socket should allow
  * the reuse of local endpoints (if supported by protocol).
  */
