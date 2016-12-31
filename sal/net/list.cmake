@@ -10,6 +10,7 @@ list(APPEND sal_sources
   sal/net/fwd.hpp
 
   sal/net/basic_socket.hpp
+  sal/net/basic_datagram_socket.hpp
   sal/net/error.hpp
   sal/net/error.cpp
   sal/net/socket.hpp
@@ -42,6 +43,7 @@ list(APPEND sal_unittests
   sal/net/ip/address.test.cpp
   sal/net/ip/address_v4.test.cpp
   sal/net/ip/address_v6.test.cpp
+  sal/net/ip/datagram_socket.test.cpp
   sal/net/ip/endpoint.test.cpp
   sal/net/ip/resolver.test.cpp
 )

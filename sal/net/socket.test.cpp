@@ -1,4 +1,4 @@
-#include <sal/net/socket.hpp>
+#include <sal/net/basic_socket.hpp>
 #include <sal/net/ip/tcp.hpp>
 #include <sal/net/ip/udp.hpp>
 #include <sal/common.test.hpp>

@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/net/ip/basic_endpoint.hpp>
 #include <sal/net/ip/basic_resolver.hpp>
+#include <sal/net/basic_datagram_socket.hpp>
 
 
 __sal_begin
@@ -24,15 +25,14 @@ class udp_t
 {
 public:
 
-  /**
-   * UDP socket endpoint
-   */
+  /// UDP socket endpoint
   using endpoint_t = basic_endpoint_t<udp_t>;
 
-  /**
-   * UDP endpoint resolver
-   */
+  /// UDP endpoint resolver
   using resolver_t = basic_resolver_t<udp_t>;
+
+  /// UDP datagram socket
+  using socket_t = basic_datagram_socket_t<udp_t>;
 
 
   udp_t () = delete;
