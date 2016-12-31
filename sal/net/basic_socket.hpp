@@ -63,12 +63,8 @@ public:
 
   void open (const protocol_t &protocol)
   {
-    std::error_code error;
-    open(protocol, error);
-    if (error)
-    {
-      throw_system_error(error, "basic_socket::open");
-    }
+    __bits::error_guard guard("basic_socket::open");
+    open(protocol, guard);
   }
 
 
@@ -93,12 +89,8 @@ public:
 
   void assign (const protocol_t &protocol, const native_handle_t &handle)
   {
-    std::error_code error;
-    assign(protocol, handle, error);
-    if (error)
-    {
-      throw_system_error(error, "basic_socket::assign");
-    }
+    __bits::error_guard guard("basic_socket::assign");
+    assign(protocol, handle, guard);
   }
 
 
@@ -118,12 +110,8 @@ public:
 
   void close ()
   {
-    std::error_code error;
-    close(error);
-    if (error)
-    {
-      throw_system_error(error, "basic_socket::close");
-    }
+    __bits::error_guard guard("basic_socket::close");
+    close(guard);
   }
 
 
@@ -148,12 +136,8 @@ public:
   template <typename GettableSocketOption>
   void get_option (const GettableSocketOption &option) const
   {
-    std::error_code error;
-    get_option(option, error);
-    if (error)
-    {
-      throw_system_error(error, "basic_socket::get_option");
-    }
+    __bits::error_guard guard("basic_socket::get_option");
+    get_option(option, guard);
   }
 
 
@@ -174,12 +158,8 @@ public:
   template <typename SettableSocketOption>
   void set_option (const SettableSocketOption &option)
   {
-    std::error_code error;
-    set_option(option, error);
-    if (error)
-    {
-      throw_system_error(error, "basic_socket::set_option");
-    }
+    __bits::error_guard guard("basic_socket::set_option");
+    set_option(option, guard);
   }
 
 
@@ -191,12 +171,8 @@ public:
 
   void non_blocking (bool mode)
   {
-    std::error_code error;
-    non_blocking(mode, error);
-    if (error)
-    {
-      throw_system_error(error, "basic_socket::non_blocking");
-    }
+    __bits::error_guard guard("basic_socket::non_blocking");
+    non_blocking(mode, guard);
   }
 
 
@@ -208,24 +184,61 @@ public:
 
   bool non_blocking () const
   {
-    std::error_code error;
-    auto mode = non_blocking(error);
+    __bits::error_guard guard("basic_socket::non_blocking");
+    return non_blocking(guard);
+  }
+
+
+  size_t available (std::error_code &error) const noexcept
+  {
+    return __bits::available(handle_, error);
+  }
+
+
+  size_t available () const
+  {
+    __bits::error_guard guard("basic_socket::available");
+    return available(guard);
+  }
+
+
+  void bind (const endpoint_t &endpoint, std::error_code &error) noexcept
+  {
+    __bits::bind(handle_, endpoint.data(), endpoint.size(), error);
+  }
+
+
+  void bind (const endpoint_t &endpoint)
+  {
+    __bits::error_guard guard("basic_socket::bind");
+    bind(endpoint, guard);
+  }
+
+
+  endpoint_t local_endpoint (std::error_code &error) const noexcept
+  {
+    endpoint_t endpoint;
+    size_t endpoint_size = endpoint.capacity();
+    __bits::local_endpoint(handle_, endpoint.data(), &endpoint_size, error);
     if (!error)
     {
-      return mode;
+      endpoint.resize(endpoint_size);
     }
-    throw_system_error(error, "basic_socket::non_blocking");
+    return endpoint;
+  }
+
+
+  endpoint_t local_endpoint () const
+  {
+    __bits::error_guard guard("basic_socket::local_endpoint");
+    return local_endpoint(guard);
   }
 
 
 #if 0
-  available;
-  at_mark;
-  bind;
-  shutdown;
-  local_endpoint;
   remote_endpoint;
   connect;
+  shutdown;
   wait;
 #endif
 
@@ -258,13 +271,6 @@ protected:
   }
 
 
-  basic_socket_t (const protocol_t &protocol, const native_handle_t &handle)
-  {
-    assign(protocol, handle);
-  }
-
-
-#if 0
   basic_socket_t (const endpoint_t &endpoint)
     : basic_socket_t(endpoint.protocol())
   {
@@ -272,6 +278,13 @@ protected:
   }
 
 
+  basic_socket_t (const protocol_t &protocol, const native_handle_t &handle)
+  {
+    assign(protocol, handle);
+  }
+
+
+#if 0
   template <typename OtherProtocol>
   basic_socket_t (basic_socket_t<OtherProtocol> &&)
   {

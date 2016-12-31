@@ -31,6 +31,10 @@ struct socket_t
     : Socket(protocol)
   {}
 
+  socket_t (const typename Protocol::endpoint_t &endpoint)
+    : Socket(endpoint)
+  {}
+
   socket_t (const Protocol &protocol,
       sal::net::socket_base_t::native_handle_t handle)
     : Socket(protocol, handle)
@@ -45,9 +49,10 @@ TYPED_TEST(net_socket, ctor)
 }
 
 
-TYPED_TEST(net_socket, ctor_move_v4)
+template <typename Protocol>
+void ctor_move (const Protocol &protocol)
 {
-  socket_t<TypeParam> a(TypeParam::v4());
+  socket_t<Protocol> a(protocol);
   EXPECT_TRUE(a.is_open());
   auto b{std::move(a)};
   EXPECT_TRUE(b.is_open());
@@ -55,13 +60,15 @@ TYPED_TEST(net_socket, ctor_move_v4)
 }
 
 
+TYPED_TEST(net_socket, ctor_move_v4)
+{
+  ctor_move(TypeParam::v4());
+}
+
+
 TYPED_TEST(net_socket, ctor_move_v6)
 {
-  socket_t<TypeParam> a(TypeParam::v6());
-  EXPECT_TRUE(a.is_open());
-  auto b{std::move(a)};
-  EXPECT_TRUE(b.is_open());
-  EXPECT_FALSE(a.is_open());
+  ctor_move(TypeParam::v6());
 }
 
 
@@ -89,53 +96,78 @@ TYPED_TEST(net_socket, ctor_protocol_v6)
 }
 
 
-TYPED_TEST(net_socket, ctor_protocol_and_handle_v4)
+template <typename Protocol>
+void ctor_protocol_and_handle (const Protocol &protocol)
 {
   auto handle = sal::net::socket_base_t::invalid_socket - 1;
-  socket_t<TypeParam> socket(TypeParam::v4(), handle);
+  socket_t<Protocol> socket(protocol, handle);
   EXPECT_EQ(handle, socket.native_handle());
 
   std::error_code ignored;
   socket.close(ignored);
+}
+
+
+TYPED_TEST(net_socket, ctor_protocol_and_handle_v4)
+{
+  ctor_protocol_and_handle(TypeParam::v4());
 }
 
 
 TYPED_TEST(net_socket, ctor_protocol_and_handle_v6)
 {
-  auto handle = sal::net::socket_base_t::invalid_socket - 1;
-  socket_t<TypeParam> socket(TypeParam::v6(), handle);
-  EXPECT_EQ(handle, socket.native_handle());
+  ctor_protocol_and_handle(TypeParam::v6());
+}
 
-  std::error_code ignored;
-  socket.close(ignored);
+
+template <typename Protocol>
+void ctor_endpoint (const Protocol &protocol)
+{
+  typename Protocol::endpoint_t endpoint(protocol, 0);
+  socket_t<Protocol> socket(endpoint);
+
+  endpoint = socket.local_endpoint();
+  EXPECT_TRUE(endpoint.address().is_unspecified());
+  EXPECT_NE(0U, endpoint.port());
+}
+
+
+TYPED_TEST(net_socket, ctor_endpoint_v4)
+{
+  ctor_endpoint(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, ctor_endpoint_v6)
+{
+  ctor_endpoint(TypeParam::v6());
+}
+
+
+template <typename Protocol>
+void assign_move (const Protocol &protocol)
+{
+  socket_t<Protocol> a(protocol), b;
+  EXPECT_TRUE(a.is_open());
+  EXPECT_FALSE(b.is_open());
+
+  auto handle = a.native_handle();
+  b = std::move(a);
+  EXPECT_EQ(handle, b.native_handle());
+  EXPECT_TRUE(b.is_open());
+  EXPECT_FALSE(a.is_open());
 }
 
 
 TYPED_TEST(net_socket, assign_move_v4)
 {
-  socket_t<TypeParam> a(TypeParam::v4()), b;
-  EXPECT_TRUE(a.is_open());
-  EXPECT_FALSE(b.is_open());
-
-  auto handle = a.native_handle();
-  b = std::move(a);
-  EXPECT_EQ(handle, b.native_handle());
-  EXPECT_TRUE(b.is_open());
-  EXPECT_FALSE(a.is_open());
+  assign_move(TypeParam::v4());
 }
 
 
 TYPED_TEST(net_socket, assign_move_v6)
 {
-  socket_t<TypeParam> a(TypeParam::v6()), b;
-  EXPECT_TRUE(a.is_open());
-  EXPECT_FALSE(b.is_open());
-
-  auto handle = a.native_handle();
-  b = std::move(a);
-  EXPECT_EQ(handle, b.native_handle());
-  EXPECT_TRUE(b.is_open());
-  EXPECT_FALSE(a.is_open());
+  assign_move(TypeParam::v6());
 }
 
 
@@ -155,159 +187,146 @@ TYPED_TEST(net_socket, open_v6)
 }
 
 
-TYPED_TEST(net_socket, open_already_open_v4)
+template <typename Protocol>
+void open_already_open (const Protocol &protocol)
 {
-  socket_t<TypeParam> socket(TypeParam::v4());
+  socket_t<Protocol> socket(protocol);
 
   {
     std::error_code error;
-    socket.open(TypeParam::v4(), error);
+    socket.open(protocol, error);
     EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
     EXPECT_TRUE(socket.is_open());
   }
 
   {
-    EXPECT_THROW(socket.open(TypeParam::v4()), std::system_error);
+    EXPECT_THROW(socket.open(protocol), std::system_error);
     EXPECT_TRUE(socket.is_open());
   }
+}
+
+
+TYPED_TEST(net_socket, open_already_open_v4)
+{
+  open_already_open(TypeParam::v4());
 }
 
 
 TYPED_TEST(net_socket, open_already_open_v6)
 {
-  socket_t<TypeParam> socket(TypeParam::v6());
+  open_already_open(TypeParam::v6());
+}
 
-  {
-    std::error_code error;
-    socket.open(TypeParam::v6(), error);
-    EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
-    EXPECT_TRUE(socket.is_open());
-  }
 
-  {
-    EXPECT_THROW(socket.open(TypeParam::v6()), std::system_error);
-    EXPECT_TRUE(socket.is_open());
-  }
+template <typename Protocol>
+void assign (const Protocol &protocol)
+{
+  socket_t<Protocol> socket;
+
+  auto h = sal::net::socket_base_t::invalid_socket - 1;
+  socket.assign(protocol, h);
+  EXPECT_TRUE(socket.is_open());
+  EXPECT_EQ(h, socket.native_handle());
+
+  std::error_code ignored;
+  socket.close(ignored);
 }
 
 
 TYPED_TEST(net_socket, assign_v4)
 {
-  socket_t<TypeParam> socket;
-
-  auto h = sal::net::socket_base_t::invalid_socket - 1;
-  socket.assign(TypeParam::v4(), h);
-  EXPECT_TRUE(socket.is_open());
-  EXPECT_EQ(h, socket.native_handle());
-
-  std::error_code ignored;
-  socket.close(ignored);
+  assign(TypeParam::v4());
 }
 
 
 TYPED_TEST(net_socket, assign_v6)
 {
-  socket_t<TypeParam> socket;
+  assign(TypeParam::v6());
+}
 
+
+template <typename Protocol>
+void assign_not_closed (const Protocol &protocol)
+{
+  socket_t<Protocol> socket(protocol);
   auto h = sal::net::socket_base_t::invalid_socket - 1;
-  socket.assign(TypeParam::v6(), h);
-  EXPECT_TRUE(socket.is_open());
-  EXPECT_EQ(h, socket.native_handle());
 
-  std::error_code ignored;
-  socket.close(ignored);
+  {
+    std::error_code error;
+    socket.assign(protocol, h, error);
+    EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
+  }
+
+  {
+    EXPECT_THROW(socket.assign(protocol, h), std::system_error);
+  }
 }
 
 
 TYPED_TEST(net_socket, assign_not_closed_v4)
 {
-  socket_t<TypeParam> socket(TypeParam::v4());
-  auto h = sal::net::socket_base_t::invalid_socket - 1;
-
-  {
-    std::error_code error;
-    socket.assign(TypeParam::v4(), h, error);
-    EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
-  }
-
-  {
-    EXPECT_THROW(socket.assign(TypeParam::v4(), h), std::system_error);
-  }
+  assign_not_closed(TypeParam::v4());
 }
 
 
 TYPED_TEST(net_socket, assign_not_closed_v6)
 {
-  socket_t<TypeParam> socket(TypeParam::v6());
-  auto h = sal::net::socket_base_t::invalid_socket - 1;
+  assign_not_closed(TypeParam::v6());
+}
+
+
+template <typename Protocol>
+void assign_no_handle (const Protocol &protocol)
+{
+  socket_t<Protocol> socket;
+  auto h = sal::net::socket_base_t::invalid_socket;
 
   {
     std::error_code error;
-    socket.assign(TypeParam::v6(), h, error);
-    EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
+    socket.assign(protocol, h, error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(socket.assign(TypeParam::v6(), h), std::system_error);
+    EXPECT_THROW(socket.assign(protocol, h), std::system_error);
   }
 }
 
 
 TYPED_TEST(net_socket, assign_no_handle_v4)
 {
-  socket_t<TypeParam> socket;
-  auto h = sal::net::socket_base_t::invalid_socket;
-
-  {
-    std::error_code error;
-    socket.assign(TypeParam::v4(), h, error);
-    EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  }
-
-  {
-    EXPECT_THROW(socket.assign(TypeParam::v4(), h), std::system_error);
-  }
+  assign_no_handle(TypeParam::v4());
 }
 
 
 TYPED_TEST(net_socket, assign_no_handle_v6)
 {
-  socket_t<TypeParam> socket;
-  auto h = sal::net::socket_base_t::invalid_socket;
+  assign_no_handle(TypeParam::v6());
+}
 
-  {
-    std::error_code error;
-    socket.assign(TypeParam::v6(), h, error);
-    EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  }
 
-  {
-    EXPECT_THROW(socket.assign(TypeParam::v6(), h), std::system_error);
-  }
+template <typename Protocol>
+void close (const Protocol &protocol)
+{
+  socket_t<Protocol> socket;
+
+  socket.open(protocol);
+  EXPECT_TRUE(socket.is_open());
+
+  socket.close();
+  EXPECT_FALSE(socket.is_open());
 }
 
 
 TYPED_TEST(net_socket, close_v4)
 {
-  socket_t<TypeParam> socket;
-
-  socket.open(TypeParam::v4());
-  EXPECT_TRUE(socket.is_open());
-
-  socket.close();
-  EXPECT_FALSE(socket.is_open());
+  close(TypeParam::v4());
 }
 
 
 TYPED_TEST(net_socket, close_v6)
 {
-  socket_t<TypeParam> socket;
-
-  socket.open(TypeParam::v6());
-  EXPECT_TRUE(socket.is_open());
-
-  socket.close();
-  EXPECT_FALSE(socket.is_open());
+  close(TypeParam::v6());
 }
 
 
@@ -327,9 +346,10 @@ TYPED_TEST(net_socket, close_no_handle)
 }
 
 
-TYPED_TEST(net_socket, close_bad_file_descriptor_v4)
+template <typename Protocol>
+void close_bad_file_descriptor (const Protocol &protocol)
 {
-  socket_t<TypeParam> socket(TypeParam::v4(),
+  socket_t<Protocol> socket(protocol,
     sal::net::socket_base_t::invalid_socket - 1
   );
 
@@ -345,21 +365,15 @@ TYPED_TEST(net_socket, close_bad_file_descriptor_v4)
 }
 
 
+TYPED_TEST(net_socket, close_bad_file_descriptor_v4)
+{
+  close_bad_file_descriptor(TypeParam::v4());
+}
+
+
 TYPED_TEST(net_socket, close_bad_file_descriptor_v6)
 {
-  socket_t<TypeParam> socket(TypeParam::v6(),
-    sal::net::socket_base_t::invalid_socket - 1
-  );
-
-  {
-    std::error_code error;
-    socket.close(error);
-    EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  }
-
-  {
-    EXPECT_THROW(socket.close(), std::system_error);
-  }
+  close_bad_file_descriptor(TypeParam::v6());
 }
 
 
@@ -1077,6 +1091,109 @@ TYPED_TEST(net_socket, non_blocking_invalid)
   {
     EXPECT_THROW(
       socket.non_blocking(),
+      std::system_error
+    );
+  }
+}
+
+
+template <typename Protocol>
+void available (const Protocol &protocol)
+{
+  socket_t<Protocol> socket(protocol);
+  EXPECT_EQ(0U, socket.available());
+}
+
+
+TYPED_TEST(net_socket, available_v4)
+{
+  available(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, available_v6)
+{
+  available(TypeParam::v6());
+}
+
+
+TYPED_TEST(net_socket, available_invalid)
+{
+  socket_t<TypeParam> socket;
+
+  {
+    std::error_code error;
+    EXPECT_EQ(0U, socket.available(error));
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.available(),
+      std::system_error
+    );
+  }
+}
+
+
+template <typename Protocol>
+void bind (const Protocol &protocol)
+{
+  socket_t<Protocol> socket(protocol);
+  typename Protocol::endpoint_t endpoint(protocol, 0);
+  socket.bind(endpoint);
+
+  endpoint = socket.local_endpoint();
+  EXPECT_TRUE(endpoint.address().is_unspecified());
+  EXPECT_NE(0U, endpoint.port());
+}
+
+
+TYPED_TEST(net_socket, bind_v4)
+{
+  bind(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, bind_v6)
+{
+  bind(TypeParam::v6());
+}
+
+
+TYPED_TEST(net_socket, bind_invalid)
+{
+  socket_t<TypeParam> socket;
+  typename TypeParam::endpoint_t endpoint;
+
+  {
+    std::error_code error;
+    socket.bind(endpoint, error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.bind(endpoint),
+      std::system_error
+    );
+  }
+}
+
+
+TYPED_TEST(net_socket, local_endpoint_invalid)
+{
+  socket_t<TypeParam> socket;
+
+  {
+    std::error_code error;
+    socket.local_endpoint(error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.local_endpoint(),
       std::system_error
     );
   }

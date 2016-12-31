@@ -83,6 +83,35 @@ public:
   }
 
 
+#if 0
+
+  TODO
+
+  /**
+   * Return option setter for TCP_NODELAY. Sets flag whether TCP socket will
+   * avoid coalescing of small segments (i.e. disables the Nagle algorithm)
+   */
+  static auto no_delay (bool value) noexcept
+    -> ::sal::net::__bits::socket_option_setter_t<IPPROTO_TCP, TCP_NODELAY, bool>
+  {
+    return value;
+  }
+
+
+  /**
+   * Return option getter for TCP_NODELAY. Queries flag whether TCP socket
+   * will avoid coalescing of small segments (i.e. disables the Nagle
+   * algorithm).
+   */
+  static auto no_delay (bool *value) noexcept
+    -> ::sal::net::__bits::socket_option_getter_t<IPPROTO_TCP, TCP_NODELAY, bool>
+  {
+    return value;
+  }
+
+#endif
+
+
 private:
 
   int family_;

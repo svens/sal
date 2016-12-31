@@ -1,10 +1,10 @@
 #include <sal/net/__bits/platform.hpp>
-#include <sal/net/fwd.hpp>
 
 #if __sal_os_windows
   #include <mutex>
 #else
   #include <fcntl.h>
+  #include <sys/ioctl.h>
   #include <unistd.h>
 #endif
 
@@ -239,6 +239,60 @@ void non_blocking (native_handle_t handle,
 #endif
 
   get_last(error);
+}
+
+
+size_t available (native_handle_t handle, std::error_code &error) noexcept
+{
+  unsigned long value{};
+
+#if __sal_os_windows
+
+  if (::ioctlsocket(handle, FIONBIO, &value) != SOCKET_ERROR)
+  {
+    return value;
+  }
+
+#else
+
+  if (::ioctl(handle, FIONREAD, &value) != -1)
+  {
+    return value;
+  }
+
+#endif
+
+  get_last(error);
+  return 0U;
+}
+
+
+void bind (native_handle_t handle,
+  const void *address, size_t address_size,
+  std::error_code &error) noexcept
+{
+  if (::bind(handle,
+      static_cast<const sockaddr *>(address),
+      static_cast<socklen_t>(address_size)) == -1)
+  {
+    get_last(error);
+  }
+}
+
+
+void local_endpoint (native_handle_t handle,
+  void *address, size_t *address_size,
+  std::error_code &error) noexcept
+{
+  auto size = static_cast<socklen_t>(*address_size);
+  if (::getsockname(handle, static_cast<sockaddr *>(address), &size) != -1)
+  {
+    *address_size = size;
+  }
+  else
+  {
+    get_last(error);
+  }
 }
 
 
