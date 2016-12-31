@@ -1333,15 +1333,16 @@ TYPED_TEST(net_socket, connect_no_listener_v6)
 
 
 template <typename Protocol>
-void connect_with_no_pre_open (const Protocol &protocol)
+void connect_with_no_pre_open (const Protocol &,
+  const sal::net::ip::address_t &address)
 {
   socket_t<Protocol> socket;
-  typename Protocol::endpoint_t endpoint(protocol, 0);
+  typename Protocol::endpoint_t endpoint(address, 7);
 
   {
     std::error_code error;
     socket.connect(endpoint, error);
-    EXPECT_EQ(std::errc::address_not_available, error);
+    EXPECT_EQ(std::errc::connection_refused, error);
   }
 
   {
@@ -1353,15 +1354,39 @@ void connect_with_no_pre_open (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, connect_with_pre_open_v4)
+template <>
+void connect_with_no_pre_open (const sal::net::ip::udp_t &,
+  const sal::net::ip::address_t &address)
 {
-  connect_with_no_pre_open(TypeParam::v4());
+  socket_t<sal::net::ip::udp_t> socket;
+  sal::net::ip::udp_t::endpoint_t endpoint(address, 7);
+
+  {
+    std::error_code error;
+    socket.connect(endpoint, error);
+    EXPECT_FALSE(bool(error));
+    EXPECT_EQ(endpoint, socket.remote_endpoint());
+  }
+
+  {
+    EXPECT_NO_THROW(socket.connect(endpoint));
+  }
 }
 
 
-TYPED_TEST(net_socket, connect_with_pre_open_v6)
+TYPED_TEST(net_socket, connect_with_no_pre_open_v4)
 {
-  connect_with_no_pre_open(TypeParam::v6());
+  connect_with_no_pre_open(TypeParam::v4(),
+    sal::net::ip::address_v4_t::loopback()
+  );
+}
+
+
+TYPED_TEST(net_socket, connect_with_no_pre_open_v6)
+{
+  connect_with_no_pre_open(TypeParam::v6(),
+    sal::net::ip::address_v6_t::loopback()
+  );
 }
 
 
