@@ -29,39 +29,25 @@ public:
 
 
   /// Socket shutdown flags
-  enum class shutdown_t
-  {
-    /// Disables further receive operations
-    receive = SHUT_RD,
-    /// Disables further send operations
-    send = SHUT_WR,
-    /// Disables further send and receive operations
-    both = SHUT_RDWR,
-  };
+  using shutdown_t = int;
 
-
-  /// Socket wait types
-  enum class wait_t
-  {
-    /// Wait until socket is ready to read
-    read = 1,
-    /// Wait until socket is ready to write
-    write = 2,
-    /// Wait until socket has a pending error condition
-    error = 4,
-  };
+  /// Disables further receive operations
+  static constexpr shutdown_t shutdown_receive = SHUT_RD;
+  /// Disables further send operations
+  static constexpr shutdown_t shutdown_send = SHUT_WR;
+  /// Disables further send and receive operations
+  static constexpr shutdown_t shutdown_both = SHUT_RDWR;
 
 
   /// Bitmask flags for send/receive functions
-  enum class message_flags_t
-  {
-    /// Leave received data in queue
-    peek = MSG_PEEK,
-    /// Out-of-band data
-    out_of_band = MSG_OOB,
-    /// Send without using routing tables
-    do_not_route = MSG_DONTROUTE,
-  };
+  using message_flags_t = int;
+
+  /// Leave received data in queue
+  static constexpr message_flags_t peek = MSG_PEEK;
+  /// Out-of-band data
+  static constexpr message_flags_t out_of_band = MSG_OOB;
+  /// Send without using routing tables
+  static constexpr message_flags_t do_not_route = MSG_DONTROUTE;
 
 
   /// Limit on length of the queue of pending incoming connections

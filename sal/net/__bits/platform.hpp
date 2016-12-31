@@ -22,34 +22,6 @@ namespace net {
 namespace __bits {
 
 
-struct error_guard
-{
-  std::error_code error{};
-  const char * const msg;
-
-  error_guard () = delete;
-  error_guard (const error_guard &) = delete;
-  error_guard &operator= (const error_guard &) = delete;
-
-  error_guard (const char *msg) noexcept
-    : msg(msg)
-  {}
-
-  ~error_guard () noexcept(false)
-  {
-    if (error)
-    {
-      throw_system_error(error, msg);
-    }
-  }
-
-  operator std::error_code& ()
-  {
-    return error;
-  }
-};
-
-
 #if __sal_os_windows
   using native_handle_t = SOCKET;
   const native_handle_t invalid_socket = INVALID_SOCKET;
@@ -106,7 +78,24 @@ void bind (native_handle_t handle,
   std::error_code &error
 ) noexcept;
 
+void connect (native_handle_t handle,
+  const void *address,
+  size_t address_size,
+  std::error_code &error
+) noexcept;
+
+void shutdown (native_handle_t handle,
+  int what,
+  std::error_code &error
+) noexcept;
+
 void local_endpoint (native_handle_t handle,
+  void *address,
+  size_t *address_size,
+  std::error_code &error
+) noexcept;
+
+void remote_endpoint (native_handle_t handle,
   void *address,
   size_t *address_size,
   std::error_code &error

@@ -280,12 +280,51 @@ void bind (native_handle_t handle,
 }
 
 
+void connect (native_handle_t handle,
+  const void *address, size_t address_size,
+  std::error_code &error) noexcept
+{
+  if (::connect(handle,
+      static_cast<const sockaddr *>(address),
+      static_cast<socklen_t>(address_size)) == -1)
+  {
+    get_last(error);
+  }
+}
+
+
+void shutdown (native_handle_t handle, int what, std::error_code &error)
+  noexcept
+{
+  if (::shutdown(handle, what) == -1)
+  {
+    get_last(error);
+  }
+}
+
+
 void local_endpoint (native_handle_t handle,
   void *address, size_t *address_size,
   std::error_code &error) noexcept
 {
   auto size = static_cast<socklen_t>(*address_size);
   if (::getsockname(handle, static_cast<sockaddr *>(address), &size) != -1)
+  {
+    *address_size = size;
+  }
+  else
+  {
+    get_last(error);
+  }
+}
+
+
+void remote_endpoint (native_handle_t handle,
+  void *address, size_t *address_size,
+  std::error_code &error) noexcept
+{
+  auto size = static_cast<socklen_t>(*address_size);
+  if (::getpeername(handle, static_cast<sockaddr *>(address), &size) != -1)
   {
     *address_size = size;
   }

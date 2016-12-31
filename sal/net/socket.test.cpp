@@ -446,6 +446,7 @@ void debug (const Protocol &protocol)
 {
 #if __sal_os_linux
 
+  // requires CAP_NET_ADMIN or root
   (void)protocol;
 
 #else
@@ -584,8 +585,9 @@ void keep_alive (const Protocol &protocol)
   socket.set_option(sal::net::keep_alive(!original));
   socket.get_option(sal::net::keep_alive(&value));
 
-#if !__sal_os_windows
+#if __sal_os_windows
   // Windows Vista and later can't change it
+#else
   EXPECT_NE(original, value);
 #endif
 }
@@ -887,6 +889,7 @@ void send_low_watermark (const Protocol &protocol)
 {
 #if __sal_os_windows || __sal_os_linux
 
+  // not changeable on those platforms
   (void)protocol;
 
 #else
@@ -969,14 +972,10 @@ void linger (const Protocol &protocol)
 }
 
 
-#if __sal_os_windows
-
 // linger is valid only for reliable, connection-oriented protocols
 template <>
 void linger (const sal::net::ip::udp_t &)
 {}
-
-#endif
 
 
 TYPED_TEST(net_socket, linger_v4)
@@ -1034,6 +1033,7 @@ void non_blocking (const Protocol &protocol)
 
 #if __sal_os_windows
 
+  // no way to query this setting on Windows
   socket.non_blocking(false);
   socket.non_blocking(true);
 
@@ -1196,6 +1196,188 @@ TYPED_TEST(net_socket, local_endpoint_invalid)
       socket.local_endpoint(),
       std::system_error
     );
+  }
+}
+
+
+template <typename Protocol>
+void local_endpoint_not_bound (const Protocol &protocol)
+{
+  socket_t<Protocol> socket(protocol);
+  std::error_code error;
+  auto endpoint = socket.local_endpoint(error);
+
+#if __sal_os_windows
+  EXPECT_TRUE(bool(error));
+  EXPECT_EQ(std::errc::invalid_argument, error);
+#else
+  EXPECT_FALSE(bool(error));
+#endif
+
+  EXPECT_TRUE(endpoint.address().is_unspecified());
+  EXPECT_EQ(0U, endpoint.port());
+}
+
+
+TYPED_TEST(net_socket, local_endpoint_not_bound_v4)
+{
+  local_endpoint_not_bound(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, local_endpoint_not_bound_v6)
+{
+  local_endpoint_not_bound(TypeParam::v6());
+}
+
+
+TYPED_TEST(net_socket, remote_endpoint_invalid)
+{
+  socket_t<TypeParam> socket;
+
+  {
+    std::error_code error;
+    socket.remote_endpoint(error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.remote_endpoint(),
+      std::system_error
+    );
+  }
+}
+
+
+template <typename Protocol>
+void remote_endpoint_not_connected (const Protocol &protocol)
+{
+  socket_t<Protocol> socket(protocol);
+  std::error_code error;
+  auto endpoint = socket.remote_endpoint(error);
+  EXPECT_EQ(std::errc::not_connected, error);
+  EXPECT_TRUE(endpoint.address().is_unspecified());
+  EXPECT_EQ(0U, endpoint.port());
+}
+
+
+TYPED_TEST(net_socket, remote_endpoint_not_connected_v4)
+{
+  remote_endpoint_not_connected(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, remote_endpoint_not_connected_v6)
+{
+  remote_endpoint_not_connected(TypeParam::v6());
+}
+
+
+template <typename Protocol>
+void connect_no_listener (const Protocol &protocol,
+  const sal::net::ip::address_t &address)
+{
+  socket_t<Protocol> socket(protocol);
+  typename Protocol::endpoint_t endpoint(address, 7);
+
+  {
+    std::error_code error;
+    socket.connect(endpoint, error);
+    EXPECT_EQ(std::errc::connection_refused, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.connect(endpoint),
+      std::system_error
+    );
+  }
+}
+
+
+template <>
+void connect_no_listener (const sal::net::ip::udp_t &protocol,
+  const sal::net::ip::address_t &address)
+{
+  socket_t<sal::net::ip::udp_t> socket(protocol);
+  sal::net::ip::udp_t::endpoint_t endpoint(address, 7);
+
+  {
+    std::error_code error;
+    socket.connect(endpoint, error);
+    EXPECT_FALSE(bool(error));
+    EXPECT_EQ(endpoint, socket.remote_endpoint());
+  }
+
+  {
+    EXPECT_NO_THROW(socket.connect(endpoint));
+  }
+}
+
+
+TYPED_TEST(net_socket, connect_no_listener_v4)
+{
+  connect_no_listener(TypeParam::v4(),
+    sal::net::ip::address_v4_t::loopback()
+  );
+}
+
+
+TYPED_TEST(net_socket, connect_no_listener_v6)
+{
+  connect_no_listener(TypeParam::v6(),
+    sal::net::ip::address_v6_t::loopback()
+  );
+}
+
+
+template <typename Protocol>
+void connect_with_no_pre_open (const Protocol &protocol)
+{
+  socket_t<Protocol> socket;
+  typename Protocol::endpoint_t endpoint(protocol, 0);
+
+  {
+    std::error_code error;
+    socket.connect(endpoint, error);
+    EXPECT_EQ(std::errc::address_not_available, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.connect(endpoint),
+      std::system_error
+    );
+  }
+}
+
+
+TYPED_TEST(net_socket, connect_with_pre_open_v4)
+{
+  connect_with_no_pre_open(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, connect_with_pre_open_v6)
+{
+  connect_with_no_pre_open(TypeParam::v6());
+}
+
+
+TYPED_TEST(net_socket, shutdown_invalid)
+{
+  socket_t<TypeParam> socket;
+  auto what = socket.shutdown_receive | socket.shutdown_send;
+
+  {
+    std::error_code error;
+    socket.shutdown(what, error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(socket.shutdown(what), std::system_error);
   }
 }
 

@@ -80,13 +80,7 @@ public:
     const char *service_name,
     flags_t flags)
   {
-    std::error_code error;
-    auto result = resolve(host_name, service_name, flags, error);
-    if (!error)
-    {
-      return result;
-    }
-    throw_system_error(error, "resolve");
+    return resolve(host_name, service_name, flags, throw_on_error("resolve"));
   }
 
 
@@ -142,13 +136,12 @@ public:
     const char *service_name,
     flags_t flags)
   {
-    std::error_code error;
-    auto result = resolve(protocol, host_name, service_name, flags, error);
-    if (!error)
-    {
-      return result;
-    }
-    throw_system_error(error, "resolve");
+    return resolve(protocol,
+      host_name,
+      service_name,
+      flags,
+      throw_on_error("resolve")
+    );
   }
 
 

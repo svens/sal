@@ -382,13 +382,7 @@ inline address_v6_t make_address_v6 (const char *str, std::error_code &ec)
  */
 inline address_v6_t make_address_v6 (const char *str)
 {
-  std::error_code ec;
-  auto address = make_address_v6(str, ec);
-  if (!ec)
-  {
-    return address;
-  }
-  throw_system_error(ec, "make_address_v6: ", str);
+  return make_address_v6(str, throw_on_error("make_address_v6"));
 }
 
 

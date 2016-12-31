@@ -368,13 +368,7 @@ inline address_t make_address (const char *str, std::error_code &ec)
  */
 inline address_t make_address (const char *str)
 {
-  std::error_code ec;
-  auto address = make_address(str, ec);
-  if (!ec)
-  {
-    return address;
-  }
-  throw_system_error(ec, "make_address: ", str);
+  return make_address(str, throw_on_error("make_address"));
 }
 
 

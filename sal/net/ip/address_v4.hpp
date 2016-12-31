@@ -378,13 +378,7 @@ inline address_v4_t make_address_v4 (const char *str, std::error_code &ec)
  */
 inline address_v4_t make_address_v4 (const char *str)
 {
-  std::error_code ec;
-  auto address = make_address_v4(str, ec);
-  if (!ec)
-  {
-    return address;
-  }
-  throw_system_error(ec, "make_address_v4: ", str);
+  return make_address_v4(str, throw_on_error("make_address_v4"));
 }
 
 
