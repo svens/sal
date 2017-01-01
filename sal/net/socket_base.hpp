@@ -28,7 +28,7 @@ public:
   static constexpr native_handle_t invalid_socket = __bits::invalid_socket;
 
 
-  /// Socket shutdown flags
+  /// Socket shutdown types
   using shutdown_t = int;
 
   /// Disables further receive operations
@@ -37,6 +37,15 @@ public:
   static constexpr shutdown_t shutdown_send = SHUT_WR;
   /// Disables further send and receive operations
   static constexpr shutdown_t shutdown_both = SHUT_RDWR;
+
+
+  /// Socket waiting types
+  using wait_t = __bits::wait_t;
+
+  /// Wait for socket become readable
+  static constexpr wait_t wait_read = __bits::wait_t::read;
+  /// Wait for socket become writable
+  static constexpr wait_t wait_write = __bits::wait_t::write;
 
 
   /// Bitmask flags for send/receive functions

@@ -4,6 +4,7 @@
   #include <mutex>
 #else
   #include <fcntl.h>
+  #include <poll.h>
   #include <sys/ioctl.h>
   #include <unistd.h>
 #endif
@@ -300,6 +301,41 @@ void shutdown (native_handle_t handle, int what, std::error_code &error)
   {
     get_last(error);
   }
+}
+
+
+bool wait (native_handle_t handle, wait_t what, int timeout_ms,
+  std::error_code &error) noexcept
+{
+#if __sal_os_darwin
+  if (handle == invalid_socket)
+  {
+    error.assign(EBADF, std::generic_category());
+    return false;
+  }
+#elif __sal_os_windows
+  #define poll WSAPoll
+#endif
+
+  pollfd fd{};
+  fd.fd = handle;
+  fd.events = what == wait_t::read ? POLLIN : POLLOUT;
+
+  auto event_count = ::poll(&fd, 1, timeout_ms);
+  if (event_count == 1)
+  {
+    return (fd.revents & fd.events) != 0;
+  }
+
+  // LCOV_EXCL_START
+  // can't reach this case by feeding incorrect parameters
+  else if (event_count == -1)
+  {
+    get_last(error);
+  }
+  // LCOV_EXCL_STOP
+
+  return false;
 }
 
 

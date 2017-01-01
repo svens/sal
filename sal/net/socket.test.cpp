@@ -1407,4 +1407,70 @@ TYPED_TEST(net_socket, shutdown_invalid)
 }
 
 
+template <typename Protocol>
+void wait (const Protocol &protocol)
+{
+  using namespace std::chrono_literals;
+  socket_t<Protocol> socket(protocol);
+  std::error_code error;
+
+  {
+    EXPECT_FALSE(socket.wait(socket.wait_write, 0ms, error));
+    EXPECT_FALSE(bool(error));
+  }
+
+  {
+    EXPECT_FALSE(socket.wait(socket.wait_read, 0ms, error));
+    EXPECT_FALSE(bool(error));
+  }
+}
+
+
+template <>
+void wait (const sal::net::ip::udp_t &protocol)
+{
+  using namespace std::chrono_literals;
+  socket_t<sal::net::ip::udp_t> socket(protocol);
+  std::error_code error;
+
+  {
+    EXPECT_TRUE(socket.wait(socket.wait_write, 0ms, error));
+  }
+
+  {
+    EXPECT_FALSE(socket.wait(socket.wait_read, 0ms, error));
+  }
+}
+
+
+TYPED_TEST(net_socket, wait_v4)
+{
+  wait(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, wait_v6)
+{
+  wait(TypeParam::v6());
+}
+
+
+TYPED_TEST(net_socket, wait_invalid)
+{
+  using namespace std::chrono_literals;
+  socket_t<TypeParam> socket;
+  std::error_code error;
+
+  {
+    EXPECT_FALSE(socket.wait(socket.wait_write, 0s, error));
+    EXPECT_TRUE(bool(error));
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(socket.wait(socket.wait_write, 0s), std::system_error);
+  }
+}
+
+
 } // namespace

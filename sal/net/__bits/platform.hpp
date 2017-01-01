@@ -33,6 +33,8 @@ namespace __bits {
   const native_handle_t invalid_socket = -1;
 #endif
 
+enum class wait_t { read, write };
+
 native_handle_t open (int domain,
   int type,
   int protocol,
@@ -86,6 +88,12 @@ void connect (native_handle_t handle,
 
 void shutdown (native_handle_t handle,
   int what,
+  std::error_code &error
+) noexcept;
+
+bool wait (native_handle_t handle,
+  wait_t what,
+  int timeout_ms,
   std::error_code &error
 ) noexcept;
 

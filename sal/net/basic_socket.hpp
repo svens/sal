@@ -338,6 +338,35 @@ public:
 
 
   /**
+   * Wait up to \a duration socket to be ready to read or write, depending on
+   * \a what. Return true if socket become ready for desired operation, and
+   * false if timeout arrived. If timeout is zero, wait will return without
+   * blocking. On failure, \a set error and return false.
+   */
+  template <class Rep, class Period>
+  bool wait (wait_t what,
+    const std::chrono::duration<Rep, Period> &duration,
+    std::error_code &error) noexcept
+  {
+    auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    return __bits::wait(handle_, what, static_cast<int>(d.count()), error);
+  }
+
+
+  /**
+   * Wait up to \a duration socket to be ready to read or write, depending on
+   * \a what. Return true if socket become ready for desired operation, and
+   * false if timeout arrived. If timeout is zero, wait will return without
+   * blocking. On failure, throw std::system_error
+   */
+  template <class Rep, class Period>
+  bool wait (wait_t what, const std::chrono::duration<Rep, Period> &duration)
+  {
+    return wait(what, duration, throw_on_error("basic_socket::wait"));
+  }
+
+
+  /**
    * Determine the locally-bound endpoint associated with the socket. On
    * failure, set \a error and returned endpoint value is undefined.
    */
