@@ -307,7 +307,7 @@ void shutdown (native_handle_t handle, int what, std::error_code &error)
 bool wait (native_handle_t handle, wait_t what, int timeout_ms,
   std::error_code &error) noexcept
 {
-#if __sal_os_darwin
+#if __sal_os_darwin || __sal_os_linux
   if (handle == invalid_socket)
   {
     error.assign(EBADF, std::generic_category());
@@ -324,6 +324,16 @@ bool wait (native_handle_t handle, wait_t what, int timeout_ms,
   auto event_count = ::poll(&fd, 1, timeout_ms);
   if (event_count == 1)
   {
+#if __sal_os_linux
+    // Linux does the "right thing", setting POLLHUP on non-connected sockets
+    // unfortunately Darwin & Windows disagree and no way to detect such
+    // situation, so simply align after their behaviour
+    if (fd.revents & POLLHUP)
+    {
+      return false;
+    }
+#endif
+
     return (fd.revents & fd.events) != 0;
   }
 
