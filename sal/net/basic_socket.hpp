@@ -81,8 +81,8 @@ public:
 
 
   /**
-   * \copybrief open(const protocol_t &, std::error_code &).
-   * On failure, throw std::system_error
+   * Create new socket instance of \a protocol. On failure, throw
+   * std::system_error
    */
   void open (const protocol_t &protocol)
   {
@@ -114,7 +114,7 @@ public:
 
 
   /**
-   * \copybrief assign(const protocol_t &, const native_handle_t &, std::error_code &).
+   * Assign previously opened native socket \a handle to this socket object.
    * On failure, throw std::system_error
    */
   void assign (const protocol_t &protocol, const native_handle_t &handle)
@@ -141,8 +141,8 @@ public:
 
 
   /**
-   * \copybrief close(std::error_code &).
-   * On failure, throw std::system_error
+   * Close socket, releasing all internal resources. On failure, throw
+   * std::system_error
    */
   void close ()
   {

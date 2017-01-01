@@ -95,9 +95,12 @@ inline void get_last (std::error_code &error, bool align_with_posix=true)
 #if __sal_os_windows
 
   auto e = ::WSAGetLastError();
-  if (e == WSAENOTSOCK && align_with_posix)
+  if (align_with_posix)
   {
-    e = WSAEBADF;
+    if (e == WSAENOTSOCK)
+    {
+      e = WSAEBADF;
+    }
   }
   error.assign(e, std::system_category());
 
@@ -393,7 +396,7 @@ size_t recv_from (native_handle_t handle,
   auto size = ::recvfrom(handle,
     data, static_cast<int>(data_size),
     flags,
-    static_cast<sockaddr *>(address), &_address_size
+    static_cast<sockaddr *>(address), (address ? &_address_size : nullptr)
   );
   if (size >= 0)
   {
@@ -451,6 +454,8 @@ size_t send_to (native_handle_t handle,
   int flags,
   std::error_code &error) noexcept
 {
+#if __sal_os_windows
+
   auto size = ::sendto(handle,
     data, static_cast<int>(data_size),
     flags,
@@ -458,10 +463,39 @@ size_t send_to (native_handle_t handle,
   );
   if (size == -1)
   {
+    if (::WSAGetLastError() == WSAENOTCONN)
+    {
+      ::WSASetLastError(WSAEDESTADDRREQ);
+    }
     get_last(error);
     size = 0;
   }
   return size;
+
+#else
+
+  iovec iov;
+  iov.iov_base = const_cast<char *>(data);
+  iov.iov_len = data_size;
+
+  msghdr msg;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+  msg.msg_name = const_cast<void *>(address);
+  msg.msg_namelen = address_size;
+  msg.msg_control = nullptr;
+  msg.msg_controllen = 0;
+  msg.msg_flags = 0;
+
+  auto size = ::sendmsg(handle, &msg, flags);
+  if (size == -1)
+  {
+    get_last(error);
+    size = 0;
+  }
+  return size;
+
+#endif
 }
 
 

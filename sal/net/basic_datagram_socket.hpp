@@ -41,27 +41,43 @@ public:
   basic_datagram_socket_t () = default;
 
 
+  /**
+   * Initialise base class from \a that.
+   */
   basic_datagram_socket_t (basic_datagram_socket_t &&that) noexcept
     : base_t(std::move(that))
   {}
 
 
+  /**
+   * Initialise base class using \a protocol
+   */
   basic_datagram_socket_t (const protocol_t &protocol)
     : base_t(protocol)
   {}
 
 
+  /**
+   * Initialise base class using \a endpoint
+   */
   basic_datagram_socket_t (const endpoint_t &endpoint)
     : base_t(endpoint)
   {}
 
 
+  /**
+   * Initialise base class using \a endpoint and \a handle
+   */
   basic_datagram_socket_t (const protocol_t &protocol,
       const native_handle_t &handle)
     : base_t(protocol, handle)
   {}
 
 
+  /**
+   * If this is_open(), close() it and then move all internal resource from
+   * \a that to \a this.
+   */
   basic_datagram_socket_t &operator= (basic_datagram_socket_t &&that) noexcept
   {
     base_t::operator=(std::move(that));
@@ -73,10 +89,11 @@ public:
   basic_datagram_socket_t &operator= (const basic_datagram_socket_t &) = delete;
 
 
-  //
-  // receive
-  //
-
+  /**
+   * Receive data (up to \a size bytes) from this socket. On success, returns
+   * number of bytes received and stores sender address into \a endpoint.
+   * On failure, set \a error and return 0.
+   */
   size_t receive_from (char *data, size_t size,
     endpoint_t &endpoint,
     socket_base_t::message_flags_t flags,
@@ -97,6 +114,11 @@ public:
   }
 
 
+  /**
+   * Receive data (up to \a size bytes) from this socket. On success, returns
+   * number of bytes received and stores sender address into \a endpoint.
+   * On failure, throw std::system_error.
+   */
   size_t receive_from (char *data, size_t max_size,
     endpoint_t &endpoint,
     socket_base_t::message_flags_t flags)
@@ -108,6 +130,11 @@ public:
   }
 
 
+  /**
+   * Receive data (up to \a size bytes) from this socket. On success, returns
+   * number of bytes received and stores sender address into \a endpoint.
+   * On failure, set \a error and return 0.
+   */
   size_t receive_from (char *data, size_t max_size,
     endpoint_t &endpoint,
     std::error_code &error) noexcept
@@ -119,6 +146,11 @@ public:
   }
 
 
+  /**
+   * Receive data (up to \a size bytes) from this socket. On success, returns
+   * number of bytes received and stores sender address into \a endpoint.
+   * On failure, throw std::system_error.
+   */
   size_t receive_from (char *data, size_t max_size, endpoint_t &endpoint)
   {
     return receive_from(data, max_size, endpoint,
@@ -127,11 +159,69 @@ public:
   }
 
 
+  /**
+   * Receive data (up to \a size bytes) from this socket. On success, returns
+   * number of bytes received. On failure, set \a error and return 0.
+   */
+  size_t receive (char *data, size_t size,
+    socket_base_t::message_flags_t flags,
+    std::error_code &error) noexcept
+  {
+    size_t endpoint_size = 0;
+    size = __bits::recv_from(base_t::native_handle(),
+      data, size,
+      nullptr, &endpoint_size,
+      static_cast<int>(flags),
+      error
+    );
+    return size;
+  }
 
-  //
-  // send
-  //
 
+  /**
+   * Receive data (up to \a size bytes) from this socket. On success, returns
+   * number of bytes received. On failure, throw std::system_error
+   */
+  size_t receive (char *data, size_t max_size,
+    socket_base_t::message_flags_t flags)
+  {
+    return receive(data, max_size, flags,
+      throw_on_error("basic_datagram_socket::receive")
+    );
+  }
+
+
+  /**
+   * Receive data (up to \a size bytes) from this socket. On success, returns
+   * number of bytes received. On failure, set \a error and return 0.
+   */
+  size_t receive (char *data, size_t max_size,
+    std::error_code &error) noexcept
+  {
+    return receive(data, max_size,
+      socket_base_t::message_flags_t{},
+      error
+    );
+  }
+
+
+  /**
+   * Receive data (up to \a size bytes) from this socket. On success, returns
+   * number of bytes received. On failure, throw std::system_error
+   */
+  size_t receive (char *data, size_t max_size)
+  {
+    return receive(data, max_size,
+      throw_on_error("basic_datagram_socket::receive")
+    );
+  }
+
+
+  /**
+   * Write \a size bytes of \a data into this socket for delivering to
+   * \a endpoint. On success, returns number of bytes sent. On failure, set
+   * \a error and return 0.
+   */
   size_t send_to (const char *data, size_t size,
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags,
@@ -146,6 +236,11 @@ public:
   }
 
 
+  /**
+   * Write \a size bytes of \a data into this socket for delivering to
+   * \a endpoint. On success, returns number of bytes sent. On failure, throw
+   * std::system_error
+   */
   size_t send_to (const char *data, size_t size,
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags)
@@ -156,6 +251,11 @@ public:
   }
 
 
+  /**
+   * Write \a size bytes of \a data into this socket for delivering to
+   * \a endpoint. On success, returns number of bytes sent. On failure, set
+   * \a error and return 0.
+   */
   size_t send_to (const char *data, size_t size,
     const endpoint_t &endpoint,
     std::error_code &error) noexcept
@@ -167,6 +267,11 @@ public:
   }
 
 
+  /**
+   * Write \a size bytes of \a data into this socket for delivering to
+   * \a endpoint. On success, returns number of bytes sent. On failure, throw
+   * std::system_error
+   */
   size_t send_to (const char *data, size_t size,
     const endpoint_t &endpoint)
   {
@@ -176,31 +281,58 @@ public:
   }
 
 
-#if 0
+  /**
+   * Write \a size bytes of \a data into this socket for delivering to
+   * connected endpoint. On success, returns number of bytes sent. On failure,
+   * set \a error and return 0.
+   */
+  size_t send (const char *data, size_t size,
+    socket_base_t::message_flags_t flags,
+    std::error_code &error) noexcept
+  {
+    return __bits::send_to(base_t::native_handle(),
+      data, size,
+      nullptr, 0,
+      static_cast<int>(flags),
+      error
+    );
+  }
 
-  //
-  // receive
-  //
+
+  /**
+   * Write \a size bytes of \a data into this socket for delivering to
+   * connected endpoint. On success, returns number of bytes sent. On failure,
+   * throw std::system_error
+   */
+  size_t send (const char *data, size_t size,
+    socket_base_t::message_flags_t flags)
+  {
+    return send(data, size, flags,
+      throw_on_error("basic_datagram_socket::send")
+    );
+  }
 
 
-  size_t receive (buffer, error);
-  size_t receive (buffer);
+  /**
+   * Write \a size bytes of \a data into this socket for delivering to
+   * connected endpoint. On success, returns number of bytes sent. On failure,
+   * set \a error and return 0.
+   */
+  size_t send (const char *data, size_t size, std::error_code &error) noexcept
+  {
+    return send(data, size, socket_base_t::message_flags_t{}, error);
+  }
 
-  size_t receive (buffer, flags, error);
-  size_t receive (buffer, flags);
 
-  //
-  // send
-  //
-
-
-  size_t send (buffer, error);
-  size_t send (buffer);
-
-  size_t send (buffer, flags, error);
-  size_t send (buffer, flags);
-
-#endif
+  /**
+   * Write \a size bytes of \a data into this socket for delivering to
+   * connected endpoint. On success, returns number of bytes sent. On failure,
+   * throw std::system_error
+   */
+  size_t send (const char *data, size_t size)
+  {
+    return send(data, size, throw_on_error("basic_datagram_socket::send"));
+  }
 };
 
 

@@ -248,7 +248,7 @@ TEST_P(socket, receive_from_peek)
   socket_t::endpoint_t endpoint;
   char buf[1024];
 
-  // receive: peek
+  // receiver: peek
   std::memset(buf, '\0', sizeof(buf));
   EXPECT_EQ(
     case_name.size(),
@@ -257,7 +257,7 @@ TEST_P(socket, receive_from_peek)
   EXPECT_EQ(buf, case_name);
   EXPECT_EQ(sa, endpoint);
 
-  // receive: actually extract
+  // receiver: actually extract
   std::memset(buf, '\0', sizeof(buf));
   EXPECT_EQ(
     case_name.size(),
@@ -285,12 +285,200 @@ TEST_P(socket, send_to_do_not_route)
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
 
+  // receiver
   EXPECT_EQ(
     case_name.size(),
     r.receive_from(buf, sizeof(buf), endpoint)
   );
   EXPECT_EQ(buf, case_name);
   EXPECT_EQ(sa, endpoint);
+}
+
+
+TEST_P(socket, receive_invalid)
+{
+  socket_t socket;
+
+  char buf[1024];
+
+  {
+    std::error_code error;
+    EXPECT_EQ(0U, socket.receive(buf, sizeof(buf), error));
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      (void)socket.receive(buf, sizeof(buf)),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket, receive_no_sender_non_blocking)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  socket.non_blocking(true);
+
+  char buf[1024];
+
+  {
+    std::error_code error;
+    EXPECT_EQ(0U, socket.receive(buf, sizeof(buf), error));
+    EXPECT_EQ(std::errc::operation_would_block, error);
+  }
+
+  {
+    EXPECT_THROW(
+      (void)socket.receive(buf, sizeof(buf)),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket, send_invalid)
+{
+  socket_t socket;
+
+  {
+    std::error_code error;
+    EXPECT_EQ(0U, socket.send(case_name.data(), case_name.size(), error));
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      (void)socket.send(case_name.data(), case_name.size()),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket, send_not_connected)
+{
+  socket_t socket(loopback(GetParam()));
+
+  {
+    std::error_code error;
+    socket.send(case_name.c_str(), case_name.size(), error);
+    EXPECT_EQ(std::errc::destination_address_required, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.send(case_name.c_str(), case_name.size()),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket, send_and_receive)
+{
+  using namespace std::chrono_literals;
+
+  socket_t::endpoint_t ra(loopback(GetParam()));
+  socket_t r(ra), s(GetParam());
+
+  ASSERT_FALSE(r.wait(r.wait_read, 0s));
+
+  // sender
+  {
+    ASSERT_NO_THROW(s.connect(ra));
+    EXPECT_EQ(case_name.size(), s.send(case_name.c_str(), case_name.size()));
+  }
+
+  ASSERT_TRUE(r.wait(r.wait_read, 10s));
+
+  // receiver
+  {
+    char buf[1024];
+    std::memset(buf, '\0', sizeof(buf));
+    EXPECT_EQ(case_name.size(), r.receive(buf, sizeof(buf)));
+    EXPECT_EQ(buf, case_name);
+  }
+}
+
+
+TEST_P(socket, receive_less_than_send)
+{
+  using namespace std::chrono_literals;
+
+  socket_t::endpoint_t ra(loopback(GetParam()));
+  socket_t r(ra), s(GetParam());
+
+  ASSERT_FALSE(r.wait(r.wait_read, 0s));
+
+  // sender
+  {
+    ASSERT_NO_THROW(s.connect(ra));
+    EXPECT_EQ(case_name.size(), s.send(case_name.c_str(), case_name.size()));
+  }
+
+  ASSERT_TRUE(r.wait(r.wait_read, 10s));
+
+  // receiver
+  {
+    std::error_code error;
+    char buf[1024];
+    std::memset(buf, '\0', sizeof(buf));
+    EXPECT_EQ(0U, r.receive(buf, case_name.size() / 2, error));
+    EXPECT_EQ(std::errc::message_size, error);
+    EXPECT_FALSE(r.wait(r.wait_read, 0s));
+  }
+}
+
+
+TEST_P(socket, receive_peek)
+{
+  using namespace std::chrono_literals;
+
+  socket_t::endpoint_t ra(loopback(GetParam()));
+  socket_t r(ra), s(GetParam());
+
+  // sender
+  ASSERT_NO_THROW(s.connect(ra));
+  EXPECT_EQ(case_name.size(), s.send(case_name.c_str(), case_name.size()));
+
+  char buf[1024];
+
+  // receiver: peek
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(case_name.size(), r.receive(buf, sizeof(buf), r.peek));
+  EXPECT_EQ(buf, case_name);
+
+  // receiver: actually extract
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(case_name.size(), r.receive(buf, sizeof(buf)));
+  EXPECT_EQ(buf, case_name);
+}
+
+
+TEST_P(socket, send_do_not_route)
+{
+  using namespace std::chrono_literals;
+
+  socket_t::endpoint_t ra(loopback(GetParam()));
+  socket_t r(ra), s(GetParam());
+
+  // sender
+  ASSERT_NO_THROW(s.connect(ra));
+  EXPECT_EQ(
+    case_name.size(),
+    s.send(case_name.c_str(), case_name.size(), s.do_not_route)
+  );
+
+  socket_t::endpoint_t endpoint;
+  char buf[1024];
+  std::memset(buf, '\0', sizeof(buf));
+
+  // receiver
+  EXPECT_EQ(case_name.size(), r.receive(buf, sizeof(buf)));
+  EXPECT_EQ(buf, case_name);
 }
 
 
