@@ -9,6 +9,8 @@
 #include <sal/config.hpp>
 #include <sal/net/ip/basic_endpoint.hpp>
 #include <sal/net/ip/basic_resolver.hpp>
+#include <sal/memory_writer.hpp>
+#include <ostream>
 
 
 __sal_begin
@@ -140,6 +142,37 @@ constexpr bool operator!= (const tcp_t &a, const tcp_t &b) noexcept
 {
   return !(a == b);
 }
+
+
+#if 0
+
+TODO
+
+
+/**
+ * Insert human readable \a protocol representation into \a writer.
+ */
+inline memory_writer_t &operator<< (memory_writer_t &writer,
+  const tcp_t &protocol) noexcept
+{
+  return protocol.family() == AF_INET
+    ? writer.print("AF_INET")
+    : writer.print("AF_INET6")
+  ;
+}
+
+
+/**
+ * Insert human readable \a protocol into std::ostream \a os
+ */
+inline std::ostream &operator<< (std::ostream &os, const tcp_t &protocol)
+{
+  char_array_t<sizeof("AF_INET6")> buf;
+  buf << protocol;
+  return (os << buf.c_str());
+}
+
+#endif
 
 
 }} // namespace net::ip

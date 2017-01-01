@@ -408,7 +408,7 @@ inline bool operator>= (const basic_endpoint_t<Protocol> &a,
 
 
 /**
- * Create and insert human readable \a address into \a writer
+ * Insert human readable \a endpoint into std::ostream \a os.
  */
 template <typename Protocol>
 inline std::ostream &operator<< (std::ostream &os,

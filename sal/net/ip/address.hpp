@@ -316,7 +316,7 @@ inline bool operator>= (const address_t &a, const address_t &b) noexcept
 
 
 /**
- * Create and insert human readable \a address into \a writer
+ * Insert human readable \a address into \a writer
  */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const address_t &address) noexcept
@@ -334,12 +334,12 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 
 
 /**
- * Create and insert human readable \a address into \a writer
+ * Insert human readable \a address into std::ostream \a os.
  */
-inline std::ostream &operator<< (std::ostream &os, const address_t &a)
+inline std::ostream &operator<< (std::ostream &os, const address_t &address)
 {
   char_array_t<INET6_ADDRSTRLEN> buf;
-  buf << a;
+  buf << address;
   return (os << buf.c_str());
 }
 

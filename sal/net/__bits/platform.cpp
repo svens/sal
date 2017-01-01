@@ -95,7 +95,7 @@ inline void get_last (std::error_code &error, bool align_with_posix=true)
 #if __sal_os_windows
 
   auto e = ::WSAGetLastError();
-  if (align_with_posix && e == WSAENOTSOCK)
+  if (e == WSAENOTSOCK && align_with_posix)
   {
     e = WSAEBADF;
   }
@@ -378,6 +378,90 @@ void remote_endpoint (native_handle_t handle,
   {
     get_last(error);
   }
+}
+
+
+size_t recv_from (native_handle_t handle,
+  char *data, size_t data_size,
+  void *address, size_t *address_size,
+  int flags,
+  std::error_code &error) noexcept
+{
+#if __sal_os_windows
+
+  auto _address_size = static_cast<socklen_t>(*address_size);
+  auto size = ::recvfrom(handle,
+    data, static_cast<int>(data_size),
+    flags,
+    static_cast<sockaddr *>(address), &_address_size
+  );
+  if (size >= 0)
+  {
+    *address_size = _address_size;
+  }
+  else
+  {
+    get_last(error);
+    size = 0;
+  }
+  return size;
+
+#else
+
+  iovec iov;
+  iov.iov_base = data;
+  iov.iov_len = data_size;
+
+  msghdr msg;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+  msg.msg_name = address;
+  msg.msg_namelen = *address_size;
+  msg.msg_control = nullptr;
+  msg.msg_controllen = 0;
+  msg.msg_flags = 0;
+
+  auto size = ::recvmsg(handle, &msg, flags);
+  if (size >= 0)
+  {
+    if (msg.msg_flags & MSG_TRUNC)
+    {
+      error.assign(EMSGSIZE, std::generic_category());
+      size = 0;
+    }
+    else
+    {
+      *address_size = msg.msg_namelen;
+    }
+  }
+  else
+  {
+    get_last(error);
+    size = 0;
+  }
+  return size;
+
+#endif
+}
+
+
+size_t send_to (native_handle_t handle,
+  const char *data, size_t data_size,
+  const void *address, size_t address_size,
+  int flags,
+  std::error_code &error) noexcept
+{
+  auto size = ::sendto(handle,
+    data, static_cast<int>(data_size),
+    flags,
+    static_cast<const sockaddr *>(address), static_cast<socklen_t>(address_size)
+  );
+  if (size == -1)
+  {
+    get_last(error);
+    size = 0;
+  }
+  return size;
 }
 
 

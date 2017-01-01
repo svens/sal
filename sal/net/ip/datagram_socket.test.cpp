@@ -10,6 +10,14 @@ struct socket
 {
   using socket_t = sal::net::ip::udp_t::socket_t;
   static constexpr sal::net::ip::port_t port = 1025;
+
+  socket_t::endpoint_t loopback (const sal::net::ip::udp_t &protocol) const
+  {
+    return protocol == sal::net::ip::udp_t::v4()
+      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
+      : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
+    ;
+  }
 };
 
 
@@ -88,6 +96,201 @@ TEST_P(socket, assign_move)
   EXPECT_EQ(handle, b.native_handle());
   EXPECT_TRUE(b.is_open());
   EXPECT_FALSE(a.is_open());
+}
+
+
+TEST_P(socket, receive_from_invalid)
+{
+  socket_t::endpoint_t endpoint;
+  socket_t socket;
+
+  char buf[1024];
+
+  {
+    std::error_code error;
+    EXPECT_EQ(0U, socket.receive_from(buf, sizeof(buf), endpoint, error));
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      (void)socket.receive_from(buf, sizeof(buf), endpoint),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket, receive_from_no_sender_non_blocking)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  socket.non_blocking(true);
+
+  char buf[1024];
+
+  {
+    std::error_code error;
+    EXPECT_EQ(0U, socket.receive_from(buf, sizeof(buf), endpoint, error));
+    EXPECT_EQ(std::errc::operation_would_block, error);
+  }
+
+  {
+    EXPECT_THROW(
+      (void)socket.receive_from(buf, sizeof(buf), endpoint),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket, send_to_invalid)
+{
+  socket_t::endpoint_t endpoint;
+  socket_t socket;
+
+  {
+    std::error_code error;
+    EXPECT_EQ(0U,
+      socket.send_to(case_name.data(), case_name.size(), endpoint, error)
+    );
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      (void)socket.send_to(case_name.data(), case_name.size(), endpoint),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket, send_to_and_receive_from)
+{
+  using namespace std::chrono_literals;
+
+  socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
+  socket_t r(ra), s(sa);
+
+  ASSERT_FALSE(r.wait(r.wait_read, 0s));
+
+  // sender
+  {
+    EXPECT_EQ(
+      case_name.size(),
+      s.send_to(case_name.c_str(), case_name.size(), ra)
+    );
+  }
+
+  ASSERT_TRUE(r.wait(r.wait_read, 10s));
+
+  // receiver
+  {
+    socket_t::endpoint_t endpoint;
+    char buf[1024];
+    std::memset(buf, '\0', sizeof(buf));
+    EXPECT_EQ(
+      case_name.size(),
+      r.receive_from(buf, sizeof(buf), endpoint)
+    );
+    EXPECT_EQ(buf, case_name);
+    EXPECT_EQ(sa, endpoint);
+  }
+}
+
+
+TEST_P(socket, receive_from_less_than_send_to)
+{
+  using namespace std::chrono_literals;
+
+  socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
+  socket_t r(ra), s(sa);
+
+  ASSERT_FALSE(r.wait(r.wait_read, 0s));
+
+  // sender
+  {
+    EXPECT_EQ(
+      case_name.size(),
+      s.send_to(case_name.c_str(), case_name.size(), ra)
+    );
+  }
+
+  ASSERT_TRUE(r.wait(r.wait_read, 10s));
+
+  // receiver
+  {
+    std::error_code error;
+    socket_t::endpoint_t endpoint;
+    char buf[1024];
+    std::memset(buf, '\0', sizeof(buf));
+    EXPECT_EQ(0U, r.receive_from(buf, case_name.size() / 2, endpoint, error));
+    EXPECT_EQ(std::errc::message_size, error);
+    EXPECT_FALSE(r.wait(r.wait_read, 0s));
+  }
+}
+
+
+TEST_P(socket, receive_from_peek)
+{
+  using namespace std::chrono_literals;
+
+  socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
+  socket_t r(ra), s(sa);
+
+  // sender
+  EXPECT_EQ(
+    case_name.size(),
+    s.send_to(case_name.c_str(), case_name.size(), ra)
+  );
+
+  socket_t::endpoint_t endpoint;
+  char buf[1024];
+
+  // receive: peek
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(
+    case_name.size(),
+    r.receive_from(buf, sizeof(buf), endpoint, r.peek)
+  );
+  EXPECT_EQ(buf, case_name);
+  EXPECT_EQ(sa, endpoint);
+
+  // receive: actually extract
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(
+    case_name.size(),
+    r.receive_from(buf, sizeof(buf), endpoint)
+  );
+  EXPECT_EQ(buf, case_name);
+  EXPECT_EQ(sa, endpoint);
+}
+
+
+TEST_P(socket, send_to_do_not_route)
+{
+  using namespace std::chrono_literals;
+
+  socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
+  socket_t r(ra), s(sa);
+
+  // sender
+  EXPECT_EQ(
+    case_name.size(),
+    s.send_to(case_name.c_str(), case_name.size(), ra, s.do_not_route)
+  );
+
+  socket_t::endpoint_t endpoint;
+  char buf[1024];
+  std::memset(buf, '\0', sizeof(buf));
+
+  EXPECT_EQ(
+    case_name.size(),
+    r.receive_from(buf, sizeof(buf), endpoint)
+  );
+  EXPECT_EQ(buf, case_name);
+  EXPECT_EQ(sa, endpoint);
 }
 
 

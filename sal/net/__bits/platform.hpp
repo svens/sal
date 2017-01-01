@@ -109,6 +109,20 @@ void remote_endpoint (native_handle_t handle,
   std::error_code &error
 ) noexcept;
 
+size_t recv_from (native_handle_t handle,
+  char *data, size_t data_size,
+  void *address, size_t *address_size,
+  int flags,
+  std::error_code &error
+) noexcept;
+
+size_t send_to (native_handle_t handle,
+  const char *data, size_t data_size,
+  const void *address, size_t address_size,
+  int flags,
+  std::error_code &error
+) noexcept;
+
 } // namespace __bits
 
 
