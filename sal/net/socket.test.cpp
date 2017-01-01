@@ -1390,6 +1390,41 @@ TYPED_TEST(net_socket, connect_with_no_pre_open_v6)
 }
 
 
+template <typename Protocol>
+void shutdown (const Protocol &protocol)
+{
+  socket_t<Protocol> socket(protocol);
+  auto what = socket.shutdown_receive | socket.shutdown_send;
+
+  {
+    std::error_code error;
+    socket.shutdown(what, error);
+    EXPECT_EQ(std::errc::not_connected, error);
+  }
+
+  {
+    EXPECT_THROW(socket.shutdown(what), std::system_error);
+  }
+}
+
+
+template <>
+void shutdown (const sal::net::ip::udp_t &)
+{}
+
+
+TYPED_TEST(net_socket, shutdown_v4)
+{
+  shutdown(TypeParam::v4());
+}
+
+
+TYPED_TEST(net_socket, shutdown_v6)
+{
+  shutdown(TypeParam::v6());
+}
+
+
 TYPED_TEST(net_socket, shutdown_invalid)
 {
   socket_t<TypeParam> socket;
