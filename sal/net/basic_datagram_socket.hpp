@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/net/basic_socket.hpp
+ * \file sal/net/basic_datagram_socket.hpp
  * Datagram socket
  */
 

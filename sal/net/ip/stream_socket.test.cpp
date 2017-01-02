@@ -1,19 +1,19 @@
-#include <sal/net/ip/udp.hpp>
+#include <sal/net/ip/tcp.hpp>
 #include <sal/common.test.hpp>
 
 
 namespace {
 
 
-struct datagram_socket
-  : public sal_test::with_value<sal::net::ip::udp_t>
+struct stream_socket
+  : public sal_test::with_value<sal::net::ip::tcp_t>
 {
-  using socket_t = sal::net::ip::udp_t::socket_t;
+  using socket_t = sal::net::ip::tcp_t::socket_t;
   static constexpr sal::net::ip::port_t port = 1025;
 
-  socket_t::endpoint_t loopback (const sal::net::ip::udp_t &protocol) const
+  socket_t::endpoint_t loopback (const sal::net::ip::tcp_t &protocol) const
   {
-    return protocol == sal::net::ip::udp_t::v4()
+    return protocol == sal::net::ip::tcp_t::v4()
       ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
       : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
     ;
@@ -21,22 +21,22 @@ struct datagram_socket
 };
 
 
-INSTANTIATE_TEST_CASE_P(net_ip, datagram_socket,
+INSTANTIATE_TEST_CASE_P(net_ip, stream_socket,
   ::testing::Values(
-    sal::net::ip::udp_t::v4(),
-    sal::net::ip::udp_t::v6()
+    sal::net::ip::tcp_t::v4(),
+    sal::net::ip::tcp_t::v6()
   )
 );
 
 
-TEST_P(datagram_socket, ctor)
+TEST_P(stream_socket, ctor)
 {
   socket_t socket;
   EXPECT_FALSE(socket.is_open());
 }
 
 
-TEST_P(datagram_socket, ctor_move)
+TEST_P(stream_socket, ctor_move)
 {
   socket_t a(GetParam());
   EXPECT_TRUE(a.is_open());
@@ -46,7 +46,7 @@ TEST_P(datagram_socket, ctor_move)
 }
 
 
-TEST_P(datagram_socket, ctor_move_no_handle)
+TEST_P(stream_socket, ctor_move_no_handle)
 {
   socket_t a;
   EXPECT_FALSE(a.is_open());
@@ -56,14 +56,14 @@ TEST_P(datagram_socket, ctor_move_no_handle)
 }
 
 
-TEST_P(datagram_socket, ctor_protocol)
+TEST_P(stream_socket, ctor_protocol)
 {
   socket_t socket(GetParam());
   EXPECT_TRUE(socket.is_open());
 }
 
 
-TEST_P(datagram_socket, ctor_protocol_and_handle)
+TEST_P(stream_socket, ctor_protocol_and_handle)
 {
   auto handle = sal::net::socket_base_t::invalid_socket - 1;
   socket_t socket(GetParam(), handle);
@@ -74,7 +74,7 @@ TEST_P(datagram_socket, ctor_protocol_and_handle)
 }
 
 
-TEST_P(datagram_socket, ctor_endpoint)
+TEST_P(stream_socket, ctor_endpoint)
 {
   socket_t::endpoint_t endpoint(GetParam(), port);
   socket_t socket(endpoint);
@@ -85,7 +85,7 @@ TEST_P(datagram_socket, ctor_endpoint)
 }
 
 
-TEST_P(datagram_socket, assign_move)
+TEST_P(stream_socket, assign_move)
 {
   socket_t a(GetParam()), b;
   EXPECT_TRUE(a.is_open());
@@ -99,7 +99,8 @@ TEST_P(datagram_socket, assign_move)
 }
 
 
-TEST_P(datagram_socket, receive_from_invalid)
+#if 0
+TEST_P(stream_socket, receive_from_invalid)
 {
   socket_t::endpoint_t endpoint;
   socket_t socket;
@@ -121,7 +122,7 @@ TEST_P(datagram_socket, receive_from_invalid)
 }
 
 
-TEST_P(datagram_socket, receive_from_no_sender_non_blocking)
+TEST_P(stream_socket, receive_from_no_sender_non_blocking)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
@@ -144,7 +145,7 @@ TEST_P(datagram_socket, receive_from_no_sender_non_blocking)
 }
 
 
-TEST_P(datagram_socket, send_to_invalid)
+TEST_P(stream_socket, send_to_invalid)
 {
   socket_t::endpoint_t endpoint;
   socket_t socket;
@@ -166,7 +167,7 @@ TEST_P(datagram_socket, send_to_invalid)
 }
 
 
-TEST_P(datagram_socket, send_to_and_receive_from)
+TEST_P(stream_socket, send_to_and_receive_from)
 {
   using namespace std::chrono_literals;
 
@@ -200,7 +201,7 @@ TEST_P(datagram_socket, send_to_and_receive_from)
 }
 
 
-TEST_P(datagram_socket, receive_from_less_than_send_to)
+TEST_P(stream_socket, receive_from_less_than_send_to)
 {
   using namespace std::chrono_literals;
 
@@ -232,7 +233,7 @@ TEST_P(datagram_socket, receive_from_less_than_send_to)
 }
 
 
-TEST_P(datagram_socket, receive_from_peek)
+TEST_P(stream_socket, receive_from_peek)
 {
   using namespace std::chrono_literals;
 
@@ -268,7 +269,7 @@ TEST_P(datagram_socket, receive_from_peek)
 }
 
 
-TEST_P(datagram_socket, send_to_do_not_route)
+TEST_P(stream_socket, send_to_do_not_route)
 {
   using namespace std::chrono_literals;
 
@@ -295,7 +296,7 @@ TEST_P(datagram_socket, send_to_do_not_route)
 }
 
 
-TEST_P(datagram_socket, receive_invalid)
+TEST_P(stream_socket, receive_invalid)
 {
   socket_t socket;
 
@@ -316,7 +317,7 @@ TEST_P(datagram_socket, receive_invalid)
 }
 
 
-TEST_P(datagram_socket, receive_no_sender_non_blocking)
+TEST_P(stream_socket, receive_no_sender_non_blocking)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
@@ -339,7 +340,7 @@ TEST_P(datagram_socket, receive_no_sender_non_blocking)
 }
 
 
-TEST_P(datagram_socket, send_invalid)
+TEST_P(stream_socket, send_invalid)
 {
   socket_t socket;
 
@@ -358,7 +359,7 @@ TEST_P(datagram_socket, send_invalid)
 }
 
 
-TEST_P(datagram_socket, send_not_connected)
+TEST_P(stream_socket, send_not_connected)
 {
   socket_t socket(loopback(GetParam()));
 
@@ -377,7 +378,7 @@ TEST_P(datagram_socket, send_not_connected)
 }
 
 
-TEST_P(datagram_socket, send_and_receive)
+TEST_P(stream_socket, send_and_receive)
 {
   using namespace std::chrono_literals;
 
@@ -404,7 +405,7 @@ TEST_P(datagram_socket, send_and_receive)
 }
 
 
-TEST_P(datagram_socket, receive_less_than_send)
+TEST_P(stream_socket, receive_less_than_send)
 {
   using namespace std::chrono_literals;
 
@@ -433,7 +434,7 @@ TEST_P(datagram_socket, receive_less_than_send)
 }
 
 
-TEST_P(datagram_socket, receive_peek)
+TEST_P(stream_socket, receive_peek)
 {
   using namespace std::chrono_literals;
 
@@ -458,7 +459,7 @@ TEST_P(datagram_socket, receive_peek)
 }
 
 
-TEST_P(datagram_socket, send_do_not_route)
+TEST_P(stream_socket, send_do_not_route)
 {
   using namespace std::chrono_literals;
 
@@ -480,6 +481,7 @@ TEST_P(datagram_socket, send_do_not_route)
   EXPECT_EQ(case_name.size(), r.receive(buf, sizeof(buf)));
   EXPECT_EQ(buf, case_name);
 }
+#endif
 
 
 } // namespace

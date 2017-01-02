@@ -9,6 +9,8 @@
 #include <sal/config.hpp>
 #include <sal/net/ip/basic_endpoint.hpp>
 #include <sal/net/ip/basic_resolver.hpp>
+#include <sal/net/basic_stream_socket.hpp>
+#include <sal/net/basic_socket_acceptor.hpp>
 #include <sal/memory_writer.hpp>
 #include <ostream>
 
@@ -26,15 +28,17 @@ class tcp_t
 {
 public:
 
-  /**
-   * TCP socket endpoint
-   */
+  /// TCP socket endpoint
   using endpoint_t = basic_endpoint_t<tcp_t>;
 
-  /**
-   * TCP endpoint resolver
-   */
+  /// TCP endpoint resolver
   using resolver_t = basic_resolver_t<tcp_t>;
+
+  /// TCP stream socket
+  using socket_t = basic_stream_socket_t<tcp_t>;
+
+  /// TCP stream acceptor
+  using acceptor_t = basic_socket_acceptor_t<tcp_t>;
 
 
   tcp_t () = delete;
@@ -144,11 +148,6 @@ constexpr bool operator!= (const tcp_t &a, const tcp_t &b) noexcept
 }
 
 
-#if 0
-
-TODO
-
-
 /**
  * Insert human readable \a protocol representation into \a writer.
  */
@@ -171,8 +170,6 @@ inline std::ostream &operator<< (std::ostream &os, const tcp_t &protocol)
   buf << protocol;
   return (os << buf.c_str());
 }
-
-#endif
 
 
 }} // namespace net::ip

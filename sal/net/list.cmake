@@ -11,6 +11,8 @@ list(APPEND sal_sources
 
   sal/net/basic_socket.hpp
   sal/net/basic_datagram_socket.hpp
+  sal/net/basic_stream_socket.hpp
+  sal/net/basic_socket_acceptor.hpp
   sal/net/error.hpp
   sal/net/error.cpp
   sal/net/socket.hpp
@@ -46,4 +48,5 @@ list(APPEND sal_unittests
   sal/net/ip/datagram_socket.test.cpp
   sal/net/ip/endpoint.test.cpp
   sal/net/ip/resolver.test.cpp
+  sal/net/ip/stream_socket.test.cpp
 )

@@ -27,6 +27,8 @@ public:
         return "Already open";
       case socket_errc_t::not_found:
         return "Not found";
+      case socket_errc_t::orderly_shutdown:
+        return "Orderly shutdown";
     }
     return "Unknown error";
   }

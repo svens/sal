@@ -1,4 +1,5 @@
 #include <sal/net/__bits/platform.hpp>
+#include <sal/net/error.hpp>
 
 #if __sal_os_windows
   #include <mutex>
@@ -284,6 +285,43 @@ void bind (native_handle_t handle,
 }
 
 
+void listen (native_handle_t handle, int backlog, std::error_code &error)
+  noexcept
+{
+  if (::listen(handle, backlog) == -1)
+  {
+    get_last(error);
+  }
+}
+
+
+native_handle_t accept (native_handle_t handle,
+  void *address,
+  size_t *address_size,
+  bool enable_connection_aborted,
+  std::error_code &error) noexcept
+{
+  auto size = address ? static_cast<socklen_t>(*address_size) : 0;
+  for (;;)
+  {
+    auto h = ::accept(handle, static_cast<sockaddr *>(address), &size);
+    if (h == -1)
+    {
+      if (errno == ECONNABORTED && !enable_connection_aborted)
+      {
+        continue;
+      }
+      get_last(error);
+    }
+    else if (address_size)
+    {
+      *address_size = size;
+    }
+    return h;
+  }
+}
+
+
 void connect (native_handle_t handle,
   const void *address, size_t address_size,
   std::error_code &error) noexcept
@@ -461,7 +499,7 @@ size_t send_to (native_handle_t handle,
     flags,
     static_cast<const sockaddr *>(address), static_cast<socklen_t>(address_size)
   );
-  if (size == -1)
+  if (size == SOCKET_ERROR)
   {
     if (::WSAGetLastError() == WSAENOTCONN)
     {
@@ -496,6 +534,84 @@ size_t send_to (native_handle_t handle,
   return size;
 
 #endif
+}
+
+
+size_t recv (native_handle_t handle,
+  char *data, size_t data_size,
+  int flags,
+  std::error_code &error) noexcept
+{
+#if __sal_os_windows
+
+  auto size = ::recv(handle, data, static_cast<int>(data_size), flags);
+
+#else
+
+  iovec iov;
+  iov.iov_base = data;
+  iov.iov_len = data_size;
+
+  msghdr msg;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+  msg.msg_name = nullptr;
+  msg.msg_namelen = 0;
+  msg.msg_control = nullptr;
+  msg.msg_controllen = 0;
+  msg.msg_flags = 0;
+
+  auto size = ::recvmsg(handle, &msg, flags);
+
+#endif
+
+  if (size == 0)
+  {
+    error = make_error_code(socket_errc_t::orderly_shutdown);
+  }
+  else if (size == -1)
+  {
+    get_last(error);
+    size = 0;
+  }
+  return size;
+}
+
+
+size_t send (native_handle_t handle,
+  const char *data, size_t data_size,
+  int flags,
+  std::error_code &error) noexcept
+{
+#if __sal_os_windows
+
+  auto size = ::send(handle, data, static_cast<int>(data_size), flags);
+
+#else
+
+  iovec iov;
+  iov.iov_base = const_cast<char *>(data);
+  iov.iov_len = data_size;
+
+  msghdr msg;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+  msg.msg_name = nullptr;
+  msg.msg_namelen = 0;
+  msg.msg_control = nullptr;
+  msg.msg_controllen = 0;
+  msg.msg_flags = 0;
+
+  auto size = ::sendmsg(handle, &msg, flags);
+
+#endif
+
+  if (size == -1)
+  {
+    get_last(error);
+    size = 0;
+  }
+  return size;
 }
 
 

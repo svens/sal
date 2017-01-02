@@ -7,3 +7,5 @@
 
 
 #include <sal/net/basic_datagram_socket.hpp>
+#include <sal/net/basic_stream_socket.hpp>
+#include <sal/net/basic_socket_acceptor.hpp>
