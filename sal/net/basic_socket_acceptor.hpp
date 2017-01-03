@@ -380,9 +380,9 @@ public:
     if (!error)
     {
       endpoint.resize(endpoint_size);
+      return socket_t{protocol_t::v4(), h};
     }
-    // TODO: protocol
-    return socket_t{protocol_t::v4(), h};
+    return socket_t{};
   }
 
 
@@ -403,10 +403,15 @@ public:
   socket_t accept (std::error_code &error) noexcept
   {
     auto h = __bits::accept(handle_,
-      nullptr, 0,
+      nullptr, nullptr,
       enable_connection_aborted_,
       error
     );
+    if (!error)
+    {
+      return socket_t{protocol_t::v4(), h};
+    }
+    return socket_t{};
   }
 
 

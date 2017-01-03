@@ -9,7 +9,7 @@ struct stream_socket
   : public sal_test::with_value<sal::net::ip::tcp_t>
 {
   using socket_t = sal::net::ip::tcp_t::socket_t;
-  static constexpr sal::net::ip::port_t port = 1025;
+  static constexpr sal::net::ip::port_t port = 1026;
 
   socket_t::endpoint_t loopback (const sal::net::ip::tcp_t &protocol) const
   {
@@ -19,6 +19,8 @@ struct stream_socket
     ;
   }
 };
+
+constexpr sal::net::ip::port_t stream_socket::port;
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, stream_socket,
@@ -81,7 +83,7 @@ TEST_P(stream_socket, ctor_endpoint)
 
   endpoint = socket.local_endpoint();
   EXPECT_TRUE(endpoint.address().is_unspecified());
-  EXPECT_EQ(1025U, endpoint.port());
+  EXPECT_EQ(port, endpoint.port());
 }
 
 

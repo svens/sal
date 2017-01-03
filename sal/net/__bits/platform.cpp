@@ -301,20 +301,44 @@ native_handle_t accept (native_handle_t handle,
   bool enable_connection_aborted,
   std::error_code &error) noexcept
 {
-  auto size = address ? static_cast<socklen_t>(*address_size) : 0;
+  socklen_t size{}, *size_p = nullptr;
+  if (address_size)
+  {
+    size = static_cast<socklen_t>(*address_size);
+    size_p = &size;
+  }
   for (;;)
   {
-    auto h = ::accept(handle, static_cast<sockaddr *>(address), &size);
+    auto h = ::accept(handle, static_cast<sockaddr *>(address), size_p);
     if (h == -1)
     {
+      // LCOV_EXCL_START
+      // this part is OS dependent
       if (errno == ECONNABORTED && !enable_connection_aborted)
       {
         continue;
       }
+      // LCOV_EXCL_STOP
       get_last(error);
     }
     else if (address_size)
     {
+#if __sal_os_darwin
+      // LCOV_EXCL_START
+      // kernel bug: instead of ECONNABORTED, we'll get size = 0
+      if (!size)
+      {
+        if (enable_connection_aborted)
+        {
+          error.assign(ECONNABORTED, std::generic_category());
+        }
+        else
+        {
+          continue;
+        }
+      }
+      // LCOV_EXCL_STOP
+#endif
       *address_size = size;
     }
     return h;

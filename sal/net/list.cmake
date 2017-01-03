@@ -48,5 +48,6 @@ list(APPEND sal_unittests
   sal/net/ip/datagram_socket.test.cpp
   sal/net/ip/endpoint.test.cpp
   sal/net/ip/resolver.test.cpp
+  sal/net/ip/socket_acceptor.test.cpp
   sal/net/ip/stream_socket.test.cpp
 )
