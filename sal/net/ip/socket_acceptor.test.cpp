@@ -12,7 +12,7 @@ struct socket_acceptor
 {
   using socket_t = sal::net::ip::tcp_t::socket_t;
   using acceptor_t = sal::net::ip::tcp_t::acceptor_t;
-  static constexpr sal::net::ip::port_t port = 1025;
+  static constexpr sal::net::ip::port_t port = 1026;
 
   acceptor_t::endpoint_t loopback (const sal::net::ip::tcp_t &protocol) const
   {
@@ -89,7 +89,7 @@ TEST_P(socket_acceptor, ctor_endpoint)
 
   endpoint = acceptor.local_endpoint();
   EXPECT_TRUE(endpoint.address().is_unspecified());
-  EXPECT_EQ(1025U, endpoint.port());
+  EXPECT_EQ(port, endpoint.port());
 
   bool reuse_address;
   acceptor.get_option(sal::net::reuse_address(&reuse_address));

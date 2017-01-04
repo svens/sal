@@ -1,11 +1,11 @@
 #include <sal/net/__bits/platform.hpp>
 #include <sal/net/error.hpp>
+#include <mutex>
 
-#if __sal_os_windows
-  #include <mutex>
-#else
+#if !__sal_os_windows
   #include <fcntl.h>
   #include <poll.h>
+  #include <signal.h>
   #include <sys/ioctl.h>
   #include <unistd.h>
 #endif
@@ -16,8 +16,6 @@ __sal_begin
 
 namespace net {
 
-
-#if __sal_os_windows
 
 namespace {
 
@@ -47,11 +45,20 @@ lib_t lib_t::lib;
 
 void internal_setup (std::error_code &result) noexcept
 {
+#if __sal_os_windows
+
   WSADATA wsa;
   result.assign(
     ::WSAStartup(MAKEWORD(2, 2), &wsa),
     std::system_category()
   );
+
+#else
+
+  (void)result;
+  ::signal(SIGPIPE, SIG_IGN);
+
+#endif
 }
 
 
@@ -64,24 +71,19 @@ void lib_t::setup () noexcept
 
 void lib_t::cleanup () noexcept
 {
+#if __sal_os_windows
   ::WSACleanup();
+#endif
 }
 
 
 } // namespace
 
-#endif
-
 
 const std::error_code &init () noexcept
 {
-#if __sal_os_windows
   lib_t::setup();
   return lib_t::setup_result;
-#else
-  static std::error_code result{};
-  return result;
-#endif
 }
 
 
@@ -569,6 +571,23 @@ size_t recv (native_handle_t handle,
 #if __sal_os_windows
 
   auto size = ::recv(handle, data, static_cast<int>(data_size), flags);
+  if (size == 0)
+  {
+    error = make_error_code(socket_errc_t::orderly_shutdown);
+  }
+  else if (size == -1)
+  {
+    if (::WSAGetLastError() == WSAESHUTDOWN)
+    {
+      error = make_error_code(socket_errc_t::orderly_shutdown);
+    }
+    else
+    {
+      get_last(error);
+    }
+    size = 0;
+  }
+  return size;
 
 #else
 
@@ -586,9 +605,6 @@ size_t recv (native_handle_t handle,
   msg.msg_flags = 0;
 
   auto size = ::recvmsg(handle, &msg, flags);
-
-#endif
-
   if (size == 0)
   {
     error = make_error_code(socket_errc_t::orderly_shutdown);
@@ -599,6 +615,8 @@ size_t recv (native_handle_t handle,
     size = 0;
   }
   return size;
+
+#endif
 }
 
 
@@ -610,6 +628,21 @@ size_t send (native_handle_t handle,
 #if __sal_os_windows
 
   auto size = ::send(handle, data, static_cast<int>(data_size), flags);
+  if (size == -1)
+  {
+    auto e = ::WSAGetLastError();
+    if (e == WSAESHUTDOWN
+      || e == WSAECONNRESET)
+    {
+      error = make_error_code(socket_errc_t::orderly_shutdown);
+    }
+    else
+    {
+      get_last(error);
+    }
+    size = 0;
+  }
+  return size;
 
 #else
 
@@ -627,15 +660,21 @@ size_t send (native_handle_t handle,
   msg.msg_flags = 0;
 
   auto size = ::sendmsg(handle, &msg, flags);
-
-#endif
-
   if (size == -1)
   {
-    get_last(error);
+    if (errno == EPIPE)
+    {
+      error = make_error_code(socket_errc_t::orderly_shutdown);
+    }
+    else
+    {
+      get_last(error);
+    }
     size = 0;
   }
   return size;
+
+#endif
 }
 
 

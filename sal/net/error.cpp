@@ -25,10 +25,10 @@ public:
     {
       case socket_errc_t::already_open:
         return "Already open";
-      case socket_errc_t::not_found:
-        return "Not found";
       case socket_errc_t::orderly_shutdown:
         return "Orderly shutdown";
+      case socket_errc_t::not_found:
+        return "Not found";
     }
     return "Unknown error";
   }
