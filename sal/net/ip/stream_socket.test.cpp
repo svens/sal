@@ -164,7 +164,11 @@ TEST_P(stream_socket, send_not_connected)
   {
     std::error_code error;
     socket.send(case_name.c_str(), case_name.size(), error);
+#if __sal_os_linux
+    EXPECT_EQ(std::errc::broken_pipe, error);
+#else
     EXPECT_EQ(std::errc::not_connected, error);
+#endif
   }
 
   {
@@ -270,7 +274,7 @@ TEST_P(stream_socket, send_after_shutdown)
   {
     std::error_code error;
     a.send(case_name.data(), case_name.size(), error);
-    EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+    EXPECT_EQ(std::errc::broken_pipe, error);
   }
 
   {
@@ -296,7 +300,11 @@ TEST_P(stream_socket, send_after_remote_close)
   {
     std::error_code error;
     b.send(case_name.data(), case_name.size(), error);
-    EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+#if __sal_os_darwin
+    EXPECT_EQ(std::errc::broken_pipe, error);
+#else
+    EXPECT_EQ(std::errc::connection_reset, error);
+#endif
   }
 
   {

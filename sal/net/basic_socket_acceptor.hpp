@@ -20,6 +20,9 @@ namespace net {
 
 
 /**
+ * Object of class basic_socket_acceptor_t is used to listen and queue
+ * incoming socket connections. Socket object that represent incoming
+ * connections are dequeued by calling accept().
  */
 template <typename AcceptableProtocol>
 class basic_socket_acceptor_t

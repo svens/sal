@@ -65,7 +65,7 @@ void internal_setup (std::error_code &result) noexcept
 void lib_t::setup () noexcept
 {
   static std::once_flag flag;
-  std::call_once(flag, &internal_setup, setup_result);
+  std::call_once(flag, &internal_setup, std::ref(setup_result));
 }
 
 
@@ -309,42 +309,42 @@ native_handle_t accept (native_handle_t handle,
     size = static_cast<socklen_t>(*address_size);
     size_p = &size;
   }
-  for (;;)
+
+retry:
+  auto h = ::accept(handle, static_cast<sockaddr *>(address), size_p);
+  if (h == -1)
   {
-    auto h = ::accept(handle, static_cast<sockaddr *>(address), size_p);
-    if (h == -1)
+    // LCOV_EXCL_START
+    // this part is OS dependent
+    if (errno == ECONNABORTED && !enable_connection_aborted)
     {
-      // LCOV_EXCL_START
-      // this part is OS dependent
-      if (errno == ECONNABORTED && !enable_connection_aborted)
-      {
-        continue;
-      }
-      // LCOV_EXCL_STOP
-      get_last(error);
+      goto retry;
     }
-    else if (address_size)
-    {
-#if __sal_os_darwin
-      // LCOV_EXCL_START
-      // kernel bug: instead of ECONNABORTED, we'll get size = 0
-      if (!size)
-      {
-        if (enable_connection_aborted)
-        {
-          error.assign(ECONNABORTED, std::generic_category());
-        }
-        else
-        {
-          continue;
-        }
-      }
-      // LCOV_EXCL_STOP
-#endif
-      *address_size = size;
-    }
-    return h;
+    // LCOV_EXCL_STOP
+    get_last(error);
+    return 0;
   }
+
+  if (address_size)
+  {
+#if __sal_os_darwin
+    // LCOV_EXCL_START
+    // kernel bug: instead of ECONNABORTED, we'll get size = 0
+    if (!size)
+    {
+      if (!enable_connection_aborted)
+      {
+        goto retry;
+      }
+      error.assign(ECONNABORTED, std::generic_category());
+      return 0;
+    }
+    // LCOV_EXCL_STOP
+#endif
+    *address_size = size;
+  }
+
+  return h;
 }
 
 
@@ -571,23 +571,12 @@ size_t recv (native_handle_t handle,
 #if __sal_os_windows
 
   auto size = ::recv(handle, data, static_cast<int>(data_size), flags);
-  if (size == 0)
+
+  if (size == -1 && ::WSAGetLastError() == WSAESHUTDOWN)
   {
-    error = make_error_code(socket_errc_t::orderly_shutdown);
-  }
-  else if (size == -1)
-  {
-    if (::WSAGetLastError() == WSAESHUTDOWN)
-    {
-      error = make_error_code(socket_errc_t::orderly_shutdown);
-    }
-    else
-    {
-      get_last(error);
-    }
+    // align with POSIX
     size = 0;
   }
-  return size;
 
 #else
 
@@ -605,6 +594,9 @@ size_t recv (native_handle_t handle,
   msg.msg_flags = 0;
 
   auto size = ::recvmsg(handle, &msg, flags);
+
+#endif
+
   if (size == 0)
   {
     error = make_error_code(socket_errc_t::orderly_shutdown);
@@ -615,8 +607,6 @@ size_t recv (native_handle_t handle,
     size = 0;
   }
   return size;
-
-#endif
 }
 
 
@@ -628,21 +618,13 @@ size_t send (native_handle_t handle,
 #if __sal_os_windows
 
   auto size = ::send(handle, data, static_cast<int>(data_size), flags);
-  if (size == -1)
+
+  if (size == -1 && ::WSAGetLastError() == WSAESHUTDOWN)
   {
-    auto e = ::WSAGetLastError();
-    if (e == WSAESHUTDOWN
-      || e == WSAECONNRESET)
-    {
-      error = make_error_code(socket_errc_t::orderly_shutdown);
-    }
-    else
-    {
-      get_last(error);
-    }
-    size = 0;
+    // align with POSIX
+    error.assign(EPIPE, std::generic_category());
+    return 0;
   }
-  return size;
 
 #else
 
@@ -660,21 +642,15 @@ size_t send (native_handle_t handle,
   msg.msg_flags = 0;
 
   auto size = ::sendmsg(handle, &msg, flags);
+
+#endif
+
   if (size == -1)
   {
-    if (errno == EPIPE)
-    {
-      error = make_error_code(socket_errc_t::orderly_shutdown);
-    }
-    else
-    {
-      get_last(error);
-    }
+    get_last(error);
     size = 0;
   }
   return size;
-
-#endif
 }
 
 
