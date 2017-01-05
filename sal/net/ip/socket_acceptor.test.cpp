@@ -12,7 +12,7 @@ struct socket_acceptor
 {
   using socket_t = sal::net::ip::tcp_t::socket_t;
   using acceptor_t = sal::net::ip::tcp_t::acceptor_t;
-  static constexpr sal::net::ip::port_t port = 1026;
+  static constexpr sal::net::ip::port_t port = 8193;
 
   acceptor_t::endpoint_t loopback (const sal::net::ip::tcp_t &protocol) const
   {

@@ -4,6 +4,7 @@
 #include <sal/error.hpp>
 #if __sal_os_linux || __sal_os_darwin
   #include <netinet/ip.h>
+  #include <netinet/tcp.h>
   #include <arpa/inet.h>
   #include <netdb.h>
 #elif __sal_os_windows

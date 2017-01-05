@@ -9,7 +9,7 @@ struct datagram_socket
   : public sal_test::with_value<sal::net::ip::udp_t>
 {
   using socket_t = sal::net::ip::udp_t::socket_t;
-  static constexpr sal::net::ip::port_t port = 1025;
+  static constexpr sal::net::ip::port_t port = 8192;
 
   socket_t::endpoint_t loopback (const sal::net::ip::udp_t &protocol) const
   {
@@ -19,6 +19,8 @@ struct datagram_socket
     ;
   }
 };
+
+constexpr sal::net::ip::port_t datagram_socket::port;
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, datagram_socket,
@@ -81,7 +83,7 @@ TEST_P(datagram_socket, ctor_endpoint)
 
   endpoint = socket.local_endpoint();
   EXPECT_TRUE(endpoint.address().is_unspecified());
-  EXPECT_EQ(1025U, endpoint.port());
+  EXPECT_EQ(port, endpoint.port());
 }
 
 
