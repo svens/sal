@@ -100,9 +100,9 @@ public:
    * Construct new socket, open() with \a protocol and bind() to \a endpoint.
    * On failure, throw std::system_error
    */
-  basic_socket_acceptor_t (const protocol_t &protocol, const native_handle_t &handle)
+  basic_socket_acceptor_t (const native_handle_t &handle)
   {
-    assign(protocol, handle);
+    assign(handle);
   }
 
 
@@ -176,9 +176,7 @@ public:
    * Assign previously opened native socket \a handle to this socket object.
    * On failure, set \a error.
    */
-  void assign (const protocol_t &,
-    const native_handle_t &handle,
-    std::error_code &error) noexcept
+  void assign (const native_handle_t &handle, std::error_code &error) noexcept
   {
     if (handle == invalid_socket)
     {
@@ -199,9 +197,9 @@ public:
    * Assign previously opened native socket \a handle to this socket object.
    * On failure, throw std::system_error
    */
-  void assign (const protocol_t &protocol, const native_handle_t &handle)
+  void assign (const native_handle_t &handle)
   {
-    assign(protocol, handle, throw_on_error("basic_socket_acceptor::assign"));
+    assign(handle, throw_on_error("basic_socket_acceptor::assign"));
   }
 
 
@@ -383,7 +381,7 @@ public:
     if (!error)
     {
       endpoint.resize(endpoint_size);
-      return socket_t{protocol_t::v4(), h};
+      return h;
     }
     return socket_t{};
   }
@@ -412,7 +410,7 @@ public:
     );
     if (!error)
     {
-      return socket_t{protocol_t::v4(), h};
+      return h;
     }
     return socket_t{};
   }

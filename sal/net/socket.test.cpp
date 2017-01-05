@@ -35,9 +35,8 @@ struct socket_t
     : Socket(endpoint)
   {}
 
-  socket_t (const Protocol &protocol,
-      sal::net::socket_base_t::native_handle_t handle)
-    : Socket(protocol, handle)
+  socket_t (sal::net::socket_base_t::native_handle_t handle)
+    : Socket(handle)
   {}
 };
 
@@ -97,10 +96,10 @@ TYPED_TEST(net_socket, ctor_protocol_v6)
 
 
 template <typename Protocol>
-void ctor_protocol_and_handle (const Protocol &protocol)
+void ctor_protocol_and_handle (const Protocol &)
 {
   auto handle = sal::net::socket_base_t::invalid_socket - 1;
-  socket_t<Protocol> socket(protocol, handle);
+  socket_t<Protocol> socket(handle);
   EXPECT_EQ(handle, socket.native_handle());
 
   std::error_code ignored;
@@ -219,12 +218,12 @@ TYPED_TEST(net_socket, open_already_open_v6)
 
 
 template <typename Protocol>
-void assign (const Protocol &protocol)
+void assign (const Protocol &)
 {
   socket_t<Protocol> socket;
 
   auto h = sal::net::socket_base_t::invalid_socket - 1;
-  socket.assign(protocol, h);
+  socket.assign(h);
   EXPECT_TRUE(socket.is_open());
   EXPECT_EQ(h, socket.native_handle());
 
@@ -253,12 +252,12 @@ void assign_not_closed (const Protocol &protocol)
 
   {
     std::error_code error;
-    socket.assign(protocol, h, error);
+    socket.assign(h, error);
     EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
   }
 
   {
-    EXPECT_THROW(socket.assign(protocol, h), std::system_error);
+    EXPECT_THROW(socket.assign(h), std::system_error);
   }
 }
 
@@ -276,19 +275,19 @@ TYPED_TEST(net_socket, assign_not_closed_v6)
 
 
 template <typename Protocol>
-void assign_no_handle (const Protocol &protocol)
+void assign_no_handle (const Protocol &)
 {
   socket_t<Protocol> socket;
   auto h = sal::net::socket_base_t::invalid_socket;
 
   {
     std::error_code error;
-    socket.assign(protocol, h, error);
+    socket.assign(h, error);
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(socket.assign(protocol, h), std::system_error);
+    EXPECT_THROW(socket.assign(h), std::system_error);
   }
 }
 
@@ -347,11 +346,9 @@ TYPED_TEST(net_socket, close_no_handle)
 
 
 template <typename Protocol>
-void close_bad_file_descriptor (const Protocol &protocol)
+void close_bad_file_descriptor (const Protocol &)
 {
-  socket_t<Protocol> socket(protocol,
-    sal::net::socket_base_t::invalid_socket - 1
-  );
+  socket_t<Protocol> socket(sal::net::socket_base_t::invalid_socket - 1);
 
   {
     std::error_code error;

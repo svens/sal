@@ -66,11 +66,10 @@ public:
 
 
   /**
-   * Initialise base class using \a endpoint and \a handle
+   * Initialise base class using \a handle
    */
-  basic_datagram_socket_t (const protocol_t &protocol,
-      const native_handle_t &handle)
-    : base_t(protocol, handle)
+  basic_datagram_socket_t (const native_handle_t &handle)
+    : base_t(handle)
   {}
 
 

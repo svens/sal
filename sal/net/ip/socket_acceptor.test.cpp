@@ -72,7 +72,7 @@ TEST_P(socket_acceptor, ctor_protocol)
 TEST_P(socket_acceptor, ctor_protocol_and_handle)
 {
   auto handle = sal::net::socket_base_t::invalid_socket - 1;
-  acceptor_t acceptor(GetParam(), handle);
+  acceptor_t acceptor(handle);
   EXPECT_EQ(handle, acceptor.native_handle());
 
   std::error_code ignored;
@@ -116,7 +116,7 @@ TEST_P(socket_acceptor, assign)
   acceptor_t acceptor;
 
   auto h = sal::net::socket_base_t::invalid_socket - 1;
-  acceptor.assign(GetParam(), h);
+  acceptor.assign(h);
   EXPECT_TRUE(acceptor.is_open());
   EXPECT_EQ(h, acceptor.native_handle());
 
@@ -132,12 +132,12 @@ TEST_P(socket_acceptor, assign_not_closed)
 
   {
     std::error_code error;
-    acceptor.assign(GetParam(), h, error);
+    acceptor.assign(h, error);
     EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
   }
 
   {
-    EXPECT_THROW(acceptor.assign(GetParam(), h), std::system_error);
+    EXPECT_THROW(acceptor.assign(h), std::system_error);
   }
 }
 
@@ -149,12 +149,12 @@ TEST_P(socket_acceptor, assign_no_handle)
 
   {
     std::error_code error;
-    acceptor.assign(GetParam(), h, error);
+    acceptor.assign(h, error);
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(acceptor.assign(GetParam(), h), std::system_error);
+    EXPECT_THROW(acceptor.assign(h), std::system_error);
   }
 }
 
@@ -215,7 +215,7 @@ TEST_P(socket_acceptor, close_no_handle)
 
 TEST_P(socket_acceptor, close_bad_file_descriptor)
 {
-  acceptor_t acceptor(GetParam(), sal::net::socket_base_t::invalid_socket - 1);
+  acceptor_t acceptor(sal::net::socket_base_t::invalid_socket - 1);
 
   {
     std::error_code error;
