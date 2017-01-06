@@ -1,4 +1,10 @@
 var searchData=
 [
-  ['yield_5fspin',['yield_spin',['../spinlock_8hpp.html#a77cd9b13830c38254ba915032e8b019c',1,'sal']]]
+  ['wait',['wait',['../classsal_1_1net_1_1basic__socket__t.html#a0d100dac8f9d3777e18958044dfd2016',1,'sal::net::basic_socket_t::wait(wait_t what, const std::chrono::duration&lt; Rep, Period &gt; &amp;duration, std::error_code &amp;error) noexcept'],['../classsal_1_1net_1_1basic__socket__t.html#af77436f1ac6d197e37e08a32e6a2765c',1,'sal::net::basic_socket_t::wait(wait_t what, const std::chrono::duration&lt; Rep, Period &gt; &amp;duration)'],['../classsal_1_1net_1_1basic__socket__acceptor__t.html#aa8d8c6a4edeb95c2cfa99a41bbf61502',1,'sal::net::basic_socket_acceptor_t::wait(wait_t what, const std::chrono::duration&lt; Rep, Period &gt; &amp;duration, std::error_code &amp;error) noexcept'],['../classsal_1_1net_1_1basic__socket__acceptor__t.html#a628708def5fbc20075b01c8e45a48c1b',1,'sal::net::basic_socket_acceptor_t::wait(wait_t what, const std::chrono::duration&lt; Rep, Period &gt; &amp;duration)']]],
+  ['wait_5fread',['wait_read',['../classsal_1_1net_1_1socket__base__t.html#a96cef031bd108ef69f5fc94845ac9fac',1,'sal::net::socket_base_t']]],
+  ['wait_5ft',['wait_t',['../classsal_1_1net_1_1socket__base__t.html#a0f3cb53c35d555efbf9aa95d2517aa54',1,'sal::net::socket_base_t']]],
+  ['wait_5fwrite',['wait_write',['../classsal_1_1net_1_1socket__base__t.html#a2c9bc860f06f459c017fa45cd8601b1d',1,'sal::net::socket_base_t']]],
+  ['worker_2ehpp',['worker.hpp',['../worker_8hpp.html',1,'']]],
+  ['worker_5ft',['worker_t',['../classsal_1_1logger_1_1worker__t.html',1,'sal::logger']]],
+  ['write',['write',['../classsal_1_1file__t.html#a93cdc694da22e1dc1bb9c5e07abdcec1',1,'sal::file_t::write(const char *data, size_t size, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#a552afd00f984f28810502db993fd3bc0',1,'sal::file_t::write(const char *data, size_t size)'],['../classsal_1_1memory__writer__t.html#a94fba5b3bc60e76d5215ffcec407d2a2',1,'sal::memory_writer_t::write(T v) noexcept'],['../classsal_1_1memory__writer__t.html#a3af46b74477ba689ca7eeed97078a7ff',1,'sal::memory_writer_t::write(const T *begin, const T *end) noexcept'],['../classsal_1_1memory__writer__t.html#af14a85578dbfb8ea5a6919ecf9be9ad8',1,'sal::memory_writer_t::write(const T(&amp;array)[N]) noexcept']]]
 ];

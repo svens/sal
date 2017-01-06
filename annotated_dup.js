@@ -23,7 +23,13 @@ var annotated_dup =
           [ "resolver_base_t", "classsal_1_1net_1_1ip_1_1resolver__base__t.html", "classsal_1_1net_1_1ip_1_1resolver__base__t" ],
           [ "tcp_t", "classsal_1_1net_1_1ip_1_1tcp__t.html", "classsal_1_1net_1_1ip_1_1tcp__t" ],
           [ "udp_t", "classsal_1_1net_1_1ip_1_1udp__t.html", "classsal_1_1net_1_1ip_1_1udp__t" ]
-        ] ]
+        ] ],
+        [ "basic_datagram_socket_t", "classsal_1_1net_1_1basic__datagram__socket__t.html", "classsal_1_1net_1_1basic__datagram__socket__t" ],
+        [ "basic_socket_acceptor_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html", "classsal_1_1net_1_1basic__socket__acceptor__t" ],
+        [ "basic_socket_t", "classsal_1_1net_1_1basic__socket__t.html", "classsal_1_1net_1_1basic__socket__t" ],
+        [ "basic_stream_socket_t", "classsal_1_1net_1_1basic__stream__socket__t.html", "classsal_1_1net_1_1basic__stream__socket__t" ],
+        [ "socket_base_t", "classsal_1_1net_1_1socket__base__t.html", "classsal_1_1net_1_1socket__base__t" ],
+        [ "throw_on_error", "classsal_1_1net_1_1throw__on__error.html", "classsal_1_1net_1_1throw__on__error" ]
       ] ],
       [ "program_options", null, [
         [ "argument_map_t", "classsal_1_1program__options_1_1argument__map__t.html", "classsal_1_1program__options_1_1argument__map__t" ],

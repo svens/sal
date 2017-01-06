@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['worker_2ehpp',['worker.hpp',['../worker_8hpp.html',1,'']]],
-  ['worker_5ft',['worker_t',['../classsal_1_1logger_1_1worker__t.html',1,'sal::logger']]],
-  ['write',['write',['../classsal_1_1file__t.html#a93cdc694da22e1dc1bb9c5e07abdcec1',1,'sal::file_t::write(const char *data, size_t size, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#a552afd00f984f28810502db993fd3bc0',1,'sal::file_t::write(const char *data, size_t size)'],['../classsal_1_1memory__writer__t.html#a94fba5b3bc60e76d5215ffcec407d2a2',1,'sal::memory_writer_t::write(T v) noexcept'],['../classsal_1_1memory__writer__t.html#a3af46b74477ba689ca7eeed97078a7ff',1,'sal::memory_writer_t::write(const T *begin, const T *end) noexcept'],['../classsal_1_1memory__writer__t.html#af14a85578dbfb8ea5a6919ecf9be9ad8',1,'sal::memory_writer_t::write(const T(&amp;array)[N]) noexcept']]]
+  ['v4',['v4',['../classsal_1_1net_1_1ip_1_1tcp__t.html#a10e59a23653898f60deed945a91fc9f5',1,'sal::net::ip::tcp_t::v4()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#a03ab99d1070cd7e348ceaae2c01d6fc4',1,'sal::net::ip::udp_t::v4()']]],
+  ['v4_5fmapped',['v4_mapped',['../classsal_1_1net_1_1ip_1_1resolver__base__t.html#a978a35baa977f9ec0cd4d728d02816a2',1,'sal::net::ip::resolver_base_t']]],
+  ['v6',['v6',['../classsal_1_1net_1_1ip_1_1tcp__t.html#a89f6d881f32aaf85535adfd3f2413ad2',1,'sal::net::ip::tcp_t::v6()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#aa8dd298d7bf93fc32aac5168f02f4ffc',1,'sal::net::ip::udp_t::v6()']]],
+  ['value_5ft',['value_t',['../classsal_1_1locked__ptr.html#aab3dabe50b8b433063115b8927bccfbd',1,'sal::locked_ptr::value_t()'],['../classsal_1_1lockable__t.html#a9d1ed18ec8b4520b0e68e533fd5900b1',1,'sal::lockable_t::value_t()'],['../classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#a4f245ac390598b58d002fc0cadbf24fc',1,'sal::net::ip::basic_resolver_results_t::value_t()']]]
 ];

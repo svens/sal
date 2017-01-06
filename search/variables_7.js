@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['time',['time',['../structsal_1_1logger_1_1event__t.html#a5fc9dc58fd57ee535f9cfced07dd8d59',1,'sal::logger::event_t']]]
+  ['out_5fof_5fband',['out_of_band',['../classsal_1_1net_1_1socket__base__t.html#ab609507b4e1ca8a3d098d90ece68677c',1,'sal::net::socket_base_t']]]
 ];

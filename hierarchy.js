@@ -55,8 +55,16 @@ var hierarchy =
       [ "sal::net::ip::basic_resolver_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__resolver__t.html", null ]
     ] ],
     [ "sal::logger::sink_t", "classsal_1_1logger_1_1sink__t.html", null ],
+    [ "sal::net::socket_base_t", "classsal_1_1net_1_1socket__base__t.html", [
+      [ "sal::net::basic_socket_acceptor_t< AcceptableProtocol >", "classsal_1_1net_1_1basic__socket__acceptor__t.html", null ],
+      [ "sal::net::basic_socket_t< Protocol >", "classsal_1_1net_1_1basic__socket__t.html", [
+        [ "sal::net::basic_datagram_socket_t< Protocol >", "classsal_1_1net_1_1basic__datagram__socket__t.html", null ],
+        [ "sal::net::basic_stream_socket_t< Protocol >", "classsal_1_1net_1_1basic__stream__socket__t.html", null ]
+      ] ]
+    ] ],
     [ "sal::spinlock_t", "classsal_1_1spinlock__t.html", null ],
     [ "sal::spsc_sync_t", "structsal_1_1spsc__sync__t.html", null ],
     [ "sal::net::ip::tcp_t", "classsal_1_1net_1_1ip_1_1tcp__t.html", null ],
+    [ "sal::net::throw_on_error", "classsal_1_1net_1_1throw__on__error.html", null ],
     [ "sal::net::ip::udp_t", "classsal_1_1net_1_1ip_1_1udp__t.html", null ]
 ];
