@@ -389,4 +389,16 @@ TEST_P(stream_socket, send_do_not_route)
 }
 
 
+TEST_P(stream_socket, no_delay)
+{
+  socket_t socket(GetParam());
+
+  bool original, value;
+  socket.get_option(socket_t::protocol_t::no_delay(&original));
+  socket.set_option(socket_t::protocol_t::no_delay(!original));
+  socket.get_option(socket_t::protocol_t::no_delay(&value));
+  EXPECT_NE(original, value);
+}
+
+
 } // namespace

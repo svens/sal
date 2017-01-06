@@ -155,7 +155,7 @@ public:
   void get_option (const GettableSocketOption &option, std::error_code &error)
     const noexcept
   {
-    typename GettableSocketOption::native_t data;
+    typename GettableSocketOption::native_t data{};
     socklen_t size = sizeof(data);
     __bits::get_opt(handle_,
       option.level, option.name,

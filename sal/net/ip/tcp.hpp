@@ -89,10 +89,6 @@ public:
   }
 
 
-#if 0
-
-  TODO
-
   /**
    * Return option setter for TCP_NODELAY. Sets flag whether TCP socket will
    * avoid coalescing of small segments (i.e. disables the Nagle algorithm)
@@ -114,8 +110,6 @@ public:
   {
     return value;
   }
-
-#endif
 
 
 private:
