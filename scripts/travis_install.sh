@@ -4,7 +4,7 @@ case "${TRAVIS_OS_NAME}-${CC}" in
 
   linux-gcc)
     if test "${BUILD_TYPE}" = "Coverage"; then
-      curl -sO http://ftp.debian.org/debian/pool/main/l/lcov/lcov_1.12.orig.tar.gz
+      curl -sO http://ftp.debian.org/debian/pool/main/l/lcov/lcov_1.13.orig.tar.gz
       gunzip -c lcov_1.12.orig.tar.gz | tar xvf -
       make -C lcov-1.12 install PREFIX=${HOME} BIN_DIR=${HOME}/bin
       gem install coveralls-lcov
