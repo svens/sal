@@ -7,9 +7,9 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/platform.hpp>
+#include <sal/net/fwd.hpp>
+#include <sal/net/error.hpp>
 #include <sal/char_array.hpp>
-#include <sal/error.hpp>
 #include <array>
 #include <cstdint>
 #include <ostream>
@@ -307,7 +307,7 @@ inline bool operator>= (const address_v4_t &a, const address_v4_t &b) noexcept
 
 
 /**
- * Create and insert human readable \a address into \a writer
+ * Insert human readable \a address into \a writer
  */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const address_v4_t &address) noexcept
@@ -325,12 +325,12 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 
 
 /**
- * Create and insert human readable \a address into \a writer
+ * Insert human readable \a address into std::ostream \a os.
  */
-inline std::ostream &operator<< (std::ostream &os, const address_v4_t &a)
+inline std::ostream &operator<< (std::ostream &os, const address_v4_t &address)
 {
   char_array_t<INET_ADDRSTRLEN> buf;
-  buf << a;
+  buf << address;
   return (os << buf.c_str());
 }
 
@@ -378,13 +378,7 @@ inline address_v4_t make_address_v4 (const char *str, std::error_code &ec)
  */
 inline address_v4_t make_address_v4 (const char *str)
 {
-  std::error_code ec;
-  auto address = make_address_v4(str, ec);
-  if (!ec)
-  {
-    return address;
-  }
-  throw_system_error(ec, "make_address_v4: ", str);
+  return make_address_v4(str, throw_on_error("make_address_v4"));
 }
 
 

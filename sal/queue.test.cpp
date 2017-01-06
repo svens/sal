@@ -332,7 +332,7 @@ TEST(queue, single_consumer_single_producer)
   });
 
   // producer
-  for (int i = 1;  i < 1000;  ++i)
+  for (int i = 1;  i < 10000;  ++i)
   {
     queue.push(i);
   }

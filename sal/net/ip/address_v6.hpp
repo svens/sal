@@ -11,7 +11,6 @@
 #include <sal/net/error.hpp>
 #include <sal/net/ip/address_v4.hpp>
 #include <sal/char_array.hpp>
-#include <sal/error.hpp>
 #include <array>
 #include <cstdint>
 #include <ostream>
@@ -321,7 +320,7 @@ inline bool operator>= (const address_v6_t &a, const address_v6_t &b) noexcept
 
 
 /**
- * Create and insert human readable \a address into \a writer
+ * Insert human readable \a address into \a writer
  */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const address_v6_t &address) noexcept
@@ -339,12 +338,12 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 
 
 /**
- * Create and insert human readable \a address into \a writer
+ * Insert human readable \a address into std::ostream \a os.
  */
-inline std::ostream &operator<< (std::ostream &os, const address_v6_t &a)
+inline std::ostream &operator<< (std::ostream &os, const address_v6_t &address)
 {
   char_array_t<INET6_ADDRSTRLEN> buf;
-  buf << a;
+  buf << address;
   return (os << buf.c_str());
 }
 
@@ -383,13 +382,7 @@ inline address_v6_t make_address_v6 (const char *str, std::error_code &ec)
  */
 inline address_v6_t make_address_v6 (const char *str)
 {
-  std::error_code ec;
-  auto address = make_address_v6(str, ec);
-  if (!ec)
-  {
-    return address;
-  }
-  throw_system_error(ec, "make_address_v6: ", str);
+  return make_address_v6(str, throw_on_error("make_address_v6"));
 }
 
 

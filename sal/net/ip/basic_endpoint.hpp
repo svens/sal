@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/net/ip/endpoint.hpp
+ * \file sal/net/ip/basic_endpoint.hpp
  * IP endpoint (address/port pair)
  */
 
@@ -289,11 +289,21 @@ public:
    */
   int compare (const basic_endpoint_t &that) const noexcept
   {
-    if (addr_.data.ss_family != that.addr_.data.ss_family)
+    auto r = addr_.data.ss_family - that.addr_.data.ss_family;
+    if (r)
     {
-      return addr_.data.ss_family - that.addr_.data.ss_family;
+      return r;
     }
-    return std::memcmp(&addr_.data, &that.addr_.data, size());
+    else if (addr_.data.ss_family == AF_INET)
+    {
+      r = addr_.v4.sin_addr.s_addr - that.addr_.v4.sin_addr.s_addr;
+      return r ? r : addr_.v4.sin_port - that.addr_.v4.sin_port;
+    }
+    r = std::memcmp(&addr_.v6.sin6_addr,
+      &that.addr_.v6.sin6_addr,
+      sizeof(addr_.v6.sin6_addr)
+    );
+    return r ? r : addr_.v6.sin6_port - that.addr_.v6.sin6_port;
   }
 
 
@@ -398,7 +408,7 @@ inline bool operator>= (const basic_endpoint_t<Protocol> &a,
 
 
 /**
- * Create and insert human readable \a address into \a writer
+ * Insert human readable \a endpoint into std::ostream \a os.
  */
 template <typename Protocol>
 inline std::ostream &operator<< (std::ostream &os,
