@@ -1,5 +1,6 @@
 #include <sal/net/ip/tcp.hpp>
 #include <sal/common.test.hpp>
+#include <thread>
 
 
 namespace {
@@ -296,6 +297,9 @@ TEST_P(stream_socket, send_after_remote_close)
 
   a.set_option(sal::net::linger(true, 0s));
   a.close();
+
+  // give time RST to reach b
+  std::this_thread::yield();
 
   {
     std::error_code error;
