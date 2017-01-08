@@ -13,6 +13,7 @@ list(APPEND sal_sources
   sal/__bits/intrusive_queue.hpp
   sal/lockable.hpp
   sal/memory_writer.hpp
+  sal/ptr.hpp
   sal/queue.hpp
   sal/__bits/queue.hpp
   sal/spinlock.hpp
@@ -35,6 +36,7 @@ list(APPEND sal_unittests
   sal/intrusive_queue.test.cpp
   sal/lockable.test.cpp
   sal/memory_writer.test.cpp
+  sal/ptr.test.cpp
   sal/queue.test.cpp
   sal/spinlock.test.cpp
   sal/thread.test.cpp
