@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/net/fwd.hpp>
 #include <sal/net/basic_socket.hpp>
+#include <sal/ptr.hpp>
 
 
 __sal_begin
@@ -89,18 +90,19 @@ public:
 
 
   /**
-   * Receive data (up to \a size bytes) from this socket. On success, returns
-   * number of bytes received and stores sender address into \a endpoint.
-   * On failure, set \a error and return 0.
+   * Receive data from this socket into \a buf. On success, returns number of
+   * bytes received and stores sender address into \a endpoint. On failure,
+   * set \a error and return 0.
    */
-  size_t receive_from (char *data, size_t size,
+  template <typename Ptr>
+  size_t receive_from (const Ptr &buf,
     endpoint_t &endpoint,
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    size_t endpoint_size = endpoint.capacity();
-    size = __bits::recv_from(base_t::native_handle(),
-      data, size,
+    auto endpoint_size = endpoint.capacity();
+    auto size = __bits::recv_from(base_t::native_handle(),
+      buf.get(), buf.size(),
       endpoint.data(), &endpoint_size,
       static_cast<int>(flags),
       error
@@ -114,120 +116,114 @@ public:
 
 
   /**
-   * Receive data (up to \a size bytes) from this socket. On success, returns
-   * number of bytes received and stores sender address into \a endpoint.
-   * On failure, throw std::system_error.
+   * Receive data from this socket into \a buf. On success, returns number of
+   * bytes received and stores sender address into \a endpoint. On failure,
+   * throw std::system_error.
    */
-  size_t receive_from (char *data, size_t max_size,
+  template <typename Ptr>
+  size_t receive_from (const Ptr &buf,
     endpoint_t &endpoint,
     socket_base_t::message_flags_t flags)
   {
-    return receive_from(data, max_size,
-      endpoint, flags,
+    return receive_from(buf, endpoint, flags,
       throw_on_error("basic_datagram_socket::receive_from")
     );
   }
 
 
   /**
-   * Receive data (up to \a size bytes) from this socket. On success, returns
-   * number of bytes received and stores sender address into \a endpoint.
-   * On failure, set \a error and return 0.
+   * Receive data from this socket into \a buf. On success, returns number of
+   * bytes received and stores sender address into \a endpoint. On failure,
+   * set \a error and return 0.
    */
-  size_t receive_from (char *data, size_t max_size,
+  template <typename Ptr>
+  size_t receive_from (const Ptr &buf,
     endpoint_t &endpoint,
     std::error_code &error) noexcept
   {
-    return receive_from(data, max_size,
-      endpoint, socket_base_t::message_flags_t{},
-      error
-    );
+    return receive_from(buf, endpoint, socket_base_t::message_flags_t{}, error);
   }
 
 
   /**
-   * Receive data (up to \a size bytes) from this socket. On success, returns
-   * number of bytes received and stores sender address into \a endpoint.
-   * On failure, throw std::system_error.
+   * Receive data from this socket into \a buf. On success, returns number of
+   * bytes received and stores sender address into \a endpoint. On failure,
+   * throw std::system_error.
    */
-  size_t receive_from (char *data, size_t max_size, endpoint_t &endpoint)
+  template <typename Ptr>
+  size_t receive_from (const Ptr &buf, endpoint_t &endpoint)
   {
-    return receive_from(data, max_size, endpoint,
+    return receive_from(buf, endpoint,
       throw_on_error("basic_datagram_socket::receive_from")
     );
   }
 
 
   /**
-   * Receive data (up to \a size bytes) from this socket. On success, returns
-   * number of bytes received. On failure, set \a error and return 0.
+   * Receive data from this socket into \a buf. On success, returns number of
+   * bytes received. On failure, set \a error and return 0.
    */
-  size_t receive (char *data, size_t size,
+  template <typename Ptr>
+  size_t receive (const Ptr &buf,
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
     size_t endpoint_size = 0;
-    size = __bits::recv_from(base_t::native_handle(),
-      data, size,
+    return __bits::recv_from(base_t::native_handle(),
+      buf.get(), buf.size(),
       nullptr, &endpoint_size,
       static_cast<int>(flags),
       error
     );
-    return size;
   }
 
 
   /**
-   * Receive data (up to \a size bytes) from this socket. On success, returns
-   * number of bytes received. On failure, throw std::system_error
+   * Receive data from this socket into \a buf. On success, returns number of
+   * bytes received. On failure, throw std::system_error
    */
-  size_t receive (char *data, size_t max_size,
-    socket_base_t::message_flags_t flags)
+  template <typename Ptr>
+  size_t receive (const Ptr &buf, socket_base_t::message_flags_t flags)
   {
-    return receive(data, max_size, flags,
-      throw_on_error("basic_datagram_socket::receive")
-    );
+    return receive(buf, flags, throw_on_error("basic_datagram_socket::receive"));
   }
 
 
   /**
-   * Receive data (up to \a size bytes) from this socket. On success, returns
-   * number of bytes received. On failure, set \a error and return 0.
+   * Receive data from this socket into \a buf. On success, returns number of
+   * bytes received. On failure, set \a error and return 0.
    */
-  size_t receive (char *data, size_t max_size,
-    std::error_code &error) noexcept
+  template <typename Ptr>
+  size_t receive (const Ptr &buf, std::error_code &error) noexcept
   {
-    return receive(data, max_size,
-      socket_base_t::message_flags_t{},
-      error
-    );
+    return receive(buf, socket_base_t::message_flags_t{}, error);
   }
 
 
   /**
-   * Receive data (up to \a size bytes) from this socket. On success, returns
-   * number of bytes received. On failure, throw std::system_error
+   * Receive data from this socket into \a buf. On success, returns number of
+   * bytes received. On failure, throw std::system_error
    */
-  size_t receive (char *data, size_t max_size)
+  template <typename Ptr>
+  size_t receive (const Ptr &buf)
   {
-    return receive(data, max_size,
-      throw_on_error("basic_datagram_socket::receive")
-    );
+    return receive(buf, throw_on_error("basic_datagram_socket::receive"));
   }
 
 
   /**
-   * Write \a size bytes of \a data into this socket for delivering to
-   * \a endpoint. On success, returns number of bytes sent. On failure, set
-   * \a error and return 0.
+   * Write data of \a buf into this socket for delivering to \a endpoint. On
+   * success, returns number of bytes sent. On failure, set \a error and
+   * return 0.
    */
-  size_t send_to (const char *data, size_t size,
+  template <typename Ptr>
+  size_t send_to (const Ptr &buf,
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
     return __bits::send_to(base_t::native_handle(),
-      data, size,
+      buf.get(), buf.size(),
       endpoint.data(), endpoint.size(),
       static_cast<int>(flags),
       error
@@ -236,61 +232,61 @@ public:
 
 
   /**
-   * Write \a size bytes of \a data into this socket for delivering to
-   * \a endpoint. On success, returns number of bytes sent. On failure, throw
+   * Write daa of \a buf into this socket for delivering to \a endpoint. On
+   * success, returns number of bytes sent. On failure, throw
    * std::system_error
    */
-  size_t send_to (const char *data, size_t size,
+  template <typename Ptr>
+  size_t send_to (const Ptr &buf,
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags)
   {
-    return send_to(data, size, endpoint, flags,
+    return send_to(buf, endpoint, flags,
       throw_on_error("basic_datagram_socket::send_to")
     );
   }
 
 
   /**
-   * Write \a size bytes of \a data into this socket for delivering to
-   * \a endpoint. On success, returns number of bytes sent. On failure, set
-   * \a error and return 0.
+   * Write data of \a buf into this socket for delivering to \a endpoint. On
+   * success, returns number of bytes sent. On failure, set \a error and
+   * return 0.
    */
-  size_t send_to (const char *data, size_t size,
+  template <typename Ptr>
+  size_t send_to (const Ptr &buf,
     const endpoint_t &endpoint,
     std::error_code &error) noexcept
   {
-    return send_to(data, size, endpoint,
-      socket_base_t::message_flags_t{},
-      error
-    );
+    return send_to(buf, endpoint, socket_base_t::message_flags_t{}, error);
   }
 
 
   /**
-   * Write \a size bytes of \a data into this socket for delivering to
-   * \a endpoint. On success, returns number of bytes sent. On failure, throw
+   * Write data of \a buf into this socket for delivering to \a endpoint. On
+   * success, returns number of bytes sent. On failure, throw
    * std::system_error
    */
-  size_t send_to (const char *data, size_t size,
-    const endpoint_t &endpoint)
+  template <typename Ptr>
+  size_t send_to (const Ptr &buf, const endpoint_t &endpoint)
   {
-    return send_to(data, size, endpoint,
+    return send_to(buf, endpoint,
       throw_on_error("basic_datagram_socket::send_to")
     );
   }
 
 
   /**
-   * Write \a size bytes of \a data into this socket for delivering to
-   * connected endpoint. On success, returns number of bytes sent. On failure,
-   * set \a error and return 0.
+   * Write data of \a buf into this socket for delivering to connected
+   * endpoint. On success, returns number of bytes sent. On failure, set
+   * \a error and return 0.
    */
-  size_t send (const char *data, size_t size,
+  template <typename Ptr>
+  size_t send (const Ptr &buf,
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
     return __bits::send_to(base_t::native_handle(),
-      data, size,
+      buf.get(), buf.size(),
       nullptr, 0,
       static_cast<int>(flags),
       error
@@ -299,38 +295,38 @@ public:
 
 
   /**
-   * Write \a size bytes of \a data into this socket for delivering to
-   * connected endpoint. On success, returns number of bytes sent. On failure,
-   * throw std::system_error
+   * Write data of \a buf into this socket for delivering to connected
+   * endpoint. On success, returns number of bytes sent. On failure, throw
+   * std::system_error
    */
-  size_t send (const char *data, size_t size,
-    socket_base_t::message_flags_t flags)
+  template <typename Ptr>
+  size_t send (const Ptr &buf, socket_base_t::message_flags_t flags)
   {
-    return send(data, size, flags,
-      throw_on_error("basic_datagram_socket::send")
-    );
+    return send(buf, flags, throw_on_error("basic_datagram_socket::send"));
   }
 
 
   /**
-   * Write \a size bytes of \a data into this socket for delivering to
-   * connected endpoint. On success, returns number of bytes sent. On failure,
-   * set \a error and return 0.
+   * Write data of \a buf into this socket for delivering to connected
+   * endpoint. On success, returns number of bytes sent. On failure, set
+   * \a error and return 0.
    */
-  size_t send (const char *data, size_t size, std::error_code &error) noexcept
+  template <typename Ptr>
+  size_t send (const Ptr &buf, std::error_code &error) noexcept
   {
-    return send(data, size, socket_base_t::message_flags_t{}, error);
+    return send(buf, socket_base_t::message_flags_t{}, error);
   }
 
 
   /**
-   * Write \a size bytes of \a data into this socket for delivering to
-   * connected endpoint. On success, returns number of bytes sent. On failure,
-   * throw std::system_error
+   * Write data of \a buf into this socket for delivering to connected
+   * endpoint. On success, returns number of bytes sent. On failure, throw
+   * std::system_error
    */
-  size_t send (const char *data, size_t size)
+  template <typename Ptr>
+  size_t send (const Ptr &buf)
   {
-    return send(data, size, throw_on_error("basic_datagram_socket::send"));
+    return send(buf, throw_on_error("basic_datagram_socket::send"));
   }
 };
 

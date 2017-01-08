@@ -126,15 +126,12 @@ TEST_P(stream_socket, receive_invalid)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive(buf, sizeof(buf), error));
+    EXPECT_EQ(0U, socket.receive(sal::ptr(buf), error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(
-      (void)socket.receive(buf, sizeof(buf)),
-      std::system_error
-    );
+    EXPECT_THROW(socket.receive(sal::ptr(buf)), std::system_error);
   }
 }
 
@@ -145,15 +142,12 @@ TEST_P(stream_socket, send_invalid)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.send(case_name.data(), case_name.size(), error));
+    EXPECT_EQ(0U, socket.send(sal::ptr(case_name), error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(
-      (void)socket.send(case_name.data(), case_name.size()),
-      std::system_error
-    );
+    EXPECT_THROW(socket.send(sal::ptr(case_name)), std::system_error);
   }
 }
 
@@ -164,7 +158,7 @@ TEST_P(stream_socket, send_not_connected)
 
   {
     std::error_code error;
-    socket.send(case_name.c_str(), case_name.size(), error);
+    socket.send(sal::ptr(case_name), error);
 #if __sal_os_linux
     EXPECT_EQ(std::errc::broken_pipe, error);
 #else
@@ -173,10 +167,7 @@ TEST_P(stream_socket, send_not_connected)
   }
 
   {
-    EXPECT_THROW(
-      socket.send(case_name.c_str(), case_name.size()),
-      std::system_error
-    );
+    EXPECT_THROW(socket.send(sal::ptr(case_name)), std::system_error);
   }
 }
 
@@ -189,12 +180,12 @@ TEST_P(stream_socket, send_and_receive)
   a.connect(loopback(GetParam()));
   auto b = acceptor.accept();
 
-  EXPECT_EQ(case_name.size(), a.send(case_name.data(), case_name.size()));
+  EXPECT_EQ(case_name.size(), a.send(sal::ptr(case_name)));
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
 
-  EXPECT_EQ(case_name.size(), b.receive(buf, sizeof(buf)));
+  EXPECT_EQ(case_name.size(), b.receive(sal::ptr(buf)));
   EXPECT_EQ(case_name, buf);
 }
 
@@ -211,7 +202,7 @@ TEST_P(stream_socket, receive_no_sender_non_blocking)
 
   char buf[1024];
   std::error_code error;
-  EXPECT_EQ(0U, b.receive(buf, sizeof(buf), error));
+  EXPECT_EQ(0U, b.receive(sal::ptr(buf), error));
   EXPECT_EQ(std::errc::operation_would_block, error);
 }
 
@@ -224,17 +215,20 @@ TEST_P(stream_socket, receive_less_than_send)
   a.connect(loopback(GetParam()));
   auto b = acceptor.accept();
 
-  EXPECT_EQ(case_name.size(), a.send(case_name.data(), case_name.size()));
+  EXPECT_EQ(case_name.size(), a.send(sal::ptr(case_name)));
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size() / 2, b.receive(buf, case_name.size() / 2));
+  EXPECT_EQ(
+    case_name.size() / 2,
+    b.receive(sal::ptr(buf, case_name.size() / 2))
+  );
   EXPECT_EQ(std::string(case_name, 0, case_name.size() / 2), buf);
 
   EXPECT_TRUE(b.wait(b.wait_read, 0s));
   std::memset(buf, '\0', sizeof(buf));
   EXPECT_EQ(case_name.size() - (case_name.size() / 2),
-    b.receive(buf, sizeof(buf))
+    b.receive(sal::ptr(buf))
   );
   EXPECT_EQ(std::string(case_name, case_name.size() / 2), buf);
 }
@@ -248,16 +242,16 @@ TEST_P(stream_socket, receive_peek)
   a.connect(loopback(GetParam()));
   auto b = acceptor.accept();
 
-  EXPECT_EQ(case_name.size(), a.send(case_name.data(), case_name.size()));
+  EXPECT_EQ(case_name.size(), a.send(sal::ptr(case_name)));
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), b.receive(buf, sizeof(buf), b.peek));
+  EXPECT_EQ(case_name.size(), b.receive(sal::ptr(buf), b.peek));
   EXPECT_EQ(case_name, buf);
 
   EXPECT_TRUE(b.wait(b.wait_read, 0s));
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), b.receive(buf, sizeof(buf)));
+  EXPECT_EQ(case_name.size(), b.receive(sal::ptr(buf)));
   EXPECT_EQ(case_name, buf);
 }
 
@@ -274,15 +268,12 @@ TEST_P(stream_socket, send_after_shutdown)
 
   {
     std::error_code error;
-    a.send(case_name.data(), case_name.size(), error);
+    a.send(sal::ptr(case_name), error);
     EXPECT_EQ(std::errc::broken_pipe, error);
   }
 
   {
-    EXPECT_THROW(
-      a.send(case_name.data(), case_name.size()),
-      std::system_error
-    );
+    EXPECT_THROW(a.send(sal::ptr(case_name)), std::system_error);
   }
 }
 
@@ -303,7 +294,7 @@ TEST_P(stream_socket, send_after_remote_close)
 
   {
     std::error_code error;
-    b.send(case_name.data(), case_name.size(), error);
+    b.send(sal::ptr(case_name), error);
 #if __sal_os_darwin
     EXPECT_EQ(std::errc::broken_pipe, error);
 #else
@@ -312,10 +303,7 @@ TEST_P(stream_socket, send_after_remote_close)
   }
 
   {
-    EXPECT_THROW(
-      b.send(case_name.data(), case_name.size()),
-      std::system_error
-    );
+    EXPECT_THROW(b.send(sal::ptr(case_name)), std::system_error);
   }
 }
 
@@ -333,15 +321,12 @@ TEST_P(stream_socket, receive_after_shutdown)
   char buf[1024];
   {
     std::error_code error;
-    b.receive(buf, sizeof(buf), error);
+    b.receive(sal::ptr(buf), error);
     EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
   }
 
   {
-    EXPECT_THROW(
-      b.receive(buf, sizeof(buf)),
-      std::system_error
-    );
+    EXPECT_THROW(b.receive(sal::ptr(buf)), std::system_error);
   }
 }
 
@@ -360,15 +345,12 @@ TEST_P(stream_socket, receive_after_remote_close)
 
   {
     std::error_code error;
-    b.receive(buf, sizeof(buf), error);
+    b.receive(sal::ptr(buf), error);
     EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
   }
 
   {
-    EXPECT_THROW(
-      b.receive(buf, sizeof(buf)),
-      std::system_error
-    );
+    EXPECT_THROW(b.receive(sal::ptr(buf)), std::system_error);
   }
 }
 
@@ -381,14 +363,12 @@ TEST_P(stream_socket, send_do_not_route)
   a.connect(loopback(GetParam()));
   auto b = acceptor.accept();
 
-  EXPECT_EQ(case_name.size(),
-    a.send(case_name.data(), case_name.size(), a.do_not_route)
-  );
+  EXPECT_EQ(case_name.size(), a.send(sal::ptr(case_name), a.do_not_route));
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
 
-  EXPECT_EQ(case_name.size(), b.receive(buf, sizeof(buf)));
+  EXPECT_EQ(case_name.size(), b.receive(sal::ptr(buf)));
   EXPECT_EQ(case_name, buf);
 }
 

@@ -449,7 +449,7 @@ void remote_endpoint (native_handle_t handle,
 
 
 size_t recv_from (native_handle_t handle,
-  char *data, size_t data_size,
+  void *data, size_t data_size,
   void *address, size_t *address_size,
   int flags,
   std::error_code &error) noexcept
@@ -458,7 +458,7 @@ size_t recv_from (native_handle_t handle,
 
   auto _address_size = static_cast<socklen_t>(*address_size);
   auto size = ::recvfrom(handle,
-    data, static_cast<int>(data_size),
+    static_cast<char *>(data), static_cast<int>(data_size),
     flags,
     static_cast<sockaddr *>(address), (address ? &_address_size : nullptr)
   );
@@ -513,7 +513,7 @@ size_t recv_from (native_handle_t handle,
 
 
 size_t send_to (native_handle_t handle,
-  const char *data, size_t data_size,
+  const void *data, size_t data_size,
   const void *address, size_t address_size,
   int flags,
   std::error_code &error) noexcept
@@ -521,7 +521,7 @@ size_t send_to (native_handle_t handle,
 #if __sal_os_windows
 
   auto size = ::sendto(handle,
-    data, static_cast<int>(data_size),
+    static_cast<const char *>(data), static_cast<int>(data_size),
     flags,
     static_cast<const sockaddr *>(address), static_cast<socklen_t>(address_size)
   );
@@ -539,7 +539,7 @@ size_t send_to (native_handle_t handle,
 #else
 
   iovec iov;
-  iov.iov_base = const_cast<char *>(data);
+  iov.iov_base = const_cast<void *>(data);
   iov.iov_len = data_size;
 
   msghdr msg;
@@ -564,13 +564,16 @@ size_t send_to (native_handle_t handle,
 
 
 size_t recv (native_handle_t handle,
-  char *data, size_t data_size,
+  void *data, size_t data_size,
   int flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
-  auto size = ::recv(handle, data, static_cast<int>(data_size), flags);
+  auto size = ::recv(handle,
+    static_cast<char *>(data), static_cast<int>(data_size),
+    flags
+  );
 
   if (size == -1 && ::WSAGetLastError() == WSAESHUTDOWN)
   {
@@ -611,13 +614,16 @@ size_t recv (native_handle_t handle,
 
 
 size_t send (native_handle_t handle,
-  const char *data, size_t data_size,
+  const void *data, size_t data_size,
   int flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
-  auto size = ::send(handle, data, static_cast<int>(data_size), flags);
+  auto size = ::send(handle,
+    static_cast<const char *>(data), static_cast<int>(data_size),
+    flags
+  );
 
   if (size == -1 && ::WSAGetLastError() == WSAESHUTDOWN)
   {
@@ -629,7 +635,7 @@ size_t send (native_handle_t handle,
 #else
 
   iovec iov;
-  iov.iov_base = const_cast<char *>(data);
+  iov.iov_base = const_cast<void *>(data);
   iov.iov_len = data_size;
 
   msghdr msg;
