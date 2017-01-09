@@ -20,6 +20,7 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
     [ "memory_writer.hpp", "memory__writer_8hpp.html", [
       [ "memory_writer_t", "classsal_1_1memory__writer__t.html", "classsal_1_1memory__writer__t" ]
     ] ],
+    [ "ptr.hpp", "ptr_8hpp.html", "ptr_8hpp" ],
     [ "queue.hpp", "queue_8hpp.html", [
       [ "queue_t", "classsal_1_1queue__t.html", "classsal_1_1queue__t" ]
     ] ],

@@ -47,6 +47,7 @@ var annotated_dup =
         [ "unknown_option_error", "structsal_1_1program__options_1_1unknown__option__error.html", null ]
       ] ],
       [ "char_array_t", "classsal_1_1char__array__t.html", "classsal_1_1char__array__t" ],
+      [ "const_ptr_t", "classsal_1_1const__ptr__t.html", "classsal_1_1const__ptr__t" ],
       [ "file_t", "classsal_1_1file__t.html", "classsal_1_1file__t" ],
       [ "intrusive_queue_t", "classsal_1_1intrusive__queue__t.html", "classsal_1_1intrusive__queue__t" ],
       [ "lockable_t", "classsal_1_1lockable__t.html", "classsal_1_1lockable__t" ],
@@ -54,6 +55,7 @@ var annotated_dup =
       [ "memory_writer_t", "classsal_1_1memory__writer__t.html", "classsal_1_1memory__writer__t" ],
       [ "mpsc_sync_t", "structsal_1_1mpsc__sync__t.html", "structsal_1_1mpsc__sync__t" ],
       [ "no_sync_t", "structsal_1_1no__sync__t.html", "structsal_1_1no__sync__t" ],
+      [ "ptr_t", "classsal_1_1ptr__t.html", "classsal_1_1ptr__t" ],
       [ "queue_t", "classsal_1_1queue__t.html", "classsal_1_1queue__t" ],
       [ "spinlock_t", "classsal_1_1spinlock__t.html", "classsal_1_1spinlock__t" ],
       [ "spsc_sync_t", "structsal_1_1spsc__sync__t.html", [
