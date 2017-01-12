@@ -7,7 +7,6 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/fwd.hpp>
 #include <sal/net/ip/basic_resolver_entry.hpp>
 #include <sal/net/ip/basic_resolver_results_iterator.hpp>
 #include <string>

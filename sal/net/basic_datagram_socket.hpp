@@ -7,7 +7,6 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/fwd.hpp>
 #include <sal/net/basic_socket.hpp>
 #include <sal/ptr.hpp>
 

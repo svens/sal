@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/fwd.hpp>
+#include <sal/net/ip/__bits/inet.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/ip/address_v4.hpp>
 #include <sal/char_array.hpp>
@@ -326,7 +326,7 @@ inline bool operator>= (const address_v6_t &a, const address_v6_t &b) noexcept
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const address_v6_t &address) noexcept
 {
-  if (__bits::ntop(address.addr_.in, writer.begin(), writer.safe_size()))
+  if (__bits::inet_ntop(address.addr_.in, writer.begin(), writer.safe_size()))
   {
     writer.skip_until('\0');
   }
@@ -368,7 +368,7 @@ inline address_v6_t make_address_v6 (const char *str, std::error_code &ec)
   noexcept
 {
   address_v6_t address;
-  if (__bits::pton(str, address.addr_.in))
+  if (__bits::inet_pton(str, address.addr_.in))
   {
     return address;
   }

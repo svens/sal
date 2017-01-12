@@ -8,6 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/error.hpp>
+#include <sal/net/__bits/socket.hpp>
 #include <sal/net/ip/address_v4.hpp>
 #include <sal/net/ip/address_v6.hpp>
 
@@ -235,7 +236,7 @@ public:
 
 private:
 
-  __bits::sa_family_t family_{AF_INET};
+  net::__bits::sa_family_t family_{AF_INET};
 
   union storage_t
   {

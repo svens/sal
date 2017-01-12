@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/fwd.hpp>
+#include <sal/net/ip/__bits/inet.hpp>
 #include <sal/net/error.hpp>
 #include <sal/char_array.hpp>
 #include <sal/hash.hpp>
@@ -99,7 +99,7 @@ public:
    */
   uint_t to_uint () const noexcept
   {
-    return ntohl(addr_.in.s_addr);
+    return __bits::network_to_host_long(addr_.in.s_addr);
   }
 
 
@@ -313,7 +313,7 @@ inline bool operator>= (const address_v4_t &a, const address_v4_t &b) noexcept
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const address_v4_t &address) noexcept
 {
-  if (__bits::ntop(address.addr_.in, writer.begin(), writer.safe_size()))
+  if (__bits::inet_ntop(address.addr_.in, writer.begin(), writer.safe_size()))
   {
     writer.skip_until('\0');
   }
@@ -364,7 +364,7 @@ inline address_v4_t make_address_v4 (const char *str, std::error_code &ec)
   noexcept
 {
   address_v4_t address;
-  if (__bits::pton(str, address.addr_.in))
+  if (__bits::inet_pton(str, address.addr_.in))
   {
     return address;
   }
