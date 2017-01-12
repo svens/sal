@@ -10,6 +10,7 @@
 #include <sal/net/fwd.hpp>
 #include <sal/net/error.hpp>
 #include <sal/char_array.hpp>
+#include <sal/hash.hpp>
 #include <array>
 #include <cstdint>
 #include <ostream>
@@ -212,8 +213,8 @@ public:
    */
   size_t hash () const noexcept
   {
-    return __bits::combine(AF_INET,
-      __bits::fnv_1a(addr_.bytes.data(), addr_.bytes.data() + addr_.bytes.size())
+    return hash_128_to_64(AF_INET,
+      fnv_1a_64(addr_.bytes.data(), addr_.bytes.data() + addr_.bytes.size())
     );
   }
 

@@ -9,6 +9,7 @@ list(APPEND sal_sources
   sal/file.cpp
   sal/format.hpp
   sal/__bits/format.hpp
+  sal/hash.hpp
   sal/intrusive_queue.hpp
   sal/__bits/intrusive_queue.hpp
   sal/lockable.hpp
@@ -33,6 +34,7 @@ list(APPEND sal_unittests
   sal/error.test.cpp
   sal/file.test.cpp
   sal/format.test.cpp
+  sal/hash.test.cpp
   sal/intrusive_queue.test.cpp
   sal/lockable.test.cpp
   sal/memory_writer.test.cpp

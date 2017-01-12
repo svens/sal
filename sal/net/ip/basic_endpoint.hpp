@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/ip/address.hpp>
+#include <sal/hash.hpp>
 #include <sal/memory_writer.hpp>
 #include <ostream>
 
@@ -309,11 +310,12 @@ public:
 
   /**
    * Calculate hash value for \a this.
+   * \internal Assume no holes in data() filled with uninitialized data
    */
   size_t hash () const noexcept
   {
     auto p = reinterpret_cast<const uint8_t *>(data());
-    return __bits::fnv_1a(p, p + size());
+    return fnv_1a_64(p, p + size());
   }
 
 
