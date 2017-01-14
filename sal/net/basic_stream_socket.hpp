@@ -8,7 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/basic_socket.hpp>
-#include <sal/ptr.hpp>
+#include <sal/buf_ptr.hpp>
 
 
 __sal_begin
@@ -97,7 +97,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::impl_.recv(buf.get(), buf.size(),
+    return base_t::impl_.recv(buf.data(), buf.size(),
       static_cast<int>(flags),
       error
     );
@@ -147,7 +147,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::impl_.send(buf.get(), buf.size(),
+    return base_t::impl_.send(buf.data(), buf.size(),
       static_cast<int>(flags),
       error
     );

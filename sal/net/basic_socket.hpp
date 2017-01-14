@@ -410,6 +410,10 @@ public:
 
 protected:
 
+  /**
+   * Low-level OS socket
+   * \internal
+   */
   __bits::socket_t impl_;
 
 

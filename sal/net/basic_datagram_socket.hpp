@@ -8,7 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/basic_socket.hpp>
-#include <sal/ptr.hpp>
+#include <sal/buf_ptr.hpp>
 
 
 __sal_begin
@@ -100,7 +100,7 @@ public:
     std::error_code &error) noexcept
   {
     auto endpoint_size = endpoint.capacity();
-    auto size = base_t::impl_.recv_from(buf.get(), buf.size(),
+    auto size = base_t::impl_.recv_from(buf.data(), buf.size(),
       static_cast<int>(flags),
       endpoint.data(), &endpoint_size,
       error
@@ -167,7 +167,7 @@ public:
     std::error_code &error) noexcept
   {
     size_t endpoint_size = 0;
-    return base_t::impl_.recv_from(buf.get(), buf.size(),
+    return base_t::impl_.recv_from(buf.data(), buf.size(),
       static_cast<int>(flags),
       nullptr, &endpoint_size,
       error
@@ -219,7 +219,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::impl_.send_to(buf.get(), buf.size(),
+    return base_t::impl_.send_to(buf.data(), buf.size(),
       static_cast<int>(flags),
       endpoint.data(), endpoint.size(),
       error
@@ -281,7 +281,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::impl_.send_to(buf.get(), buf.size(),
+    return base_t::impl_.send_to(buf.data(), buf.size(),
       static_cast<int>(flags),
       nullptr, 0,
       error
