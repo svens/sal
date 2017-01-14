@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/fwd.hpp>
+#include <sal/net/ip/__bits/inet.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/ip/basic_resolver_entry.hpp>
 #include <sal/net/ip/basic_resolver_results.hpp>

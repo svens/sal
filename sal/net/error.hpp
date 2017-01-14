@@ -6,7 +6,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/fwd.hpp>
+#include <sal/net/ip/__bits/inet.hpp>
 #include <sal/error.hpp>
 #include <typeinfo>
 

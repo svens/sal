@@ -110,13 +110,13 @@ TEST_P(datagram_socket, receive_from_invalid)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive_from(sal::ptr(buf), endpoint, error));
+    EXPECT_EQ(0U, socket.receive_from(sal::make_buf(buf), endpoint, error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.receive_from(sal::ptr(buf), endpoint),
+      (void)socket.receive_from(sal::make_buf(buf), endpoint),
       std::system_error
     );
   }
@@ -133,13 +133,13 @@ TEST_P(datagram_socket, receive_from_no_sender_non_blocking)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive_from(sal::ptr(buf), endpoint, error));
+    EXPECT_EQ(0U, socket.receive_from(sal::make_buf(buf), endpoint, error));
     EXPECT_EQ(std::errc::operation_would_block, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.receive_from(sal::ptr(buf), endpoint),
+      (void)socket.receive_from(sal::make_buf(buf), endpoint),
       std::system_error
     );
   }
@@ -153,13 +153,13 @@ TEST_P(datagram_socket, send_to_invalid)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.send_to(sal::ptr(case_name), endpoint, error));
+    EXPECT_EQ(0U, socket.send_to(sal::make_buf(case_name), endpoint, error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.send_to(sal::ptr(case_name), endpoint),
+      (void)socket.send_to(sal::make_buf(case_name), endpoint),
       std::system_error
     );
   }
@@ -177,7 +177,7 @@ TEST_P(datagram_socket, send_to_and_receive_from)
 
   // sender
   {
-    EXPECT_EQ(case_name.size(), s.send_to(sal::ptr(case_name), ra));
+    EXPECT_EQ(case_name.size(), s.send_to(sal::make_buf(case_name), ra));
   }
 
   ASSERT_TRUE(r.wait(r.wait_read, 10s));
@@ -187,7 +187,7 @@ TEST_P(datagram_socket, send_to_and_receive_from)
     socket_t::endpoint_t endpoint;
     char buf[1024];
     std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(case_name.size(), r.receive_from(sal::ptr(buf), endpoint));
+    EXPECT_EQ(case_name.size(), r.receive_from(sal::make_buf(buf), endpoint));
     EXPECT_EQ(buf, case_name);
     EXPECT_EQ(sa, endpoint);
   }
@@ -205,7 +205,7 @@ TEST_P(datagram_socket, receive_from_less_than_send_to)
 
   // sender
   {
-    EXPECT_EQ(case_name.size(), s.send_to(sal::ptr(case_name), ra));
+    EXPECT_EQ(case_name.size(), s.send_to(sal::make_buf(case_name), ra));
   }
 
   ASSERT_TRUE(r.wait(r.wait_read, 10s));
@@ -217,7 +217,7 @@ TEST_P(datagram_socket, receive_from_less_than_send_to)
     char buf[1024];
     std::memset(buf, '\0', sizeof(buf));
     EXPECT_EQ(0U,
-      r.receive_from(sal::ptr(buf, case_name.size() / 2), endpoint, error)
+      r.receive_from(sal::make_buf(buf, case_name.size() / 2), endpoint, error)
     );
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_FALSE(r.wait(r.wait_read, 0s));
@@ -233,20 +233,20 @@ TEST_P(datagram_socket, receive_from_peek)
   socket_t r(ra), s(sa);
 
   // sender
-  EXPECT_EQ(case_name.size(), s.send_to(sal::ptr(case_name), ra));
+  EXPECT_EQ(case_name.size(), s.send_to(sal::make_buf(case_name), ra));
 
   socket_t::endpoint_t endpoint;
   char buf[1024];
 
   // receiver: peek
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), r.receive_from(sal::ptr(buf), endpoint, r.peek));
+  EXPECT_EQ(case_name.size(), r.receive_from(sal::make_buf(buf), endpoint, r.peek));
   EXPECT_EQ(buf, case_name);
   EXPECT_EQ(sa, endpoint);
 
   // receiver: actually extract
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), r.receive_from(sal::ptr(buf), endpoint));
+  EXPECT_EQ(case_name.size(), r.receive_from(sal::make_buf(buf), endpoint));
   EXPECT_EQ(buf, case_name);
   EXPECT_EQ(sa, endpoint);
 }
@@ -262,7 +262,7 @@ TEST_P(datagram_socket, send_to_do_not_route)
   // sender
   EXPECT_EQ(
     case_name.size(),
-    s.send_to(sal::ptr(case_name), ra, s.do_not_route)
+    s.send_to(sal::make_buf(case_name), ra, s.do_not_route)
   );
 
   socket_t::endpoint_t endpoint;
@@ -270,7 +270,7 @@ TEST_P(datagram_socket, send_to_do_not_route)
   std::memset(buf, '\0', sizeof(buf));
 
   // receiver
-  EXPECT_EQ(case_name.size(), r.receive_from(sal::ptr(buf), endpoint));
+  EXPECT_EQ(case_name.size(), r.receive_from(sal::make_buf(buf), endpoint));
   EXPECT_EQ(buf, case_name);
   EXPECT_EQ(sa, endpoint);
 }
@@ -284,13 +284,13 @@ TEST_P(datagram_socket, receive_invalid)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive(sal::ptr(buf), error));
+    EXPECT_EQ(0U, socket.receive(sal::make_buf(buf), error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.receive(sal::ptr(buf)),
+      (void)socket.receive(sal::make_buf(buf)),
       std::system_error
     );
   }
@@ -307,13 +307,13 @@ TEST_P(datagram_socket, receive_no_sender_non_blocking)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive(sal::ptr(buf), error));
+    EXPECT_EQ(0U, socket.receive(sal::make_buf(buf), error));
     EXPECT_EQ(std::errc::operation_would_block, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.receive(sal::ptr(buf)),
+      (void)socket.receive(sal::make_buf(buf)),
       std::system_error
     );
   }
@@ -326,13 +326,13 @@ TEST_P(datagram_socket, send_invalid)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.send(sal::ptr(case_name), error));
+    EXPECT_EQ(0U, socket.send(sal::make_buf(case_name), error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.send(sal::ptr(case_name)),
+      (void)socket.send(sal::make_buf(case_name)),
       std::system_error
     );
   }
@@ -345,12 +345,12 @@ TEST_P(datagram_socket, send_not_connected)
 
   {
     std::error_code error;
-    socket.send(sal::ptr(case_name), error);
+    socket.send(sal::make_buf(case_name), error);
     EXPECT_EQ(std::errc::destination_address_required, error);
   }
 
   {
-    EXPECT_THROW(socket.send(sal::ptr(case_name)), std::system_error);
+    EXPECT_THROW(socket.send(sal::make_buf(case_name)), std::system_error);
   }
 }
 
@@ -367,7 +367,7 @@ TEST_P(datagram_socket, send_and_receive)
   // sender
   {
     ASSERT_NO_THROW(s.connect(ra));
-    EXPECT_EQ(case_name.size(), s.send(sal::ptr(case_name)));
+    EXPECT_EQ(case_name.size(), s.send(sal::make_buf(case_name)));
   }
 
   ASSERT_TRUE(r.wait(r.wait_read, 10s));
@@ -376,7 +376,7 @@ TEST_P(datagram_socket, send_and_receive)
   {
     char buf[1024];
     std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(case_name.size(), r.receive(sal::ptr(buf)));
+    EXPECT_EQ(case_name.size(), r.receive(sal::make_buf(buf)));
     EXPECT_EQ(buf, case_name);
   }
 }
@@ -394,7 +394,7 @@ TEST_P(datagram_socket, receive_less_than_send)
   // sender
   {
     ASSERT_NO_THROW(s.connect(ra));
-    EXPECT_EQ(case_name.size(), s.send(sal::ptr(case_name)));
+    EXPECT_EQ(case_name.size(), s.send(sal::make_buf(case_name)));
   }
 
   ASSERT_TRUE(r.wait(r.wait_read, 10s));
@@ -404,7 +404,7 @@ TEST_P(datagram_socket, receive_less_than_send)
     std::error_code error;
     char buf[1024];
     std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(0U, r.receive(sal::ptr(buf, case_name.size() / 2), error));
+    EXPECT_EQ(0U, r.receive(sal::make_buf(buf, case_name.size() / 2), error));
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_FALSE(r.wait(r.wait_read, 0s));
   }
@@ -420,18 +420,18 @@ TEST_P(datagram_socket, receive_peek)
 
   // sender
   ASSERT_NO_THROW(s.connect(ra));
-  EXPECT_EQ(case_name.size(), s.send(sal::ptr(case_name)));
+  EXPECT_EQ(case_name.size(), s.send(sal::make_buf(case_name)));
 
   char buf[1024];
 
   // receiver: peek
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), r.receive(sal::ptr(buf), r.peek));
+  EXPECT_EQ(case_name.size(), r.receive(sal::make_buf(buf), r.peek));
   EXPECT_EQ(buf, case_name);
 
   // receiver: actually extract
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), r.receive(sal::ptr(buf)));
+  EXPECT_EQ(case_name.size(), r.receive(sal::make_buf(buf)));
   EXPECT_EQ(buf, case_name);
 }
 
@@ -447,7 +447,7 @@ TEST_P(datagram_socket, send_do_not_route)
   ASSERT_NO_THROW(s.connect(ra));
   EXPECT_EQ(
     case_name.size(),
-    s.send(sal::ptr(case_name), s.do_not_route)
+    s.send(sal::make_buf(case_name), s.do_not_route)
   );
 
   socket_t::endpoint_t endpoint;
@@ -455,7 +455,7 @@ TEST_P(datagram_socket, send_do_not_route)
   std::memset(buf, '\0', sizeof(buf));
 
   // receiver
-  EXPECT_EQ(case_name.size(), r.receive(sal::ptr(buf)));
+  EXPECT_EQ(case_name.size(), r.receive(sal::make_buf(buf)));
   EXPECT_EQ(buf, case_name);
 }
 

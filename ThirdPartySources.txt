@@ -38,9 +38,9 @@ those of the authors and should not be interpreted as representing official
 policies, either expressed or implied, of Dmitry Vyukov.
 
 
-== sal/net/__bits/platform.hpp {{{1
+== sal/hash.hpp {{{1
 
-* fnv_1a: hashing function
+* FNV1a: hashing function
   http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-1a
 
   Please do not copyright this code.  This code is in the public domain.
@@ -57,7 +57,7 @@ policies, either expressed or implied, of Dmitry Vyukov.
     chongo <Landon Curt Noll> /\oo/\
     http://www.isthe.com/chongo/
 
-* combine: combine two 64bit values into single one
+* Hash128to64: combine two 64bit values into single one
   https://github.com/google/cityhash/blob/master/src/city.h#L101
 
   Copyright (c) 2011 Google, Inc.

@@ -7,8 +7,10 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/error.hpp>
+#include <sal/net/fwd.hpp>
 #include <sal/net/ip/address.hpp>
+#include <sal/error.hpp>
+#include <sal/hash.hpp>
 #include <sal/memory_writer.hpp>
 #include <ostream>
 
@@ -41,7 +43,7 @@ public:
   basic_endpoint_t () noexcept
   {
     addr_.v4.sin_family = AF_INET;
-    addr_.v4.sin_port = htons(0);
+    addr_.v4.sin_port = __bits::host_to_network_short(0);
     addr_.v4.sin_addr.s_addr = INADDR_ANY;
   }
 
@@ -52,14 +54,15 @@ public:
   basic_endpoint_t (const protocol_t &protocol, port_t port) noexcept
   {
     addr_.data.ss_family = static_cast<short>(protocol.family());
+    port = __bits::host_to_network_short(port);
     if (addr_.data.ss_family == AF_INET)
     {
-      addr_.v4.sin_port = htons(port);
+      addr_.v4.sin_port = port;
       addr_.v4.sin_addr.s_addr = INADDR_ANY;
     }
     else
     {
-      addr_.v6.sin6_port = htons(port);
+      addr_.v6.sin6_port = port;
       addr_.v6.sin6_flowinfo = 0;
       addr_.v6.sin6_addr = IN6ADDR_ANY_INIT;
       addr_.v6.sin6_scope_id = 0;
@@ -73,13 +76,14 @@ public:
   basic_endpoint_t (const address_t &address, port_t port) noexcept
   {
     address.store(addr_.data);
+    port = __bits::host_to_network_short(port);
     if (addr_.data.ss_family == AF_INET)
     {
-      addr_.v4.sin_port = htons(port);
+      addr_.v4.sin_port = port;
     }
     else
     {
-      addr_.v6.sin6_port = htons(port);
+      addr_.v6.sin6_port = port;
       addr_.v6.sin6_flowinfo = 0;
       addr_.v6.sin6_scope_id = 0;
     }
@@ -176,10 +180,9 @@ public:
    */
   port_t port () const noexcept
   {
-    return addr_.data.ss_family == AF_INET
-      ? ntohs(addr_.v4.sin_port)
-      : ntohs(addr_.v6.sin6_port)
-    ;
+    return __bits::network_to_host_short(
+      addr_.data.ss_family == AF_INET ? addr_.v4.sin_port : addr_.v6.sin6_port
+    );
   }
 
 
@@ -188,13 +191,14 @@ public:
    */
   void port (port_t port) noexcept
   {
+    port = __bits::host_to_network_short(port);
     if (addr_.data.ss_family == AF_INET)
     {
-      addr_.v4.sin_port = htons(port);
+      addr_.v4.sin_port = port;
     }
     else
     {
-      addr_.v6.sin6_port = htons(port);
+      addr_.v6.sin6_port = port;
     }
   }
 
@@ -309,11 +313,12 @@ public:
 
   /**
    * Calculate hash value for \a this.
+   * \internal Assume no holes in data() filled with uninitialized data
    */
   size_t hash () const noexcept
   {
     auto p = reinterpret_cast<const uint8_t *>(data());
-    return __bits::fnv_1a(p, p + size());
+    return fnv_1a_64(p, p + size());
   }
 
 

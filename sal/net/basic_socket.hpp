@@ -7,7 +7,6 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/fwd.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/socket_base.hpp>
 #include <sal/net/socket_options.hpp>
@@ -46,7 +45,7 @@ public:
    */
   native_handle_t native_handle () const noexcept
   {
-    return handle_;
+    return impl_.native_handle;
   }
 
 
@@ -56,7 +55,7 @@ public:
    */
   bool is_open () const noexcept
   {
-    return handle_ != invalid_socket;
+    return impl_.native_handle != invalid_socket;
   }
 
 
@@ -67,7 +66,7 @@ public:
   {
     if (!is_open())
     {
-      handle_ = __bits::open(protocol.family(),
+      impl_.open(protocol.family(),
         protocol.type(),
         protocol.protocol(),
         error
@@ -102,7 +101,7 @@ public:
     }
     else if (!is_open())
     {
-      handle_ = handle;
+      impl_.native_handle = handle;
     }
     else
     {
@@ -128,8 +127,7 @@ public:
   {
     if (is_open())
     {
-      __bits::close(handle_, error);
-      handle_ = invalid_socket;
+      impl_.close(error);
     }
     else
     {
@@ -156,12 +154,8 @@ public:
     const noexcept
   {
     typename GettableSocketOption::native_t data{};
-    socklen_t size = sizeof(data);
-    __bits::get_opt(handle_,
-      option.level, option.name,
-      &data, &size,
-      error
-    );
+    auto size = sizeof(data);
+    impl_.get_opt(option.level, option.name, &data, &size, error);
     if (!error)
     {
       option.load(data, size);
@@ -188,11 +182,7 @@ public:
   {
     typename SettableSocketOption::native_t data;
     option.store(data);
-    __bits::set_opt(handle_,
-      option.level, option.name,
-      &data, sizeof(data),
-      error
-    );
+    impl_.set_opt(option.level, option.name, &data, sizeof(data), error);
   }
 
 
@@ -211,7 +201,7 @@ public:
    */
   void non_blocking (bool mode, std::error_code &error) noexcept
   {
-    __bits::non_blocking(handle_, mode, error);
+    impl_.non_blocking(mode, error);
   }
 
 
@@ -230,7 +220,7 @@ public:
    */
   bool non_blocking (std::error_code &error) const noexcept
   {
-    return __bits::non_blocking(handle_, error);
+    return impl_.non_blocking(error);
   }
 
 
@@ -250,7 +240,7 @@ public:
    */
   size_t available (std::error_code &error) const noexcept
   {
-    return __bits::available(handle_, error);
+    return impl_.available(error);
   }
 
 
@@ -269,7 +259,7 @@ public:
    */
   void bind (const endpoint_t &endpoint, std::error_code &error) noexcept
   {
-    __bits::bind(handle_, endpoint.data(), endpoint.size(), error);
+    impl_.bind(endpoint.data(), endpoint.size(), error);
   }
 
 
@@ -300,7 +290,7 @@ public:
       }
       // LCOV_EXCL_STOP
     }
-    __bits::connect(handle_, endpoint.data(), endpoint.size(), error);
+    impl_.connect(endpoint.data(), endpoint.size(), error);
   }
 
 
@@ -320,7 +310,7 @@ public:
    */
   void shutdown (shutdown_t what, std::error_code &error) noexcept
   {
-    __bits::shutdown(handle_, static_cast<int>(what), error);
+    impl_.shutdown(static_cast<int>(what), error);
   }
 
 
@@ -347,7 +337,7 @@ public:
     std::error_code &error) noexcept
   {
     auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-    return __bits::wait(handle_, what, static_cast<int>(d.count()), error);
+    return impl_.wait(what, static_cast<int>(d.count()), error);
   }
 
 
@@ -372,7 +362,7 @@ public:
   {
     endpoint_t endpoint;
     size_t endpoint_size = endpoint.capacity();
-    __bits::local_endpoint(handle_, endpoint.data(), &endpoint_size, error);
+    impl_.local_endpoint(endpoint.data(), &endpoint_size, error);
     if (!error)
     {
       endpoint.resize(endpoint_size);
@@ -399,7 +389,7 @@ public:
   {
     endpoint_t endpoint;
     size_t endpoint_size = endpoint.capacity();
-    __bits::remote_endpoint(handle_, endpoint.data(), &endpoint_size, error);
+    impl_.remote_endpoint(endpoint.data(), &endpoint_size, error);
     if (!error)
     {
       endpoint.resize(endpoint_size);
@@ -420,6 +410,13 @@ public:
 
 protected:
 
+  /**
+   * Low-level OS socket
+   * \internal
+   */
+  __bits::socket_t impl_;
+
+
   basic_socket_t () = default;
 
 
@@ -428,9 +425,9 @@ protected:
    * move, that.is_open() == false
    */
   basic_socket_t (basic_socket_t &&that) noexcept
-    : handle_(that.handle_)
+    : impl_(that.impl_.native_handle)
   {
-    that.handle_ = invalid_socket;
+    that.impl_.native_handle = invalid_socket;
   }
 
 
@@ -485,19 +482,14 @@ protected:
   basic_socket_t &operator= (basic_socket_t &&that) noexcept
   {
     auto tmp{std::move(*this)};
-    handle_ = that.handle_;
-    that.handle_ = invalid_socket;
+    impl_.native_handle = that.impl_.native_handle;
+    that.impl_.native_handle = invalid_socket;
     return *this;
   }
 
 
   basic_socket_t (const basic_socket_t &) = delete;
   basic_socket_t &operator= (const basic_socket_t &) = delete;
-
-
-private:
-
-  native_handle_t handle_ = invalid_socket;
 };
 
 

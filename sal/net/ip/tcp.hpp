@@ -7,6 +7,7 @@
 
 
 #include <sal/config.hpp>
+#include <sal/net/ip/__bits/inet.hpp>
 #include <sal/net/ip/basic_endpoint.hpp>
 #include <sal/net/ip/basic_resolver.hpp>
 #include <sal/net/basic_stream_socket.hpp>
