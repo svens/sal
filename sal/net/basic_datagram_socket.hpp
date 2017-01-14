@@ -100,10 +100,9 @@ public:
     std::error_code &error) noexcept
   {
     auto endpoint_size = endpoint.capacity();
-    auto size = __bits::recv_from(base_t::native_handle(),
-      buf.get(), buf.size(),
-      endpoint.data(), &endpoint_size,
+    auto size = base_t::impl_.recv_from(buf.get(), buf.size(),
       static_cast<int>(flags),
+      endpoint.data(), &endpoint_size,
       error
     );
     if (!error)
@@ -168,10 +167,9 @@ public:
     std::error_code &error) noexcept
   {
     size_t endpoint_size = 0;
-    return __bits::recv_from(base_t::native_handle(),
-      buf.get(), buf.size(),
-      nullptr, &endpoint_size,
+    return base_t::impl_.recv_from(buf.get(), buf.size(),
       static_cast<int>(flags),
+      nullptr, &endpoint_size,
       error
     );
   }
@@ -221,10 +219,9 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return __bits::send_to(base_t::native_handle(),
-      buf.get(), buf.size(),
-      endpoint.data(), endpoint.size(),
+    return base_t::impl_.send_to(buf.get(), buf.size(),
       static_cast<int>(flags),
+      endpoint.data(), endpoint.size(),
       error
     );
   }
@@ -284,10 +281,9 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return __bits::send_to(base_t::native_handle(),
-      buf.get(), buf.size(),
-      nullptr, 0,
+    return base_t::impl_.send_to(buf.get(), buf.size(),
       static_cast<int>(flags),
+      nullptr, 0,
       error
     );
   }

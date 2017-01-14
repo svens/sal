@@ -97,8 +97,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return __bits::recv(base_t::native_handle(),
-      buf.get(), buf.size(),
+    return base_t::impl_.recv(buf.get(), buf.size(),
       static_cast<int>(flags),
       error
     );
@@ -148,8 +147,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return __bits::send(base_t::native_handle(),
-      buf.get(), buf.size(),
+    return base_t::impl_.send(buf.get(), buf.size(),
       static_cast<int>(flags),
       error
     );
