@@ -4,6 +4,7 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
     [ "net", "dir_f8d75029acdd39fc068435b664b34272.html", "dir_f8d75029acdd39fc068435b664b34272" ],
     [ "program_options", "dir_4728e3859507180b80a91901e7f10086.html", "dir_4728e3859507180b80a91901e7f10086" ],
     [ "assert.hpp", "assert_8hpp.html", "assert_8hpp" ],
+    [ "buf_ptr.hpp", "buf__ptr_8hpp.html", "buf__ptr_8hpp" ],
     [ "builtins.hpp", "builtins_8hpp.html", "builtins_8hpp" ],
     [ "char_array.hpp", "char__array_8hpp.html", [
       [ "char_array_t", "classsal_1_1char__array__t.html", "classsal_1_1char__array__t" ]
@@ -13,6 +14,7 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
       [ "file_t", "classsal_1_1file__t.html", "classsal_1_1file__t" ]
     ] ],
     [ "format.hpp", "format_8hpp.html", "format_8hpp" ],
+    [ "hash.hpp", "hash_8hpp.html", "hash_8hpp" ],
     [ "intrusive_queue.hpp", "intrusive__queue_8hpp.html", [
       [ "intrusive_queue_t", "classsal_1_1intrusive__queue__t.html", "classsal_1_1intrusive__queue__t" ]
     ] ],
@@ -20,7 +22,6 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
     [ "memory_writer.hpp", "memory__writer_8hpp.html", [
       [ "memory_writer_t", "classsal_1_1memory__writer__t.html", "classsal_1_1memory__writer__t" ]
     ] ],
-    [ "ptr.hpp", "ptr_8hpp.html", "ptr_8hpp" ],
     [ "queue.hpp", "queue_8hpp.html", [
       [ "queue_t", "classsal_1_1queue__t.html", "classsal_1_1queue__t" ]
     ] ],

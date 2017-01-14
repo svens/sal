@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['impl_5f',['impl_',['../classsal_1_1net_1_1basic__socket__t.html#a11f002c39e5521a1c4358b3f473062ab',1,'sal::net::basic_socket_t']]],
   ['init',['init',['../classsal_1_1logger_1_1sink__t.html#a8be6ee149aa553cbdab492ef4c30ae0f',1,'sal::logger::sink_t::init()'],['../net_2fwd_8hpp.html#a6095d302896d2660c18ea302ca3b3988',1,'sal::net::init()']]],
   ['internet_2ehpp',['internet.hpp',['../internet_8hpp.html',1,'']]],
   ['intrusive_5fqueue_2ehpp',['intrusive_queue.hpp',['../intrusive__queue_8hpp.html',1,'']]],

@@ -44,5 +44,6 @@ var classsal_1_1net_1_1basic__socket__t =
     [ "shutdown", "classsal_1_1net_1_1basic__socket__t.html#a859df3cb09f44f73be8464e26c801efd", null ],
     [ "shutdown", "classsal_1_1net_1_1basic__socket__t.html#aa9b0432eaa7fb1624e260d51b73a5664", null ],
     [ "wait", "classsal_1_1net_1_1basic__socket__t.html#a0d100dac8f9d3777e18958044dfd2016", null ],
-    [ "wait", "classsal_1_1net_1_1basic__socket__t.html#af77436f1ac6d197e37e08a32e6a2765c", null ]
+    [ "wait", "classsal_1_1net_1_1basic__socket__t.html#af77436f1ac6d197e37e08a32e6a2765c", null ],
+    [ "impl_", "classsal_1_1net_1_1basic__socket__t.html#a11f002c39e5521a1c4358b3f473062ab", null ]
 ];

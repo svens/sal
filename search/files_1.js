@@ -9,5 +9,6 @@ var searchData=
   ['basic_5fsocket_2ehpp',['basic_socket.hpp',['../basic__socket_8hpp.html',1,'']]],
   ['basic_5fsocket_5facceptor_2ehpp',['basic_socket_acceptor.hpp',['../basic__socket__acceptor_8hpp.html',1,'']]],
   ['basic_5fstream_5fsocket_2ehpp',['basic_stream_socket.hpp',['../basic__stream__socket_8hpp.html',1,'']]],
+  ['buf_5fptr_2ehpp',['buf_ptr.hpp',['../buf__ptr_8hpp.html',1,'']]],
   ['builtins_2ehpp',['builtins.hpp',['../builtins_8hpp.html',1,'']]]
 ];
