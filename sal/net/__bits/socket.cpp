@@ -8,8 +8,6 @@
   #include <unistd.h>
 #endif
 
-#include <iostream>
-
 
 __sal_begin
 
