@@ -7,6 +7,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/__bits/socket.hpp>
+#include <sal/assert.hpp>
 #include <sal/intrusive_queue.hpp>
 #include <algorithm>
 #include <deque>
@@ -84,21 +85,15 @@ class io_buf_t
 {
 public:
 
-  void *head () noexcept
+  io_buf_t ()
+  {
+    clear();
+  }
+
+
+  const void *head () const noexcept
   {
     return data_;
-  }
-
-
-  void *begin () noexcept
-  {
-    return begin_;
-  }
-
-
-  const void *end () const noexcept
-  {
-    return end_;
   }
 
 
@@ -108,27 +103,53 @@ public:
   }
 
 
+  void *begin () noexcept
+  {
+    return begin_;
+  }
+
+
+  void begin (size_t offset_from_head)
+  {
+    sal_assert(offset_from_head < sizeof(data_));
+    begin_ = data_ + offset_from_head;
+  }
+
+
+  size_t head_gap () const noexcept
+  {
+    return begin_ - data_;
+  }
+
+
+  size_t tail_gap () const noexcept
+  {
+    return data_ + sizeof(data_) - end_;
+  }
+
+
+  const void *end () const noexcept
+  {
+    return end_;
+  }
+
+
   size_t size () const noexcept
   {
     return end_ - begin_;
   }
 
 
-  void resize (size_t s) noexcept
+  void resize (size_t s)
   {
-    (void)s;
+    sal_assert(begin_ + s <= data_ + sizeof(data_));
+    end_ = begin_ + s;
   }
 
 
   size_t max_size () const noexcept
   {
     return sizeof(data_);
-  }
-
-
-  size_t capacity () const noexcept
-  {
-    return max_size();
   }
 
 
@@ -142,8 +163,7 @@ public:
 
 private:
 
-  io_context_t *owner_;
-
+  io_context_t *owner_{};
   char *begin_{};
   char *end_{};
 
@@ -200,38 +220,16 @@ class io_context_t
 {
 public:
 
-  ~io_context_t ()
-  {
-    std::cout << "*** " << pool_.size() << '\n';
-  }
-
-
   io_buf_ptr make_buf ()
   {
     auto *io_buf = free_bufs_.try_pop();
     if (!io_buf)
     {
-      io_buf = extend_and_alloc();
+      extend_pool();
+      io_buf = free_bufs_.try_pop();
     }
     io_buf->clear();
     return io_buf_ptr{io_buf, &io_context_t::free_io_buf};
-  }
-
-
-  void test ()
-  {
-    using clock_type = std::chrono::high_resolution_clock;
-    using milliseconds = std::chrono::milliseconds;
-
-    auto begin = clock_type::now();
-    for (size_t i = 0;  i != 10'000'000;  ++i)
-    {
-      auto x = make_buf();
-      *static_cast<char *>(x->begin()) = 'a';
-    }
-    auto end = clock_type::now();
-    auto msec = std::chrono::duration_cast<milliseconds>(end - begin);
-    std::cout << "ms=" << msec.count() << '\n';
   }
 
 
@@ -242,7 +240,7 @@ private:
   io_buf_t::free_list free_bufs_{};
 
 
-  io_buf_t *extend_and_alloc ()
+  void extend_pool ()
   {
     pool_.emplace_back();
     char *it = pool_.back(), * const e = it + sizeof(io_buf_block_t);
@@ -251,7 +249,6 @@ private:
       auto *io_buf = new(it) io_buf_t(this);
       free_bufs_.push(io_buf);
     }
-    return free_bufs_.try_pop();
   }
 
 
