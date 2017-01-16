@@ -91,6 +91,18 @@ public:
   }
 
 
+  uintptr_t user_data () const noexcept
+  {
+    return user_data_;
+  }
+
+
+  void user_data (uintptr_t data) noexcept
+  {
+    user_data_ = data;
+  }
+
+
   const void *head () const noexcept
   {
     return data_;
@@ -156,6 +168,7 @@ public:
   void clear () noexcept
   {
     __bits::reset(*this);
+    user_data_ = 0;
     begin_ = data_;
     end_ = data_ + sizeof(data_);
   }
@@ -164,6 +177,7 @@ public:
 private:
 
   io_context_t *owner_{};
+  uintptr_t user_data_{};
   char *begin_{};
   char *end_{};
 
@@ -175,6 +189,7 @@ private:
 
   static constexpr size_t members_size = sizeof(__bits::io_buf_aux_t)
     + sizeof(decltype(owner_))
+    + sizeof(decltype(user_data_))
     + sizeof(decltype(begin_))
     + sizeof(decltype(end_))
     + __bits::max_hook_size
@@ -206,6 +221,7 @@ private:
     static_assert(sizeof(io_buf_t) == 4096,
       "expected sizeof(io_buf_t) == 4096B"
     );
+    (void)pad_;
   }
 
 

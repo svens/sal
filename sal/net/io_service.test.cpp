@@ -23,6 +23,19 @@ TEST_F(net_io_buf, ctor)
 }
 
 
+TEST_F(net_io_buf, user_data)
+{
+  sal::net::io_buf_t buf;
+  EXPECT_EQ(0U, buf.user_data());
+
+  buf.user_data(1);
+  EXPECT_EQ(1U, buf.user_data());
+
+  buf.clear();
+  EXPECT_EQ(0U, buf.user_data());
+}
+
+
 TEST_F(net_io_buf, head_gap)
 {
   sal::net::io_buf_t buf;
