@@ -39,6 +39,12 @@ template <typename Protocol> class basic_stream_socket_t;
 template <typename Protocol> class basic_socket_acceptor_t;
 
 
+// Asynchronous I/O
+class io_buf_t;
+class io_context_t;
+class io_service_t;
+
+
 namespace ip {
 
 /// Port number
