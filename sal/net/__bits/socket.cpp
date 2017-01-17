@@ -96,7 +96,7 @@ void socket_t::listen (int backlog, std::error_code &error) noexcept
 }
 
 
-native_handle_t socket_t::accept (void *address, size_t *address_size,
+native_socket_t socket_t::accept (void *address, size_t *address_size,
   bool enable_connection_aborted, std::error_code &error) noexcept
 {
   socklen_t size{}, *size_p = nullptr;
@@ -124,7 +124,7 @@ retry:
         if (enable_connection_aborted)
         {
           error.assign(ECONNABORTED, std::generic_category());
-          return native_handle_t{};
+          return native_socket_t{};
         }
         size = static_cast<socklen_t>(*address_size);
         goto retry;

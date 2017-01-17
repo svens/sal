@@ -23,8 +23,8 @@ namespace net { namespace __bits {
 #if __sal_os_windows
 
   // socket handle
-  using native_handle_t = SOCKET;
-  constexpr native_handle_t invalid_socket = INVALID_SOCKET;
+  using native_socket_t = SOCKET;
+  constexpr native_socket_t invalid_socket = INVALID_SOCKET;
 
   // shutdown() direction
   #define SHUT_RD SD_RECEIVE
@@ -37,8 +37,8 @@ namespace net { namespace __bits {
 #else
 
   // socket handle
-  using native_handle_t = int;
-  constexpr native_handle_t invalid_socket = -1;
+  using native_socket_t = int;
+  constexpr native_socket_t invalid_socket = -1;
 
   // sockaddr family
   using sa_family_t = ::sa_family_t;
@@ -51,11 +51,11 @@ enum class wait_t { read, write };
 
 struct socket_t
 {
-  native_handle_t native_handle = invalid_socket;
+  native_socket_t native_handle = invalid_socket;
 
   socket_t () = default;
 
-  socket_t (native_handle_t native_handle) noexcept
+  socket_t (native_socket_t native_handle) noexcept
     : native_handle(native_handle)
   {}
 
@@ -72,7 +72,7 @@ struct socket_t
 
   void listen (int backlog, std::error_code &error) noexcept;
 
-  native_handle_t accept (void *address, size_t *address_size,
+  native_socket_t accept (void *address, size_t *address_size,
     bool enable_connection_aborted,
     std::error_code &error
   ) noexcept;
