@@ -5,6 +5,8 @@ list(APPEND sal_docs
 
 # sources
 list(APPEND sal_sources
+  sal/net/__bits/async.hpp
+  sal/net/__bits/async.cpp
   sal/net/__bits/init.cpp
   sal/net/__bits/socket.hpp
   sal/net/__bits/socket.cpp
@@ -16,6 +18,11 @@ list(APPEND sal_sources
   sal/net/basic_socket_acceptor.hpp
   sal/net/error.hpp
   sal/net/error.cpp
+  sal/net/io_buf.hpp
+  sal/net/io_context.hpp
+  sal/net/io_context.cpp
+  sal/net/io_service.hpp
+  sal/net/io_service.cpp
   sal/net/socket.hpp
   sal/net/socket_base.hpp
   sal/net/socket_options.hpp
@@ -42,6 +49,9 @@ list(APPEND sal_unittests
   sal/net/init.test.cpp
 
   sal/net/error.test.cpp
+  sal/net/io_buf.test.cpp
+  sal/net/io_context.test.cpp
+  sal/net/io_service.test.cpp
   sal/net/socket.test.cpp
 
   sal/net/ip/address.test.cpp
@@ -53,19 +63,3 @@ list(APPEND sal_unittests
   sal/net/ip/socket_acceptor.test.cpp
   sal/net/ip/stream_socket.test.cpp
 )
-
-
-#if(CMAKE_HOST_WIN32)
-  list(APPEND sal_sources
-    sal/net/io_buf.hpp
-    sal/net/io_context.hpp
-    sal/net/io_context.cpp
-    sal/net/io_service.hpp
-    sal/net/io_service.cpp
-  )
-  list(APPEND sal_unittests
-    sal/net/io_buf.test.cpp
-    sal/net/io_context.test.cpp
-    sal/net/io_service.test.cpp
-  )
-#endif()

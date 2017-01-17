@@ -6,7 +6,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/socket.hpp>
+#include <sal/net/__bits/async.hpp>
 #include <sal/net/fwd.hpp>
 #include <sal/assert.hpp>
 #include <sal/intrusive_queue.hpp>
@@ -33,32 +33,15 @@ constexpr size_t round_next_4 (size_t s)
 union hooks_t
 {
   mpsc_sync_t::intrusive_queue_hook_t free;
-  no_sync_t::intrusive_queue_hook_t deferred;
+  no_sync_t::intrusive_queue_hook_t completed;
 };
+
 constexpr size_t max_hook_size = sizeof(hooks_t);
 
 
-#if __sal_os_windows
-
-using io_buf_aux_t = OVERLAPPED;
-
-inline void reset (io_buf_aux_t &aux) noexcept
-{
-  std::memset(&aux, '\0', sizeof(aux));
-}
-
-#else
-
-struct io_buf_aux_t
-{};
-
-inline void reset (io_buf_aux_t &) noexcept
-{}
-
-#endif
-
 
 } // namespace __bits
+
 
 
 /**
@@ -186,7 +169,7 @@ private:
   union
   {
     mpsc_sync_t::intrusive_queue_hook_t free_;
-    no_sync_t::intrusive_queue_hook_t deferred_;
+    no_sync_t::intrusive_queue_hook_t completed_;
   };
 
   static constexpr size_t members_size = sizeof(__bits::io_buf_aux_t)
@@ -209,8 +192,8 @@ private:
   using free_list = intrusive_queue_t<
     io_buf_t, mpsc_sync_t, &io_buf_t::free_
   >;
-  using deferred_list = intrusive_queue_t<
-    io_buf_t, no_sync_t, &io_buf_t::deferred_
+  using completed_list = intrusive_queue_t<
+    io_buf_t, no_sync_t, &io_buf_t::completed_
   >;
 
 
