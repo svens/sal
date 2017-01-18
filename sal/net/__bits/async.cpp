@@ -44,6 +44,33 @@ poller_t::~poller_t () noexcept
 }
 
 
+void poller_t::associate (native_socket_t socket,
+  uintptr_t socket_data,
+  std::error_code &error) noexcept
+{
+#if __sal_os_windows
+
+  auto result = ::CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket),
+    handle,
+    socket_data,
+    0
+  );
+
+  if (!result)
+  {
+    error.assign(::GetLastError(), std::system_category());
+  }
+
+#else
+
+  (void)socket;
+  (void)socket_data;
+  (void)error;
+
+#endif
+}
+
+
 }} // namespace net::__bits
 
 

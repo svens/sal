@@ -38,6 +38,11 @@ struct poller_t
 
   poller_t (size_t max_concurrency);
   ~poller_t () noexcept;
+
+  void associate (native_socket_t socket,
+    uintptr_t socket_data,
+    std::error_code &error
+  ) noexcept;
 };
 
 

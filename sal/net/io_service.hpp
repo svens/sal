@@ -21,9 +21,6 @@ class io_service_t
 {
 public:
 
-  using native_handle_t = __bits::native_poller_t;
-
-
   io_service_t (size_t max_concurrency = 0)
     : poller_(max_concurrency)
   {}
@@ -43,16 +40,18 @@ public:
   }
 
 
-  void register_socket (const socket_base_t &socket, uintptr_t socket_data,
-    std::error_code &error
-  ) noexcept;
-
-
-  void register_socket (const socket_base_t &socket, uintptr_t socket_data)
+  template <typename Socket>
+  void associate (const Socket &socket, uintptr_t socket_data,
+    std::error_code &error) noexcept
   {
-    register_socket(socket, socket_data,
-      throw_on_error("io_service_t::register_socket")
-    );
+    poller_.associate(socket.native_handle(), socket_data, error);
+  }
+
+
+  template <typename Socket>
+  void associate (const Socket &socket, uintptr_t socket_data)
+  {
+    associate(socket, socket_data, throw_on_error("io_service_t::associate"));
   }
 
 

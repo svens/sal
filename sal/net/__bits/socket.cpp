@@ -52,6 +52,20 @@ void socket_t::open (int domain, int type, int protocol,
 {
   // note: under Windows, socket() creates handles with overlapped attribute
   native_handle = handle(::socket(domain, type, protocol), error);
+
+#if __sal_os_windows
+
+  if (native_handle != SOCKET_ERROR)
+  {
+    // we handle immediate completion by deferring handling
+    ::SetFileCompletionNotificationModes(
+      reinterpret_cast<HANDLE>(native_handle),
+      FILE_SKIP_COMPLETION_PORT_ON_SUCCESS |
+      FILE_SKIP_SET_EVENT_ON_HANDLE
+    );
+  }
+
+#endif
 }
 
 
