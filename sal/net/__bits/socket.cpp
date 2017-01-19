@@ -1,7 +1,9 @@
 #include <sal/net/__bits/socket.hpp>
 #include <sal/net/error.hpp>
 
-#if __sal_os_linux || __sal_os_darwin
+#if __sal_os_windows
+  #include <mswsock.h>
+#elif __sal_os_linux || __sal_os_darwin
   #include <fcntl.h>
   #include <poll.h>
   #include <sys/ioctl.h>
@@ -63,6 +65,20 @@ void socket_t::open (int domain, int type, int protocol,
       FILE_SKIP_COMPLETION_PORT_ON_SUCCESS |
       FILE_SKIP_SET_EVENT_ON_HANDLE
     );
+
+    if (type == SOCK_DGRAM)
+    {
+      bool new_behaviour = false;
+      DWORD ignored;
+      ::WSAIoctl(native_handle,
+        SIO_UDP_CONNRESET,
+        &new_behaviour, sizeof(new_behaviour),
+        nullptr, 0,
+        &ignored,
+        nullptr,
+        nullptr
+      );
+    }
   }
 
 #endif
