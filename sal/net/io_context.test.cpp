@@ -9,14 +9,23 @@ namespace {
 struct net_io_context
   : public sal_test::fixture
 {
-  sal::net::io_service_t svc;
-  sal::net::io_context_t ctx = svc.make_context();
+  static auto &context ()
+  {
+    static sal::net::io_service_t svc;
+    static sal::net::io_context_t ctx = svc.make_context();
+    return ctx;
+  }
+
+  auto make_buf ()
+  {
+    return context().make_buf();
+  }
 };
 
 
 TEST_F(net_io_context, make_buf)
 {
-  auto buf = ctx.make_buf();
+  auto buf = make_buf();
   EXPECT_EQ(buf->head(), buf->begin());
   EXPECT_EQ(buf->tail(), buf->end());
   EXPECT_NE(0U, buf->size());
@@ -26,11 +35,45 @@ TEST_F(net_io_context, make_buf)
 }
 
 
-TEST_F(net_io_context, wait)
+TEST_F(net_io_context, try_get_empty)
+{
+  auto buf = context().try_get();
+  EXPECT_EQ(nullptr, buf);
+}
+
+
+TEST_F(net_io_context, try_get_not_empty)
+{
+  auto buf = context().try_get();
+  (void)buf;
+}
+
+
+TEST_F(net_io_context, get_empty)
+{
+  auto buf = context().get();
+  (void)buf;
+}
+
+
+TEST_F(net_io_context, get_not_empty)
+{
+  auto buf = context().get();
+  (void)buf;
+}
+
+
+TEST_F(net_io_context, wait_empty)
 {
   using namespace std::chrono_literals;
-  auto buf = ctx.wait(3s);
-  EXPECT_EQ(nullptr, buf);
+  EXPECT_FALSE(context().wait(10ms));
+}
+
+
+TEST_F(net_io_context, wait_not_empty)
+{
+  using namespace std::chrono_literals;
+  EXPECT_FALSE(context().wait(10ms));
 }
 
 

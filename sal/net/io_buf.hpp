@@ -60,14 +60,14 @@ class io_buf_t
 {
 public:
 
-  io_buf_t ()
-  {
-    clear();
-  }
-
-
   io_buf_t (const io_buf_t &) = delete;
   io_buf_t &operator= (const io_buf_t &) = delete;
+
+
+  io_context_t *this_context () const noexcept
+  {
+    return this_context_;
+  }
 
 
   uintptr_t request_data () const noexcept
@@ -161,7 +161,8 @@ public:
 
 private:
 
-  io_context_t *owner_{};
+  io_context_t * const owner_context_;
+  io_context_t *this_context_{};
   uintptr_t request_data_{}, socket_data_{};
   char *begin_{};
   char *end_{};
@@ -173,7 +174,8 @@ private:
   };
 
   static constexpr size_t members_size = sizeof(__bits::io_buf_aux_t)
-    + sizeof(decltype(owner_))
+    + sizeof(decltype(owner_context_))
+    + sizeof(decltype(this_context_))
     + sizeof(decltype(request_data_))
     + sizeof(decltype(socket_data_))
     + sizeof(decltype(begin_))
@@ -198,7 +200,7 @@ private:
 
 
   io_buf_t (io_context_t *owner) noexcept
-    : owner_(owner)
+    : owner_context_(owner)
   {}
 
 

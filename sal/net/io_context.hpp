@@ -10,7 +10,6 @@
 #include <sal/net/io_buf.hpp>
 #include <sal/net/error.hpp>
 #include <array>
-#include <chrono>
 #include <deque>
 
 
@@ -27,7 +26,6 @@ public:
   io_context_t (const io_context_t &) = delete;
   io_context_t &operator= (const io_context_t &) = delete;
 
-
   io_context_t (io_context_t &&) = default;
   io_context_t &operator= (io_context_t &&) = default;
 
@@ -40,16 +38,21 @@ public:
       io_buf.reset(free_.try_pop());
     }
     sal_check_ptr(io_buf.get())->clear();
+    io_buf->this_context_ = this;
     return io_buf;
   }
 
 
-  template <typename Rep, typename Period>
-  io_buf_ptr wait (const std::chrono::duration<Rep, Period> &period,
-    std::error_code &error) noexcept
+  io_buf_ptr try_get () noexcept
   {
-    io_buf_ptr io_buf{completed_.try_pop(), &io_context_t::free_io_buf};
-    if (!io_buf && wait_for_more(period, error))
+    return io_buf_ptr{completed_.try_pop(), &io_context_t::free_io_buf};
+  }
+
+
+  io_buf_ptr get (std::error_code &error) noexcept
+  {
+    auto io_buf = try_get();
+    if (!io_buf && wait_for_more((std::chrono::milliseconds::max)(), error))
     {
       io_buf.reset(completed_.try_pop());
     }
@@ -57,8 +60,22 @@ public:
   }
 
 
+  io_buf_ptr get ()
+  {
+    return get(throw_on_error("io_context_t::get"));
+  }
+
+
   template <typename Rep, typename Period>
-  io_buf_ptr wait (const std::chrono::duration<Rep, Period> &period)
+  bool wait (const std::chrono::duration<Rep, Period> &period,
+    std::error_code &error) noexcept
+  {
+    return wait_for_more(period, error);
+  }
+
+
+  template <typename Rep, typename Period>
+  bool wait (const std::chrono::duration<Rep, Period> &period)
   {
     return wait(period, throw_on_error("io_context_t::wait"));
   }
@@ -90,7 +107,7 @@ private:
 
   static void free_io_buf (io_buf_t *io_buf) noexcept
   {
-    io_buf->owner_->free_.push(io_buf);
+    io_buf->owner_context_->free_.push(io_buf);
   }
 
   bool wait_for_more (const std::chrono::milliseconds &period,

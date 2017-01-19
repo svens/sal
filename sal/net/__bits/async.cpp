@@ -71,6 +71,40 @@ void poller_t::associate (native_socket_t socket,
 }
 
 
+size_t poller_t::wait (const std::chrono::milliseconds &timeout,
+  poller_record_t entries[], size_t max_entries,
+  std::error_code &error) noexcept
+{
+#if __sal_os_windows
+
+  ULONG completed_count;
+  auto succeeded = GetQueuedCompletionStatusEx(handle,
+    entries, static_cast<ULONG>(max_entries),
+    &completed_count,
+    static_cast<DWORD>(timeout.count()),
+    false
+  );
+
+  if (succeeded)
+  {
+    return completed_count;
+  }
+
+  error.assign(::GetLastError(), std::system_category());
+
+#else
+
+  (void)entries;
+  (void)max_entries;
+  (void)timeout;
+  (void)error;
+
+#endif
+
+  return 0;
+}
+
+
 }} // namespace net::__bits
 
 

@@ -30,16 +30,35 @@ bool io_context_t::extend_pool () noexcept
 bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   std::error_code &error) noexcept
 {
-  (void)period;
-  (void)error;
+  __bits::poller_record_t entries[64];
+  auto completed_count = poller_.wait(period,
+    entries, wait_max_completed_,
+    error
+  );
+
+  for (auto i = 0U;  i < completed_count;  ++i)
+  {
+    auto &entry = entries[i];
+    io_buf_t *io_buf;
 
 #if __sal_os_windows
 
+    io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
+    io_buf->socket_data_ = entry.lpCompletionKey;
+    io_buf->resize(entry.dwNumberOfBytesTransferred);
+
 #else
+
+    (void)entry;
+    io_buf = nullptr;
 
 #endif
 
-  return false;
+    io_buf->this_context_ = this;
+    completed_.push(io_buf);
+  }
+
+  return completed_count > 0;
 }
 
 

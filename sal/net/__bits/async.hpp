@@ -2,6 +2,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/__bits/socket.hpp>
+#include <chrono>
 
 
 __sal_begin
@@ -15,6 +16,8 @@ namespace net { namespace __bits {
   using native_poller_t = HANDLE;
   constexpr native_poller_t invalid_poller = INVALID_HANDLE_VALUE;
 
+  using poller_record_t = OVERLAPPED_ENTRY;
+
   using io_buf_aux_t = OVERLAPPED;
   inline void reset (io_buf_aux_t &aux) noexcept
   {
@@ -25,6 +28,8 @@ namespace net { namespace __bits {
 
   using native_poller_t = int;
   constexpr native_poller_t invalid_poller = -1;
+
+  using poller_record_t = int;
 
   struct io_buf_aux_t {};
   inline void reset (io_buf_aux_t &) noexcept {}
@@ -41,6 +46,11 @@ struct poller_t
 
   void associate (native_socket_t socket,
     uintptr_t socket_data,
+    std::error_code &error
+  ) noexcept;
+
+  size_t wait (const std::chrono::milliseconds &timeout,
+    poller_record_t entries[], size_t max_entries,
     std::error_code &error
   ) noexcept;
 };
