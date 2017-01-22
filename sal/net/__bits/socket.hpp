@@ -37,6 +37,16 @@ using sa_family_t = ::ADDRESS_FAMILY;
 // send/recv flags
 using message_flags_t = DWORD;
 
+// IOCP
+using native_poller_t = HANDLE;
+constexpr native_poller_t invalid_poller = INVALID_HANDLE_VALUE;
+
+using io_buf_t = OVERLAPPED;
+inline void reset (io_buf_t &aux) noexcept
+{
+  std::memset(&aux, '\0', sizeof(aux));
+}
+
 #else
 
 // socket handle
@@ -48,6 +58,13 @@ using sa_family_t = ::sa_family_t;
 
 // send/recv flags
 using message_flags_t = int;
+
+// not implemented yet
+using native_poller_t = int;
+constexpr native_poller_t invalid_poller = -1;
+
+struct io_buf_t {};
+inline void reset (io_buf_t &) noexcept {}
 
 #endif
 

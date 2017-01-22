@@ -6,7 +6,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/async.hpp>
+#include <sal/net/__bits/socket.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/io_context.hpp>
 
@@ -21,9 +21,7 @@ class io_service_t
 {
 public:
 
-  io_service_t (size_t max_concurrency = 0)
-    : poller_(max_concurrency)
-  {}
+  io_service_t (size_t max_concurrency = 0);
 
 
   io_context_t make_context (size_t max_wait_completed = 16)
@@ -44,7 +42,7 @@ public:
   void associate (const Socket &socket, uintptr_t socket_data,
     std::error_code &error) noexcept
   {
-    poller_.associate(socket.native_handle(), socket_data, error);
+    associate(socket.native_handle(), socket_data, error);
   }
 
 
@@ -57,7 +55,12 @@ public:
 
 private:
 
-  __bits::poller_t poller_;
+  __bits::native_poller_t poller_ = __bits::invalid_poller;
+
+  void associate (__bits::native_socket_t socket,
+    uintptr_t socket_data,
+    std::error_code &error
+  ) noexcept;
 };
 
 

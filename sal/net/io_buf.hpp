@@ -6,14 +6,11 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/async.hpp>
+#include <sal/net/__bits/socket.hpp>
 #include <sal/net/fwd.hpp>
 #include <sal/assert.hpp>
 #include <sal/intrusive_queue.hpp>
 #include <memory>
-
-
-#include <iostream>
 
 
 __sal_begin
@@ -57,22 +54,12 @@ constexpr size_t max_hook_size = sizeof(hooks_t);
  * \endpre
  */
 class io_buf_t
-  : public __bits::io_buf_aux_t
+  : public __bits::io_buf_t
 {
 public:
 
   io_buf_t (const io_buf_t &) = delete;
   io_buf_t &operator= (const io_buf_t &) = delete;
-
-
-  void info () const noexcept
-  {
-    std::cout << "total=" << sizeof(*this)
-      << ", members=" << members_size
-      << ", request=" << max_request_size
-      << ", data=" << sizeof(data_)
-      << '\n';
-  }
 
 
   io_context_t &this_context () const noexcept
@@ -199,7 +186,7 @@ private:
     no_sync_t::intrusive_queue_hook_t completed_;
   };
 
-  static constexpr size_t members_size = sizeof(__bits::io_buf_aux_t)
+  static constexpr size_t members_size = sizeof(__bits::io_buf_t)
     + sizeof(decltype(owner_context_))
     + sizeof(decltype(this_context_))
     + sizeof(decltype(socket_data_))

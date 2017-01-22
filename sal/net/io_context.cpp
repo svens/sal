@@ -30,35 +30,47 @@ bool io_context_t::extend_pool () noexcept
 bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   std::error_code &error) noexcept
 {
-  __bits::poller_record_t entries[64];
-  auto completed_count = poller_.wait(period,
-    entries, wait_max_completed_,
-    error
+#if __sal_os_windows
+
+  OVERLAPPED_ENTRY entries[64];
+  ULONG completed_count;
+
+  auto succeeded = ::GetQueuedCompletionStatusEx(poller_,
+    entries, static_cast<ULONG>(max_wait_completed_),
+    &completed_count,
+    static_cast<DWORD>(period.count()),
+    false
   );
+
+  if (!succeeded)
+  {
+    auto e = ::GetLastError();
+    if (e != WAIT_TIMEOUT)
+    {
+      error.assign(e, std::system_category());
+    }
+    return false;
+  }
 
   for (auto i = 0U;  i < completed_count;  ++i)
   {
     auto &entry = entries[i];
-    io_buf_t *io_buf;
-
-#if __sal_os_windows
-
-    io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
+    auto io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
     io_buf->socket_data_ = entry.lpCompletionKey;
     io_buf->resize(entry.dwNumberOfBytesTransferred);
-
-#else
-
-    (void)entry;
-    io_buf = nullptr;
-
-#endif
-
     io_buf->this_context_ = this;
     completed_.push(io_buf);
   }
 
   return completed_count > 0;
+
+#else
+
+  (void)period;
+  (void)error;
+  return false;
+
+#endif
 }
 
 

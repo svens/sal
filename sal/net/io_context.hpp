@@ -6,10 +6,11 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/async.hpp>
+#include <sal/net/__bits/socket.hpp>
 #include <sal/net/io_buf.hpp>
 #include <sal/net/error.hpp>
 #include <array>
+#include <chrono>
 #include <deque>
 
 
@@ -89,18 +90,18 @@ public:
 
 private:
 
-  __bits::poller_t &poller_;
+  __bits::native_poller_t poller_;
 
   std::deque<std::array<char, 1024 * sizeof(io_buf_t)>> pool_{};
   io_buf_t::free_list free_{};
 
-  size_t wait_max_completed_;
+  size_t max_wait_completed_;
   io_buf_t::completed_list completed_{};
 
 
-  io_context_t (__bits::poller_t &poller, size_t max_wait_completed)
+  io_context_t (__bits::native_poller_t &poller, size_t max_wait_completed)
     : poller_(poller)
-    , wait_max_completed_(max_wait_completed)
+    , max_wait_completed_(max_wait_completed)
   {}
 
   bool extend_pool () noexcept;

@@ -148,4 +148,54 @@ TEST_F(net_io_buf, clear)
 }
 
 
+struct foo_t
+{
+  int a;
+
+  foo_t (int a) noexcept
+    : a(a)
+  {}
+};
+
+
+struct bar_t
+{
+  int b;
+};
+
+
+TEST_F(net_io_buf, make_request)
+{
+  auto buf = make_buf();
+  auto *foo = buf->make_request<foo_t>(1);
+  ASSERT_NE(nullptr, foo);
+  EXPECT_EQ(1, foo->a);
+}
+
+
+TEST_F(net_io_buf, make_result)
+{
+  auto buf = make_buf();
+  auto *foo1 = buf->make_request<foo_t>(1);
+  ASSERT_NE(nullptr, foo1);
+  EXPECT_EQ(1, foo1->a);
+
+  auto *foo2 = buf->make_result<foo_t>();
+  ASSERT_NE(nullptr, foo2);
+  EXPECT_EQ(foo1, foo2);
+  EXPECT_EQ(1, foo2->a);
+}
+
+
+TEST_F(net_io_buf, make_result_invalid)
+{
+  auto buf = make_buf();
+  auto *foo = buf->make_request<foo_t>(1);
+  ASSERT_NE(nullptr, foo);
+
+  auto *bar = buf->make_result<bar_t>();
+  ASSERT_EQ(nullptr, bar);
+}
+
+
 } // namespace
