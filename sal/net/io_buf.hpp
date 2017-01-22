@@ -10,8 +10,10 @@
 #include <sal/net/fwd.hpp>
 #include <sal/assert.hpp>
 #include <sal/intrusive_queue.hpp>
-#include <cstring>
 #include <memory>
+
+
+#include <iostream>
 
 
 __sal_begin
@@ -23,9 +25,9 @@ namespace net {
 namespace __bits {
 
 
-constexpr size_t round_next_4 (size_t s)
+constexpr size_t round_next_256 (size_t s)
 {
-  return (s + 3) & ~3;
+  return (s + 255) & ~255;
 }
 
 
@@ -43,7 +45,6 @@ constexpr size_t max_hook_size = sizeof(hooks_t);
 } // namespace __bits
 
 
-
 /**
  * Asynchronous socket operation I/O buffer.
  *
@@ -56,7 +57,7 @@ constexpr size_t max_hook_size = sizeof(hooks_t);
  * \endpre
  */
 class io_buf_t
-  : protected __bits::io_buf_aux_t
+  : public __bits::io_buf_aux_t
 {
 public:
 
@@ -64,21 +65,19 @@ public:
   io_buf_t &operator= (const io_buf_t &) = delete;
 
 
-  io_context_t *this_context () const noexcept
+  void info () const noexcept
   {
-    return this_context_;
+    std::cout << "total=" << sizeof(*this)
+      << ", members=" << members_size
+      << ", request=" << max_request_size
+      << ", data=" << sizeof(data_)
+      << '\n';
   }
 
 
-  uintptr_t request_data () const noexcept
+  io_context_t &this_context () const noexcept
   {
-    return request_data_;
-  }
-
-
-  void request_data (uintptr_t data) noexcept
-  {
-    request_data_ = data;
+    return *this_context_;
   }
 
 
@@ -153,9 +152,35 @@ public:
   void clear () noexcept
   {
     __bits::reset(*this);
-    request_data_ = socket_data_ = 0;
+    socket_data_ = 0;
+    request_type_ = typeid(&io_buf_t::static_check).hash_code();
     begin_ = data_;
     end_ = data_ + sizeof(data_);
+  }
+
+
+  template <typename Request, typename... Args>
+  Request *make_request (Args &&...args) noexcept
+  {
+    static_assert(sizeof(Request) <= max_request_size,
+      "sizeof(Request) exceeds request data buffer"
+    );
+    static_assert(std::is_trivially_destructible<Request>::value,
+      "expected Request to be trivially destructible"
+    );
+    request_type_ = typeid(Request).hash_code();
+    return new(request_data_) Request(std::forward<Args>(args)...);
+  }
+
+
+  template <typename Result>
+  Result *make_result () noexcept
+  {
+    if (request_type_ == typeid(Result).hash_code())
+    {
+      return reinterpret_cast<Result *>(request_data_);
+    }
+    return nullptr;
   }
 
 
@@ -163,7 +188,8 @@ private:
 
   io_context_t * const owner_context_;
   io_context_t *this_context_{};
-  uintptr_t request_data_{}, socket_data_{};
+  uintptr_t socket_data_{};
+  size_t request_type_{};
   char *begin_{};
   char *end_{};
 
@@ -176,20 +202,20 @@ private:
   static constexpr size_t members_size = sizeof(__bits::io_buf_aux_t)
     + sizeof(decltype(owner_context_))
     + sizeof(decltype(this_context_))
-    + sizeof(decltype(request_data_))
     + sizeof(decltype(socket_data_))
+    + sizeof(decltype(request_type_))
     + sizeof(decltype(begin_))
     + sizeof(decltype(end_))
     + __bits::max_hook_size
   ;
-  static constexpr size_t pad_size =
-    __bits::round_next_4(members_size) != members_size
-      ? __bits::round_next_4(members_size) - members_size
-      : 4
+  static constexpr size_t max_request_size =
+    __bits::round_next_256(members_size) != members_size
+      ? __bits::round_next_256(members_size) - members_size
+      : 256
   ;
 
-  char pad_[pad_size];
-  char data_[4096 - members_size - pad_size];
+  char request_data_[max_request_size];
+  char data_[4096 - members_size - max_request_size];
 
   using free_list = intrusive_queue_t<
     io_buf_t, mpsc_sync_t, &io_buf_t::free_
@@ -209,7 +235,6 @@ private:
     static_assert(sizeof(io_buf_t) == 4096,
       "expected sizeof(io_buf_t) == 4096B"
     );
-    (void)pad_;
   }
 
 

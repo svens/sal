@@ -55,7 +55,6 @@ void poller_t::associate (native_socket_t socket,
     socket_data,
     0
   );
-
   if (!result)
   {
     error.assign(::GetLastError(), std::system_category());
@@ -90,18 +89,22 @@ size_t poller_t::wait (const std::chrono::milliseconds &timeout,
     return completed_count;
   }
 
-  error.assign(::GetLastError(), std::system_category());
+  auto e = ::GetLastError();
+  if (e != WAIT_TIMEOUT)
+  {
+    error.assign(e, std::system_category());
+  }
+  return 0;
 
 #else
 
+  (void)timeout;
   (void)entries;
   (void)max_entries;
-  (void)timeout;
   (void)error;
+  return 0;
 
 #endif
-
-  return 0;
 }
 
 

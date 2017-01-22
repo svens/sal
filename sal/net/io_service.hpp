@@ -49,7 +49,7 @@ public:
 
 
   template <typename Socket>
-  void associate (const Socket &socket, uintptr_t socket_data)
+  void associate (const Socket &socket, uintptr_t socket_data = 0)
   {
     associate(socket, socket_data, throw_on_error("io_service_t::associate"));
   }

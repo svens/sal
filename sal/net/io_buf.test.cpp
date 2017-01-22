@@ -4,16 +4,25 @@
 #include <sal/common.test.hpp>
 
 
+#include <sal/net/ip/udp.hpp>
+
+
 namespace {
 
 
 struct net_io_buf
   : public sal_test::fixture
 {
-  static auto &context ()
+  static auto &service ()
   {
     static sal::net::io_service_t svc;
-    static sal::net::io_context_t ctx = svc.make_context();
+    return svc;
+  }
+
+
+  static auto &context ()
+  {
+    static sal::net::io_context_t ctx = service().make_context();
     return ctx;
   }
 
@@ -27,6 +36,7 @@ struct net_io_buf
 TEST_F(net_io_buf, ctor)
 {
   auto buf = make_buf();
+  EXPECT_EQ(&context(), &buf->this_context());
 
   EXPECT_EQ(buf->head(), buf->begin());
   EXPECT_EQ(buf->tail(), buf->end());
@@ -36,19 +46,6 @@ TEST_F(net_io_buf, ctor)
 
   EXPECT_EQ(0U, buf->head_gap());
   EXPECT_EQ(0U, buf->tail_gap());
-}
-
-
-TEST_F(net_io_buf, request_data)
-{
-  auto buf = make_buf();
-  EXPECT_EQ(0U, buf->request_data());
-
-  buf->request_data(1);
-  EXPECT_EQ(1U, buf->request_data());
-
-  buf->clear();
-  EXPECT_EQ(0U, buf->request_data());
 }
 
 
@@ -132,10 +129,13 @@ TEST_F(net_io_buf, head_and_tail_gap)
 TEST_F(net_io_buf, clear)
 {
   auto buf = make_buf();
+  EXPECT_EQ(&context(), &buf->this_context());
+
   buf->begin(1);
   buf->resize(buf->max_size() - 2);
 
   buf->clear();
+  EXPECT_EQ(&context(), &buf->this_context());
 
   EXPECT_EQ(buf->head(), buf->begin());
   EXPECT_EQ(buf->tail(), buf->end());

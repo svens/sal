@@ -251,7 +251,7 @@ bool socket_t::wait (wait_t what, int timeout_ms, std::error_code &error)
   return false;
 }
 
-size_t socket_t::recv (void *data, size_t data_size, int flags,
+size_t socket_t::recv (void *data, size_t data_size, message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -310,7 +310,7 @@ size_t socket_t::recv (void *data, size_t data_size, int flags,
 }
 
 
-size_t socket_t::recv_from (void *data, size_t data_size, int flags,
+size_t socket_t::recv_from (void *data, size_t data_size, message_flags_t flags,
   void *address, size_t *address_size,
   std::error_code &error) noexcept
 {
@@ -381,7 +381,46 @@ size_t socket_t::recv_from (void *data, size_t data_size, int flags,
 }
 
 
-size_t socket_t::send (const void *data, size_t data_size, int flags,
+#if __sal_os_windows
+void *socket_t::start (void *io_buf, async_receive_from_t &op) noexcept
+{
+  WSABUF wsabuf;
+  wsabuf.buf = static_cast<char *>(op.data_);
+  wsabuf.len = static_cast<DWORD>(op.data_size_);
+
+  DWORD transferred;
+  auto result = ::WSARecvFrom(native_handle,
+    &wsabuf, 1,
+    &transferred,
+    &op.flags_,
+    reinterpret_cast<sockaddr *>(&op.endpoint_),
+    &op.endpoint_size_,
+    static_cast<OVERLAPPED *>(io_buf),
+    nullptr
+  );
+
+  if (result == 0)
+  {
+    // completed immediately
+    op.data_size_ = transferred;
+    return io_buf;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e == WSA_IO_PENDING)
+  {
+    // will be completed later, OS now owns data
+    return nullptr;
+  }
+
+  // failed, caller still owns data
+  op.error_.assign(e, std::system_category());
+  return io_buf;
+}
+#endif
+
+
+size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -435,7 +474,7 @@ size_t socket_t::send (const void *data, size_t data_size, int flags,
 }
 
 
-size_t socket_t::send_to (const void *data, size_t data_size, int flags,
+size_t socket_t::send_to (const void *data, size_t data_size, message_flags_t flags,
   const void *address, size_t address_size,
   std::error_code &error) noexcept
 {

@@ -22,31 +22,53 @@ namespace net { namespace __bits {
 
 #if __sal_os_windows
 
-  // socket handle
-  using native_socket_t = SOCKET;
-  constexpr native_socket_t invalid_socket = INVALID_SOCKET;
+// socket handle
+using native_socket_t = SOCKET;
+constexpr native_socket_t invalid_socket = INVALID_SOCKET;
 
-  // shutdown() direction
-  #define SHUT_RD SD_RECEIVE
-  #define SHUT_WR SD_SEND
-  #define SHUT_RDWR SD_BOTH
+// shutdown() direction
+#define SHUT_RD SD_RECEIVE
+#define SHUT_WR SD_SEND
+#define SHUT_RDWR SD_BOTH
 
-  // sockaddr family
-  using sa_family_t = ::ADDRESS_FAMILY;
+// sockaddr family
+using sa_family_t = ::ADDRESS_FAMILY;
+
+// send/recv flags
+using message_flags_t = DWORD;
 
 #else
 
-  // socket handle
-  using native_socket_t = int;
-  constexpr native_socket_t invalid_socket = -1;
+// socket handle
+using native_socket_t = int;
+constexpr native_socket_t invalid_socket = -1;
 
-  // sockaddr family
-  using sa_family_t = ::sa_family_t;
+// sockaddr family
+using sa_family_t = ::sa_family_t;
+
+// send/recv flags
+using message_flags_t = int;
 
 #endif
 
 
 enum class wait_t { read, write };
+
+
+struct async_receive_from_t
+{
+  void *data_;
+  size_t data_size_;
+  sockaddr_storage endpoint_;
+  int32_t endpoint_size_;
+  message_flags_t flags_;
+  std::error_code error_;
+};
+
+
+struct async_send_to_t
+{
+};
 
 
 struct socket_t
@@ -87,23 +109,25 @@ struct socket_t
   ) noexcept;
 
   size_t recv (void *data, size_t data_size,
-    int flags,
+    message_flags_t flags,
     std::error_code &error
   ) noexcept;
 
   size_t recv_from (void *data, size_t data_size,
-    int flags,
+    message_flags_t flags,
     void *address, size_t *address_size,
     std::error_code &error
   ) noexcept;
 
+  void *start (void *io_buf, async_receive_from_t &op) noexcept;
+
   size_t send (const void *data, size_t data_size,
-    int flags,
+    message_flags_t flags,
     std::error_code &error
   ) noexcept;
 
   size_t send_to (const void *data, size_t data_size,
-    int flags,
+    message_flags_t flags,
     const void *address, size_t address_size,
     std::error_code &error
   ) noexcept;

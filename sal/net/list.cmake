@@ -22,7 +22,6 @@ list(APPEND sal_sources
   sal/net/io_context.hpp
   sal/net/io_context.cpp
   sal/net/io_service.hpp
-  sal/net/io_service.cpp
   sal/net/socket.hpp
   sal/net/socket_base.hpp
   sal/net/socket_options.hpp

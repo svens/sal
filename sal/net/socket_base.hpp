@@ -49,7 +49,7 @@ public:
 
 
   /// Bitmask flags for send/receive functions
-  using message_flags_t = int;
+  using message_flags_t = __bits::message_flags_t;
 
   /// Leave received data in queue
   static constexpr message_flags_t peek = MSG_PEEK;

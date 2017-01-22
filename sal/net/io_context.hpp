@@ -81,9 +81,9 @@ public:
   }
 
 
-  void defer (io_buf_ptr &buf) noexcept
+  static void notify (io_buf_t *io_buf) noexcept
   {
-    completed_.push(buf.release());
+    sal_check_ptr(io_buf)->this_context_->completed_.push(io_buf);
   }
 
 

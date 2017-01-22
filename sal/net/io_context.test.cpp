@@ -37,43 +37,31 @@ TEST_F(net_io_context, make_buf)
 
 TEST_F(net_io_context, try_get_empty)
 {
-  auto buf = context().try_get();
-  EXPECT_EQ(nullptr, buf);
 }
 
 
 TEST_F(net_io_context, try_get_not_empty)
 {
-  auto buf = context().try_get();
-  (void)buf;
 }
 
 
 TEST_F(net_io_context, get_empty)
 {
-  auto buf = context().get();
-  (void)buf;
 }
 
 
 TEST_F(net_io_context, get_not_empty)
 {
-  auto buf = context().get();
-  (void)buf;
 }
 
 
 TEST_F(net_io_context, wait_empty)
 {
-  using namespace std::chrono_literals;
-  EXPECT_FALSE(context().wait(10ms));
 }
 
 
 TEST_F(net_io_context, wait_not_empty)
 {
-  using namespace std::chrono_literals;
-  EXPECT_FALSE(context().wait(10ms));
 }
 
 
