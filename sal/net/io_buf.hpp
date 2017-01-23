@@ -11,6 +11,7 @@
 #include <sal/assert.hpp>
 #include <sal/intrusive_queue.hpp>
 #include <memory>
+#include <typeinfo>
 
 
 __sal_begin
@@ -36,6 +37,10 @@ union hooks_t
 };
 
 constexpr size_t max_hook_size = sizeof(hooks_t);
+
+
+template <typename AsyncOperation>
+const size_t type_v = typeid(AsyncOperation).hash_code();
 
 
 
@@ -140,7 +145,7 @@ public:
   {
     __bits::reset(*this);
     socket_data_ = 0;
-    request_type_ = typeid(&io_buf_t::static_check).hash_code();
+    request_type_ = __bits::type_v<__bits::io_buf_t>;
     begin_ = data_;
     end_ = data_ + sizeof(data_);
   }
@@ -155,7 +160,7 @@ public:
     static_assert(std::is_trivially_destructible<Request>::value,
       "expected Request to be trivially destructible"
     );
-    request_type_ = typeid(Request).hash_code();
+    request_type_ = __bits::type_v<Request>;
     return new(request_data_) Request(std::forward<Args>(args)...);
   }
 
@@ -163,7 +168,7 @@ public:
   template <typename Result>
   Result *make_result () noexcept
   {
-    if (request_type_ == typeid(Result).hash_code())
+    if (request_type_ == __bits::type_v<Result>)
     {
       return reinterpret_cast<Result *>(request_data_);
     }
