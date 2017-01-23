@@ -73,9 +73,15 @@ public:
   }
 
 
-  uintptr_t socket_data () const noexcept
+  uintptr_t user_data () const noexcept
   {
-    return socket_data_;
+    return user_data_;
+  }
+
+
+  void user_data (uintptr_t value) noexcept
+  {
+    user_data_ = value;
   }
 
 
@@ -88,6 +94,12 @@ public:
   const void *tail () const noexcept
   {
     return data_ + sizeof(data_);
+  }
+
+
+  void *data () noexcept
+  {
+    return begin_;
   }
 
 
@@ -144,8 +156,6 @@ public:
   void clear () noexcept
   {
     __bits::reset(*this);
-    socket_data_ = 0;
-    request_type_ = __bits::type_v<__bits::io_buf_t>;
     begin_ = data_;
     end_ = data_ + sizeof(data_);
   }
@@ -180,7 +190,7 @@ private:
 
   io_context_t * const owner_context_;
   io_context_t *this_context_{};
-  uintptr_t socket_data_{};
+  uintptr_t user_data_{};
   size_t request_type_{};
   char *begin_{};
   char *end_{};
@@ -194,7 +204,7 @@ private:
   static constexpr size_t members_size = sizeof(__bits::io_buf_t)
     + sizeof(decltype(owner_context_))
     + sizeof(decltype(this_context_))
-    + sizeof(decltype(socket_data_))
+    + sizeof(decltype(user_data_))
     + sizeof(decltype(request_type_))
     + sizeof(decltype(begin_))
     + sizeof(decltype(end_))

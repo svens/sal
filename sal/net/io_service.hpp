@@ -39,17 +39,16 @@ public:
 
 
   template <typename Socket>
-  void associate (const Socket &socket, uintptr_t socket_data,
-    std::error_code &error) noexcept
+  void associate (const Socket &socket, std::error_code &error) noexcept
   {
-    associate(socket.native_handle(), socket_data, error);
+    associate(socket.native_handle(), error);
   }
 
 
   template <typename Socket>
-  void associate (const Socket &socket, uintptr_t socket_data = 0)
+  void associate (const Socket &socket)
   {
-    associate(socket, socket_data, throw_on_error("io_service_t::associate"));
+    associate(socket, throw_on_error("io_service_t::associate"));
   }
 
 
@@ -57,10 +56,8 @@ private:
 
   __bits::native_poller_t poller_ = __bits::invalid_poller;
 
-  void associate (__bits::native_socket_t socket,
-    uintptr_t socket_data,
-    std::error_code &error
-  ) noexcept;
+  void associate (__bits::native_socket_t socket, std::error_code &error)
+    noexcept;
 };
 
 

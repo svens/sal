@@ -75,7 +75,7 @@ enum class wait_t { read, write };
 struct async_receive_from_t
 {
   void *data_;
-  size_t data_size_;
+  size_t size_;
   sockaddr_storage endpoint_;
   int32_t endpoint_size_;
   message_flags_t flags_;

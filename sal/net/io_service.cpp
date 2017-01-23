@@ -34,14 +34,13 @@ io_service_t::io_service_t (size_t max_concurrency)
 
 
 void io_service_t::associate (__bits::native_socket_t socket,
-  uintptr_t socket_data,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
   auto result = ::CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket),
     poller_,
-    socket_data,
+    0,
     0
   );
   if (!result)
@@ -52,7 +51,6 @@ void io_service_t::associate (__bits::native_socket_t socket,
 #else
 
   (void)socket;
-  (void)socket_data;
   (void)error;
 
 #endif

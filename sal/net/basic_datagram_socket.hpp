@@ -349,14 +349,14 @@ public:
     socket_base_t::message_flags_t flags) noexcept
   {
     auto &request = *io_buf->make_request<async_receive_from_t>();
-    request.data_ = io_buf->begin();
-    request.data_size_ = io_buf->size();
+    request.data_ = io_buf->data();
+    request.size_ = io_buf->size();
     request.endpoint_size_ = sizeof(request.endpoint_);
     request.flags_ = flags;
 
     if (base_t::impl_.start(io_buf.get(), request))
     {
-      io_buf->resize(request.data_size_);
+      io_buf->resize(request.size_);
       io_context_t::notify(io_buf.get());
     }
     io_buf.release();

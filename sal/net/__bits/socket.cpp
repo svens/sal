@@ -634,7 +634,7 @@ void *socket_t::start (void *io_buf, async_receive_from_t &op) noexcept
 {
   WSABUF wsabuf;
   wsabuf.buf = static_cast<char *>(op.data_);
-  wsabuf.len = static_cast<DWORD>(op.data_size_);
+  wsabuf.len = static_cast<DWORD>(op.size_);
 
   DWORD transferred;
   auto result = ::WSARecvFrom(native_handle,
@@ -650,7 +650,7 @@ void *socket_t::start (void *io_buf, async_receive_from_t &op) noexcept
   if (result == 0)
   {
     // completed immediately
-    op.data_size_ = transferred;
+    op.size_ = transferred;
     return io_buf;
   }
 

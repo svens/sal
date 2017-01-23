@@ -56,7 +56,6 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   {
     auto &entry = entries[i];
     auto io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
-    io_buf->socket_data_ = entry.lpCompletionKey;
     io_buf->resize(entry.dwNumberOfBytesTransferred);
     io_buf->this_context_ = this;
     completed_.push(io_buf);

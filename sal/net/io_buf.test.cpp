@@ -49,10 +49,11 @@ TEST_F(net_io_buf, ctor)
 }
 
 
-TEST_F(net_io_buf, socket_data)
+TEST_F(net_io_buf, user_data)
 {
   auto buf = make_buf();
-  EXPECT_EQ(0U, buf->socket_data());
+  buf->user_data(1);
+  EXPECT_EQ(1U, buf->user_data());
 }
 
 
