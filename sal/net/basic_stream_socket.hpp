@@ -97,7 +97,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::impl_.recv(buf.data(), buf.size(),
+    return base_t::impl_.receive(buf.data(), buf.size(),
       static_cast<int>(flags),
       error
     );

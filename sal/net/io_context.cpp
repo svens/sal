@@ -1,5 +1,10 @@
 #include <sal/net/io_context.hpp>
 
+#if __sal_os_windows
+  #include <winternl.h>
+  #pragma comment(lib, "ntdll")
+#endif
+
 
 __sal_begin
 
@@ -56,7 +61,20 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   {
     auto &entry = entries[i];
     auto io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
-    io_buf->resize(entry.dwNumberOfBytesTransferred);
+
+    if (io_buf->Internal == ERROR_SUCCESS)
+    {
+      io_buf->resize(entry.dwNumberOfBytesTransferred);
+    }
+    else
+    {
+      auto &r = *reinterpret_cast<__bits::async_t *>(io_buf->request_data_);
+      r.error_.assign(
+        ::RtlNtStatusToDosError(static_cast<NTSTATUS>(io_buf->Internal)),
+        std::system_category()
+      );
+    }
+
     io_buf->this_context_ = this;
     completed_.push(io_buf);
   }

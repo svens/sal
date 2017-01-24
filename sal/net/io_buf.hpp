@@ -97,7 +97,7 @@ public:
   }
 
 
-  void *data () noexcept
+  char *data () noexcept
   {
     return begin_;
   }

@@ -251,7 +251,7 @@ bool socket_t::wait (wait_t what, int timeout_ms, std::error_code &error)
   return false;
 }
 
-size_t socket_t::recv (void *data, size_t data_size, message_flags_t flags,
+size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -310,7 +310,8 @@ size_t socket_t::recv (void *data, size_t data_size, message_flags_t flags,
 }
 
 
-size_t socket_t::recv_from (void *data, size_t data_size, message_flags_t flags,
+size_t socket_t::receive_from (void *data, size_t data_size,
+  message_flags_t flags,
   void *address, size_t *address_size,
   std::error_code &error) noexcept
 {

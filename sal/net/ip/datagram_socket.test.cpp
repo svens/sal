@@ -1,8 +1,13 @@
 #include <sal/net/ip/udp.hpp>
+#include <sal/net/io_service.hpp>
+#include <sal/net/io_context.hpp>
 #include <sal/common.test.hpp>
 
 
 namespace {
+
+
+using namespace std::chrono_literals;
 
 
 struct datagram_socket
@@ -17,6 +22,23 @@ struct datagram_socket
       ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
       : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
     ;
+  }
+
+  static auto &service ()
+  {
+    static sal::net::io_service_t svc;
+    return svc;
+  }
+
+  static auto &context ()
+  {
+    static sal::net::io_context_t ctx = service().make_context();
+    return ctx;
+  }
+
+  auto make_buf ()
+  {
+    return context().make_buf();
   }
 };
 
@@ -168,8 +190,6 @@ TEST_P(datagram_socket, send_to_invalid)
 
 TEST_P(datagram_socket, send_to_and_receive_from)
 {
-  using namespace std::chrono_literals;
-
   socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
   socket_t r(ra), s(sa);
 
@@ -196,8 +216,6 @@ TEST_P(datagram_socket, send_to_and_receive_from)
 
 TEST_P(datagram_socket, receive_from_less_than_send_to)
 {
-  using namespace std::chrono_literals;
-
   socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
   socket_t r(ra), s(sa);
 
@@ -227,8 +245,6 @@ TEST_P(datagram_socket, receive_from_less_than_send_to)
 
 TEST_P(datagram_socket, receive_from_peek)
 {
-  using namespace std::chrono_literals;
-
   socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
   socket_t r(ra), s(sa);
 
@@ -254,8 +270,6 @@ TEST_P(datagram_socket, receive_from_peek)
 
 TEST_P(datagram_socket, send_to_do_not_route)
 {
-  using namespace std::chrono_literals;
-
   socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
   socket_t r(ra), s(sa);
 
@@ -357,8 +371,6 @@ TEST_P(datagram_socket, send_not_connected)
 
 TEST_P(datagram_socket, send_and_receive)
 {
-  using namespace std::chrono_literals;
-
   socket_t::endpoint_t ra(loopback(GetParam()));
   socket_t r(ra), s(GetParam());
 
@@ -384,8 +396,6 @@ TEST_P(datagram_socket, send_and_receive)
 
 TEST_P(datagram_socket, receive_less_than_send)
 {
-  using namespace std::chrono_literals;
-
   socket_t::endpoint_t ra(loopback(GetParam()));
   socket_t r(ra), s(GetParam());
 
@@ -413,8 +423,6 @@ TEST_P(datagram_socket, receive_less_than_send)
 
 TEST_P(datagram_socket, receive_peek)
 {
-  using namespace std::chrono_literals;
-
   socket_t::endpoint_t ra(loopback(GetParam()));
   socket_t r(ra), s(GetParam());
 
@@ -438,8 +446,6 @@ TEST_P(datagram_socket, receive_peek)
 
 TEST_P(datagram_socket, send_do_not_route)
 {
-  using namespace std::chrono_literals;
-
   socket_t::endpoint_t ra(loopback(GetParam()));
   socket_t r(ra), s(GetParam());
 
@@ -457,6 +463,78 @@ TEST_P(datagram_socket, send_do_not_route)
   // receiver
   EXPECT_EQ(case_name.size(), r.receive(sal::make_buf(buf)));
   EXPECT_EQ(buf, case_name);
+}
+
+
+TEST_P(datagram_socket, async_receive_from)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+
+  socket_t socket(endpoint);
+  service().associate(socket);
+
+  auto io_buf = make_buf();
+  io_buf->user_data(1);
+  socket.async_receive_from(std::move(io_buf));
+
+  socket.send_to(sal::make_buf(case_name), endpoint);
+
+  io_buf = context().get();
+  ASSERT_NE(nullptr, io_buf);
+  EXPECT_EQ(1U, io_buf->user_data());
+
+  auto result = socket.async_receive_from_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(endpoint, result->endpoint());
+  EXPECT_EQ(0, result->flags());
+  EXPECT_EQ(case_name, std::string(io_buf->data(), io_buf->size()));
+}
+
+
+TEST_P(datagram_socket, async_receive_from_immediate_completion)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+
+  socket_t socket(endpoint);
+  service().associate(socket);
+
+  socket.send_to(sal::make_buf(case_name), endpoint);
+
+  auto io_buf = make_buf();
+  io_buf->user_data(2);
+  socket.async_receive_from(std::move(io_buf));
+
+  io_buf = context().get();
+  ASSERT_NE(nullptr, io_buf);
+  EXPECT_EQ(2U, io_buf->user_data());
+
+  auto result = socket.async_receive_from_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(endpoint, result->endpoint());
+  EXPECT_EQ(0, result->flags());
+  EXPECT_EQ(case_name, std::string(io_buf->data(), io_buf->size()));
+}
+
+
+TEST_P(datagram_socket, async_receive_from_no_data)
+{
+  {
+    socket_t::endpoint_t endpoint(loopback(GetParam()));
+
+    socket_t socket(endpoint);
+    service().associate(socket);
+
+    socket.async_receive_from(make_buf());
+
+    EXPECT_FALSE(context().wait(10ms));
+    EXPECT_EQ(nullptr, context().try_get());
+  }
+
+  // error from closed socket still in context
+  EXPECT_THROW(
+    socket_t::async_receive_from_result(context().get()),
+    std::system_error
+  );
 }
 
 

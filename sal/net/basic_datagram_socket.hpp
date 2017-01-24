@@ -102,7 +102,7 @@ public:
     std::error_code &error) noexcept
   {
     auto endpoint_size = endpoint.capacity();
-    auto size = base_t::impl_.recv_from(buf.data(), buf.size(),
+    auto size = base_t::impl_.receive_from(buf.data(), buf.size(),
       static_cast<int>(flags),
       endpoint.data(), &endpoint_size,
       error
@@ -169,7 +169,7 @@ public:
     std::error_code &error) noexcept
   {
     size_t endpoint_size = 0;
-    return base_t::impl_.recv_from(buf.data(), buf.size(),
+    return base_t::impl_.receive_from(buf.data(), buf.size(),
       static_cast<int>(flags),
       nullptr, &endpoint_size,
       error
@@ -327,7 +327,7 @@ public:
   }
 
 
-#if 1 || __sal_send
+#if 1
 
 
   struct async_receive_from_t
