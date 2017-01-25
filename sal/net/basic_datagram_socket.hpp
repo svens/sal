@@ -337,11 +337,6 @@ public:
     {
       return *reinterpret_cast<const endpoint_t *>(&this->endpoint_);
     }
-
-    socket_base_t::message_flags_t flags () const noexcept
-    {
-      return this->flags_;
-    }
   };
 
 

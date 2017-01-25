@@ -38,7 +38,7 @@ public:
     {
       io_buf.reset(free_.try_pop());
     }
-    sal_check_ptr(io_buf.get())->clear();
+    sal_check_ptr(io_buf.get())->reset();
     io_buf->this_context_ = this;
     return io_buf;
   }

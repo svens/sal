@@ -127,7 +127,7 @@ TEST_F(net_io_buf, head_and_tail_gap)
 }
 
 
-TEST_F(net_io_buf, clear)
+TEST_F(net_io_buf, reset)
 {
   auto buf = make_buf();
   EXPECT_EQ(&context(), &buf->this_context());
@@ -135,7 +135,7 @@ TEST_F(net_io_buf, clear)
   buf->begin(1);
   buf->resize(buf->max_size() - 2);
 
-  buf->clear();
+  buf->reset();
   EXPECT_EQ(&context(), &buf->this_context());
 
   EXPECT_EQ(buf->head(), buf->begin());

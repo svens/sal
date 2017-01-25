@@ -630,9 +630,11 @@ size_t socket_t::available (std::error_code &error) const noexcept
 }
 
 
-#if __sal_os_windows
-void *socket_t::start (void *io_buf, async_receive_from_t &op) noexcept
+io_buf_t *socket_t::start (io_buf_t *io_buf, async_receive_from_t &op)
+  noexcept
 {
+#if __sal_os_windows
+
   WSABUF wsabuf;
   wsabuf.buf = static_cast<char *>(op.data_);
   wsabuf.len = static_cast<DWORD>(op.size_);
@@ -665,8 +667,14 @@ void *socket_t::start (void *io_buf, async_receive_from_t &op) noexcept
   // failed, caller still owns data
   op.error_.assign(e, std::system_category());
   return io_buf;
-}
+
+#else
+
+  (void)op;
+  return io_buf;
+
 #endif
+}
 
 
 }} // namespace net::__bits

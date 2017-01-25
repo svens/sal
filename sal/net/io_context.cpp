@@ -2,6 +2,9 @@
 
 #if __sal_os_windows
   #include <winternl.h>
+  #if !defined(STATUS_BUFFER_OVERFLOW)
+    static const int STATUS_BUFFER_OVERFLOW = 0x80000005;
+  #endif
   #pragma comment(lib, "ntdll")
 #endif
 
@@ -62,19 +65,22 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
     auto &entry = entries[i];
     auto io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
 
-    if (io_buf->Internal == ERROR_SUCCESS)
-    {
-      io_buf->resize(entry.dwNumberOfBytesTransferred);
-    }
-    else
+    if (auto status = static_cast<NTSTATUS>(io_buf->Internal))
     {
       auto &r = *reinterpret_cast<__bits::async_t *>(io_buf->request_data_);
-      r.error_.assign(
-        ::RtlNtStatusToDosError(static_cast<NTSTATUS>(io_buf->Internal)),
-        std::system_category()
-      );
+      if (status == STATUS_BUFFER_OVERFLOW)
+      {
+        r.error_.assign(WSAEMSGSIZE, std::system_category());
+      }
+      else
+      {
+        r.error_.assign(::RtlNtStatusToDosError(status),
+          std::system_category()
+        );
+      }
     }
 
+    io_buf->resize(entry.dwNumberOfBytesTransferred);
     io_buf->this_context_ = this;
     completed_.push(io_buf);
   }

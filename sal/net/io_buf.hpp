@@ -153,7 +153,7 @@ public:
   }
 
 
-  void clear () noexcept
+  void reset () noexcept
   {
     __bits::reset(*this);
     begin_ = data_;
