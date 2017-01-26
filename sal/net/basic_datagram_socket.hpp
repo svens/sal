@@ -327,9 +327,6 @@ public:
   }
 
 
-#if 1
-
-
   struct async_receive_from_t
     : public __bits::async_receive_from_t
   {
@@ -388,8 +385,6 @@ public:
     );
   }
 
-
-#endif
 
 #if 0
 

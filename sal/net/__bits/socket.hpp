@@ -143,8 +143,6 @@ struct socket_t
     std::error_code &error
   ) noexcept;
 
-  io_buf_t *start (io_buf_t *io_buf, async_receive_from_t &op) noexcept;
-
   size_t send (const void *data, size_t data_size,
     message_flags_t flags,
     std::error_code &error
@@ -155,6 +153,8 @@ struct socket_t
     const void *address, size_t address_size,
     std::error_code &error
   ) noexcept;
+
+  io_buf_t *start (io_buf_t *io_buf, async_receive_from_t &op) noexcept;
 
   void shutdown (int what, std::error_code &error) noexcept;
 

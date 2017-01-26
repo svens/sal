@@ -1,12 +1,13 @@
-#include <sal/net/io_context.hpp>
-
-#if __sal_os_windows
+#if defined(_WIN32) || defined(_WIN64)
+  #define WIN32_NO_STATUS
+  #include <windows.h>
+  #undef WIN32_NO_STATUS
   #include <winternl.h>
-  #if !defined(STATUS_BUFFER_OVERFLOW)
-    static const int STATUS_BUFFER_OVERFLOW = 0x80000005;
-  #endif
+  #include <ntstatus.h>
   #pragma comment(lib, "ntdll")
 #endif
+
+#include <sal/net/io_context.hpp>
 
 
 __sal_begin
@@ -65,7 +66,8 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
     auto &entry = entries[i];
     auto io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
 
-    if (auto status = static_cast<NTSTATUS>(io_buf->Internal))
+    auto status = static_cast<NTSTATUS>(io_buf->Internal);
+    if (!NT_SUCCESS(status))
     {
       auto &r = *reinterpret_cast<__bits::async_t *>(io_buf->request_data_);
       if (status == STATUS_BUFFER_OVERFLOW)
