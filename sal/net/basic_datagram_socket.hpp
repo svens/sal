@@ -103,8 +103,8 @@ public:
   {
     auto endpoint_size = endpoint.capacity();
     auto size = base_t::impl_.receive_from(buf.data(), buf.size(),
-      static_cast<int>(flags),
       endpoint.data(), &endpoint_size,
+      static_cast<int>(flags),
       error
     );
     if (!error)
@@ -170,8 +170,8 @@ public:
   {
     size_t endpoint_size = 0;
     return base_t::impl_.receive_from(buf.data(), buf.size(),
-      static_cast<int>(flags),
       nullptr, &endpoint_size,
+      static_cast<int>(flags),
       error
     );
   }
@@ -222,8 +222,8 @@ public:
     std::error_code &error) noexcept
   {
     return base_t::impl_.send_to(buf.data(), buf.size(),
-      static_cast<int>(flags),
       endpoint.data(), endpoint.size(),
+      static_cast<int>(flags),
       error
     );
   }
@@ -284,8 +284,8 @@ public:
     std::error_code &error) noexcept
   {
     return base_t::impl_.send_to(buf.data(), buf.size(),
-      static_cast<int>(flags),
       nullptr, 0,
+      static_cast<int>(flags),
       error
     );
   }
@@ -334,6 +334,11 @@ public:
     {
       return *reinterpret_cast<const endpoint_t *>(&this->endpoint_);
     }
+
+    size_t transferred () const noexcept
+    {
+      return this->transferred_;
+    }
   };
 
 
@@ -341,14 +346,13 @@ public:
     socket_base_t::message_flags_t flags) noexcept
   {
     auto &request = *io_buf->make_request<async_receive_from_t>();
-    request.data_ = io_buf->data();
-    request.size_ = io_buf->size();
-    request.endpoint_size_ = sizeof(request.endpoint_);
-    request.flags_ = flags;
-
-    if (base_t::impl_.start(io_buf.get(), request))
+    auto completed = base_t::impl_.start(io_buf.get(),
+      io_buf->data(), io_buf->size(),
+      flags,
+      request
+    );
+    if (completed)
     {
-      io_buf->resize(request.size_);
       io_context_t::notify(io_buf.get());
     }
     io_buf.release();
@@ -386,19 +390,32 @@ public:
   }
 
 
-#if 0
-
   struct async_send_to_t
     : public __bits::async_send_to_t
-  {};
+  {
+    size_t transferred () const noexcept
+    {
+      return this->transferred_;
+    }
+  };
 
 
-  void async_send_to (io_buf_ptr &&io_buf, const endpoint_t &endpoint,
+  void async_send_to (io_buf_ptr &&io_buf,
+    const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags) noexcept
   {
-    (void)io_buf;
-    (void)endpoint;
-    (void)flags;
+    auto &request = *io_buf->make_request<async_send_to_t>();
+    auto completed = base_t::impl_.start(io_buf.get(),
+      io_buf->data(), io_buf->size(),
+      endpoint.data(), endpoint.size(),
+      flags,
+      request
+    );
+    if (completed)
+    {
+      io_context_t::notify(io_buf.get());
+    }
+    io_buf.release();
   }
 
 
@@ -428,14 +445,11 @@ public:
 
 
   static const async_send_to_t *async_send_to_result (const io_buf_ptr &io_buf)
-    noexcept
   {
     return async_send_to_result(io_buf,
       throw_on_error("basic_datagram_socket::async_send_to")
     );
   }
-
-#endif
 };
 
 

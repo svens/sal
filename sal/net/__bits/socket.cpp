@@ -311,8 +311,8 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
 
 
 size_t socket_t::receive_from (void *data, size_t data_size,
-  message_flags_t flags,
   void *address, size_t *address_size,
+  message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -436,8 +436,9 @@ size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags
 }
 
 
-size_t socket_t::send_to (const void *data, size_t data_size, message_flags_t flags,
+size_t socket_t::send_to (const void *data, size_t data_size,
   const void *address, size_t address_size,
+  message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -630,20 +631,22 @@ size_t socket_t::available (std::error_code &error) const noexcept
 }
 
 
-io_buf_t *socket_t::start (io_buf_t *io_buf, async_receive_from_t &op)
-  noexcept
+bool socket_t::start (io_buf_t *io_buf,
+  void *data, size_t data_size,
+  message_flags_t flags,
+  async_receive_from_t &op) noexcept
 {
 #if __sal_os_windows
 
   WSABUF wsabuf;
-  wsabuf.buf = static_cast<char *>(op.data_);
-  wsabuf.len = static_cast<DWORD>(op.size_);
+  wsabuf.buf = static_cast<char *>(data);
+  wsabuf.len = static_cast<DWORD>(data_size);
 
-  DWORD transferred;
+  DWORD transferred{}, flags_ = flags;
   auto result = ::WSARecvFrom(native_handle,
     &wsabuf, 1,
     &transferred,
-    &op.flags_,
+    &flags_,
     reinterpret_cast<sockaddr *>(&op.endpoint_),
     &op.endpoint_size_,
     static_cast<OVERLAPPED *>(io_buf),
@@ -653,25 +656,86 @@ io_buf_t *socket_t::start (io_buf_t *io_buf, async_receive_from_t &op)
   if (result == 0)
   {
     // completed immediately
-    op.size_ = transferred;
-    return io_buf;
+    op.transferred_ = transferred;
+    return true;
   }
 
   auto e = ::WSAGetLastError();
   if (e == WSA_IO_PENDING)
   {
     // will be completed later, OS now owns data
-    return nullptr;
+    return false;
   }
 
   // failed, caller still owns data
   op.error_.assign(e, std::system_category());
-  return io_buf;
+  return true;
 
 #else
 
+  (void)io_buf;
+  (void)data;
+  (void)data_size;
+  (void)flags;
   (void)op;
-  return io_buf;
+
+  return true;
+
+#endif
+}
+
+
+bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
+  const void *address, size_t address_size,
+  message_flags_t flags,
+  async_send_to_t &op) noexcept
+{
+#if __sal_os_windows
+
+  WSABUF wsabuf;
+  wsabuf.buf = static_cast<char *>(const_cast<void *>(data));
+  wsabuf.len = static_cast<DWORD>(data_size);
+
+  DWORD transferred{};
+  auto result = ::WSASendTo(native_handle,
+    &wsabuf, 1,
+    &transferred,
+    flags,
+    static_cast<const sockaddr *>(address),
+    static_cast<int>(address_size),
+    static_cast<OVERLAPPED *>(io_buf),
+    nullptr
+  );
+
+  if (result == 0)
+  {
+    // completed immediately
+    op.transferred_ = transferred;
+    return true;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e == WSA_IO_PENDING)
+  {
+    // will be completed later, OS now owns data
+    return false;
+  }
+
+  // failed, caller still owns data
+  op.error_.assign(e, std::system_category());
+  return true;
+
+#else
+
+  (void)io_buf;
+  (void)data;
+  (void)data_size;
+  (void)address;
+  (void)address_size;
+  (void)flags;
+  (void)op;
+
+  return true;
 
 #endif
 }

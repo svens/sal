@@ -65,24 +65,24 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   {
     auto &entry = entries[i];
     auto io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
+    auto &result = *reinterpret_cast<__bits::async_t *>(io_buf->request_data_);
 
     auto status = static_cast<NTSTATUS>(io_buf->Internal);
     if (!NT_SUCCESS(status))
     {
-      auto &r = *reinterpret_cast<__bits::async_t *>(io_buf->request_data_);
       if (status == STATUS_BUFFER_OVERFLOW)
       {
-        r.error_.assign(WSAEMSGSIZE, std::system_category());
+        result.error_.assign(WSAEMSGSIZE, std::system_category());
       }
       else
       {
-        r.error_.assign(::RtlNtStatusToDosError(status),
+        result.error_.assign(::RtlNtStatusToDosError(status),
           std::system_category()
         );
       }
     }
 
-    io_buf->resize(entry.dwNumberOfBytesTransferred);
+    result.transferred_ = entry.dwNumberOfBytesTransferred;
     io_buf->this_context_ = this;
     completed_.push(io_buf);
   }

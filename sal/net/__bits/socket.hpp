@@ -74,25 +74,22 @@ enum class wait_t { read, write };
 
 struct async_t
 {
-  std::error_code error_;
+  std::error_code error_{};
+  size_t transferred_{};
 };
 
 
 struct async_receive_from_t
   : public async_t
 {
-  void *data_;
-  size_t size_;
   sockaddr_storage endpoint_;
-  int32_t endpoint_size_;
-  message_flags_t flags_;
+  int32_t endpoint_size_ = sizeof(endpoint_);
 };
 
 
 struct async_send_to_t
   : public async_t
-{
-};
+{};
 
 
 struct socket_t
@@ -138,8 +135,8 @@ struct socket_t
   ) noexcept;
 
   size_t receive_from (void *data, size_t data_size,
-    message_flags_t flags,
     void *address, size_t *address_size,
+    message_flags_t flags,
     std::error_code &error
   ) noexcept;
 
@@ -149,12 +146,23 @@ struct socket_t
   ) noexcept;
 
   size_t send_to (const void *data, size_t data_size,
-    message_flags_t flags,
     const void *address, size_t address_size,
+    message_flags_t flags,
     std::error_code &error
   ) noexcept;
 
-  io_buf_t *start (io_buf_t *io_buf, async_receive_from_t &op) noexcept;
+  bool start (io_buf_t *io_buf,
+    void *data, size_t data_size,
+    message_flags_t flags,
+    async_receive_from_t &op
+  ) noexcept;
+
+  bool start (io_buf_t *io_buf,
+    const void *data, size_t data_size,
+    const void *address, size_t address_size,
+    message_flags_t flags,
+    async_send_to_t &op
+  ) noexcept;
 
   void shutdown (int what, std::error_code &error) noexcept;
 
