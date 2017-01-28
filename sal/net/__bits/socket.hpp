@@ -82,7 +82,7 @@ struct async_t
 struct async_receive_from_t
   : public async_t
 {
-  sockaddr_storage endpoint_;
+  sockaddr_storage endpoint_{};
   int32_t endpoint_size_ = sizeof(endpoint_);
 };
 
