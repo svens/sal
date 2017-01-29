@@ -83,8 +83,6 @@ option_set_t options ()
 
 int run (const option_set_t &options, const argument_map_t &arguments)
 {
-  sal::net::init();
-
   port = static_cast<sal::net::ip::port_t>(
     std::stoul(options.back_or_default("port", { arguments }))
   );
@@ -107,6 +105,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     thread.emplace_back([index, &io_svc, &socket, &thread_transferred]
       {
         auto io_ctx = io_svc.make_context(receives);
+        std::error_code error;
 
         // start initial reads
         for (auto i = receives;  i;  --i)
@@ -118,7 +117,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
         auto &transferred = thread_transferred[index];
         while (auto io_buf = io_ctx.get())
         {
-          if (auto recv = socket_t::async_receive_from_result(io_buf))
+          if (auto recv = socket_t::async_receive_from_result(io_buf, error))
           {
             transferred.first++;
             transferred.second += recv->transferred();

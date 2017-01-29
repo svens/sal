@@ -5,7 +5,6 @@ list(APPEND sal_docs
 
 # sources
 list(APPEND sal_sources
-  sal/net/__bits/init.cpp
   sal/net/__bits/socket.hpp
   sal/net/__bits/socket.cpp
   sal/net/fwd.hpp
