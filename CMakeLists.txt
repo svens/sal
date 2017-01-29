@@ -146,7 +146,6 @@ if(SAL_BENCH)
   foreach (module ${sal_bench_modules})
     get_filename_component(name ${module} NAME_WE)
     set(bench_name "bench_${name}")
-    message("   - ${bench_name}")
     add_executable(${bench_name}
       ${sal_bench}
       ${module}

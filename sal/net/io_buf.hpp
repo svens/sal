@@ -147,7 +147,7 @@ public:
   }
 
 
-  size_t max_size () const noexcept
+  static constexpr size_t max_size () noexcept
   {
     return sizeof(data_);
   }

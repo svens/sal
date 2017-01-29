@@ -82,6 +82,15 @@ public:
   }
 
 
+  void reclaim () noexcept
+  {
+    while (auto completed = completed_.try_pop())
+    {
+      free_io_buf(completed);
+    }
+  }
+
+
   static void notify (io_buf_t *io_buf) noexcept
   {
     sal_check_ptr(io_buf)->this_context_->completed_.push(io_buf);
