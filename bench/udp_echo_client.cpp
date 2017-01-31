@@ -2,8 +2,14 @@
 #include <sal/net/internet.hpp>
 #include <sal/net/io_context.hpp>
 #include <sal/net/io_service.hpp>
-#include <thread>
+#include <chrono>
+#include <iomanip>
 #include <iostream>
+#include <thread>
+
+
+using namespace std::chrono;
+using namespace std::chrono_literals;
 
 
 namespace {
@@ -18,54 +24,77 @@ socket_t::endpoint_t server_endpoint(
 size_t packet_size = 1024, interval_ms = 100;
 
 
+using sys_clock_t = steady_clock;
+using sys_time_t = sys_clock_t::time_point;
+
+
 struct packet_info_t
 {
-  size_t index;
+  sys_time_t send_time;
 };
 
 
-#if 0
-void print_stats (size_t active_threads, size_t packets, size_t size_bytes)
+void received (const packet_info_t &packet)
 {
-  std::ostringstream oss;
-  oss
-    << "threads: " << active_threads
-    << "; packets: " << packets
-  ;
+  static std::vector<sys_time_t::rep> history;
+  static size_t received = 0, history_index = 0;
+  static auto rtt = 0us;
 
-  size_t bps = 8 * size_bytes;
-  const char units[] = " kMG";
-  const char *unit = &units[0];
+  // single packet stats
+  auto now = sys_clock_t::now();
+  auto this_rtt = duration_cast<microseconds>(now - packet.send_time);
+  rtt += this_rtt;
+  ++received;
 
-  while (size_bytes >= 1024)
+  // keep last 100 packet RTT history
+  if (history.size() == 100)
   {
-    size_bytes /= 1024;
-    bps /= 1000;
-    unit++;
+    history[history_index++] = this_rtt.count();
+    if (history_index == 100)
+    {
+      history_index = 0;
+    }
+  }
+  else
+  {
+    history.emplace_back(this_rtt.count());
   }
 
-  oss << "; " << *unit << "bps=" << bps
-    << "; " << *unit << "Bps=" << size_bytes
-    << '\n';
+  // print stats every second
+  static auto next_report = now + 1s;
+  if (next_report > now)
+  {
+    return;
+  }
+  next_report = now + 1s;
+
+  auto dev = std::make_pair(0.0, 0.0);
+  for (auto &h: history)
+  {
+    dev.first += h * h;
+    dev.second += h;
+  }
+  dev.first /= history.size();
+  dev.second /= history.size();
+  auto jitter = std::sqrt(dev.first - dev.second * dev.second);
+  rtt /= received;
+
+  std::cout
+    << "received=" << received
+    << "; rtt=" << duration_cast<milliseconds>(rtt).count() << "ms"
+    << "; jitter=" << std::setprecision(2) << std::fixed << jitter/1000 << "ms"
+    << '\n'
   ;
 
-  static std::string output;
-  if (output != oss.str())
-  {
-    output = oss.str();
-    std::cout << output;
-  }
+  rtt = 0us;
+  received = 0;
 }
-#endif
 
 
 } // namespace
 
 
 namespace bench {
-
-
-using namespace std::chrono_literals;
 
 
 option_set_t options ()
@@ -120,15 +149,13 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     std::cout << "enforcing minimum packet size " << packet_size << "B\n";
   }
 
-  std::chrono::milliseconds interval(
+  milliseconds interval(
     std::stoul(options.back_or_default("interval", { arguments }))
   );
 
   sal::net::io_service_t io_svc;
   socket_t socket(protocol_t::v4());
   io_svc.associate(socket);
-
-  size_t send_index = 0;
 
   // reader thread
   auto reader = std::thread([&io_svc, &socket]
@@ -139,7 +166,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
       if (auto recv = socket_t::async_receive_from_result(io_buf))
       {
         auto &packet = *reinterpret_cast<packet_info_t *>(io_buf->data());
-        (void)packet;
+        received(packet);
         io_buf->reset();
         socket.async_receive_from(std::move(io_buf));
       }
@@ -148,22 +175,24 @@ int run (const option_set_t &options, const argument_map_t &arguments)
 
   // generate packets
   auto io_ctx = io_svc.make_context();
+  bool receive_started = false;
   while (true)
   {
     auto io_buf = io_ctx.make_buf();
     io_buf->resize(packet_size);
 
     auto &packet = *reinterpret_cast<packet_info_t *>(io_buf->data());
-    packet.index = send_index++;
+    packet.send_time = sys_clock_t::now();
     socket.async_send_to(std::move(io_buf), server_endpoint);
 
-    if (send_index == 1)
+    if (!receive_started)
     {
       // now that we have bound to ephemeral port, start receives as well
       for (auto i = 0;  i < 64;  ++i)
       {
         socket.async_receive_from(io_ctx.make_buf());
       }
+      receive_started = true;
     }
 
     if (interval.count())

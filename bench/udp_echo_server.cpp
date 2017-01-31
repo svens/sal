@@ -6,10 +6,18 @@
 #include <iostream>
 
 
+using namespace std::chrono_literals;
+
+
 namespace {
 
+using protocol_t = sal::net::ip::udp_t;
+using socket_t = protocol_t::socket_t;
+
 // configuration
-sal::net::ip::port_t port = 8192;
+socket_t::endpoint_t server_endpoint(
+  sal::net::ip::make_address_v4("127.0.0.1"), 8192
+);
 size_t receives = 16, threads = 1;
 
 
@@ -52,20 +60,21 @@ void print_stats (size_t active_threads, size_t packets, size_t size_bytes)
 namespace bench {
 
 
-using namespace std::chrono_literals;
-
-using protocol_t = sal::net::ip::udp_t;
-using socket_t = protocol_t::socket_t;
-
-
 option_set_t options ()
 {
   using namespace sal::program_options;
 
   option_set_t desc;
   desc
+    .add({"a", "address"},
+      requires_argument("ADDRESS", "0.0.0.0"),
+      help("UDP echo server IPv4 address")
+    )
+    .add({"b", "buffer"},
+      help("do not disable OS packet buffering")
+    )
     .add({"p", "port"},
-      requires_argument("INT", port),
+      requires_argument("INT", server_endpoint.port()),
       help("listening port")
     )
     .add({"r", "receives"},
@@ -83,16 +92,28 @@ option_set_t options ()
 
 int run (const option_set_t &options, const argument_map_t &arguments)
 {
-  port = static_cast<sal::net::ip::port_t>(
-    std::stoul(options.back_or_default("port", { arguments }))
+  server_endpoint.address(
+    sal::net::ip::make_address_v4(
+      options.back_or_default("address", { arguments })
+    )
   );
+  server_endpoint.port(
+    static_cast<sal::net::ip::port_t>(
+      std::stoul(options.back_or_default("port", { arguments }))
+    )
+  );
+
   receives = std::stoul(options.back_or_default("receives", { arguments }));
   threads = std::stoul(options.back_or_default("threads", { arguments }));
 
   sal::net::io_service_t io_svc;
-  socket_t socket(socket_t::endpoint_t(protocol_t::v4(), port));
-  socket.set_option(sal::net::receive_buffer_size(0));
-  socket.set_option(sal::net::send_buffer_size(0));
+  socket_t socket(server_endpoint);
+  if (!options.has("buffer", { arguments }))
+  {
+    std::cout << "disable buffering\n";
+    socket.set_option(sal::net::receive_buffer_size(0));
+    socket.set_option(sal::net::send_buffer_size(0));
+  }
   io_svc.associate(socket);
 
   std::vector<std::thread> thread;
