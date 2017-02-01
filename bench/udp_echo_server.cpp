@@ -18,7 +18,7 @@ using socket_t = protocol_t::socket_t;
 socket_t::endpoint_t server_endpoint(
   sal::net::ip::make_address_v4("127.0.0.1"), 8192
 );
-size_t receives = 16, threads = 1;
+size_t receives = 16, threads = 1, buf_mul = 1;
 
 
 void print_stats (size_t active_threads, size_t packets, size_t size_bytes)
@@ -71,7 +71,8 @@ option_set_t options ()
       help("UDP echo server IPv4 address")
     )
     .add({"b", "buffer"},
-      help("do not disable OS packet buffering")
+      requires_argument("INT", buf_mul),
+      help("multiply receive buffer size (0 to disable buffering)")
     )
     .add({"p", "port"},
       requires_argument("INT", server_endpoint.port()),
@@ -105,16 +106,20 @@ int run (const option_set_t &options, const argument_map_t &arguments)
 
   receives = std::stoul(options.back_or_default("receives", { arguments }));
   threads = std::stoul(options.back_or_default("threads", { arguments }));
+  buf_mul = std::stoul(options.back_or_default("buffer", { arguments }));
 
   sal::net::io_service_t io_svc;
-  socket_t socket(server_endpoint);
-  if (!options.has("buffer", { arguments }))
+  socket_t recv_sock(server_endpoint);
+  if (buf_mul != 1)
   {
-    std::cout << "disable buffering\n";
-    socket.set_option(sal::net::receive_buffer_size(0));
-    socket.set_option(sal::net::send_buffer_size(0));
+    int size = 0;
+    recv_sock.get_option(sal::net::receive_buffer_size(&size));
+    std::cout << "receive buffer " << size;
+    recv_sock.set_option(sal::net::receive_buffer_size(int(buf_mul) * size));
+    recv_sock.get_option(sal::net::receive_buffer_size(&size));
+    std::cout << " -> " << size << "bytes\n";
   }
-  io_svc.associate(socket);
+  io_svc.associate(recv_sock);
 
   std::vector<std::thread> thread;
   std::vector<std::pair<size_t, size_t>> thread_transferred;
@@ -123,15 +128,18 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     size_t index = thread.size();
     thread_transferred.emplace_back();
 
-    thread.emplace_back([index, &io_svc, &socket, &thread_transferred]
+    thread.emplace_back([index, &io_svc, &recv_sock, &thread_transferred]
       {
+        socket_t send_sock(sal::net::ip::udp_t::v4());
+        io_svc.associate(send_sock);
+
         auto io_ctx = io_svc.make_context(receives);
         std::error_code error;
 
         // start initial reads
         for (auto i = receives;  i;  --i)
         {
-          socket.async_receive_from(io_ctx.make_buf());
+          recv_sock.async_receive_from(io_ctx.make_buf());
         }
 
         // infinite handling
@@ -143,12 +151,12 @@ int run (const option_set_t &options, const argument_map_t &arguments)
             transferred.first++;
             transferred.second += recv->transferred();
             io_buf->resize(recv->transferred());
-            socket.async_send_to(std::move(io_buf), recv->endpoint());
+            send_sock.async_send_to(std::move(io_buf), recv->endpoint());
           }
           else
           {
             io_buf->reset();
-            socket.async_receive_from(std::move(io_buf));
+            recv_sock.async_receive_from(std::move(io_buf));
           }
         }
       }
