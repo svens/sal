@@ -187,6 +187,10 @@ int run (const option_set_t &options, const argument_map_t &arguments)
 
     if (!receive_started)
     {
+      // send some data to server sender socket (to create map in NAT)
+      socket_t::endpoint_t endpoint(server_endpoint.address(), server_endpoint.port() + 1);
+      socket.async_send_to(io_ctx.make_buf(), endpoint);
+
       // now that we have bound to ephemeral port, start receives as well
       for (auto i = 0;  i < 64;  ++i)
       {

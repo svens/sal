@@ -109,6 +109,8 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   buf_mul = std::stoul(options.back_or_default("buffer", { arguments }));
 
   sal::net::io_service_t io_svc;
+
+  // receive socket
   socket_t recv_sock(server_endpoint);
   if (buf_mul != 1)
   {
@@ -121,6 +123,20 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   }
   io_svc.associate(recv_sock);
 
+  // send socket
+  server_endpoint.port(server_endpoint.port() + 1);
+  socket_t send_sock(server_endpoint);
+  if (buf_mul != 1)
+  {
+    int size = 0;
+    send_sock.get_option(sal::net::send_buffer_size(&size));
+    std::cout << "send buffer " << size;
+    send_sock.set_option(sal::net::send_buffer_size(int(buf_mul) * size));
+    send_sock.get_option(sal::net::send_buffer_size(&size));
+    std::cout << " -> " << size << "bytes\n";
+  }
+  io_svc.associate(send_sock);
+
   std::vector<std::thread> thread;
   std::vector<std::pair<size_t, size_t>> thread_transferred;
   while (thread.size() != threads)
@@ -128,11 +144,8 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     size_t index = thread.size();
     thread_transferred.emplace_back();
 
-    thread.emplace_back([index, &io_svc, &recv_sock, &thread_transferred]
+    thread.emplace_back([index, &io_svc, &recv_sock, &send_sock, &thread_transferred]
       {
-        socket_t send_sock(sal::net::ip::udp_t::v4());
-        io_svc.associate(send_sock);
-
         auto io_ctx = io_svc.make_context(receives);
         std::error_code error;
 
