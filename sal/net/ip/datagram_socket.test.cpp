@@ -490,6 +490,29 @@ TEST_P(datagram_socket, async_receive_from)
 }
 
 
+TEST_P(datagram_socket, async_receive_from_immediate_completion)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  service.associate(socket);
+
+  socket.send_to(sal::make_buf(case_name), endpoint);
+
+  auto io_buf = context.make_buf();
+  io_buf->user_data(2);
+  socket.async_receive_from(std::move(io_buf));
+
+  io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+  EXPECT_EQ(2U, io_buf->user_data());
+
+  auto result = socket.async_receive_from_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(endpoint, result->endpoint());
+  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+}
+
+
 TEST_P(datagram_socket, async_receive_from_invalid)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
@@ -537,29 +560,6 @@ TEST_P(datagram_socket, async_receive_from_invalid_immediate)
     socket.async_receive_from_result(io_buf),
     std::system_error
   );
-}
-
-
-TEST_P(datagram_socket, async_receive_from_immediate_completion)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  socket.send_to(sal::make_buf(case_name), endpoint);
-
-  auto io_buf = context.make_buf();
-  io_buf->user_data(2);
-  socket.async_receive_from(std::move(io_buf));
-
-  io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  EXPECT_EQ(2U, io_buf->user_data());
-
-  auto result = socket.async_receive_from_result(io_buf);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(endpoint, result->endpoint());
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
 }
 
 

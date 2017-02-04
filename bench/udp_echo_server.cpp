@@ -29,10 +29,10 @@ void print_stats (size_t active_threads, size_t packets, size_t size_bytes)
     << "; packets: " << packets
   ;
 
-  size_t bps = 8 * size_bytes;
   const char units[] = " kMG";
   const char *unit = &units[0];
 
+  size_t bps = 8 * size_bytes;
   while (size_bytes >= 1024)
   {
     size_bytes /= 1024;
@@ -145,35 +145,34 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     thread_transferred.emplace_back();
 
     thread.emplace_back([index, &io_svc, &recv_sock, &send_sock, &thread_transferred]
+    {
+      auto io_ctx = io_svc.make_context(receives);
+      std::error_code error;
+
+      // start initial reads
+      for (auto i = receives;  i;  --i)
       {
-        auto io_ctx = io_svc.make_context(receives);
-        std::error_code error;
+        recv_sock.async_receive_from(io_ctx.make_buf());
+      }
 
-        // start initial reads
-        for (auto i = receives;  i;  --i)
+      // infinite handling
+      auto &transferred = thread_transferred[index];
+      while (auto io_buf = io_ctx.get())
+      {
+        if (auto recv = socket_t::async_receive_from_result(io_buf, error))
         {
-          recv_sock.async_receive_from(io_ctx.make_buf());
+          transferred.first++;
+          transferred.second += recv->transferred();
+          io_buf->resize(recv->transferred());
+          send_sock.async_send_to(std::move(io_buf), recv->endpoint());
         }
-
-        // infinite handling
-        auto &transferred = thread_transferred[index];
-        while (auto io_buf = io_ctx.get())
+        else
         {
-          if (auto recv = socket_t::async_receive_from_result(io_buf, error))
-          {
-            transferred.first++;
-            transferred.second += recv->transferred();
-            io_buf->resize(recv->transferred());
-            send_sock.async_send_to(std::move(io_buf), recv->endpoint());
-          }
-          else
-          {
-            io_buf->reset();
-            recv_sock.async_receive_from(std::move(io_buf));
-          }
+          io_buf->reset();
+          recv_sock.async_receive_from(std::move(io_buf));
         }
       }
-    );
+    });
   }
 
   while (true)
