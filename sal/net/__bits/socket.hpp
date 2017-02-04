@@ -97,6 +97,11 @@ struct async_send_to_t
 {};
 
 
+struct async_send_t
+  : public async_t
+{};
+
+
 struct socket_t
 {
   native_socket_t native_handle = invalid_socket;
@@ -206,6 +211,12 @@ struct socket_t
     const void *address, size_t address_size,
     message_flags_t flags,
     async_send_to_t &op
+  ) noexcept;
+
+  bool start (io_buf_t *io_buf,
+    const void *data, size_t data_size,
+    message_flags_t flags,
+    async_send_t &op
   ) noexcept;
 };
 

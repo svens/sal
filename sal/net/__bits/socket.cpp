@@ -868,6 +868,57 @@ bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
 }
 
 
+bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
+  message_flags_t flags,
+  async_send_t &op) noexcept
+{
+#if __sal_os_windows
+
+  WSABUF wsabuf;
+  wsabuf.buf = static_cast<char *>(const_cast<void *>(data));
+  wsabuf.len = static_cast<DWORD>(data_size);
+
+  DWORD transferred{};
+  auto result = ::WSASend(native_handle,
+    &wsabuf, 1,
+    &transferred,
+    flags,
+    static_cast<OVERLAPPED *>(io_buf),
+    nullptr
+  );
+
+  if (result == 0)
+  {
+    // completed immediately
+    op.transferred_ = transferred;
+    return true;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e == WSA_IO_PENDING)
+  {
+    // will be completed later, OS now owns data
+    return false;
+  }
+
+  // failed, caller still owns data
+  op.error_.assign(e, std::system_category());
+  return true;
+
+#else
+
+  (void)io_buf;
+  (void)data;
+  (void)data_size;
+  (void)flags;
+  (void)op;
+
+  return true;
+
+#endif
+}
+
+
 }} // namespace net::__bits
 
 

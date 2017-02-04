@@ -506,6 +506,63 @@ public:
       throw_on_error("basic_datagram_socket::async_send_to")
     );
   }
+
+
+  struct async_send_t
+    : public __bits::async_send_t
+  {
+    size_t transferred () const noexcept
+    {
+      return this->transferred_;
+    }
+  };
+
+
+  void async_send (io_buf_ptr &&io_buf, socket_base_t::message_flags_t flags)
+    noexcept
+  {
+    auto &request = *io_buf->make_request<async_send_t>();
+    auto completed = base_t::impl_.start(io_buf.get(),
+      io_buf->data(), io_buf->size(),
+      flags,
+      request
+    );
+    if (completed)
+    {
+      io_context_t::notify(io_buf.get());
+    }
+    io_buf.release();
+  }
+
+
+  void async_send (io_buf_ptr &&io_buf) noexcept
+  {
+    async_send(std::move(io_buf), socket_base_t::message_flags_t{});
+  }
+
+
+  static const async_send_t *async_send_result (
+    const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto r = io_buf->make_result<async_send_t>())
+    {
+      if (r->error_)
+      {
+        error = r->error_;
+      }
+      return r;
+    }
+    return nullptr;
+  }
+
+
+  static const async_send_t *async_send_result (const io_buf_ptr &io_buf)
+  {
+    return async_send_result(io_buf,
+      throw_on_error("basic_datagram_socket::async_send")
+    );
+  }
 };
 
 
