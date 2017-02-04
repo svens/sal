@@ -41,11 +41,11 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
 {
 #if __sal_os_windows
 
-  OVERLAPPED_ENTRY entries[64];
+  OVERLAPPED_ENTRY entries[max_completion_count];
   ULONG completed_count;
 
   auto succeeded = ::GetQueuedCompletionStatusEx(poller_,
-    entries, static_cast<ULONG>(max_wait_completed_),
+    entries, static_cast<ULONG>(completion_count_),
     &completed_count,
     static_cast<DWORD>(period.count()),
     false

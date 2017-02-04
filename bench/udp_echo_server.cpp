@@ -18,7 +18,7 @@ using socket_t = protocol_t::socket_t;
 socket_t::endpoint_t server_endpoint(
   sal::net::ip::make_address_v4("127.0.0.1"), 8192
 );
-size_t receives = 16, threads = 1, buf_mul = 1;
+size_t receives = 64, threads = 1, buf_mul = 1;
 
 
 void print_stats (size_t active_threads, size_t packets, size_t size_bytes)
@@ -72,7 +72,7 @@ option_set_t options ()
     )
     .add({"b", "buffer"},
       requires_argument("INT", buf_mul),
-      help("multiply receive buffer size (0 to disable buffering)")
+      help("multiply send/receive buffer size (0 to disable buffering)")
     )
     .add({"p", "port"},
       requires_argument("INT", server_endpoint.port()),

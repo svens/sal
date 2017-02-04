@@ -104,13 +104,14 @@ private:
   std::deque<std::array<char, 1024 * sizeof(io_buf_t)>> pool_{};
   io_buf_t::free_list free_{};
 
-  size_t max_wait_completed_;
+  static constexpr size_t max_completion_count = 256;
+  size_t completion_count_;
   io_buf_t::completed_list completed_{};
 
 
-  io_context_t (__bits::native_poller_t &poller, size_t max_wait_completed)
+  io_context_t (__bits::native_poller_t &poller, size_t completion_count)
     : poller_(poller)
-    , max_wait_completed_(max_wait_completed)
+    , completion_count_(completion_count)
   {}
 
   bool extend_pool () noexcept;

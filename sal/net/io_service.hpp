@@ -24,17 +24,17 @@ public:
   io_service_t (size_t max_concurrency = 0);
 
 
-  io_context_t make_context (size_t max_wait_completed = 16)
+  io_context_t make_context (size_t completion_count = 16)
   {
-    if (max_wait_completed < 1)
+    if (completion_count < 1)
     {
-      max_wait_completed = 1;
+      completion_count = 1;
     }
-    else if (max_wait_completed > 64)
+    else if (completion_count > io_context_t::max_completion_count)
     {
-      max_wait_completed = 64;
+      completion_count = io_context_t::max_completion_count;
     }
-    return io_context_t(poller_, max_wait_completed);
+    return io_context_t(poller_, completion_count);
   }
 
 
