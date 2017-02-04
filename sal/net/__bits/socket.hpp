@@ -79,6 +79,11 @@ struct async_t
 };
 
 
+struct async_receive_t
+  : public async_t
+{};
+
+
 struct async_receive_from_t
   : public async_t
 {
@@ -129,41 +134,6 @@ struct socket_t
     std::error_code &error
   ) noexcept;
 
-  size_t receive (void *data, size_t data_size,
-    message_flags_t flags,
-    std::error_code &error
-  ) noexcept;
-
-  size_t receive_from (void *data, size_t data_size,
-    void *address, size_t *address_size,
-    message_flags_t flags,
-    std::error_code &error
-  ) noexcept;
-
-  size_t send (const void *data, size_t data_size,
-    message_flags_t flags,
-    std::error_code &error
-  ) noexcept;
-
-  size_t send_to (const void *data, size_t data_size,
-    const void *address, size_t address_size,
-    message_flags_t flags,
-    std::error_code &error
-  ) noexcept;
-
-  bool start (io_buf_t *io_buf,
-    void *data, size_t data_size,
-    message_flags_t flags,
-    async_receive_from_t &op
-  ) noexcept;
-
-  bool start (io_buf_t *io_buf,
-    const void *data, size_t data_size,
-    const void *address, size_t address_size,
-    message_flags_t flags,
-    async_send_to_t &op
-  ) noexcept;
-
   void shutdown (int what, std::error_code &error) noexcept;
 
   void remote_endpoint (void *address, size_t *address_size,
@@ -188,6 +158,55 @@ struct socket_t
   void non_blocking (bool mode, std::error_code &error) noexcept;
 
   size_t available (std::error_code &error) const noexcept;
+
+  //
+  // synchronous send/recv
+  //
+
+  size_t receive (void *data, size_t data_size,
+    message_flags_t flags,
+    std::error_code &error
+  ) noexcept;
+
+  size_t receive_from (void *data, size_t data_size,
+    void *address, size_t *address_size,
+    message_flags_t flags,
+    std::error_code &error
+  ) noexcept;
+
+  size_t send (const void *data, size_t data_size,
+    message_flags_t flags,
+    std::error_code &error
+  ) noexcept;
+
+  size_t send_to (const void *data, size_t data_size,
+    const void *address, size_t address_size,
+    message_flags_t flags,
+    std::error_code &error
+  ) noexcept;
+
+  //
+  // asynchronous send/recv
+  //
+
+  bool start (io_buf_t *io_buf,
+    void *data, size_t data_size,
+    message_flags_t flags,
+    async_receive_t &op
+  ) noexcept;
+
+  bool start (io_buf_t *io_buf,
+    void *data, size_t data_size,
+    message_flags_t flags,
+    async_receive_from_t &op
+  ) noexcept;
+
+  bool start (io_buf_t *io_buf,
+    const void *data, size_t data_size,
+    const void *address, size_t address_size,
+    message_flags_t flags,
+    async_send_to_t &op
+  ) noexcept;
 };
 
 

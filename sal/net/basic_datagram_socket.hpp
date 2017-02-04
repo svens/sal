@@ -390,6 +390,62 @@ public:
   }
 
 
+  struct async_receive_t
+    : public __bits::async_receive_t
+  {
+    size_t transferred () const noexcept
+    {
+      return this->transferred_;
+    }
+  };
+
+
+  void async_receive (io_buf_ptr &&io_buf,
+    socket_base_t::message_flags_t flags) noexcept
+  {
+    auto &request = *io_buf->make_request<async_receive_t>();
+    auto completed = base_t::impl_.start(io_buf.get(),
+      io_buf->data(), io_buf->size(),
+      flags,
+      request
+    );
+    if (completed)
+    {
+      io_context_t::notify(io_buf.get());
+    }
+    io_buf.release();
+  }
+
+
+  void async_receive (io_buf_ptr &&io_buf) noexcept
+  {
+    async_receive(std::move(io_buf), socket_base_t::message_flags_t{});
+  }
+
+
+  static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto r = io_buf->make_result<async_receive_t>())
+    {
+      if (r->error_)
+      {
+        error = r->error_;
+      }
+      return r;
+    }
+    return nullptr;
+  }
+
+
+  static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf)
+  {
+    return async_receive_result(io_buf,
+      throw_on_error("basic_datagram_socket::async_receive")
+    );
+  }
+
+
   struct async_send_to_t
     : public __bits::async_send_to_t
   {
