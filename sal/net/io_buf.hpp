@@ -15,6 +15,7 @@
 
 
 __sal_begin
+#if __sal_os_windows
 
 
 namespace net {
@@ -250,4 +251,5 @@ using io_buf_ptr = std::unique_ptr<io_buf_t, void(*)(io_buf_t*)>;
 } // namespace net
 
 
+#endif // __sal_os_windows
 __sal_end

@@ -24,6 +24,8 @@ struct stream_socket
     ;
   }
 
+#if __sal_os_windows
+
   static sal::net::io_service_t service;
   static sal::net::io_context_t context;
 
@@ -34,11 +36,16 @@ struct stream_socket
     std::memcpy(io_buf->data(), content.data(), content.size());
     return io_buf;
   }
+
+#endif // __sal_os_windows
 };
 
 constexpr sal::net::ip::port_t stream_socket::port;
-sal::net::io_service_t stream_socket::service;
-sal::net::io_context_t stream_socket::context = service.make_context();
+
+#if __sal_os_windows
+  sal::net::io_service_t stream_socket::service;
+  sal::net::io_context_t stream_socket::context = service.make_context();
+#endif // __sal_os_windows
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, stream_socket,

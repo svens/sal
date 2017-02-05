@@ -4,7 +4,7 @@
 #include <sal/common.test.hpp>
 
 
-#include <sal/net/ip/udp.hpp>
+#if __sal_os_windows
 
 
 namespace {
@@ -200,3 +200,6 @@ TEST_F(net_io_buf, make_result_invalid)
 
 
 } // namespace
+
+
+#endif // __sal_os_windows

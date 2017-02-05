@@ -3,6 +3,9 @@
 #include <sal/common.test.hpp>
 
 
+#if __sal_os_windows
+
+
 namespace {
 
 
@@ -66,3 +69,6 @@ TEST_F(net_io_context, wait_not_empty)
 
 
 } // namespace
+
+
+#endif // __sal_os_windows

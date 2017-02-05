@@ -10,6 +10,7 @@
 #include <sal/net/io_context.hpp>
 
 
+#if __sal_os_windows
 __sal_begin
 
 
@@ -39,8 +40,6 @@ bool io_context_t::extend_pool () noexcept
 bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   std::error_code &error) noexcept
 {
-#if __sal_os_windows
-
   OVERLAPPED_ENTRY entries[max_completion_count];
   ULONG completed_count;
 
@@ -88,14 +87,6 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   }
 
   return completed_count > 0;
-
-#else
-
-  (void)period;
-  (void)error;
-  return false;
-
-#endif
 }
 
 
@@ -103,3 +94,4 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
 
 
 __sal_end
+#endif // __sal_os_windows

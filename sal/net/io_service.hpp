@@ -11,6 +11,7 @@
 #include <sal/net/io_context.hpp>
 
 
+#if __sal_os_windows
 __sal_begin
 
 
@@ -65,3 +66,4 @@ private:
 
 
 __sal_end
+#endif // __sal_os_windows

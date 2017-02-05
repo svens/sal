@@ -743,12 +743,14 @@ size_t socket_t::available (std::error_code &error) const noexcept
 }
 
 
+#if __sal_os_windows
+
+
 bool socket_t::start (io_buf_t *io_buf,
   void *data, size_t data_size,
   message_flags_t flags,
   async_receive_t &op) noexcept
 {
-#if __sal_os_windows
 
   WSABUF wsabuf;
   wsabuf.buf = static_cast<char *>(data);
@@ -764,18 +766,6 @@ bool socket_t::start (io_buf_t *io_buf,
   );
 
   return handle_async_result(result, transferred, op);
-
-#else
-
-  (void)io_buf;
-  (void)data;
-  (void)data_size;
-  (void)flags;
-  (void)op;
-
-  return true;
-
-#endif
 }
 
 
@@ -784,8 +774,6 @@ bool socket_t::start (io_buf_t *io_buf,
   message_flags_t flags,
   async_receive_from_t &op) noexcept
 {
-#if __sal_os_windows
-
   WSABUF wsabuf;
   wsabuf.buf = static_cast<char *>(data);
   wsabuf.len = static_cast<DWORD>(data_size);
@@ -802,18 +790,6 @@ bool socket_t::start (io_buf_t *io_buf,
   );
 
   return handle_async_result(result, transferred, op);
-
-#else
-
-  (void)io_buf;
-  (void)data;
-  (void)data_size;
-  (void)flags;
-  (void)op;
-
-  return true;
-
-#endif
 }
 
 
@@ -822,8 +798,6 @@ bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
   message_flags_t flags,
   async_send_to_t &op) noexcept
 {
-#if __sal_os_windows
-
   WSABUF wsabuf;
   wsabuf.buf = static_cast<char *>(const_cast<void *>(data));
   wsabuf.len = static_cast<DWORD>(data_size);
@@ -840,20 +814,6 @@ bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
   );
 
   return handle_async_result(result, transferred, op);
-
-#else
-
-  (void)io_buf;
-  (void)data;
-  (void)data_size;
-  (void)address;
-  (void)address_size;
-  (void)flags;
-  (void)op;
-
-  return true;
-
-#endif
 }
 
 
@@ -861,8 +821,6 @@ bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
   message_flags_t flags,
   async_send_t &op) noexcept
 {
-#if __sal_os_windows
-
   WSABUF wsabuf;
   wsabuf.buf = static_cast<char *>(const_cast<void *>(data));
   wsabuf.len = static_cast<DWORD>(data_size);
@@ -877,19 +835,10 @@ bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
   );
 
   return handle_async_result(result, transferred, op);
-
-#else
-
-  (void)io_buf;
-  (void)data;
-  (void)data_size;
-  (void)flags;
-  (void)op;
-
-  return true;
-
-#endif
 }
+
+
+#endif // __sal_os_windows
 
 
 }} // namespace net::__bits

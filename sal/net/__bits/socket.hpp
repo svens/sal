@@ -59,18 +59,13 @@ using sa_family_t = ::sa_family_t;
 // send/recv flags
 using message_flags_t = int;
 
-// not implemented yet
-using native_poller_t = int;
-constexpr native_poller_t invalid_poller = -1;
-
-struct io_buf_t {};
-inline void reset (io_buf_t &) noexcept {}
-
 #endif
 
 
 enum class wait_t { read, write };
 
+
+#if __sal_os_windows
 
 struct async_t
 {
@@ -100,6 +95,8 @@ struct async_send_to_t
 struct async_send_t
   : public async_t
 {};
+
+#endif // __sal_os_windows
 
 
 struct socket_t
@@ -190,6 +187,8 @@ struct socket_t
     std::error_code &error
   ) noexcept;
 
+#if __sal_os_windows
+
   //
   // asynchronous send/recv
   //
@@ -218,6 +217,8 @@ struct socket_t
     message_flags_t flags,
     async_send_t &op
   ) noexcept;
+
+#endif // __sal_os_windows
 };
 
 
