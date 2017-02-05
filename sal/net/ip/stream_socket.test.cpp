@@ -1,4 +1,6 @@
 #include <sal/net/ip/tcp.hpp>
+#include <sal/net/io_context.hpp>
+#include <sal/net/io_service.hpp>
 #include <sal/common.test.hpp>
 #include <thread>
 
@@ -21,9 +23,22 @@ struct stream_socket
       : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
     ;
   }
+
+  static sal::net::io_service_t service;
+  static sal::net::io_context_t context;
+
+  static sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
+  {
+    auto io_buf = context.make_buf();
+    io_buf->resize(content.size());
+    std::memcpy(io_buf->data(), content.data(), content.size());
+    return io_buf;
+  }
 };
 
 constexpr sal::net::ip::port_t stream_socket::port;
+sal::net::io_service_t stream_socket::service;
+sal::net::io_context_t stream_socket::context = service.make_context();
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, stream_socket,
@@ -383,6 +398,474 @@ TEST_P(stream_socket, no_delay)
   socket.get_option(socket_t::protocol_t::no_delay(&value));
   EXPECT_NE(original, value);
 }
+
+
+#if __sal_os_windows
+
+
+TEST_P(stream_socket, async_receive)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+
+  service.associate(a);
+  a.async_receive(context.make_buf());
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+
+  EXPECT_EQ(nullptr, a.async_send_result(io_buf));
+}
+
+
+TEST_P(stream_socket, async_receive_immediate_completion)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+
+  service.associate(a);
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  a.async_receive(context.make_buf());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+
+  EXPECT_EQ(nullptr, a.async_send_result(io_buf));
+}
+
+
+TEST_P(stream_socket, async_receive_two_send)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+  service.associate(a);
+
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  a.async_receive(context.make_buf());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(2 * case_name.size(), result->transferred());
+  EXPECT_EQ(
+    case_name + case_name,
+    std::string(io_buf->data(), result->transferred())
+  );
+
+  EXPECT_EQ(nullptr, a.async_send_result(io_buf));
+}
+
+
+TEST_P(stream_socket, async_receive_two_send_immediate_completion)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+  service.associate(a);
+
+  a.async_receive(context.make_buf());
+  a.async_receive(context.make_buf());
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+
+  for (int i = 0;  i < 2;  ++i)
+  {
+    auto io_buf = context.get();
+    ASSERT_NE(nullptr, io_buf);
+
+    auto result = a.async_receive_result(io_buf);
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ(case_name.size(), result->transferred());
+    EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  }
+}
+
+
+TEST_P(stream_socket, async_receive_less_than_send)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+  service.associate(a);
+
+  auto io_buf = context.make_buf();
+  io_buf->resize(case_name.size() / 2);
+  a.async_receive(std::move(io_buf));
+
+  io_buf = context.make_buf();
+  io_buf->resize(case_name.size() - case_name.size() / 2);
+  a.async_receive(std::move(io_buf));
+
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+
+  std::string data;
+  for (auto i = 0;  i < 2;  ++i)
+  {
+    io_buf = context.get();
+    ASSERT_NE(nullptr, io_buf);
+    auto result = a.async_receive_result(io_buf);
+    ASSERT_NE(nullptr, result);
+    data += std::string(io_buf->data(), result->transferred());
+  }
+  EXPECT_EQ(case_name, data);
+}
+
+
+TEST_P(stream_socket, async_receive_less_than_send_immediate_completion)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+  service.associate(a);
+
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+
+  auto io_buf = context.make_buf();
+  io_buf->resize(case_name.size() / 2);
+  a.async_receive(std::move(io_buf));
+
+  io_buf = context.make_buf();
+  io_buf->resize(case_name.size() - case_name.size() / 2);
+  a.async_receive(std::move(io_buf));
+
+  std::string data;
+  for (auto i = 0;  i < 2;  ++i)
+  {
+    io_buf = context.get();
+    ASSERT_NE(nullptr, io_buf);
+    auto result = a.async_receive_result(io_buf);
+    ASSERT_NE(nullptr, result);
+    data += std::string(io_buf->data(), result->transferred());
+  }
+  EXPECT_EQ(case_name, data);
+}
+
+
+TEST_P(stream_socket, async_receive_disconnected)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  service.associate(a);
+  auto b = acceptor.accept();
+
+  a.async_receive(context.make_buf());
+  b.close();
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(0U, result->transferred());
+}
+
+
+TEST_P(stream_socket, async_receive_disconnected_immediate_completion)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  service.associate(a);
+  auto b = acceptor.accept();
+
+  b.close();
+  std::this_thread::yield();
+
+  a.async_receive(context.make_buf());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(0U, result->transferred());
+}
+
+
+TEST_P(stream_socket, async_receive_peek)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+
+  service.associate(a);
+  a.async_receive(context.make_buf(), a.peek);
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+
+  // receive with peek
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+
+  // receive that actually consumes
+  a.async_receive(context.make_buf());
+  io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+  result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+}
+
+
+TEST_P(stream_socket, async_receive_peek_immediate_completion)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+
+  service.associate(a);
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  a.async_receive(context.make_buf(), a.peek);
+
+  // receive with peek
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+
+  // receive that actually consumes
+  a.async_receive(context.make_buf());
+  io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+  result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+}
+
+
+TEST_P(stream_socket, async_receive_before_shutdown)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+  service.associate(a);
+
+  a.async_receive(context.make_buf());
+  a.shutdown(a.shutdown_receive);
+
+  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+}
+
+
+TEST_P(stream_socket, async_receive_after_shutdown)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+  service.associate(a);
+
+  a.shutdown(a.shutdown_receive);
+  a.async_receive(context.make_buf());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  std::error_code error;
+  auto result = a.async_receive_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+
+  EXPECT_THROW(
+    a.async_receive_result(io_buf),
+    std::system_error
+  );
+}
+
+
+TEST_P(stream_socket, async_send)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+
+  service.associate(a);
+  a.async_send(make_buf(case_name));
+
+  char buf[1024];
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(case_name.size(), b.receive(sal::make_buf(buf)));
+  EXPECT_EQ(case_name, buf);
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_send_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+
+  EXPECT_EQ(nullptr, a.async_receive_result(io_buf));
+}
+
+
+TEST_P(stream_socket, async_send_before_shutdown)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+
+  service.associate(a);
+  a.async_send(make_buf(case_name));
+  a.shutdown(a.shutdown_send);
+
+  char buf[1024];
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(case_name.size(), b.receive(sal::make_buf(buf)));
+  EXPECT_EQ(case_name, buf);
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_send_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+}
+
+
+TEST_P(stream_socket, async_send_after_shutdown)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+
+  service.associate(a);
+  a.shutdown(a.shutdown_send);
+  a.async_send(make_buf(case_name));
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  std::error_code error;
+  auto result = a.async_send_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+
+  EXPECT_THROW(
+    a.async_send_result(io_buf),
+    std::system_error
+  );
+}
+
+
+TEST_P(stream_socket, async_send_no_receive)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  auto b = acceptor.accept();
+
+  service.associate(a);
+  a.async_send(make_buf(case_name));
+
+  // async send success only tells that OS sent buffer, not whether it
+  // actually reached there
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_send_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+}
+
+
+TEST_P(stream_socket, async_send_disconnected)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  service.associate(a);
+  auto b = acceptor.accept();
+
+  a.async_send(make_buf(case_name));
+  b.close();
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_send_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+}
+
+
+TEST_P(stream_socket, async_send_disconnected_immediate_completion)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  service.associate(a);
+  auto b = acceptor.accept();
+
+  b.close();
+  std::this_thread::yield();
+  a.async_send(make_buf(case_name));
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_send_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
+}
+
+
+#endif // __sal_os_windows
 
 
 } // namespace

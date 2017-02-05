@@ -7,8 +7,10 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/basic_socket.hpp>
 #include <sal/buf_ptr.hpp>
+#include <sal/net/basic_socket.hpp>
+#include <sal/net/io_buf.hpp>
+#include <sal/net/io_context.hpp>
 
 
 __sal_begin
@@ -86,6 +88,11 @@ public:
 
   basic_stream_socket_t (const basic_stream_socket_t &) = delete;
   basic_stream_socket_t &operator= (const basic_stream_socket_t &) = delete;
+
+
+  //
+  // Synchronous API
+  //
 
 
   /**
@@ -187,6 +194,123 @@ public:
   size_t send (const Ptr &buf)
   {
     return send(buf, throw_on_error("basic_stream_socket::send"));
+  }
+
+
+  //
+  // Asynchronous API
+  //
+
+
+  struct async_receive_t
+    : public __bits::async_receive_t
+  {
+    size_t transferred () const noexcept
+    {
+      return this->transferred_;
+    }
+  };
+
+
+  void async_receive (io_buf_ptr &&io_buf,
+    socket_base_t::message_flags_t flags) noexcept
+  {
+    auto &request = *io_buf->make_request<async_receive_t>();
+    auto completed = base_t::impl_.start(io_buf.get(),
+      io_buf->data(), io_buf->size(),
+      flags,
+      request
+    );
+    if (completed)
+    {
+      io_context_t::notify(io_buf.get());
+    }
+    io_buf.release();
+  }
+
+
+  void async_receive (io_buf_ptr &&io_buf) noexcept
+  {
+    async_receive(std::move(io_buf), socket_base_t::message_flags_t{});
+  }
+
+
+  static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto result = io_buf->make_result<async_receive_t>())
+    {
+      if (result->error_)
+      {
+        error = result->error_;
+      }
+      return result;
+    }
+    return nullptr;
+  }
+
+
+  static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf)
+  {
+    return async_receive_result(io_buf,
+      throw_on_error("basic_stream_socket::async_receive")
+    );
+  }
+
+
+  struct async_send_t
+    : public __bits::async_send_t
+  {
+    size_t transferred () const noexcept
+    {
+      return this->transferred_;
+    }
+  };
+
+
+  void async_send (io_buf_ptr &&io_buf,
+    socket_base_t::message_flags_t flags) noexcept
+  {
+    auto &request = *io_buf->make_request<async_send_t>();
+    auto completed = base_t::impl_.start(io_buf.get(),
+      io_buf->data(), io_buf->size(),
+      flags,
+      request
+    );
+    if (completed)
+    {
+      io_context_t::notify(io_buf.get());
+    }
+    io_buf.release();
+  }
+
+
+  void async_send (io_buf_ptr &&io_buf) noexcept
+  {
+    async_send(std::move(io_buf), socket_base_t::message_flags_t{});
+  }
+
+
+  static const async_send_t *async_send_result (const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto result = io_buf->make_result<async_send_t>())
+    {
+      if (result->error_)
+      {
+        error = result->error_;
+      }
+      return result;
+    }
+    return nullptr;
+  }
+
+
+  static const async_send_t *async_send_result (const io_buf_ptr &io_buf)
+  {
+    return async_send_result(io_buf,
+      throw_on_error("basic_stream_socket::async_send")
+    );
   }
 };
 

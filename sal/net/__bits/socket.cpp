@@ -94,6 +94,7 @@ namespace __bits {
 
 namespace {
 
+
 template <typename Result>
 inline Result handle (Result result, std::error_code &error) noexcept
 {
@@ -120,6 +121,42 @@ inline Result handle (Result result, std::error_code &error) noexcept
 
   return result;
 }
+
+
+#if __sal_os_windows
+
+inline bool handle_async_result (int result, DWORD transferred, async_t &op)
+  noexcept
+{
+  if (result == 0)
+  {
+    // completed immediately, caller still owns data
+    op.transferred_ = transferred;
+    return true;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e == WSA_IO_PENDING)
+  {
+    // pending, OS owns data
+    return false;
+  }
+
+  // failed, caller owns data
+  else if (e == WSAESHUTDOWN)
+  {
+    op.error_ = make_error_code(socket_errc_t::orderly_shutdown);
+  }
+  else
+  {
+    op.error_.assign(e, std::system_category());
+  }
+
+  return true;
+}
+
+#endif
+
 
 } // namespace
 
@@ -726,23 +763,7 @@ bool socket_t::start (io_buf_t *io_buf,
     nullptr
   );
 
-  if (result == 0)
-  {
-    // completed immediately
-    op.transferred_ = transferred;
-    return true;
-  }
-
-  auto e = ::WSAGetLastError();
-  if (e == WSA_IO_PENDING)
-  {
-    // will be completed later, OS now owns data
-    return false;
-  }
-
-  // failed, caller still owns data
-  op.error_.assign(e, std::system_category());
-  return true;
+  return handle_async_result(result, transferred, op);
 
 #else
 
@@ -780,23 +801,7 @@ bool socket_t::start (io_buf_t *io_buf,
     nullptr
   );
 
-  if (result == 0)
-  {
-    // completed immediately
-    op.transferred_ = transferred;
-    return true;
-  }
-
-  auto e = ::WSAGetLastError();
-  if (e == WSA_IO_PENDING)
-  {
-    // will be completed later, OS now owns data
-    return false;
-  }
-
-  // failed, caller still owns data
-  op.error_.assign(e, std::system_category());
-  return true;
+  return handle_async_result(result, transferred, op);
 
 #else
 
@@ -834,23 +839,7 @@ bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
     nullptr
   );
 
-  if (result == 0)
-  {
-    // completed immediately
-    op.transferred_ = transferred;
-    return true;
-  }
-
-  auto e = ::WSAGetLastError();
-  if (e == WSA_IO_PENDING)
-  {
-    // will be completed later, OS now owns data
-    return false;
-  }
-
-  // failed, caller still owns data
-  op.error_.assign(e, std::system_category());
-  return true;
+  return handle_async_result(result, transferred, op);
 
 #else
 
@@ -887,23 +876,7 @@ bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
     nullptr
   );
 
-  if (result == 0)
-  {
-    // completed immediately
-    op.transferred_ = transferred;
-    return true;
-  }
-
-  auto e = ::WSAGetLastError();
-  if (e == WSA_IO_PENDING)
-  {
-    // will be completed later, OS now owns data
-    return false;
-  }
-
-  // failed, caller still owns data
-  op.error_.assign(e, std::system_category());
-  return true;
+  return handle_async_result(result, transferred, op);
 
 #else
 
