@@ -205,6 +205,45 @@ public:
   //
 
 
+  struct async_connect_t
+    : public __bits::async_connect_t
+  {};
+
+
+  void async_connect (io_buf_ptr &&io_buf, const endpoint_t &endpoint) noexcept
+  {
+    auto completed = base_t::impl_.start(io_buf.get(),
+      endpoint.data(), endpoint.size(),
+      *io_buf->make_request<async_connect_t>()
+    );
+    if (completed)
+    {
+      io_context_t::notify(io_buf.get());
+    }
+    io_buf.release();
+  }
+
+
+  static const async_connect_t *async_connect_result (const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    auto result = io_buf->make_result<async_connect_t>();
+    if (result)
+    {
+      result->finish(error);
+    }
+    return result;
+  }
+
+
+  static const async_connect_t *async_connect_result (const io_buf_ptr &io_buf)
+  {
+    return async_connect_result(io_buf,
+      throw_on_error("basic_stream_socket::async_connect")
+    );
+  }
+
+
   struct async_receive_t
     : public __bits::async_receive_t
   {

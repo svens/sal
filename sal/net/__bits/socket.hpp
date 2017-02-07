@@ -96,6 +96,14 @@ struct async_send_t
   : public async_t
 {};
 
+
+struct async_connect_t
+  : public async_t
+{
+  native_socket_t native_handle_ = invalid_socket;
+  void finish (std::error_code &error) noexcept;
+};
+
 #endif // __sal_os_windows
 
 
@@ -216,6 +224,11 @@ struct socket_t
     const void *data, size_t data_size,
     message_flags_t flags,
     async_send_t &op
+  ) noexcept;
+
+  bool start (io_buf_t *io_buf,
+    const void *address, size_t address_size,
+    async_connect_t &op
   ) noexcept;
 
 #endif // __sal_os_windows

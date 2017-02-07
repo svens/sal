@@ -24,6 +24,22 @@ struct stream_socket
     ;
   }
 
+  socket_t::endpoint_t other_loopback (const sal::net::ip::tcp_t &protocol) const
+  {
+    return protocol == sal::net::ip::tcp_t::v4()
+      ? socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
+      : socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
+    ;
+  }
+
+  socket_t::endpoint_t any (const sal::net::ip::tcp_t &protocol) const
+  {
+    return protocol == sal::net::ip::tcp_t::v4()
+      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::any(), port)
+      : socket_t::endpoint_t(sal::net::ip::address_v6_t::any(), port)
+    ;
+  }
+
 #if __sal_os_windows
 
   static sal::net::io_service_t service;
@@ -408,6 +424,125 @@ TEST_P(stream_socket, no_delay)
 
 
 #if __sal_os_windows
+
+
+TEST_P(stream_socket, async_connect)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  acceptor_t acceptor(endpoint, true);
+
+  endpoint.port(endpoint.port() + 1);
+  socket_t a(endpoint);
+  service.associate(a);
+
+  a.async_connect(context.make_buf(), acceptor.local_endpoint());
+  auto b = acceptor.accept();
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = a.async_connect_result(io_buf);
+  ASSERT_NE(nullptr, result);
+
+  EXPECT_EQ(nullptr, a.async_receive_result(io_buf));
+}
+
+
+TEST_P(stream_socket, async_connect_connection_refused)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  socket_t a(endpoint);
+  service.associate(a);
+
+  endpoint.port(7);
+  a.async_connect(context.make_buf(), endpoint);
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  std::error_code error;
+  auto result = a.async_connect_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::connection_refused, error);
+
+  EXPECT_THROW(
+    a.async_connect_result(io_buf),
+    std::system_error
+  );
+}
+
+
+TEST_P(stream_socket, async_connect_already_connected)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  acceptor_t acceptor(endpoint, true);
+
+  socket_t a;
+  a.connect(endpoint);
+  service.associate(a);
+  auto b = acceptor.accept();
+
+  endpoint.port(7);
+  a.async_connect(context.make_buf(), endpoint);
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  std::error_code error;
+  auto result = a.async_connect_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::already_connected, error);
+
+  EXPECT_THROW(
+    a.async_connect_result(io_buf),
+    std::system_error
+  );
+}
+
+
+TEST_P(stream_socket, async_connect_address_not_available)
+{
+  socket_t a(loopback(GetParam()));
+  service.associate(a);
+
+  a.async_connect(context.make_buf(), any(GetParam()));
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  std::error_code error;
+  auto result = a.async_connect_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::address_not_available, error);
+
+  EXPECT_THROW(
+    a.async_connect_result(io_buf),
+    std::system_error
+  );
+}
+
+
+TEST_P(stream_socket, async_connect_not_bound)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+
+  socket_t a(GetParam());
+  service.associate(a);
+  a.async_connect(context.make_buf(), acceptor.local_endpoint());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  std::error_code error;
+  auto result = a.async_connect_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::invalid_argument, error);
+
+  EXPECT_THROW(
+    a.async_connect_result(io_buf),
+    std::system_error
+  );
+}
 
 
 TEST_P(stream_socket, async_receive)
