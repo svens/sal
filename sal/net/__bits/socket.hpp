@@ -37,16 +37,6 @@ using sa_family_t = ::ADDRESS_FAMILY;
 // send/recv flags
 using message_flags_t = DWORD;
 
-// IOCP
-using native_poller_t = HANDLE;
-constexpr native_poller_t invalid_poller = INVALID_HANDLE_VALUE;
-
-using io_buf_t = OVERLAPPED;
-inline void reset (io_buf_t &aux) noexcept
-{
-  std::memset(&aux, '\0', sizeof(aux));
-}
-
 #else
 
 // socket handle
@@ -63,48 +53,6 @@ using message_flags_t = int;
 
 
 enum class wait_t { read, write };
-
-
-#if __sal_os_windows
-
-struct async_t
-{
-  std::error_code error_{};
-  size_t transferred_{};
-};
-
-
-struct async_receive_t
-  : public async_t
-{};
-
-
-struct async_receive_from_t
-  : public async_t
-{
-  sockaddr_storage endpoint_{};
-  int32_t endpoint_size_ = sizeof(endpoint_);
-};
-
-
-struct async_send_to_t
-  : public async_t
-{};
-
-
-struct async_send_t
-  : public async_t
-{};
-
-
-struct async_connect_t
-  : public async_t
-{
-  native_socket_t native_handle_ = invalid_socket;
-  void finish (std::error_code &error) noexcept;
-};
-
-#endif // __sal_os_windows
 
 
 struct socket_t
@@ -169,10 +117,6 @@ struct socket_t
 
   size_t available (std::error_code &error) const noexcept;
 
-  //
-  // synchronous send/recv
-  //
-
   size_t receive (void *data, size_t data_size,
     message_flags_t flags,
     std::error_code &error
@@ -194,44 +138,6 @@ struct socket_t
     message_flags_t flags,
     std::error_code &error
   ) noexcept;
-
-#if __sal_os_windows
-
-  //
-  // asynchronous send/recv
-  //
-
-  bool start (io_buf_t *io_buf,
-    void *data, size_t data_size,
-    message_flags_t flags,
-    async_receive_t &op
-  ) noexcept;
-
-  bool start (io_buf_t *io_buf,
-    void *data, size_t data_size,
-    message_flags_t flags,
-    async_receive_from_t &op
-  ) noexcept;
-
-  bool start (io_buf_t *io_buf,
-    const void *data, size_t data_size,
-    const void *address, size_t address_size,
-    message_flags_t flags,
-    async_send_to_t &op
-  ) noexcept;
-
-  bool start (io_buf_t *io_buf,
-    const void *data, size_t data_size,
-    message_flags_t flags,
-    async_send_t &op
-  ) noexcept;
-
-  bool start (io_buf_t *io_buf,
-    const void *address, size_t address_size,
-    async_connect_t &op
-  ) noexcept;
-
-#endif // __sal_os_windows
 };
 
 

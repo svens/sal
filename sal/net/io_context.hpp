@@ -6,7 +6,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/socket.hpp>
+#include <sal/net/__bits/io_service.hpp>
 #include <sal/net/io_buf.hpp>
 #include <sal/net/error.hpp>
 #include <array>
@@ -100,7 +100,7 @@ public:
 
 private:
 
-  __bits::native_poller_t poller_;
+  __bits::io_service_t &io_service_;
 
   std::deque<std::array<char, 1024 * sizeof(io_buf_t)>> pool_{};
   io_buf_t::free_list free_{};
@@ -110,8 +110,8 @@ private:
   io_buf_t::completed_list completed_{};
 
 
-  io_context_t (__bits::native_poller_t &poller, size_t completion_count)
-    : poller_(poller)
+  io_context_t (__bits::io_service_t &io_service, size_t completion_count)
+    : io_service_(io_service)
     , completion_count_(completion_count)
   {}
 

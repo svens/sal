@@ -43,7 +43,7 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   OVERLAPPED_ENTRY entries[max_completion_count];
   ULONG completed_count;
 
-  auto succeeded = ::GetQueuedCompletionStatusEx(poller_,
+  auto succeeded = ::GetQueuedCompletionStatusEx(io_service_.iocp,
     entries, static_cast<ULONG>(completion_count_),
     &completed_count,
     static_cast<DWORD>(period.count()),
@@ -64,24 +64,23 @@ bool io_context_t::wait_for_more (const std::chrono::milliseconds &period,
   {
     auto &entry = entries[i];
     auto io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
-    auto &result = *reinterpret_cast<__bits::async_t *>(io_buf->request_data_);
 
     auto status = static_cast<NTSTATUS>(io_buf->Internal);
     if (!NT_SUCCESS(status))
     {
       if (status == STATUS_BUFFER_OVERFLOW)
       {
-        result.error_.assign(WSAEMSGSIZE, std::system_category());
+        io_buf->error.assign(WSAEMSGSIZE, std::system_category());
       }
       else
       {
-        result.error_.assign(::RtlNtStatusToDosError(status),
+        io_buf->error.assign(::RtlNtStatusToDosError(status),
           std::system_category()
         );
       }
     }
 
-    result.transferred_ = entry.dwNumberOfBytesTransferred;
+    io_buf->transferred = entry.dwNumberOfBytesTransferred;
     io_buf->this_context_ = this;
     completed_.push(io_buf);
   }

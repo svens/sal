@@ -45,39 +45,6 @@ std::error_code lib_t::setup_result{};
 lib_t lib_t::lib;
 
 
-#if __sal_os_windows
-
-LPFN_CONNECTEX ConnectEx = nullptr;
-LPFN_ACCEPTEX AcceptEx = nullptr;
-LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs = nullptr;
-
-template <typename Function>
-void load_fn (Function *fn, GUID id, SOCKET socket, std::error_code &result)
-  noexcept
-{
-  if (result)
-  {
-    return;
-  }
-
-  DWORD bytes;
-  auto i = ::WSAIoctl(socket,
-    SIO_GET_EXTENSION_FUNCTION_POINTER,
-    &id, sizeof(id),
-    fn, sizeof(fn),
-    &bytes,
-    nullptr,
-    nullptr
-  );
-  if (i == SOCKET_ERROR)
-  {
-    result.assign(::WSAGetLastError(), std::system_category());
-  }
-}
-
-#endif
-
-
 void internal_setup (std::error_code &result) noexcept
 {
 #if __sal_os_windows
@@ -87,15 +54,6 @@ void internal_setup (std::error_code &result) noexcept
     ::WSAStartup(MAKEWORD(2, 2), &wsa),
     std::system_category()
   );
-
-  if (!result)
-  {
-    auto tmp = ::socket(AF_INET, SOCK_STREAM, 0);
-    load_fn(&ConnectEx, WSAID_CONNECTEX, tmp, result);
-    load_fn(&AcceptEx, WSAID_ACCEPTEX, tmp, result);
-    load_fn(&GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, tmp, result);
-    ::closesocket(tmp);
-  }
 
 #else
 
@@ -163,41 +121,6 @@ inline Result handle (Result result, std::error_code &error) noexcept
 
   return result;
 }
-
-
-#if __sal_os_windows
-
-inline bool handle_async_result (int result, DWORD transferred, async_t &op)
-  noexcept
-{
-  if (result == 0)
-  {
-    // completed immediately, caller still owns data
-    op.transferred_ = transferred;
-    return true;
-  }
-
-  auto e = ::WSAGetLastError();
-  if (e == WSA_IO_PENDING)
-  {
-    // pending, OS owns data
-    return false;
-  }
-
-  // failed, caller owns data
-  else if (e == WSAESHUTDOWN)
-  {
-    op.error_ = make_error_code(socket_errc_t::orderly_shutdown);
-  }
-  else
-  {
-    op.error_.assign(e, std::system_category());
-  }
-
-  return true;
-}
-
-#endif
 
 
 } // namespace
@@ -783,162 +706,6 @@ size_t socket_t::available (std::error_code &error) const noexcept
 
   return value;
 }
-
-
-#if __sal_os_windows
-
-
-bool socket_t::start (io_buf_t *io_buf,
-  void *data, size_t data_size,
-  message_flags_t flags,
-  async_receive_t &op) noexcept
-{
-
-  WSABUF wsabuf;
-  wsabuf.buf = static_cast<char *>(data);
-  wsabuf.len = static_cast<DWORD>(data_size);
-
-  DWORD transferred{}, flags_ = flags;
-  auto result = ::WSARecv(native_handle,
-    &wsabuf, 1,
-    &transferred,
-    &flags_,
-    static_cast<OVERLAPPED *>(io_buf),
-    nullptr
-  );
-
-  return handle_async_result(result, transferred, op);
-}
-
-
-bool socket_t::start (io_buf_t *io_buf,
-  void *data, size_t data_size,
-  message_flags_t flags,
-  async_receive_from_t &op) noexcept
-{
-  WSABUF wsabuf;
-  wsabuf.buf = static_cast<char *>(data);
-  wsabuf.len = static_cast<DWORD>(data_size);
-
-  DWORD transferred{}, flags_ = flags;
-  auto result = ::WSARecvFrom(native_handle,
-    &wsabuf, 1,
-    &transferred,
-    &flags_,
-    reinterpret_cast<sockaddr *>(&op.endpoint_),
-    &op.endpoint_size_,
-    static_cast<OVERLAPPED *>(io_buf),
-    nullptr
-  );
-
-  return handle_async_result(result, transferred, op);
-}
-
-
-bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
-  const void *address, size_t address_size,
-  message_flags_t flags,
-  async_send_to_t &op) noexcept
-{
-  WSABUF wsabuf;
-  wsabuf.buf = static_cast<char *>(const_cast<void *>(data));
-  wsabuf.len = static_cast<DWORD>(data_size);
-
-  DWORD transferred{};
-  auto result = ::WSASendTo(native_handle,
-    &wsabuf, 1,
-    &transferred,
-    flags,
-    static_cast<const sockaddr *>(address),
-    static_cast<int>(address_size),
-    static_cast<OVERLAPPED *>(io_buf),
-    nullptr
-  );
-
-  return handle_async_result(result, transferred, op);
-}
-
-
-bool socket_t::start (io_buf_t *io_buf, const void *data, size_t data_size,
-  message_flags_t flags,
-  async_send_t &op) noexcept
-{
-  WSABUF wsabuf;
-  wsabuf.buf = static_cast<char *>(const_cast<void *>(data));
-  wsabuf.len = static_cast<DWORD>(data_size);
-
-  DWORD transferred{};
-  auto result = ::WSASend(native_handle,
-    &wsabuf, 1,
-    &transferred,
-    flags,
-    static_cast<OVERLAPPED *>(io_buf),
-    nullptr
-  );
-
-  return handle_async_result(result, transferred, op);
-}
-
-
-bool socket_t::start (io_buf_t *io_buf,
-  const void *address, size_t address_size,
-  async_connect_t &op) noexcept
-{
-  auto result = (*ConnectEx)(native_handle,
-    static_cast<const sockaddr *>(address),
-    static_cast<int>(address_size),
-    nullptr, 0, nullptr,
-    static_cast<OVERLAPPED *>(io_buf)
-  );
-  op.native_handle_ = native_handle;
-
-  if (result == TRUE)
-  {
-    // immediate completion, caller still owns op
-    return true;
-  }
-
-  auto e = ::WSAGetLastError();
-  if (e == WSA_IO_PENDING)
-  {
-    // pending, OS now owns op
-    return false;
-  }
-
-  // failed immediately, caller owns op
-  op.error_.assign(e, std::system_category());
-  return true;
-}
-
-
-void async_connect_t::finish (std::error_code &error) noexcept
-{
-  switch (error_.value())
-  {
-    case 0:
-      ::setsockopt(native_handle_,
-        SOL_SOCKET,
-        SO_UPDATE_CONNECT_CONTEXT,
-        nullptr,
-        0
-      );
-      return;
-
-    case ERROR_INVALID_NETNAME:
-      error = std::make_error_code(std::errc::address_not_available);
-      return;
-
-    case ERROR_CONNECTION_REFUSED:
-      error = std::make_error_code(std::errc::connection_refused);
-      return;
-
-    default:
-      error = error_;
-  }
-}
-
-
-#endif // __sal_os_windows
 
 
 }} // namespace net::__bits

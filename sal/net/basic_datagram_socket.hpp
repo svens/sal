@@ -345,12 +345,14 @@ public:
   {
     const endpoint_t &endpoint () const noexcept
     {
-      return *reinterpret_cast<const endpoint_t *>(&this->endpoint_);
+      return *reinterpret_cast<const endpoint_t *>(
+        &(__bits::async_receive_from_t::address)
+      );
     }
 
     size_t transferred () const noexcept
     {
-      return this->transferred_;
+      return __bits::async_receive_from_t::transferred;
     }
   };
 
@@ -358,13 +360,7 @@ public:
   void async_receive_from (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    auto &request = *io_buf->make_request<async_receive_from_t>();
-    auto completed = base_t::impl_.start(io_buf.get(),
-      io_buf->data(), io_buf->size(),
-      flags,
-      request
-    );
-    if (completed)
+    if (io_buf->start<async_receive_from_t>(impl_, flags))
     {
       io_context_t::notify(io_buf.get());
     }
@@ -382,11 +378,11 @@ public:
     const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
-    if (auto result = io_buf->make_result<async_receive_from_t>())
+    if (auto result = io_buf->result<async_receive_from_t>())
     {
-      if (result->error_)
+      if (result->error)
       {
-        error = result->error_;
+        error = result->error;
       }
       return result;
     }
@@ -408,7 +404,7 @@ public:
   {
     size_t transferred () const noexcept
     {
-      return this->transferred_;
+      return __bits::async_receive_t::transferred;
     }
   };
 
@@ -416,13 +412,7 @@ public:
   void async_receive (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    auto &request = *io_buf->make_request<async_receive_t>();
-    auto completed = base_t::impl_.start(io_buf.get(),
-      io_buf->data(), io_buf->size(),
-      flags,
-      request
-    );
-    if (completed)
+    if (io_buf->start<async_receive_t>(impl_, flags))
     {
       io_context_t::notify(io_buf.get());
     }
@@ -439,11 +429,11 @@ public:
   static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
-    if (auto result = io_buf->make_result<async_receive_t>())
+    if (auto result = io_buf->result<async_receive_t>())
     {
-      if (result->error_)
+      if (result->error)
       {
-        error = result->error_;
+        error = result->error;
       }
       return result;
     }
@@ -464,7 +454,7 @@ public:
   {
     size_t transferred () const noexcept
     {
-      return this->transferred_;
+      return __bits::async_send_to_t::transferred;
     }
   };
 
@@ -473,12 +463,9 @@ public:
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags) noexcept
   {
-    auto &request = *io_buf->make_request<async_send_to_t>();
-    auto completed = base_t::impl_.start(io_buf.get(),
-      io_buf->data(), io_buf->size(),
+    auto completed = io_buf->start<async_send_to_t>(impl_,
       endpoint.data(), endpoint.size(),
-      flags,
-      request
+      flags
     );
     if (completed)
     {
@@ -499,11 +486,11 @@ public:
   static const async_send_to_t *async_send_to_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
-    if (auto result = io_buf->make_result<async_send_to_t>())
+    if (auto result = io_buf->result<async_send_to_t>())
     {
-      if (result->error_)
+      if (result->error)
       {
-        error = result->error_;
+        error = result->error;
       }
       return result;
     }
@@ -524,7 +511,7 @@ public:
   {
     size_t transferred () const noexcept
     {
-      return this->transferred_;
+      return __bits::async_send_t::transferred;
     }
   };
 
@@ -532,13 +519,7 @@ public:
   void async_send (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    auto &request = *io_buf->make_request<async_send_t>();
-    auto completed = base_t::impl_.start(io_buf.get(),
-      io_buf->data(), io_buf->size(),
-      flags,
-      request
-    );
-    if (completed)
+    if (io_buf->start<async_send_t>(impl_, flags))
     {
       io_context_t::notify(io_buf.get());
     }
@@ -555,11 +536,11 @@ public:
   static const async_send_t *async_send_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
-    if (auto result = io_buf->make_result<async_send_t>())
+    if (auto result = io_buf->result<async_send_t>())
     {
-      if (result->error_)
+      if (result->error)
       {
-        error = result->error_;
+        error = result->error;
       }
       return result;
     }

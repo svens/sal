@@ -37,6 +37,11 @@ struct datagram_socket
     return io_buf;
   }
 
+  static std::string to_string (const sal::net::io_buf_ptr &io_buf, size_t size)
+  {
+    return std::string(static_cast<const char *>(io_buf->data()), size);
+  }
+
 #endif // __sal_os_windows
 };
 
@@ -488,7 +493,7 @@ TEST_P(datagram_socket, async_receive_from)
   auto result = socket.async_receive_from_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(endpoint, result->endpoint());
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 
   EXPECT_EQ(nullptr, socket.async_send_to_result(io_buf));
 }
@@ -513,7 +518,7 @@ TEST_P(datagram_socket, async_receive_from_immediate_completion)
   auto result = socket.async_receive_from_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(endpoint, result->endpoint());
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 }
 
 
@@ -533,7 +538,7 @@ TEST_P(datagram_socket, async_receive_from_before_shutdown)
   auto result = socket.async_receive_from_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(endpoint, result->endpoint());
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 }
 
 
@@ -684,7 +689,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send)
     EXPECT_EQ(case_name.size() / 2, result->transferred());
     EXPECT_EQ(
       std::string(case_name, 0, case_name.size() / 2),
-      std::string(io_buf->data(), result->transferred())
+      to_string(io_buf, result->transferred())
     );
 
     // even with partial 1st read, 2nd should have nothing
@@ -724,7 +729,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
     EXPECT_EQ(case_name.size() / 2, result->transferred());
     EXPECT_EQ(
       std::string(case_name, 0, case_name.size() / 2),
-      std::string(io_buf->data(), result->transferred())
+      to_string(io_buf, result->transferred())
     );
 
     // even with partial 1st read, 2nd should have nothing
@@ -827,7 +832,7 @@ TEST_P(datagram_socket, async_receive)
 
   auto result = socket.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 }
 
 
@@ -845,7 +850,7 @@ TEST_P(datagram_socket, async_receive_immediate_completion)
 
   auto result = socket.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 }
 
 
@@ -863,7 +868,7 @@ TEST_P(datagram_socket, async_receive_connected)
 
   auto result = socket.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 }
 
 
@@ -881,7 +886,7 @@ TEST_P(datagram_socket, async_receive_connected_immediate_completion)
 
   auto result = socket.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 }
 
 
@@ -944,7 +949,7 @@ TEST_P(datagram_socket, async_receive_before_shutdown)
 
   auto result = socket.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 }
 
 
@@ -1087,7 +1092,7 @@ TEST_P(datagram_socket, async_receive_less_than_send)
     EXPECT_EQ(case_name.size() / 2, result->transferred());
     EXPECT_EQ(
       std::string(case_name, 0, case_name.size() / 2),
-      std::string(io_buf->data(), result->transferred())
+      to_string(io_buf, result->transferred())
     );
 
     // even with partial 1st read, 2nd should have nothing
@@ -1127,7 +1132,7 @@ TEST_P(datagram_socket, async_receive_less_than_send_immediate_completion)
     EXPECT_EQ(case_name.size() / 2, result->transferred());
     EXPECT_EQ(
       std::string(case_name, 0, case_name.size() / 2),
-      std::string(io_buf->data(), result->transferred())
+      to_string(io_buf, result->transferred())
     );
 
     // even with partial 1st read, 2nd should have nothing

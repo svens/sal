@@ -212,11 +212,7 @@ public:
 
   void async_connect (io_buf_ptr &&io_buf, const endpoint_t &endpoint) noexcept
   {
-    auto completed = base_t::impl_.start(io_buf.get(),
-      endpoint.data(), endpoint.size(),
-      *io_buf->make_request<async_connect_t>()
-    );
-    if (completed)
+    if (io_buf->start<async_connect_t>(impl_, endpoint.data(), endpoint.size()))
     {
       io_context_t::notify(io_buf.get());
     }
@@ -227,12 +223,12 @@ public:
   static const async_connect_t *async_connect_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
-    auto result = io_buf->make_result<async_connect_t>();
-    if (result)
+    if (auto result = io_buf->result<async_connect_t>())
     {
       result->finish(error);
+      return result;
     }
-    return result;
+    return nullptr;
   }
 
 
@@ -249,7 +245,7 @@ public:
   {
     size_t transferred () const noexcept
     {
-      return this->transferred_;
+      return __bits::async_receive_t::transferred;
     }
   };
 
@@ -257,13 +253,7 @@ public:
   void async_receive (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    auto &request = *io_buf->make_request<async_receive_t>();
-    auto completed = base_t::impl_.start(io_buf.get(),
-      io_buf->data(), io_buf->size(),
-      flags,
-      request
-    );
-    if (completed)
+    if (io_buf->start<async_receive_t>(impl_, flags))
     {
       io_context_t::notify(io_buf.get());
     }
@@ -280,11 +270,11 @@ public:
   static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
-    if (auto result = io_buf->make_result<async_receive_t>())
+    if (auto result = io_buf->result<async_receive_t>())
     {
-      if (result->error_)
+      if (result->error)
       {
-        error = result->error_;
+        error = result->error;
       }
       return result;
     }
@@ -305,7 +295,7 @@ public:
   {
     size_t transferred () const noexcept
     {
-      return this->transferred_;
+      return __bits::async_send_t::transferred;
     }
   };
 
@@ -313,13 +303,7 @@ public:
   void async_send (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    auto &request = *io_buf->make_request<async_send_t>();
-    auto completed = base_t::impl_.start(io_buf.get(),
-      io_buf->data(), io_buf->size(),
-      flags,
-      request
-    );
-    if (completed)
+    if (io_buf->start<async_send_t>(impl_, flags))
     {
       io_context_t::notify(io_buf.get());
     }
@@ -336,11 +320,11 @@ public:
   static const async_send_t *async_send_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
-    if (auto result = io_buf->make_result<async_send_t>())
+    if (auto result = io_buf->result<async_send_t>())
     {
-      if (result->error_)
+      if (result->error)
       {
-        error = result->error_;
+        error = result->error;
       }
       return result;
     }

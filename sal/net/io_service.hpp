@@ -6,7 +6,8 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/socket.hpp>
+#include <sal/net/__bits/io_service.hpp>
+#include <sal/net/basic_socket.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/io_context.hpp>
 
@@ -22,7 +23,9 @@ class io_service_t
 {
 public:
 
-  io_service_t (size_t max_concurrency = 0);
+  io_service_t ()
+    : impl_(throw_on_error("io_service_t"))
+  {}
 
 
   io_context_t make_context (size_t completion_count = 16)
@@ -35,19 +38,20 @@ public:
     {
       completion_count = io_context_t::max_completion_count;
     }
-    return io_context_t(poller_, completion_count);
+    return io_context_t(impl_, completion_count);
   }
 
 
-  template <typename Socket>
-  void associate (const Socket &socket, std::error_code &error) noexcept
+  template <typename Protocol>
+  void associate (basic_socket_t<Protocol> &socket, std::error_code &error)
+    noexcept
   {
-    associate(socket.native_handle(), error);
+    impl_.associate(socket.impl_, error);
   }
 
 
-  template <typename Socket>
-  void associate (const Socket &socket)
+  template <typename Protocol>
+  void associate (basic_socket_t<Protocol> &socket)
   {
     associate(socket, throw_on_error("io_service_t::associate"));
   }
@@ -55,10 +59,7 @@ public:
 
 private:
 
-  __bits::native_poller_t poller_ = __bits::invalid_poller;
-
-  void associate (__bits::native_socket_t socket, std::error_code &error)
-    noexcept;
+  __bits::io_service_t impl_;
 };
 
 

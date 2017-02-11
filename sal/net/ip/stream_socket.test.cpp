@@ -53,6 +53,11 @@ struct stream_socket
     return io_buf;
   }
 
+  static std::string to_string (const sal::net::io_buf_ptr &io_buf, size_t size)
+  {
+    return std::string(static_cast<const char *>(io_buf->data()), size);
+  }
+
 #endif // __sal_os_windows
 };
 
@@ -610,10 +615,7 @@ TEST_P(stream_socket, async_receive_two_send)
   auto result = a.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(2 * case_name.size(), result->transferred());
-  EXPECT_EQ(
-    case_name + case_name,
-    std::string(io_buf->data(), result->transferred())
-  );
+  EXPECT_EQ(case_name + case_name, to_string(io_buf, result->transferred()));
 
   EXPECT_EQ(nullptr, a.async_send_result(io_buf));
 }
@@ -641,7 +643,7 @@ TEST_P(stream_socket, async_receive_two_send_immediate_completion)
     auto result = a.async_receive_result(io_buf);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(case_name.size(), result->transferred());
-    EXPECT_EQ(case_name, std::string(io_buf->data(), result->transferred()));
+    EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
   }
 }
 
@@ -672,7 +674,7 @@ TEST_P(stream_socket, async_receive_less_than_send)
     ASSERT_NE(nullptr, io_buf);
     auto result = a.async_receive_result(io_buf);
     ASSERT_NE(nullptr, result);
-    data += std::string(io_buf->data(), result->transferred());
+    data += to_string(io_buf, result->transferred());
   }
   EXPECT_EQ(case_name, data);
 }
@@ -704,7 +706,7 @@ TEST_P(stream_socket, async_receive_less_than_send_immediate_completion)
     ASSERT_NE(nullptr, io_buf);
     auto result = a.async_receive_result(io_buf);
     ASSERT_NE(nullptr, result);
-    data += std::string(io_buf->data(), result->transferred());
+    data += to_string(io_buf, result->transferred());
   }
   EXPECT_EQ(case_name, data);
 }

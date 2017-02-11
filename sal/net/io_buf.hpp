@@ -6,12 +6,12 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/socket.hpp>
+#include <sal/net/__bits/io_service.hpp>
 #include <sal/net/fwd.hpp>
 #include <sal/assert.hpp>
 #include <sal/intrusive_queue.hpp>
+#include <algorithm>
 #include <memory>
-#include <typeinfo>
 
 
 __sal_begin
@@ -23,27 +23,24 @@ namespace net {
 
 namespace __bits {
 
+#if _MSC_VER
 
-constexpr size_t round_next_256 (size_t s)
+template <typename T>
+inline uintptr_t type_id () noexcept
 {
-  return (s + 255) & ~255;
+  static const T *p = nullptr;
+  return reinterpret_cast<uintptr_t>(&p);
 }
 
+#else
 
-// for msvc poor implementation of constexpr
-union hooks_t
+template <typename T>
+constexpr uintptr_t type_id ()
 {
-  mpsc_sync_t::intrusive_queue_hook_t free;
-  no_sync_t::intrusive_queue_hook_t completed;
-};
+  return reinterpret_cast<uintptr_t>(&type_id<T>);
+}
 
-constexpr size_t max_hook_size = sizeof(hooks_t);
-
-
-template <typename AsyncOperation>
-const size_t type_v = typeid(AsyncOperation).hash_code();
-
-
+#endif
 
 } // namespace __bits
 
@@ -62,6 +59,8 @@ const size_t type_v = typeid(AsyncOperation).hash_code();
 class io_buf_t
   : public __bits::io_buf_t
 {
+  using buf = __bits::io_buf_t;
+
 public:
 
   io_buf_t (const io_buf_t &) = delete;
@@ -76,13 +75,13 @@ public:
 
   uintptr_t user_data () const noexcept
   {
-    return user_data_;
+    return buf::user_data;
   }
 
 
   void user_data (uintptr_t value) noexcept
   {
-    user_data_ = value;
+    buf::user_data = value;
   }
 
 
@@ -98,53 +97,53 @@ public:
   }
 
 
-  char *data () noexcept
+  void *data () noexcept
   {
-    return begin_;
+    return buf::begin;
   }
 
 
   void *begin () noexcept
   {
-    return begin_;
+    return buf::begin;
   }
 
 
   void begin (size_t offset_from_head)
   {
     sal_assert(offset_from_head < sizeof(data_));
-    begin_ = data_ + offset_from_head;
+    buf::begin = data_ + offset_from_head;
   }
 
 
   size_t head_gap () const noexcept
   {
-    return begin_ - data_;
+    return buf::begin - data_;
   }
 
 
   size_t tail_gap () const noexcept
   {
-    return data_ + sizeof(data_) - end_;
+    return data_ + sizeof(data_) - buf::end;
   }
 
 
   const void *end () const noexcept
   {
-    return end_;
+    return buf::end;
   }
 
 
   size_t size () const noexcept
   {
-    return end_ - begin_;
+    return buf::end - buf::begin;
   }
 
 
   void resize (size_t s)
   {
-    sal_assert(begin_ + s <= data_ + sizeof(data_));
-    end_ = begin_ + s;
+    sal_assert(buf::begin + s <= data_ + sizeof(data_));
+    buf::end = buf::begin + s;
   }
 
 
@@ -156,32 +155,34 @@ public:
 
   void reset () noexcept
   {
-    __bits::reset(*this);
-    begin_ = data_;
-    end_ = data_ + sizeof(data_);
+    buf::reset();
+    buf::begin = data_;
+    buf::end = data_ + max_size();
   }
 
 
   template <typename Request, typename... Args>
-  Request *make_request (Args &&...args) noexcept
+  bool start (Args &&...args) noexcept
   {
-    static_assert(sizeof(Request) <= max_request_size,
+    static_assert(sizeof(Request) <= sizeof(buf) + sizeof(request_data_),
       "sizeof(Request) exceeds request data buffer"
     );
     static_assert(std::is_trivially_destructible<Request>::value,
       "expected Request to be trivially destructible"
     );
-    request_type_ = __bits::type_v<Request>;
-    return new(request_data_) Request(std::forward<Args>(args)...);
+
+    buf::request_id = __bits::type_id<Request>();
+    return reinterpret_cast<Request *>(this)
+      ->start(std::forward<Args>(args)...);
   }
 
 
   template <typename Result>
-  Result *make_result () noexcept
+  Result *result () noexcept
   {
-    if (request_type_ == __bits::type_v<Result>)
+    if (buf::request_id == __bits::type_id<Result>())
     {
-      return reinterpret_cast<Result *>(request_data_);
+      return reinterpret_cast<Result *>(this);
     }
     return nullptr;
   }
@@ -189,36 +190,16 @@ public:
 
 private:
 
+  char request_data_[160];
+
   io_context_t * const owner_context_;
   io_context_t *this_context_{};
-  uintptr_t user_data_{};
-  size_t request_type_{};
-  char *begin_{};
-  char *end_{};
 
   union
   {
     mpsc_sync_t::intrusive_queue_hook_t free_;
     no_sync_t::intrusive_queue_hook_t completed_;
   };
-
-  static constexpr size_t members_size = sizeof(__bits::io_buf_t)
-    + sizeof(decltype(owner_context_))
-    + sizeof(decltype(this_context_))
-    + sizeof(decltype(user_data_))
-    + sizeof(decltype(request_type_))
-    + sizeof(decltype(begin_))
-    + sizeof(decltype(end_))
-    + __bits::max_hook_size
-  ;
-  static constexpr size_t max_request_size =
-    __bits::round_next_256(members_size) != members_size
-      ? __bits::round_next_256(members_size) - members_size
-      : 256
-  ;
-
-  char request_data_[max_request_size];
-  char data_[4096 - members_size - max_request_size];
 
   using free_list = intrusive_queue_t<
     io_buf_t, mpsc_sync_t, &io_buf_t::free_
@@ -227,13 +208,21 @@ private:
     io_buf_t, no_sync_t, &io_buf_t::completed_
   >;
 
+  static constexpr size_t members_size = sizeof(buf)
+    + sizeof(decltype(request_data_))
+    + sizeof(decltype(owner_context_))
+    + sizeof(decltype(this_context_))
+    + (std::max)(sizeof(decltype(free_)), sizeof(decltype(completed_)));
+
+  char data_[4096 - members_size];
+
 
   io_buf_t (io_context_t *owner) noexcept
     : owner_context_(owner)
   {}
 
 
-  void static_check ()
+  constexpr void static_check () const
   {
     static_assert(sizeof(io_buf_t) == 4096,
       "expected sizeof(io_buf_t) == 4096B"
