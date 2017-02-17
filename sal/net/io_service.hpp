@@ -34,9 +34,9 @@ public:
     {
       completion_count = 1;
     }
-    else if (completion_count > io_context_t::max_completion_count)
+    else if (completion_count > impl_.max_completion_count)
     {
-      completion_count = io_context_t::max_completion_count;
+      completion_count = impl_.max_completion_count;
     }
     return io_context_t(impl_, completion_count);
   }

@@ -360,10 +360,7 @@ public:
   void async_receive_from (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    if (io_buf->start<async_receive_from_t>(impl_, flags))
-    {
-      io_context_t::notify(io_buf.get());
-    }
+    io_buf->start<async_receive_from_t>(impl_, flags);
     io_buf.release();
   }
 
@@ -412,10 +409,7 @@ public:
   void async_receive (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    if (io_buf->start<async_receive_t>(impl_, flags))
-    {
-      io_context_t::notify(io_buf.get());
-    }
+    io_buf->start<async_receive_t>(impl_, flags);
     io_buf.release();
   }
 
@@ -463,14 +457,10 @@ public:
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags) noexcept
   {
-    auto completed = io_buf->start<async_send_to_t>(impl_,
+    io_buf->start<async_send_to_t>(impl_,
       endpoint.data(), endpoint.size(),
       flags
     );
-    if (completed)
-    {
-      io_context_t::notify(io_buf.get());
-    }
     io_buf.release();
   }
 
@@ -519,10 +509,7 @@ public:
   void async_send (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    if (io_buf->start<async_send_t>(impl_, flags))
-    {
-      io_context_t::notify(io_buf.get());
-    }
+    io_buf->start<async_send_t>(impl_, flags);
     io_buf.release();
   }
 

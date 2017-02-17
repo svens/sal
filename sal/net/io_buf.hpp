@@ -10,7 +10,6 @@
 #include <sal/net/fwd.hpp>
 #include <sal/assert.hpp>
 #include <sal/intrusive_queue.hpp>
-#include <algorithm>
 #include <memory>
 
 
@@ -69,7 +68,7 @@ public:
 
   io_context_t &this_context () const noexcept
   {
-    return *this_context_;
+    return *reinterpret_cast<io_context_t *>(buf::context);
   }
 
 
@@ -162,7 +161,7 @@ public:
 
 
   template <typename Request, typename... Args>
-  bool start (Args &&...args) noexcept
+  void start (Args &&...args) noexcept
   {
     static_assert(sizeof(Request) <= sizeof(buf) + sizeof(request_data_),
       "sizeof(Request) exceeds request data buffer"
@@ -170,10 +169,8 @@ public:
     static_assert(std::is_trivially_destructible<Request>::value,
       "expected Request to be trivially destructible"
     );
-
     buf::request_id = __bits::type_id<Request>();
-    return reinterpret_cast<Request *>(this)
-      ->start(std::forward<Args>(args)...);
+    reinterpret_cast<Request *>(this)->start(std::forward<Args>(args)...);
   }
 
 
@@ -191,34 +188,23 @@ public:
 private:
 
   char request_data_[160];
-
-  io_context_t * const owner_context_;
-  io_context_t *this_context_{};
-
-  union
-  {
-    mpsc_sync_t::intrusive_queue_hook_t free_;
-    no_sync_t::intrusive_queue_hook_t completed_;
-  };
+  io_context_t * const owner_;
+  mpsc_sync_t::intrusive_queue_hook_t free_;
 
   using free_list = intrusive_queue_t<
     io_buf_t, mpsc_sync_t, &io_buf_t::free_
   >;
-  using completed_list = intrusive_queue_t<
-    io_buf_t, no_sync_t, &io_buf_t::completed_
-  >;
 
   static constexpr size_t members_size = sizeof(buf)
     + sizeof(decltype(request_data_))
-    + sizeof(decltype(owner_context_))
-    + sizeof(decltype(this_context_))
-    + (std::max)(sizeof(decltype(free_)), sizeof(decltype(completed_)));
+    + sizeof(decltype(owner_))
+    + sizeof(decltype(free_));
 
   char data_[4096 - members_size];
 
 
   io_buf_t (io_context_t *owner) noexcept
-    : owner_context_(owner)
+    : owner_(owner)
   {}
 
 

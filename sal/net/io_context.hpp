@@ -22,6 +22,7 @@ namespace net {
 
 
 class io_context_t
+  : public __bits::io_context_t
 {
 public:
 
@@ -40,91 +41,81 @@ public:
       io_buf.reset(free_.try_pop());
     }
     sal_check_ptr(io_buf.get())->reset();
-    io_buf->this_context_ = this;
+    io_buf->context = this;
     return io_buf;
   }
 
 
   io_buf_ptr try_get () noexcept
   {
-    return io_buf_ptr{completed_.try_pop(), &io_context_t::free_io_buf};
+    auto io_buf = __bits::io_context_t::try_get();
+    return io_buf_ptr{
+      static_cast<io_buf_t *>(io_buf),
+      &io_context_t::free_io_buf
+    };
+  }
+
+
+  template <typename Rep, typename Period>
+  io_buf_ptr get (const std::chrono::duration<Rep, Period> &timeout,
+    std::error_code &error) noexcept
+  {
+    auto io_buf = __bits::io_context_t::get(
+      std::chrono::duration_cast<std::chrono::milliseconds>(timeout),
+      error
+    );
+    return io_buf_ptr{
+      static_cast<io_buf_t *>(io_buf),
+      &io_context_t::free_io_buf
+    };
+  }
+
+
+  template <typename Rep, typename Period>
+  io_buf_ptr get (const std::chrono::duration<Rep, Period> &timeout)
+  {
+    return get(timeout, throw_on_error("io_context::get"));
   }
 
 
   io_buf_ptr get (std::error_code &error) noexcept
   {
-    auto io_buf = try_get();
-    if (!io_buf && wait_for_more((std::chrono::milliseconds::max)(), error))
-    {
-      io_buf.reset(completed_.try_pop());
-    }
-    return io_buf;
+    return get((std::chrono::milliseconds::max)(), error);
   }
 
 
   io_buf_ptr get ()
   {
-    return get(throw_on_error("io_context_t::get"));
-  }
-
-
-  template <typename Rep, typename Period>
-  bool wait (const std::chrono::duration<Rep, Period> &period,
-    std::error_code &error) noexcept
-  {
-    return wait_for_more(period, error);
-  }
-
-
-  template <typename Rep, typename Period>
-  bool wait (const std::chrono::duration<Rep, Period> &period)
-  {
-    return wait(period, throw_on_error("io_context_t::wait"));
+    return get((std::chrono::milliseconds::max)(),
+      throw_on_error("io_context::get")
+    );
   }
 
 
   void reclaim () noexcept
   {
-    while (auto completed = completed_.try_pop())
+    while (auto *completed = __bits::io_context_t::try_get())
     {
-      free_io_buf(completed);
+      free_io_buf(static_cast<io_buf_t *>(completed));
     }
-  }
-
-
-  static void notify (io_buf_t *io_buf) noexcept
-  {
-    sal_check_ptr(io_buf)->this_context_->completed_.push(io_buf);
   }
 
 
 private:
 
-  __bits::io_service_t &io_service_;
-
   std::deque<std::array<char, 1024 * sizeof(io_buf_t)>> pool_{};
   io_buf_t::free_list free_{};
 
-  static constexpr size_t max_completion_count = 256;
-  size_t completion_count_;
-  io_buf_t::completed_list completed_{};
-
-
-  io_context_t (__bits::io_service_t &io_service, size_t completion_count)
-    : io_service_(io_service)
-    , completion_count_(completion_count)
+  io_context_t (__bits::io_service_t &io_service, size_t max_completion_count) noexcept
+    : __bits::io_context_t(io_service, max_completion_count)
   {}
-
-  bool extend_pool () noexcept;
 
   static void free_io_buf (io_buf_t *io_buf) noexcept
   {
-    io_buf->owner_context_->free_.push(io_buf);
+    io_buf->owner_->free_.push(io_buf);
   }
 
-  bool wait_for_more (const std::chrono::milliseconds &period,
-    std::error_code &error
-  ) noexcept;
+  bool extend_pool () noexcept;
 
   friend class io_service_t;
 };

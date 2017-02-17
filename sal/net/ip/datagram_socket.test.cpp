@@ -624,7 +624,7 @@ TEST_P(datagram_socket, async_receive_from_no_sender)
 
     socket.async_receive_from(context.make_buf());
 
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
     EXPECT_EQ(nullptr, context.try_get());
   }
 
@@ -647,7 +647,7 @@ TEST_P(datagram_socket, async_receive_from_peek)
 
   // regardless of peek, completion should be removed from queue
   ASSERT_NE(nullptr, context.get());
-  EXPECT_FALSE(context.wait(0ms));
+  EXPECT_EQ(nullptr, context.get(0s));
 }
 
 
@@ -662,7 +662,7 @@ TEST_P(datagram_socket, async_receive_from_peek_immediate_completion)
 
   // regardless of peek, completion should be removed from queue
   ASSERT_NE(nullptr, context.get());
-  EXPECT_FALSE(context.wait(0ms));
+  EXPECT_EQ(nullptr, context.get(0s));
 }
 
 
@@ -695,7 +695,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send)
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
     socket.async_receive_from(std::move(io_buf));
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -735,7 +735,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
     socket.async_receive_from(std::move(io_buf));
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -771,7 +771,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     // even with empty 1st read, 2nd should have nothing
     io_buf->reset();
     socket.async_receive_from(std::move(io_buf));
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -807,7 +807,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf_immediate_completion)
     // even with empty 1st read, 2nd should have nothing
     io_buf->reset();
     socket.async_receive_from(std::move(io_buf));
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -901,7 +901,7 @@ TEST_P(datagram_socket, async_receive_connected_elsewhere)
     sender.send_to(sal::make_buf(case_name), receiver.local_endpoint());
 
     // must be ignored if from elsewehere than connected
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -923,7 +923,7 @@ TEST_P(datagram_socket, async_receive_connected_elsewhere_immediate_completion)
     receiver.async_receive(context.make_buf());
 
     // must be ignored if from elsewehere than connected
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -1027,7 +1027,7 @@ TEST_P(datagram_socket, async_receive_no_sender)
 
     socket.async_receive(context.make_buf());
 
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
     EXPECT_EQ(nullptr, context.try_get());
   }
 
@@ -1050,7 +1050,7 @@ TEST_P(datagram_socket, async_receive_peek)
 
   // regardless of peek, completion should be removed from queue
   ASSERT_NE(nullptr, context.get());
-  EXPECT_FALSE(context.wait(0ms));
+  EXPECT_EQ(nullptr, context.get(0s));
 }
 
 
@@ -1065,7 +1065,7 @@ TEST_P(datagram_socket, async_receive_peek_immediate_completion)
 
   // regardless of peek, completion should be removed from queue
   ASSERT_NE(nullptr, context.get());
-  EXPECT_FALSE(context.wait(0ms));
+  EXPECT_EQ(nullptr, context.get(0s));
 }
 
 
@@ -1098,7 +1098,7 @@ TEST_P(datagram_socket, async_receive_less_than_send)
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
     socket.async_receive(std::move(io_buf));
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -1138,7 +1138,7 @@ TEST_P(datagram_socket, async_receive_less_than_send_immediate_completion)
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
     socket.async_receive(std::move(io_buf));
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -1174,7 +1174,7 @@ TEST_P(datagram_socket, async_receive_empty_buf)
     // even with empty 1st read, 2nd should have nothing
     io_buf->reset();
     socket.async_receive(std::move(io_buf));
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
@@ -1210,7 +1210,7 @@ TEST_P(datagram_socket, async_receive_empty_buf_immediate_completion)
     // even with empty 1st read, 2nd should have nothing
     io_buf->reset();
     socket.async_receive(std::move(io_buf));
-    EXPECT_FALSE(context.wait(0ms));
+    EXPECT_EQ(nullptr, context.get(0s));
   }
 
   // error from closed socket still in context
