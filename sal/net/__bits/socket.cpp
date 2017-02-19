@@ -129,10 +129,12 @@ inline Result handle (Result result, std::error_code &error) noexcept
 void socket_t::open (int domain, int type, int protocol,
   std::error_code &error) noexcept
 {
-  // note: under Windows, socket() creates handles with overlapped attribute
-  native_handle = handle(::socket(domain, type, protocol), error);
-
 #if __sal_os_windows
+
+  native_handle = handle(
+    ::WSASocketW(domain, type, protocol, nullptr, 0, WSA_FLAG_OVERLAPPED),
+    error
+  );
 
   if (native_handle != SOCKET_ERROR)
   {
@@ -157,6 +159,10 @@ void socket_t::open (int domain, int type, int protocol,
       );
     }
   }
+
+#else
+
+  native_handle = handle(::socket(domain, type, protocol), error);
 
 #endif
 }

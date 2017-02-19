@@ -90,11 +90,24 @@ struct async_send_t
 struct async_connect_t
   : public io_buf_t
 {
-  native_socket_t native_handle;
+  native_socket_t handle;
+  bool finished;
 
   void start (socket_t &socket, const void *address, size_t address_size)
     noexcept;
 
+  void finish (std::error_code &error) noexcept;
+};
+
+
+struct async_accept_t
+  : public io_buf_t
+{
+  native_socket_t accepted, acceptor;
+  sockaddr_storage *local_address, *remote_address;
+  bool finished;
+
+  void start (socket_t &socket, int family) noexcept;
   void finish (std::error_code &error) noexcept;
 };
 
@@ -123,7 +136,6 @@ struct io_context_t
     : io_service(io_service)
     , max_completion_count(static_cast<ULONG>(max_completion_count))
   {}
-
 
   io_buf_t *try_get () noexcept;
 

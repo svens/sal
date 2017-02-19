@@ -33,46 +33,46 @@ LPFN_CONNECTEX ConnectEx = nullptr;
 LPFN_ACCEPTEX AcceptEx = nullptr;
 LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs = nullptr;
 
+constexpr DWORD acceptex_address_size = sizeof(sockaddr_storage) + 16;
+
 
 template <typename Function>
-void load_fn (Function *fn, GUID id, SOCKET socket, std::error_code &result)
+void load_fn (Function *fn, GUID id, SOCKET socket, std::error_code &error)
   noexcept
 {
-  if (result)
+  if (!error)
   {
-    return;
-  }
-
-  DWORD bytes;
-  auto i = ::WSAIoctl(socket,
-    SIO_GET_EXTENSION_FUNCTION_POINTER,
-    &id, sizeof(id),
-    fn, sizeof(fn),
-    &bytes,
-    nullptr,
-    nullptr
-  );
-  if (i == SOCKET_ERROR)
-  {
-    result.assign(::WSAGetLastError(), std::system_category());
+    DWORD bytes;
+    auto result = ::WSAIoctl(socket,
+      SIO_GET_EXTENSION_FUNCTION_POINTER,
+      &id, sizeof(id),
+      fn, sizeof(fn),
+      &bytes,
+      nullptr,
+      nullptr
+    );
+    if (result == SOCKET_ERROR)
+    {
+      error.assign(::WSAGetLastError(), std::system_category());
+    }
   }
 }
 
 
-void internal_setup (std::error_code &result) noexcept
+void internal_setup (std::error_code &error) noexcept
 {
-  if (!result)
+  if (!error)
   {
-    result = sal::net::init();
+    error = sal::net::init();
   }
 
-  if (!result)
+  if (!error)
   {
-    auto tmp = ::socket(AF_INET, SOCK_STREAM, 0);
-    load_fn(&ConnectEx, WSAID_CONNECTEX, tmp, result);
-    load_fn(&AcceptEx, WSAID_ACCEPTEX, tmp, result);
-    load_fn(&GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, tmp, result);
-    ::closesocket(tmp);
+    auto socket = ::socket(AF_INET, SOCK_STREAM, 0);
+    load_fn(&ConnectEx, WSAID_CONNECTEX, socket, error);
+    load_fn(&AcceptEx, WSAID_ACCEPTEX, socket, error);
+    load_fn(&GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, socket, error);
+    ::closesocket(socket);
   }
 }
 
@@ -85,8 +85,8 @@ void io_buf_t::io_result (int result) noexcept
   if (result == 0)
   {
     // completed immediately, caller still owns data
-    context->immediate_completions.push(this);
     error.clear();
+    context->immediate_completions.push(this);
     return;
   }
 
@@ -184,8 +184,9 @@ void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
 void async_connect_t::start (socket_t &socket,
   const void *address, size_t address_size) noexcept
 {
-  native_handle = socket.native_handle;
-  auto result = (*ConnectEx)(native_handle,
+  finished = false;
+  handle = socket.native_handle;
+  auto result = (*ConnectEx)(handle,
     static_cast<const sockaddr *>(address),
     static_cast<int>(address_size),
     nullptr, 0, nullptr,
@@ -195,8 +196,8 @@ void async_connect_t::start (socket_t &socket,
   if (result == TRUE)
   {
     // immediate completion, caller still owns op
-    context->immediate_completions.push(this);
     error.clear();
+    context->immediate_completions.push(this);
     return;
   }
 
@@ -218,12 +219,16 @@ void async_connect_t::finish (std::error_code &result) noexcept
   switch (error.value())
   {
     case 0:
-      ::setsockopt(native_handle,
-        SOL_SOCKET,
-        SO_UPDATE_CONNECT_CONTEXT,
-        nullptr,
-        0
-      );
+      if (!finished)
+      {
+        ::setsockopt(handle,
+          SOL_SOCKET,
+          SO_UPDATE_CONNECT_CONTEXT,
+          nullptr,
+          0
+        );
+        finished = true;
+      }
       return;
 
     case ERROR_INVALID_NETNAME:
@@ -236,6 +241,82 @@ void async_connect_t::finish (std::error_code &result) noexcept
 
     default:
       result = error;
+  }
+}
+
+
+void async_accept_t::start (socket_t &socket, int family) noexcept
+{
+  socket_t new_socket;
+  new_socket.open(family, SOCK_STREAM, IPPROTO_TCP, error);
+  if (error)
+  {
+    context->immediate_completions.push(this);
+    return;
+  }
+
+  finished = false;
+  acceptor = socket.native_handle;
+  accepted = new_socket.native_handle;
+  auto result = (*AcceptEx)(acceptor,
+    accepted,
+    begin,
+    0,
+    acceptex_address_size,
+    acceptex_address_size,
+    &transferred,
+    this
+  );
+  if (result == TRUE)
+  {
+    error.clear();
+    context->immediate_completions.push(this);
+    return;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e == ERROR_IO_PENDING)
+  {
+    return;
+  }
+
+  error.assign(e, std::system_category());
+  context->immediate_completions.push(this);
+}
+
+
+void async_accept_t::finish (std::error_code &result) noexcept
+{
+  switch (error.value())
+  {
+    case 0:
+      if (!finished)
+      {
+        int local_address_size, remote_address_size;
+        (*GetAcceptExSockaddrs)(begin,
+          0,
+          acceptex_address_size,
+          acceptex_address_size,
+          reinterpret_cast<sockaddr **>(&local_address),
+          &local_address_size,
+          reinterpret_cast<sockaddr **>(&remote_address),
+          &remote_address_size
+        );
+
+        ::setsockopt(accepted,
+          SOL_SOCKET,
+          SO_UPDATE_ACCEPT_CONTEXT,
+          reinterpret_cast<char *>(&acceptor),
+          sizeof(acceptor)
+        );
+
+        finished = true;
+      }
+      break;
+
+    default:
+      result = error;
+      break;
   }
 }
 
