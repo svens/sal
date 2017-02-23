@@ -32,12 +32,9 @@ struct io_buf_t
   no_sync_t::intrusive_queue_hook_t completed;
 
 
-  void reset () noexcept
-  {
-    Internal = InternalHigh = 0;
-    Pointer = 0;
-    hEvent = 0;
-  }
+  io_buf_t () noexcept
+    : OVERLAPPED{0}
+  {}
 
 
   WSABUF to_buf () const noexcept

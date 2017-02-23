@@ -33,14 +33,15 @@ public:
   io_context_t &operator= (io_context_t &&) = default;
 
 
-  io_buf_ptr make_buf () noexcept
+  io_buf_ptr make_buf ()
   {
     io_buf_ptr io_buf{free_.try_pop(), &io_context_t::free_io_buf};
-    if (!io_buf && extend_pool())
+    if (!io_buf)
     {
+      extend_pool();
       io_buf.reset(free_.try_pop());
     }
-    sal_check_ptr(io_buf.get())->reset();
+    io_buf->reset();
     io_buf->context = this;
     return io_buf;
   }
@@ -115,7 +116,7 @@ private:
     io_buf->owner_->free_.push(io_buf);
   }
 
-  bool extend_pool () noexcept;
+  void extend_pool ();
 
   friend class io_service_t;
 };

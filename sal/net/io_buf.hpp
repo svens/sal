@@ -154,7 +154,6 @@ public:
 
   void reset () noexcept
   {
-    buf::reset();
     buf::begin = data_;
     buf::end = data_ + max_size();
   }
