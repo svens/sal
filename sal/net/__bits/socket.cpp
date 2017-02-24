@@ -58,7 +58,6 @@ void internal_setup (std::error_code &result) noexcept
 #else
 
   (void)result;
-  ::signal(SIGPIPE, SIG_IGN);
 
 #endif
 }
@@ -164,6 +163,16 @@ void socket_t::open (int domain, int type, int protocol,
 
   native_handle = handle(::socket(domain, type, protocol), error);
 
+#if __sal_os_darwin
+  if (native_handle != -1)
+  {
+    int optval = 1;
+    ::setsockopt(native_handle, SOL_SOCKET, SO_NOSIGPIPE,
+      &optval, sizeof(optval)
+    );
+  }
+#endif
+
 #endif
 }
 
@@ -246,6 +255,14 @@ retry:
 #endif
       *address_size = size;
     }
+
+#if __sal_os_darwin
+    int optval = 1;
+    ::setsockopt(new_socket, SOL_SOCKET, SO_NOSIGPIPE,
+      &optval, sizeof(optval)
+    );
+#endif
+
     return new_socket;
   }
 
@@ -508,6 +525,10 @@ size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
+#if __sal_os_linux
+  flags |= MSG_NOSIGNAL;
+#endif
+
   auto size = handle(::sendmsg(native_handle, &msg, flags), error);
   if (size == -1)
   {
@@ -567,6 +588,10 @@ size_t socket_t::send_to (const void *data, size_t data_size,
   msg.msg_iovlen = 1;
   msg.msg_name = const_cast<void *>(address);
   msg.msg_namelen = address_size;
+
+#if __sal_os_linux
+  flags |= MSG_NOSIGNAL;
+#endif
 
   auto size = handle(::sendmsg(native_handle, &msg, flags), error);
   if (size == -1)
