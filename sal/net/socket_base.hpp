@@ -22,7 +22,7 @@ class socket_base_t
 public:
 
   /// Native socket handle type
-  using native_handle_t = __bits::native_handle_t;
+  using native_handle_t = __bits::native_socket_t;
 
   /// Invalid native socket handle
   static constexpr native_handle_t invalid_socket = __bits::invalid_socket;
@@ -49,7 +49,7 @@ public:
 
 
   /// Bitmask flags for send/receive functions
-  using message_flags_t = int;
+  using message_flags_t = __bits::message_flags_t;
 
   /// Leave received data in queue
   static constexpr message_flags_t peek = MSG_PEEK;

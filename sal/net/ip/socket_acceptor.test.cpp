@@ -1,6 +1,7 @@
 #include <sal/net/ip/tcp.hpp>
+#include <sal/net/io_context.hpp>
+#include <sal/net/io_service.hpp>
 #include <sal/common.test.hpp>
-
 #include <thread>
 
 
@@ -21,9 +22,34 @@ struct socket_acceptor
       : acceptor_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
     ;
   }
+
+#if __sal_os_windows
+
+  static sal::net::io_service_t service;
+  static sal::net::io_context_t context;
+
+  static sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
+  {
+    auto io_buf = context.make_buf();
+    io_buf->resize(content.size());
+    std::memcpy(io_buf->data(), content.data(), content.size());
+    return io_buf;
+  }
+
+  static std::string to_string (const sal::net::io_buf_ptr &io_buf, size_t size)
+  {
+    return std::string(static_cast<const char *>(io_buf->data()), size);
+  }
+
+#endif // __sal_os_windows
 };
 
 constexpr sal::net::ip::port_t socket_acceptor::port;
+
+#if __sal_os_windows
+  sal::net::io_service_t socket_acceptor::service;
+  sal::net::io_context_t socket_acceptor::context = service.make_context();
+#endif // __sal_os_windows
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, socket_acceptor,
@@ -72,7 +98,7 @@ TEST_P(socket_acceptor, ctor_protocol)
 TEST_P(socket_acceptor, ctor_protocol_and_handle)
 {
   auto handle = sal::net::socket_base_t::invalid_socket - 1;
-  acceptor_t acceptor(handle);
+  acceptor_t acceptor(GetParam(), handle);
   EXPECT_EQ(handle, acceptor.native_handle());
 
   std::error_code ignored;
@@ -116,7 +142,7 @@ TEST_P(socket_acceptor, assign)
   acceptor_t acceptor;
 
   auto h = sal::net::socket_base_t::invalid_socket - 1;
-  acceptor.assign(h);
+  acceptor.assign(GetParam(), h);
   EXPECT_TRUE(acceptor.is_open());
   EXPECT_EQ(h, acceptor.native_handle());
 
@@ -132,12 +158,12 @@ TEST_P(socket_acceptor, assign_not_closed)
 
   {
     std::error_code error;
-    acceptor.assign(h, error);
+    acceptor.assign(GetParam(), h, error);
     EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
   }
 
   {
-    EXPECT_THROW(acceptor.assign(h), std::system_error);
+    EXPECT_THROW(acceptor.assign(GetParam(), h), std::system_error);
   }
 }
 
@@ -149,12 +175,12 @@ TEST_P(socket_acceptor, assign_no_handle)
 
   {
     std::error_code error;
-    acceptor.assign(h, error);
+    acceptor.assign(GetParam(), h, error);
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(acceptor.assign(h), std::system_error);
+    EXPECT_THROW(acceptor.assign(GetParam(), h), std::system_error);
   }
 }
 
@@ -215,7 +241,7 @@ TEST_P(socket_acceptor, close_no_handle)
 
 TEST_P(socket_acceptor, close_bad_file_descriptor)
 {
-  acceptor_t acceptor(sal::net::socket_base_t::invalid_socket - 1);
+  acceptor_t acceptor(GetParam(), sal::net::socket_base_t::invalid_socket - 1);
 
   {
     std::error_code error;
@@ -416,6 +442,155 @@ TEST_P(socket_acceptor, enable_connection_aborted)
   EXPECT_EQ(std::errc::connection_aborted, error);
   */
 }
+
+
+#if __sal_os_windows
+
+
+TEST_P(socket_acceptor, async_accept)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+  service.associate(acceptor);
+
+  acceptor.async_accept(context.make_buf());
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = acceptor.async_accept_result(io_buf);
+  ASSERT_NE(nullptr, result);
+
+  EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
+
+  auto b = result->accepted();
+  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
+
+  EXPECT_EQ(nullptr, a.async_connect_result(io_buf));
+}
+
+
+TEST_P(socket_acceptor, async_accept_immediate_completion)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+  service.associate(acceptor);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+
+  acceptor.async_accept(context.make_buf());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result = acceptor.async_accept_result(io_buf);
+  ASSERT_NE(nullptr, result);
+
+  EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
+
+  auto b = result->accepted();
+  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
+
+  EXPECT_EQ(nullptr, a.async_connect_result(io_buf));
+}
+
+
+TEST_P(socket_acceptor, async_accept_result_twice)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+  service.associate(acceptor);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  acceptor.async_accept(context.make_buf());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  auto result1 = acceptor.async_accept_result(io_buf);
+  ASSERT_NE(nullptr, result1);
+
+  auto result2 = acceptor.async_accept_result(io_buf);
+  ASSERT_NE(nullptr, result2);
+
+  EXPECT_EQ(result1, result2);
+
+  /*
+  EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
+
+  auto b = result->accepted();
+  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
+
+  EXPECT_EQ(nullptr, a.async_connect_result(io_buf));
+  */
+}
+
+
+TEST_P(socket_acceptor, async_accept_invalid)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+  service.associate(acceptor);
+  acceptor.close();
+
+  acceptor.async_accept(context.make_buf());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  {
+    std::error_code error;
+    auto result = acceptor.async_accept_result(io_buf, error);
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ(std::errc::not_a_socket, error);
+  }
+
+  {
+    EXPECT_THROW(
+      acceptor.async_accept_result(io_buf),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket_acceptor, async_accept_close_before_accept)
+{
+  acceptor_t acceptor(loopback(GetParam()), true);
+  service.associate(acceptor);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  a.close();
+  std::this_thread::yield();
+
+  acceptor.async_accept(context.make_buf());
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  // accept succeeds
+  std::error_code error;
+  auto result = acceptor.async_accept_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_FALSE(error);
+
+  // but receive should fail
+  auto b = result->accepted();
+  char buf[1024];
+  b.receive(sal::make_buf(buf), error);
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+}
+
+
+#endif // __sal_os_windows
 
 
 } // namespace

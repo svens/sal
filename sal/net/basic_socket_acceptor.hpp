@@ -8,6 +8,8 @@
 
 #include <sal/config.hpp>
 #include <sal/net/error.hpp>
+#include <sal/net/io_buf.hpp>
+#include <sal/net/io_context.hpp>
 #include <sal/net/socket_base.hpp>
 #include <sal/net/socket_options.hpp>
 
@@ -50,6 +52,7 @@ public:
    */
   basic_socket_acceptor_t (basic_socket_acceptor_t &&that) noexcept
     : impl_(that.impl_.native_handle)
+    , family_(that.family_)
   {
     that.impl_.native_handle = invalid_socket;
   }
@@ -80,7 +83,7 @@ public:
 
 
   /**
-   * Construct new socket, open and bind to \a endpoint. On failure, throw
+   * Construct new acceptor, open and bind to \a endpoint. On failure, throw
    * std::system_error
    */
   basic_socket_acceptor_t (const endpoint_t &endpoint, bool reuse_addr=true)
@@ -96,12 +99,13 @@ public:
 
 
   /**
-   * Construct new socket, open() with \a protocol and bind() to \a endpoint.
+   * Construct new acceptor for pre-opened \a handle using \a protocol.
    * On failure, throw std::system_error
    */
-  basic_socket_acceptor_t (const native_handle_t &handle)
+  basic_socket_acceptor_t (const protocol_t &protocol,
+    const native_handle_t &handle)
   {
-    assign(handle);
+    assign(protocol, handle);
   }
 
 
@@ -114,6 +118,7 @@ public:
     auto tmp{std::move(*this)};
     impl_.native_handle = that.impl_.native_handle;
     that.impl_.native_handle = invalid_socket;
+    family_ = that.family_;
     return *this;
   }
 
@@ -148,11 +153,8 @@ public:
   {
     if (!is_open())
     {
-      impl_.open(protocol.family(),
-        protocol.type(),
-        protocol.protocol(),
-        error
-      );
+      family_ = protocol.family();
+      impl_.open(family_, protocol.type(), protocol.protocol(), error);
     }
     else
     {
@@ -172,10 +174,11 @@ public:
 
 
   /**
-   * Assign previously opened native socket \a handle to this socket object.
-   * On failure, set \a error.
+   * Assign previously opened native socket \a handle (using \a protocol) to
+   * this socket object. On failure, set \a error.
    */
-  void assign (const native_handle_t &handle, std::error_code &error) noexcept
+  void assign (const protocol_t &protocol, const native_handle_t &handle,
+    std::error_code &error) noexcept
   {
     if (handle == invalid_socket)
     {
@@ -183,6 +186,7 @@ public:
     }
     else if (!is_open())
     {
+      family_ = protocol.family();
       impl_.native_handle = handle;
     }
     else
@@ -193,12 +197,12 @@ public:
 
 
   /**
-   * Assign previously opened native socket \a handle to this socket object.
-   * On failure, throw std::system_error
+   * Assign previously opened native socket \a handle (using \a protocol) to
+   * this socket object. On failure, throw std::system_error
    */
-  void assign (const native_handle_t &handle)
+  void assign (const protocol_t &protocol, const native_handle_t &handle)
   {
-    assign(handle, throw_on_error("basic_socket_acceptor::assign"));
+    assign(protocol, handle, throw_on_error("basic_socket_acceptor::assign"));
   }
 
 
@@ -489,10 +493,73 @@ public:
   }
 
 
+#if __sal_os_windows
+
+  //
+  // Asynchronous API
+  //
+
+
+  struct async_accept_t
+    : public __bits::async_accept_t
+  {
+    const endpoint_t &local_endpoint () const noexcept
+    {
+      return *reinterpret_cast<const endpoint_t *>(
+        __bits::async_accept_t::local_address
+      );
+    }
+
+    const endpoint_t &remote_endpoint () const noexcept
+    {
+      return *reinterpret_cast<const endpoint_t *>(
+        __bits::async_accept_t::remote_address
+      );
+    }
+
+    socket_t accepted () const noexcept
+    {
+      return __bits::async_accept_t::accepted;
+    }
+  };
+
+
+  void async_accept (io_buf_ptr &&io_buf) noexcept
+  {
+    io_buf->start<async_accept_t>(impl_, family_);
+    io_buf.release();
+  }
+
+
+  static const async_accept_t *async_accept_result (const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto result = io_buf->result<async_accept_t>())
+    {
+      result->finish(error);
+      return result;
+    }
+    return nullptr;
+  }
+
+
+  static const async_accept_t *async_accept_result (const io_buf_ptr &io_buf)
+  {
+    return async_accept_result(io_buf,
+      throw_on_error("basic_socket_acceptor::async_accept")
+    );
+  }
+
+#endif
+
+
 private:
 
   __bits::socket_t impl_;
+  int family_ = AF_UNSPEC;
   bool enable_connection_aborted_ = false;
+
+  friend class io_service_t;
 };
 
 

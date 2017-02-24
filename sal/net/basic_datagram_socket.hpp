@@ -7,8 +7,10 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/basic_socket.hpp>
 #include <sal/buf_ptr.hpp>
+#include <sal/net/basic_socket.hpp>
+#include <sal/net/io_buf.hpp>
+#include <sal/net/io_context.hpp>
 
 
 __sal_begin
@@ -88,6 +90,11 @@ public:
   basic_datagram_socket_t &operator= (const basic_datagram_socket_t &) = delete;
 
 
+  //
+  // Synchronous API
+  //
+
+
   /**
    * Receive data from this socket into \a buf. On success, returns number of
    * bytes received and stores sender address into \a endpoint. On failure,
@@ -100,9 +107,9 @@ public:
     std::error_code &error) noexcept
   {
     auto endpoint_size = endpoint.capacity();
-    auto size = base_t::impl_.recv_from(buf.data(), buf.size(),
-      static_cast<int>(flags),
+    auto size = base_t::impl_.receive_from(buf.data(), buf.size(),
       endpoint.data(), &endpoint_size,
+      static_cast<int>(flags),
       error
     );
     if (!error)
@@ -167,9 +174,9 @@ public:
     std::error_code &error) noexcept
   {
     size_t endpoint_size = 0;
-    return base_t::impl_.recv_from(buf.data(), buf.size(),
-      static_cast<int>(flags),
+    return base_t::impl_.receive_from(buf.data(), buf.size(),
       nullptr, &endpoint_size,
+      static_cast<int>(flags),
       error
     );
   }
@@ -220,8 +227,8 @@ public:
     std::error_code &error) noexcept
   {
     return base_t::impl_.send_to(buf.data(), buf.size(),
-      static_cast<int>(flags),
       endpoint.data(), endpoint.size(),
+      static_cast<int>(flags),
       error
     );
   }
@@ -282,8 +289,8 @@ public:
     std::error_code &error) noexcept
   {
     return base_t::impl_.send_to(buf.data(), buf.size(),
-      static_cast<int>(flags),
       nullptr, 0,
+      static_cast<int>(flags),
       error
     );
   }
@@ -323,6 +330,220 @@ public:
   {
     return send(buf, throw_on_error("basic_datagram_socket::send"));
   }
+
+
+#if __sal_os_windows
+
+
+  //
+  // Asynchronous API
+  //
+
+
+  struct async_receive_from_t
+    : public __bits::async_receive_from_t
+  {
+    const endpoint_t &endpoint () const noexcept
+    {
+      return *reinterpret_cast<const endpoint_t *>(
+        &(__bits::async_receive_from_t::address)
+      );
+    }
+
+    size_t transferred () const noexcept
+    {
+      return __bits::async_receive_from_t::transferred;
+    }
+  };
+
+
+  void async_receive_from (io_buf_ptr &&io_buf,
+    socket_base_t::message_flags_t flags) noexcept
+  {
+    io_buf->start<async_receive_from_t>(impl_, flags);
+    io_buf.release();
+  }
+
+
+  void async_receive_from (io_buf_ptr &&io_buf) noexcept
+  {
+    async_receive_from(std::move(io_buf), socket_base_t::message_flags_t{});
+  }
+
+
+  static const async_receive_from_t *async_receive_from_result (
+    const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto result = io_buf->result<async_receive_from_t>())
+    {
+      if (result->error)
+      {
+        error = result->error;
+      }
+      return result;
+    }
+    return nullptr;
+  }
+
+
+  static const async_receive_from_t *async_receive_from_result (
+    const io_buf_ptr &io_buf)
+  {
+    return async_receive_from_result(io_buf,
+      throw_on_error("basic_datagram_socket::async_receive_from")
+    );
+  }
+
+
+  struct async_receive_t
+    : public __bits::async_receive_t
+  {
+    size_t transferred () const noexcept
+    {
+      return __bits::async_receive_t::transferred;
+    }
+  };
+
+
+  void async_receive (io_buf_ptr &&io_buf,
+    socket_base_t::message_flags_t flags) noexcept
+  {
+    io_buf->start<async_receive_t>(impl_, flags);
+    io_buf.release();
+  }
+
+
+  void async_receive (io_buf_ptr &&io_buf) noexcept
+  {
+    async_receive(std::move(io_buf), socket_base_t::message_flags_t{});
+  }
+
+
+  static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto result = io_buf->result<async_receive_t>())
+    {
+      if (result->error)
+      {
+        error = result->error;
+      }
+      return result;
+    }
+    return nullptr;
+  }
+
+
+  static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf)
+  {
+    return async_receive_result(io_buf,
+      throw_on_error("basic_datagram_socket::async_receive")
+    );
+  }
+
+
+  struct async_send_to_t
+    : public __bits::async_send_to_t
+  {
+    size_t transferred () const noexcept
+    {
+      return __bits::async_send_to_t::transferred;
+    }
+  };
+
+
+  void async_send_to (io_buf_ptr &&io_buf,
+    const endpoint_t &endpoint,
+    socket_base_t::message_flags_t flags) noexcept
+  {
+    io_buf->start<async_send_to_t>(impl_,
+      endpoint.data(), endpoint.size(),
+      flags
+    );
+    io_buf.release();
+  }
+
+
+  void async_send_to (io_buf_ptr &&io_buf, const endpoint_t &endpoint) noexcept
+  {
+    async_send_to(std::move(io_buf), endpoint,
+      socket_base_t::message_flags_t{}
+    );
+  }
+
+
+  static const async_send_to_t *async_send_to_result (const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto result = io_buf->result<async_send_to_t>())
+    {
+      if (result->error)
+      {
+        error = result->error;
+      }
+      return result;
+    }
+    return nullptr;
+  }
+
+
+  static const async_send_to_t *async_send_to_result (const io_buf_ptr &io_buf)
+  {
+    return async_send_to_result(io_buf,
+      throw_on_error("basic_datagram_socket::async_send_to")
+    );
+  }
+
+
+  struct async_send_t
+    : public __bits::async_send_t
+  {
+    size_t transferred () const noexcept
+    {
+      return __bits::async_send_t::transferred;
+    }
+  };
+
+
+  void async_send (io_buf_ptr &&io_buf,
+    socket_base_t::message_flags_t flags) noexcept
+  {
+    io_buf->start<async_send_t>(impl_, flags);
+    io_buf.release();
+  }
+
+
+  void async_send (io_buf_ptr &&io_buf) noexcept
+  {
+    async_send(std::move(io_buf), socket_base_t::message_flags_t{});
+  }
+
+
+  static const async_send_t *async_send_result (const io_buf_ptr &io_buf,
+    std::error_code &error) noexcept
+  {
+    if (auto result = io_buf->result<async_send_t>())
+    {
+      if (result->error)
+      {
+        error = result->error;
+      }
+      return result;
+    }
+    return nullptr;
+  }
+
+
+  static const async_send_t *async_send_result (const io_buf_ptr &io_buf)
+  {
+    return async_send_result(io_buf,
+      throw_on_error("basic_datagram_socket::async_send")
+    );
+  }
+
+
+#endif // __sal_os_windows
 };
 
 

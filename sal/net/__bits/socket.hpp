@@ -22,26 +22,32 @@ namespace net { namespace __bits {
 
 #if __sal_os_windows
 
-  // socket handle
-  using native_handle_t = SOCKET;
-  constexpr native_handle_t invalid_socket = INVALID_SOCKET;
+// socket handle
+using native_socket_t = SOCKET;
+constexpr native_socket_t invalid_socket = INVALID_SOCKET;
 
-  // shutdown() direction
-  #define SHUT_RD SD_RECEIVE
-  #define SHUT_WR SD_SEND
-  #define SHUT_RDWR SD_BOTH
+// shutdown() direction
+#define SHUT_RD SD_RECEIVE
+#define SHUT_WR SD_SEND
+#define SHUT_RDWR SD_BOTH
 
-  // sockaddr family
-  using sa_family_t = ::ADDRESS_FAMILY;
+// sockaddr family
+using sa_family_t = ::ADDRESS_FAMILY;
+
+// send/recv flags
+using message_flags_t = DWORD;
 
 #else
 
-  // socket handle
-  using native_handle_t = int;
-  constexpr native_handle_t invalid_socket = -1;
+// socket handle
+using native_socket_t = int;
+constexpr native_socket_t invalid_socket = -1;
 
-  // sockaddr family
-  using sa_family_t = ::sa_family_t;
+// sockaddr family
+using sa_family_t = ::sa_family_t;
+
+// send/recv flags
+using message_flags_t = int;
 
 #endif
 
@@ -51,11 +57,11 @@ enum class wait_t { read, write };
 
 struct socket_t
 {
-  native_handle_t native_handle = invalid_socket;
+  native_socket_t native_handle = invalid_socket;
 
   socket_t () = default;
 
-  socket_t (native_handle_t native_handle) noexcept
+  socket_t (native_socket_t native_handle) noexcept
     : native_handle(native_handle)
   {}
 
@@ -72,7 +78,7 @@ struct socket_t
 
   void listen (int backlog, std::error_code &error) noexcept;
 
-  native_handle_t accept (void *address, size_t *address_size,
+  native_socket_t accept (void *address, size_t *address_size,
     bool enable_connection_aborted,
     std::error_code &error
   ) noexcept;
@@ -83,28 +89,6 @@ struct socket_t
 
   bool wait (wait_t what,
     int timeout_ms,
-    std::error_code &error
-  ) noexcept;
-
-  size_t recv (void *data, size_t data_size,
-    int flags,
-    std::error_code &error
-  ) noexcept;
-
-  size_t recv_from (void *data, size_t data_size,
-    int flags,
-    void *address, size_t *address_size,
-    std::error_code &error
-  ) noexcept;
-
-  size_t send (const void *data, size_t data_size,
-    int flags,
-    std::error_code &error
-  ) noexcept;
-
-  size_t send_to (const void *data, size_t data_size,
-    int flags,
-    const void *address, size_t address_size,
     std::error_code &error
   ) noexcept;
 
@@ -132,6 +116,28 @@ struct socket_t
   void non_blocking (bool mode, std::error_code &error) noexcept;
 
   size_t available (std::error_code &error) const noexcept;
+
+  size_t receive (void *data, size_t data_size,
+    message_flags_t flags,
+    std::error_code &error
+  ) noexcept;
+
+  size_t receive_from (void *data, size_t data_size,
+    void *address, size_t *address_size,
+    message_flags_t flags,
+    std::error_code &error
+  ) noexcept;
+
+  size_t send (const void *data, size_t data_size,
+    message_flags_t flags,
+    std::error_code &error
+  ) noexcept;
+
+  size_t send_to (const void *data, size_t data_size,
+    const void *address, size_t address_size,
+    message_flags_t flags,
+    std::error_code &error
+  ) noexcept;
 };
 
 

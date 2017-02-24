@@ -1,23 +1,99 @@
 #include <sal/net/__bits/socket.hpp>
 #include <sal/net/error.hpp>
+#include <mutex>
 
-#if __sal_os_linux || __sal_os_darwin
+#if __sal_os_windows
+  #include <mswsock.h>
+#elif __sal_os_linux || __sal_os_darwin
   #include <fcntl.h>
   #include <poll.h>
+  #include <signal.h>
   #include <sys/ioctl.h>
   #include <unistd.h>
 #endif
-
-#include <iostream>
 
 
 __sal_begin
 
 
-namespace net { namespace __bits {
+namespace net {
 
 
 namespace {
+
+
+struct lib_t
+{
+  lib_t () noexcept
+  {
+    setup();
+  }
+
+  ~lib_t () noexcept
+  {
+    cleanup();
+  }
+
+  static std::error_code setup_result;
+  static lib_t lib;
+
+  static void setup () noexcept;
+  static void cleanup () noexcept;
+};
+
+std::error_code lib_t::setup_result{};
+lib_t lib_t::lib;
+
+
+void internal_setup (std::error_code &result) noexcept
+{
+#if __sal_os_windows
+
+  WSADATA wsa;
+  result.assign(
+    ::WSAStartup(MAKEWORD(2, 2), &wsa),
+    std::system_category()
+  );
+
+#else
+
+  (void)result;
+  ::signal(SIGPIPE, SIG_IGN);
+
+#endif
+}
+
+
+void lib_t::setup () noexcept
+{
+  static std::once_flag flag;
+  std::call_once(flag, &internal_setup, std::ref(setup_result));
+}
+
+
+void lib_t::cleanup () noexcept
+{
+#if __sal_os_windows
+  ::WSACleanup();
+#endif
+}
+
+
+} // namespace
+
+
+const std::error_code &init () noexcept
+{
+  lib_t::setup();
+  return lib_t::setup_result;
+}
+
+
+namespace __bits {
+
+
+namespace {
+
 
 template <typename Result>
 inline Result handle (Result result, std::error_code &error) noexcept
@@ -46,14 +122,49 @@ inline Result handle (Result result, std::error_code &error) noexcept
   return result;
 }
 
+
 } // namespace
 
 
 void socket_t::open (int domain, int type, int protocol,
   std::error_code &error) noexcept
 {
-  // note: under Windows, socket() creates handles with overlapped attribute
+#if __sal_os_windows
+
+  native_handle = handle(
+    ::WSASocketW(domain, type, protocol, nullptr, 0, WSA_FLAG_OVERLAPPED),
+    error
+  );
+
+  if (native_handle != SOCKET_ERROR)
+  {
+    // we handle immediate completion by deferring handling
+    ::SetFileCompletionNotificationModes(
+      reinterpret_cast<HANDLE>(native_handle),
+      FILE_SKIP_COMPLETION_PORT_ON_SUCCESS |
+      FILE_SKIP_SET_EVENT_ON_HANDLE
+    );
+
+    if (type == SOCK_DGRAM)
+    {
+      bool new_behaviour = false;
+      DWORD ignored;
+      ::WSAIoctl(native_handle,
+        SIO_UDP_CONNRESET,
+        &new_behaviour, sizeof(new_behaviour),
+        nullptr, 0,
+        &ignored,
+        nullptr,
+        nullptr
+      );
+    }
+  }
+
+#else
+
   native_handle = handle(::socket(domain, type, protocol), error);
+
+#endif
 }
 
 
@@ -98,7 +209,7 @@ void socket_t::listen (int backlog, std::error_code &error) noexcept
 }
 
 
-native_handle_t socket_t::accept (void *address, size_t *address_size,
+native_socket_t socket_t::accept (void *address, size_t *address_size,
   bool enable_connection_aborted, std::error_code &error) noexcept
 {
   socklen_t size{}, *size_p = nullptr;
@@ -126,7 +237,7 @@ retry:
         if (enable_connection_aborted)
         {
           error.assign(ECONNABORTED, std::generic_category());
-          return native_handle_t{};
+          return native_socket_t{};
         }
         size = static_cast<socklen_t>(*address_size);
         goto retry;
@@ -223,7 +334,7 @@ bool socket_t::wait (wait_t what, int timeout_ms, std::error_code &error)
   return false;
 }
 
-size_t socket_t::recv (void *data, size_t data_size, int flags,
+size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -282,8 +393,9 @@ size_t socket_t::recv (void *data, size_t data_size, int flags,
 }
 
 
-size_t socket_t::recv_from (void *data, size_t data_size, int flags,
+size_t socket_t::receive_from (void *data, size_t data_size,
   void *address, size_t *address_size,
+  message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -353,7 +465,7 @@ size_t socket_t::recv_from (void *data, size_t data_size, int flags,
 }
 
 
-size_t socket_t::send (const void *data, size_t data_size, int flags,
+size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows
@@ -407,8 +519,9 @@ size_t socket_t::send (const void *data, size_t data_size, int flags,
 }
 
 
-size_t socket_t::send_to (const void *data, size_t data_size, int flags,
+size_t socket_t::send_to (const void *data, size_t data_size,
   const void *address, size_t address_size,
+  message_flags_t flags,
   std::error_code &error) noexcept
 {
 #if __sal_os_windows

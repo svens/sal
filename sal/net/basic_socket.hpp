@@ -414,7 +414,9 @@ protected:
    * Low-level OS socket
    * \internal
    */
-  __bits::socket_t impl_;
+  __bits::socket_t impl_{};
+
+  friend class io_service_t;
 
 
   basic_socket_t () = default;
