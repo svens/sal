@@ -4,9 +4,6 @@
 #include <sal/common.test.hpp>
 
 
-#if __sal_os_windows
-
-
 namespace {
 
 
@@ -38,6 +35,7 @@ TEST_F(net_io_buf, ctor)
   auto buf = make_buf();
   EXPECT_EQ(&context(), &buf->this_context());
 
+  EXPECT_EQ(buf->data(), buf->begin());
   EXPECT_EQ(buf->head(), buf->begin());
   EXPECT_EQ(buf->tail(), buf->end());
 
@@ -150,6 +148,3 @@ TEST_F(net_io_buf, reset)
 
 
 } // namespace
-
-
-#endif // __sal_os_windows

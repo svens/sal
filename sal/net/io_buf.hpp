@@ -14,7 +14,6 @@
 
 
 __sal_begin
-#if __sal_os_windows
 
 
 namespace net {
@@ -188,8 +187,8 @@ private:
 
   char request_data_[160];
   io_context_t * const owner_;
-  mpsc_sync_t::intrusive_queue_hook_t free_;
 
+  mpsc_sync_t::intrusive_queue_hook_t free_{};
   using free_list = intrusive_queue_t<
     io_buf_t, mpsc_sync_t, &io_buf_t::free_
   >;
@@ -204,10 +203,12 @@ private:
 
   io_buf_t (io_context_t *owner) noexcept
     : owner_(owner)
-  {}
+  {
+    (void)free_;
+  }
 
 
-  constexpr void static_check () const
+  static constexpr void static_check ()
   {
     static_assert(sizeof(io_buf_t) == 4096,
       "expected sizeof(io_buf_t) == 4096B"
@@ -225,5 +226,4 @@ using io_buf_ptr = std::unique_ptr<io_buf_t, void(*)(io_buf_t*)>;
 } // namespace net
 
 
-#endif // __sal_os_windows
 __sal_end

@@ -3,9 +3,6 @@
 #include <sal/common.test.hpp>
 
 
-#if __sal_os_windows
-
-
 namespace {
 
 
@@ -40,35 +37,41 @@ TEST_F(net_io_context, make_buf)
 
 TEST_F(net_io_context, try_get_empty)
 {
+  EXPECT_EQ(nullptr, context().try_get());
 }
 
 
 TEST_F(net_io_context, try_get_not_empty)
 {
+  // TODO
 }
 
 
 TEST_F(net_io_context, get_empty)
 {
+  // TODO
 }
 
 
 TEST_F(net_io_context, get_not_empty)
 {
+  // TODO
 }
 
 
-TEST_F(net_io_context, wait_empty)
+TEST_F(net_io_context, reclaim_empty)
 {
+  context().reclaim();
+  EXPECT_EQ(nullptr, context().try_get());
 }
 
 
-TEST_F(net_io_context, wait_not_empty)
+TEST_F(net_io_context, reclaim_not_empty)
 {
+  // TODO
+  context().reclaim();
+  EXPECT_EQ(nullptr, context().try_get());
 }
 
 
 } // namespace
-
-
-#endif // __sal_os_windows

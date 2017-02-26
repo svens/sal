@@ -20,10 +20,10 @@
 __sal_begin
 
 
-#if __sal_os_windows
-
-
 namespace net { namespace __bits {
+
+
+#if __sal_os_windows
 
 
 namespace {
@@ -419,10 +419,31 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
 }
 
 
+#elif __sal_os_darwin
+
+
+void io_service_t::associate (socket_t &, std::error_code &) noexcept
+{
+}
+
+
+io_buf_t *io_context_t::try_get () noexcept
+{
+  return nullptr;
+}
+
+
+io_buf_t *io_context_t::get (const std::chrono::milliseconds &,
+  std::error_code &) noexcept
+{
+  return nullptr;
+}
+
+
+#endif
+
+
 }} // namespace net::__bits
-
-
-#endif // __sal_os_windows
 
 
 __sal_end

@@ -1,7 +1,6 @@
 #include <sal/net/io_context.hpp>
 
 
-#if __sal_os_windows
 __sal_begin
 
 
@@ -24,4 +23,3 @@ void io_context_t::extend_pool ()
 
 
 __sal_end
-#endif // __sal_os_windows

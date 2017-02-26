@@ -13,10 +13,10 @@ __sal_begin
 namespace net { namespace __bits {
 
 
-#if __sal_os_windows
-
-
 struct io_context_t;
+
+
+#if __sal_os_windows
 
 
 struct io_buf_t
@@ -142,7 +142,53 @@ struct io_context_t
 };
 
 
-#endif // __sal_os_windows
+#elif __sal_os_darwin
+
+
+struct io_buf_t
+{
+  char *begin{}, *end{};
+  uintptr_t user_data{};
+  size_t request_id{};
+
+  io_context_t *context{};
+};
+
+
+struct io_service_t
+{
+  static constexpr size_t max_completion_count = 1024;
+
+
+  io_service_t (std::error_code &) noexcept
+  {}
+
+
+  void associate (socket_t &socket, std::error_code &error) noexcept;
+};
+
+
+struct io_context_t
+{
+  io_service_t &io_service;
+  size_t max_completion_count;
+
+
+  io_context_t (io_service_t &io_service, size_t max_completion_count) noexcept
+    : io_service(io_service)
+    , max_completion_count(max_completion_count)
+  {}
+
+
+  io_buf_t *try_get () noexcept;
+
+  io_buf_t *get (const std::chrono::milliseconds &timeout,
+    std::error_code &error
+  ) noexcept;
+};
+
+
+#endif
 
 
 }} // namespace net::__bits
