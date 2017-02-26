@@ -1,13 +1,17 @@
 #include <sal/net/io_service.hpp>
 #include <sal/common.test.hpp>
 
-#include <sal/net/internet.hpp>
 
-#include <sys/types.h>
-#include <sys/event.h>
-#include <sys/time.h>
-#include <thread>
-using namespace std::chrono_literals;
+#if __sal_os_darwin
+  #include <sal/thread.hpp>
+  #include <sal/net/internet.hpp>
+  #include <sys/types.h>
+  #include <sys/event.h>
+  #include <sys/time.h>
+  #include <forward_list>
+  #include <thread>
+  using namespace std::chrono_literals;
+#endif
 
 
 namespace {
@@ -212,7 +216,7 @@ struct kqueue
     return ev.ident;
   }
 
-  size_t size (struct ::kevent &ev) const noexcept
+  size_t data_size (struct ::kevent &ev) const noexcept
   {
     return ev.data;
   }
@@ -234,7 +238,7 @@ TEST_F(kqueue, basic)
   auto events = poll();
   ASSERT_EQ(1U, events.size());
   EXPECT_EQ(a.native_handle(), handle(events[0]));
-  EXPECT_EQ(case_name.size(), size(events[0]));
+  EXPECT_EQ(case_name.size(), data_size(events[0]));
   EXPECT_EQ(case_name, recv());
 }
 
@@ -246,7 +250,7 @@ TEST_F(kqueue, edge_triggered_no_second_notification)
   send("one");
   auto events = poll();
   ASSERT_EQ(1U, events.size());
-  EXPECT_EQ(3U, size(events[0]));
+  EXPECT_EQ(3U, data_size(events[0]));
 
   events = poll(0ms);
   EXPECT_EQ(0U, events.size());
@@ -262,12 +266,12 @@ TEST_F(kqueue, edge_triggered_second_notification_on_new_send)
   send("one");
   auto events = poll();
   ASSERT_EQ(1U, events.size());
-  EXPECT_EQ(3U, size(events[0]));
+  EXPECT_EQ(3U, data_size(events[0]));
 
   send("two");
   events = poll(0ms);
   ASSERT_EQ(1U, events.size());
-  EXPECT_EQ(6U, size(events[0]));
+  EXPECT_EQ(6U, data_size(events[0]));
 
   string_list packets{"one", "two"};
   EXPECT_EQ(packets, drain());
@@ -281,11 +285,11 @@ TEST_F(kqueue, level_triggered_second_notification)
   send("one");
   auto events = poll();
   ASSERT_EQ(1U, events.size());
-  EXPECT_EQ(3U, size(events[0]));
+  EXPECT_EQ(3U, data_size(events[0]));
 
   events = poll(0ms);
   ASSERT_EQ(1U, events.size());
-  EXPECT_EQ(3U, size(events[0]));
+  EXPECT_EQ(3U, data_size(events[0]));
 
   EXPECT_EQ("one", recv());
 }
@@ -298,15 +302,48 @@ TEST_F(kqueue, level_triggered_second_notification_on_new_send)
   send("one");
   auto events = poll();
   ASSERT_EQ(1U, events.size());
-  EXPECT_EQ(3U, size(events[0]));
+  EXPECT_EQ(3U, data_size(events[0]));
 
   send("two");
   events = poll(0ms);
   ASSERT_EQ(1U, events.size());
-  EXPECT_EQ(6U, size(events[0]));
+  EXPECT_EQ(6U, data_size(events[0]));
 
   string_list packets{"one", "two"};
   EXPECT_EQ(packets, drain());
+}
+
+
+TEST_F(kqueue, single_thread_wakeup)
+{
+  monitor(EVFILT_READ, EV_ADD | EV_CLEAR);
+
+  send("one", false);
+  send("two");
+
+  std::atomic<size_t> event_count{};
+  std::forward_list<std::thread> threads;
+  for (auto i = 0U;  i < std::thread::hardware_concurrency();  ++i)
+  {
+    threads.emplace_front([&event_count, this]
+    {
+      auto events = poll(1ms);
+      event_count += events.size();
+      if (events.size())
+      {
+        EXPECT_EQ(6U, data_size(events[0]));
+        EXPECT_EQ("one", recv());
+        EXPECT_EQ("two", recv());
+      }
+    });
+  }
+
+  for (auto &thread: threads)
+  {
+    thread.join();
+  }
+
+  EXPECT_EQ(1U, event_count);
 }
 
 
