@@ -2,6 +2,7 @@
 #include <sal/net/io_context.hpp>
 #include <sal/net/io_service.hpp>
 #include <sal/common.test.hpp>
+#include <thread>
 
 
 namespace {
@@ -24,7 +25,7 @@ struct datagram_socket
     ;
   }
 
-#if __sal_os_windows
+#if __sal_os_windows || __sal_os_darwin
 
   static sal::net::io_service_t service;
   static sal::net::io_context_t context;
@@ -46,7 +47,7 @@ struct datagram_socket
 };
 
 constexpr sal::net::ip::port_t datagram_socket::port;
-#if __sal_os_windows
+#if __sal_os_windows || __sal_os_darwin
   sal::net::io_service_t datagram_socket::service;
   sal::net::io_context_t datagram_socket::context = service.make_context();
 #endif // __sal_os_windows
@@ -471,7 +472,7 @@ TEST_P(datagram_socket, send_do_not_route)
 }
 
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
 
 TEST_P(datagram_socket, async_receive_from)
@@ -485,6 +486,7 @@ TEST_P(datagram_socket, async_receive_from)
   socket.async_receive_from(std::move(io_buf));
 
   socket.send_to(sal::make_buf(case_name), endpoint);
+  std::this_thread::sleep_for(1ms);
 
   io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
@@ -506,6 +508,7 @@ TEST_P(datagram_socket, async_receive_from_immediate_completion)
   service.associate(socket);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
+  std::this_thread::sleep_for(1ms);
 
   auto io_buf = context.make_buf();
   io_buf->user_data(2);
@@ -519,51 +522,6 @@ TEST_P(datagram_socket, async_receive_from_immediate_completion)
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(endpoint, result->endpoint());
   EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
-}
-
-
-TEST_P(datagram_socket, async_receive_from_before_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  socket.async_receive_from(context.make_buf());
-  socket.shutdown(socket.shutdown_receive);
-  socket.send_to(sal::make_buf(case_name), endpoint);
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  auto result = socket.async_receive_from_result(io_buf);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(endpoint, result->endpoint());
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
-}
-
-
-TEST_P(datagram_socket, async_receive_from_after_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  socket.shutdown(socket.shutdown_receive);
-  socket.async_receive_from(context.make_buf());
-  socket.send_to(sal::make_buf(case_name), endpoint);
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  std::error_code error;
-  auto result = socket.async_receive_from_result(io_buf, error);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
-
-  EXPECT_THROW(
-    socket.async_receive_from_result(io_buf),
-    std::system_error
-  );
 }
 
 
@@ -583,7 +541,7 @@ TEST_P(datagram_socket, async_receive_from_invalid)
   auto result = socket.async_receive_from_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(
     socket.async_receive_from_result(io_buf),
@@ -606,14 +564,17 @@ TEST_P(datagram_socket, async_receive_from_invalid_immediate_completion)
   std::error_code error;
   auto result = socket.async_receive_from_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_a_socket, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(
     socket.async_receive_from_result(io_buf),
     std::system_error
   );
 }
+
+
+#if __sal_os_windows
 
 
 TEST_P(datagram_socket, async_receive_from_no_sender)
@@ -1012,7 +973,7 @@ TEST_P(datagram_socket, async_receive_invalid_immediate_completion)
   std::error_code error;
   auto result = socket.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_a_socket, error);
+  EXPECT_EQ(std::errc::bad_file_descriptor, error);
   EXPECT_EQ(0, result->transferred());
 
   EXPECT_THROW(socket.async_receive_result(io_buf), std::system_error);
@@ -1317,7 +1278,7 @@ TEST_P(datagram_socket, async_send_to_invalid)
   std::error_code error;
   auto result = socket.async_send_to_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_a_socket, error);
+  EXPECT_EQ(std::errc::bad_file_descriptor, error);
   EXPECT_EQ(0, result->transferred());
 
   // with exception
@@ -1503,7 +1464,7 @@ TEST_P(datagram_socket, async_send_invalid)
   std::error_code error;
   auto result = socket.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_a_socket, error);
+  EXPECT_EQ(std::errc::bad_file_descriptor, error);
   EXPECT_EQ(0, result->transferred());
 
   // with exception
@@ -1563,6 +1524,7 @@ TEST_P(datagram_socket, async_send_do_not_route)
 }
 
 
+#endif
 #endif // __sal_os_windows
 
 

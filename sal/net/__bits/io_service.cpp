@@ -14,7 +14,14 @@
 
 #if __sal_os_windows
   #include <mswsock.h>
+#elif __sal_os_darwin
+  #include <sal/assert.hpp>
+  #include <sys/time.h>
+  #include <unistd.h>
 #endif
+
+
+#include <iostream>
 
 
 __sal_begin
@@ -101,6 +108,10 @@ void io_buf_t::io_result (int result) noexcept
   else if (e == WSAESHUTDOWN)
   {
     error = make_error_code(socket_errc_t::orderly_shutdown);
+  }
+  else if (e == WSAENOTSOCK)
+  {
+    error.assign(WSAEBADF, std::system_category());
   }
   else
   {
@@ -361,9 +372,9 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 
 io_buf_t *io_context_t::try_get () noexcept
 {
-  if (completion_index < completion_count)
+  if (completion != last_completion)
   {
-    auto &entry = completions[completion_index++];
+    auto &entry = *completion++;
     auto *io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
 
     auto status = static_cast<NTSTATUS>(io_buf->Internal);
@@ -397,14 +408,16 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
     return io_buf;
   }
 
-  completion_index = 0;
+  completion = completions.begin();
+  ULONG completion_count;
   auto succeeded = ::GetQueuedCompletionStatusEx(io_service.iocp,
-    completions.data(), max_completion_count, &completion_count,
+    completions.data(), max_events_per_wait, &completion_count,
     static_cast<DWORD>(timeout.count()),
     false
   );
   if (succeeded)
   {
+    last_completion = completion + completion_count;
     return try_get();
   }
 
@@ -414,7 +427,7 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
     error.assign(e, std::system_category());
   }
 
-  completion_count = 0;
+  last_completion = completion;
   return nullptr;
 }
 
@@ -422,21 +435,199 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
 #elif __sal_os_darwin
 
 
-void io_service_t::associate (socket_t &, std::error_code &) noexcept
+struct async_worker_t
 {
+  io_buf_t::queue_t pending_receive{}, pending_send{};
+
+  ~async_worker_t ()
+  {
+    while (auto ev = pending_receive.try_pop())
+    {
+      ev->error = std::make_error_code(std::errc::operation_canceled);
+      ev->context->immediate_completions.push(ev);
+    }
+
+    // TODO: send?
+  }
+};
+
+
+void delete_async_worker (async_worker_t *async_worker) noexcept
+{
+  delete async_worker;
+}
+
+
+io_service_t::io_service_t (std::error_code &error) noexcept
+  : queue(::kqueue())
+{
+  if (queue == -1)
+  {
+    error.assign(errno, std::generic_category());
+  }
+}
+
+
+io_service_t::~io_service_t () noexcept
+{
+  if (queue != -1)
+  {
+    ::close(queue);
+  }
+}
+
+
+void io_service_t::associate (socket_t &socket, std::error_code &error)
+  noexcept
+{
+  sal_assert(socket.async_worker == nullptr);
+
+  socket.async_worker.reset(new(std::nothrow) async_worker_t);
+  if (!socket.async_worker)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return;
+  }
+
+  struct ::kevent change;
+  EV_SET(&change,
+    socket.native_handle,
+    EVFILT_READ | EVFILT_WRITE,
+    EV_ADD | EV_CLEAR,
+    0,
+    0,
+    &socket
+  );
+
+  if (::kevent(queue, &change, 1, nullptr, 0, nullptr) == -1)
+  {
+    error.assign(errno, std::generic_category());
+    socket.async_worker.reset();
+    return;
+  }
+
+  socket.non_blocking(true, error);
+}
+
+
+io_buf_t *io_context_t::receive () noexcept
+{
+  if (event->data)
+  {
+    auto &socket = *static_cast<socket_t *>(event->udata);
+    auto *r = static_cast<async_receive_from_t *>(
+      socket.async_worker->pending_receive.try_pop()
+    );
+    if (r)
+    {
+      r->error.clear();
+      r->transferred = socket.receive_from(
+        r->begin, r->end - r->begin,
+        &r->address, &r->address_size,
+        r->flags,
+        r->error
+      );
+      if (r->error != std::errc::operation_would_block)
+      {
+        event->data -= r->transferred;
+        return r;
+      }
+      socket.async_worker->pending_receive.push(r);
+    }
+  }
+  return nullptr;
+}
+
+
+io_buf_t *io_context_t::send () noexcept
+{
+  return nullptr;
 }
 
 
 io_buf_t *io_context_t::try_get () noexcept
 {
+  while (event != last_event)
+  {
+    if (auto *io_buf = event->filter == EVFILT_READ ? receive() : send())
+    {
+      return io_buf;
+    }
+    ++event;
+  }
+  return immediate_completions.try_pop();
+}
+
+
+io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
+  std::error_code &error) noexcept
+{
+  if (auto io_buf = try_get())
+  {
+    return io_buf;
+  }
+
+  using namespace std::chrono;
+
+  struct ::timespec ts, *t = nullptr;
+  if (timeout != milliseconds::max())
+  {
+    auto s = duration_cast<seconds>(timeout);
+    ts.tv_nsec = duration_cast<nanoseconds>(timeout - s).count();
+    ts.tv_sec = s.count();
+    t = &ts;
+  }
+
+  event = events.begin();
+  auto n = ::kevent(io_service.queue,
+    nullptr, 0,
+    events.data(), max_events_per_wait,
+    t
+  );
+  if (n != -1)
+  {
+    last_event = event + n;
+    return try_get();
+  }
+
+  error.assign(errno, std::generic_category());
+  last_event = event;
   return nullptr;
 }
 
 
-io_buf_t *io_context_t::get (const std::chrono::milliseconds &,
-  std::error_code &) noexcept
+void async_receive_from_t::start (socket_t &socket, message_flags_t flags)
+  noexcept
 {
-  return nullptr;
+  error.clear();
+
+  address_size = sizeof(address);
+  transferred = socket.receive_from(begin, end - begin,
+    &address, &address_size,
+    flags,
+    error
+  );
+
+  if (error != std::errc::operation_would_block)
+  {
+    context->immediate_completions.push(this);
+  }
+  else
+  {
+    this->flags = flags;
+    socket.async_worker->pending_receive.push(this);
+  }
+}
+
+
+void async_send_to_t::start (socket_t &socket,
+  const void *address, size_t address_size,
+  message_flags_t flags) noexcept
+{
+  (void)socket;
+  (void)address;
+  (void)address_size;
+  (void)flags;
 }
 
 

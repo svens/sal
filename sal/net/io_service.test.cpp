@@ -44,7 +44,7 @@ TEST_F(net_io_service, make_context_too_small_completion_count)
 
 TEST_F(net_io_service, make_context_too_big_completion_count)
 {
-  auto ctx = service().make_context(std::numeric_limits<size_t>::max());
+  auto ctx = service().make_context((std::numeric_limits<size_t>::max)());
   (void)ctx;
 }
 

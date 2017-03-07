@@ -6,6 +6,11 @@
 #include <array>
 #include <chrono>
 
+#if __sal_os_darwin
+  #include <sys/types.h>
+  #include <sys/event.h>
+#endif
+
 
 __sal_begin
 
@@ -30,6 +35,8 @@ struct io_buf_t
 
   io_context_t *context;
   no_sync_t::intrusive_queue_hook_t completed;
+
+  using completed_queue_t = intrusive_queue_t<io_buf_t, no_sync_t, &io_buf_t::completed>;
 
 
   io_buf_t () noexcept
@@ -112,7 +119,7 @@ struct async_accept_t
 struct io_service_t
 {
   HANDLE iocp = INVALID_HANDLE_VALUE;
-  static constexpr size_t max_completion_count = 1024;
+  static constexpr size_t max_events_per_wait = 1024;
 
   io_service_t (std::error_code &error) noexcept;
   ~io_service_t () noexcept;
@@ -124,14 +131,18 @@ struct io_service_t
 struct io_context_t
 {
   io_service_t &io_service;
-  std::array<OVERLAPPED_ENTRY, io_service_t::max_completion_count> completions;
-  ULONG max_completion_count, completion_count = 0, completion_index = 0;
-  intrusive_queue_t<io_buf_t, no_sync_t, &io_buf_t::completed> immediate_completions{};
+
+  using event_list_t = std::array<OVERLAPPED_ENTRY, io_service_t::max_events_per_wait>;
+
+  ULONG max_events_per_wait;
+  event_list_t completions;
+  event_list_t::iterator completion{}, last_completion{};
+  io_buf_t::completed_queue_t immediate_completions{};
 
 
-  io_context_t (io_service_t &io_service, size_t max_completion_count) noexcept
+  io_context_t (io_service_t &io_service, size_t max_events_per_wait) noexcept
     : io_service(io_service)
-    , max_completion_count(static_cast<ULONG>(max_completion_count))
+    , max_events_per_wait(static_cast<ULONG>(max_events_per_wait))
   {}
 
   io_buf_t *try_get () noexcept;
@@ -150,19 +161,44 @@ struct io_buf_t
   char *begin{}, *end{};
   uintptr_t user_data{};
   size_t request_id{};
+  size_t transferred{};
+  std::error_code error{};
 
   io_context_t *context{};
+
+  mpsc_sync_t::intrusive_queue_hook_t queue_hook{};
+  using queue_t = intrusive_queue_t<io_buf_t, mpsc_sync_t, &io_buf_t::queue_hook>;
+};
+
+
+struct async_receive_from_t
+  : public io_buf_t
+{
+  message_flags_t flags;
+  sockaddr_storage address;
+  size_t address_size;
+
+  void start (socket_t &socket, message_flags_t flags) noexcept;
+};
+
+
+struct async_send_to_t
+  : public io_buf_t
+{
+  void start (socket_t &socket,
+    const void *address, size_t address_size,
+    message_flags_t flags
+  ) noexcept;
 };
 
 
 struct io_service_t
 {
-  static constexpr size_t max_completion_count = 1024;
+  int queue;
+  static constexpr size_t max_events_per_wait = 1024;
 
-
-  io_service_t (std::error_code &) noexcept
-  {}
-
+  io_service_t (std::error_code &error) noexcept;
+  ~io_service_t () noexcept;
 
   void associate (socket_t &socket, std::error_code &error) noexcept;
 };
@@ -171,12 +207,18 @@ struct io_service_t
 struct io_context_t
 {
   io_service_t &io_service;
-  size_t max_completion_count;
+
+  using event_list_t = std::array<struct ::kevent, io_service_t::max_events_per_wait>;
+
+  size_t max_events_per_wait;
+  event_list_t events{};
+  event_list_t::iterator event{}, last_event{};
+  io_buf_t::queue_t immediate_completions{};
 
 
-  io_context_t (io_service_t &io_service, size_t max_completion_count) noexcept
+  io_context_t (io_service_t &io_service, size_t max_events_per_wait) noexcept
     : io_service(io_service)
-    , max_completion_count(max_completion_count)
+    , max_events_per_wait(max_events_per_wait)
   {}
 
 
@@ -185,6 +227,9 @@ struct io_context_t
   io_buf_t *get (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
+
+  io_buf_t *receive () noexcept;
+  io_buf_t *send () noexcept;
 };
 
 

@@ -332,7 +332,7 @@ public:
   }
 
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
 
   //
@@ -360,7 +360,7 @@ public:
   void async_receive_from (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_receive_from_t>(impl_, flags);
+    io_buf->start<async_receive_from_t>(base_t::impl_, flags);
     io_buf.release();
   }
 
@@ -394,6 +394,9 @@ public:
       throw_on_error("basic_datagram_socket::async_receive_from")
     );
   }
+
+
+#if __sal_os_windows
 
 
   struct async_receive_t
@@ -443,6 +446,9 @@ public:
   }
 
 
+#endif
+
+
   struct async_send_to_t
     : public __bits::async_send_to_t
   {
@@ -457,7 +463,7 @@ public:
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_send_to_t>(impl_,
+    io_buf->start<async_send_to_t>(base_t::impl_,
       endpoint.data(), endpoint.size(),
       flags
     );
@@ -494,6 +500,9 @@ public:
       throw_on_error("basic_datagram_socket::async_send_to")
     );
   }
+
+
+#if __sal_os_windows
 
 
   struct async_send_t
@@ -544,6 +553,7 @@ public:
 
 
 #endif // __sal_os_windows
+#endif // !__sal_os_linux
 };
 
 

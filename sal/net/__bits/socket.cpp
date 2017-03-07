@@ -186,6 +186,11 @@ void socket_t::close (std::error_code &error) noexcept
 
 #else
 
+  if (async_worker)
+  {
+    async_worker.reset();
+  }
+
   for (;;)
   {
     if (handle(::close(native_handle), error) == 0 || errno != EINTR)
