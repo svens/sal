@@ -378,7 +378,11 @@ io_buf_t *io_context_t::try_get () noexcept
     auto *io_buf = static_cast<io_buf_t *>(entry.lpOverlapped);
 
     auto status = static_cast<NTSTATUS>(io_buf->Internal);
-    if (!NT_SUCCESS(status))
+    if (NT_SUCCESS(status))
+    {
+      io_buf->transferred = entry.dwNumberOfBytesTransferred;
+    }
+    else
     {
       if (status == STATUS_BUFFER_OVERFLOW)
       {
@@ -390,9 +394,9 @@ io_buf_t *io_context_t::try_get () noexcept
           std::system_category()
         );
       }
+      io_buf->transferred = 0;
     }
 
-    io_buf->transferred = entry.dwNumberOfBytesTransferred;
     io_buf->context = this;
     return io_buf;
   }

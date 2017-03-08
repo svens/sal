@@ -574,9 +574,6 @@ TEST_P(datagram_socket, async_receive_from_invalid_immediate_completion)
 }
 
 
-#if __sal_os_windows
-
-
 TEST_P(datagram_socket, async_receive_from_no_sender)
 {
   {
@@ -604,7 +601,9 @@ TEST_P(datagram_socket, async_receive_from_peek)
   service.associate(socket);
 
   socket.async_receive_from(context.make_buf(), socket.peek);
+
   socket.send_to(sal::make_buf(case_name), endpoint);
+  std::this_thread::sleep_for(1ms);
 
   // regardless of peek, completion should be removed from queue
   ASSERT_NE(nullptr, context.get());
@@ -619,6 +618,8 @@ TEST_P(datagram_socket, async_receive_from_peek_immediate_completion)
   service.associate(socket);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
+  std::this_thread::sleep_for(1ms);
+
   socket.async_receive_from(context.make_buf(), socket.peek);
 
   // regardless of peek, completion should be removed from queue
@@ -639,6 +640,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send)
     socket.async_receive_from(std::move(io_buf));
 
     socket.send_to(sal::make_buf(case_name), endpoint);
+    std::this_thread::sleep_for(1ms);
 
     io_buf = context.get();
     ASSERT_NE(nullptr, io_buf);
@@ -647,11 +649,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send)
     auto result = socket_t::async_receive_from_result(io_buf, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(case_name.size() / 2, result->transferred());
-    EXPECT_EQ(
-      std::string(case_name, 0, case_name.size() / 2),
-      to_string(io_buf, result->transferred())
-    );
+    EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
@@ -675,6 +673,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
     service.associate(socket);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
+    std::this_thread::sleep_for(1ms);
 
     auto io_buf = context.make_buf();
     io_buf->resize(case_name.size() / 2);
@@ -687,11 +686,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
     auto result = socket_t::async_receive_from_result(io_buf, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(case_name.size() / 2, result->transferred());
-    EXPECT_EQ(
-      std::string(case_name, 0, case_name.size() / 2),
-      to_string(io_buf, result->transferred())
-    );
+    EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
@@ -719,6 +714,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     socket.async_receive_from(std::move(io_buf));
 
     socket.send_to(sal::make_buf(case_name), endpoint);
+    std::this_thread::sleep_for(1ms);
 
     io_buf = context.get();
     ASSERT_NE(nullptr, io_buf);
@@ -726,20 +722,48 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     std::error_code error;
     auto result = socket_t::async_receive_from_result(io_buf, error);
     ASSERT_NE(nullptr, result);
+
+#if __sal_os_windows
+
+    // 1st receive is empty (because buf is empty)
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
-    // even with empty 1st read, 2nd should have nothing
+    // buf 2nd receive still have nothing
     io_buf->reset();
     socket.async_receive_from(std::move(io_buf));
     EXPECT_EQ(nullptr, context.get(0s));
+
+#else
+
+    // couldn't unify behaviour with IOCP without syscall
+    // but this is weird case anyway, don't care
+
+    // 1st succeed immediately with 0B transferred
+    EXPECT_TRUE(!error);
+    EXPECT_EQ(0U, result->transferred());
+
+    io_buf->reset();
+    socket.async_receive_from(std::move(io_buf));
+
+    // 2nd succeeds with originally sent packet
+    io_buf = context.get();
+    ASSERT_NE(nullptr, io_buf);
+    result = socket_t::async_receive_from_result(io_buf, error);
+    ASSERT_NE(nullptr, result);
+    EXPECT_TRUE(!error);
+    EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+
+#endif
   }
 
+#if __sal_os_windows
   // error from closed socket still in context
   EXPECT_THROW(
     socket_t::async_receive_from_result(context.get()),
     std::system_error
   );
+#endif
 }
 
 
@@ -751,6 +775,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf_immediate_completion)
     service.associate(socket);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
+    std::this_thread::sleep_for(1ms);
 
     auto io_buf = context.make_buf();
     io_buf->resize(0);
@@ -777,6 +802,9 @@ TEST_P(datagram_socket, async_receive_from_empty_buf_immediate_completion)
     std::system_error
   );
 }
+
+
+#if __sal_os_windows
 
 
 TEST_P(datagram_socket, async_receive)
@@ -1050,11 +1078,7 @@ TEST_P(datagram_socket, async_receive_less_than_send)
     auto result = socket_t::async_receive_result(io_buf, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(case_name.size() / 2, result->transferred());
-    EXPECT_EQ(
-      std::string(case_name, 0, case_name.size() / 2),
-      to_string(io_buf, result->transferred())
-    );
+    EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
@@ -1090,11 +1114,7 @@ TEST_P(datagram_socket, async_receive_less_than_send_immediate_completion)
     auto result = socket_t::async_receive_result(io_buf, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(case_name.size() / 2, result->transferred());
-    EXPECT_EQ(
-      std::string(case_name, 0, case_name.size() / 2),
-      to_string(io_buf, result->transferred())
-    );
+    EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
