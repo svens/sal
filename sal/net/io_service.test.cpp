@@ -1,10 +1,10 @@
 #include <sal/net/io_service.hpp>
+#include <sal/net/internet.hpp>
 #include <sal/common.test.hpp>
 
 
 #if __sal_os_darwin
   #include <sal/thread.hpp>
-  #include <sal/net/internet.hpp>
   #include <sys/types.h>
   #include <sys/event.h>
   #include <sys/time.h>
@@ -20,6 +20,10 @@ namespace {
 struct net_io_service
   : public sal_test::fixture
 {
+  using datagram_socket_t = sal::net::ip::udp_t::socket_t;
+  using stream_socket_t = sal::net::ip::tcp_t::socket_t;
+  using acceptor_t = sal::net::ip::tcp_t::acceptor_t;
+
   static auto &service ()
   {
     static sal::net::io_service_t svc;
@@ -57,7 +61,13 @@ TEST_F(net_io_service, associate_datagram_socket)
 
 TEST_F(net_io_service, associate_datagram_socket_invalid)
 {
-  // TODO
+  datagram_socket_t socket;
+
+  std::error_code error;
+  service().associate(socket, error);
+  EXPECT_FALSE(!error);
+
+  EXPECT_THROW(service().associate(socket), std::system_error);
 }
 
 
@@ -69,7 +79,13 @@ TEST_F(net_io_service, associate_stream_socket)
 
 TEST_F(net_io_service, associate_stream_socket_invalid)
 {
-  // TODO
+  stream_socket_t socket;
+
+  std::error_code error;
+  service().associate(socket, error);
+  EXPECT_FALSE(!error);
+
+  EXPECT_THROW(service().associate(socket), std::system_error);
 }
 
 
@@ -81,7 +97,13 @@ TEST_F(net_io_service, associate_acceptor_socket)
 
 TEST_F(net_io_service, associate_acceptor_socket_invalid)
 {
-  // TODO
+  acceptor_t socket;
+
+  std::error_code error;
+  service().associate(socket, error);
+  EXPECT_FALSE(!error);
+
+  EXPECT_THROW(service().associate(socket), std::system_error);
 }
 
 

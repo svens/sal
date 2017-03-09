@@ -525,6 +525,69 @@ TEST_P(datagram_socket, async_receive_from_immediate_completion)
 }
 
 
+TEST_P(datagram_socket, async_receive_partially_immediate_completion)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  service.associate(socket);
+
+  // start three writes and one read
+  socket.async_receive_from(context.make_buf());
+  socket.send_to(sal::make_buf(case_name + "_one"), endpoint);
+  socket.send_to(sal::make_buf(case_name + "_two"), endpoint);
+  socket.send_to(sal::make_buf(case_name + "_three"), endpoint);
+  std::this_thread::sleep_for(1ms);
+
+  // first read must succeed
+  // (and in case of Reactor, fetch poller event)
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+  auto result = socket.async_receive_from_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name + "_one", to_string(io_buf, result->transferred()));
+
+  // launch thread that will "steal" packet 'two'
+  auto t = std::thread([&]
+  {
+    auto context1 = service.make_context();
+    socket.async_receive_from(context1.make_buf());
+    auto io_buf = context1.get();
+    ASSERT_NE(nullptr, io_buf);
+    auto result = socket.async_receive_from_result(io_buf);
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ(case_name + "_two", to_string(io_buf, result->transferred()));
+  });
+  t.join();
+
+  // start remaining of reads (one will fail because of "stolen" packet)
+  socket.async_receive_from(context.make_buf());
+  socket.async_receive_from(context.make_buf());
+
+  // second this thread's reads third and final packet
+  io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+  result = socket.async_receive_from_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name + "_three", to_string(io_buf, result->transferred()));
+
+  // there is pending read but no data anymore
+  io_buf = context.get(1ms);
+  EXPECT_EQ(nullptr, io_buf);
+
+  // close socket
+  socket.close();
+  io_buf = context.get(1ms);
+  ASSERT_NE(nullptr, io_buf);
+
+  // closing will cancel read
+  std::error_code error;
+  result = socket.async_receive_from_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(0U, result->transferred());
+  EXPECT_EQ(std::errc::operation_canceled, error);
+}
+
+
 TEST_P(datagram_socket, async_receive_from_invalid)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
