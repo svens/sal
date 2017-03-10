@@ -21,21 +21,47 @@ namespace net { namespace __bits {
 struct io_context_t;
 
 
+struct io_buf_base_t
+{
+  io_context_t *context{};
+  uintptr_t request_id{}, user_data{};
+  char *begin{}, *end{};
+  std::error_code error{};
+};
+
+
+template <typename T>
+struct async_operation_t
+{
+#if _MSC_VER
+
+  static uintptr_t type_id () noexcept
+  {
+    static const T *p = nullptr;
+    return reinterpret_cast<uintptr_t>(&p);
+  }
+
+#else
+
+  static constexpr uintptr_t type_id () noexcept
+  {
+    return reinterpret_cast<uintptr_t>(&async_operation_t::type_id);
+  }
+
+#endif
+};
+
+
 #if __sal_os_windows
 
 
 struct io_buf_t
   : public OVERLAPPED
+  , public io_buf_base_t
 {
-  char *begin, *end;
-  uintptr_t user_data;
-  size_t request_id;
   DWORD transferred;
-  std::error_code error;
 
-  io_context_t *context;
   no_sync_t::intrusive_queue_hook_t completed;
-
   using completed_queue_t = intrusive_queue_t<io_buf_t, no_sync_t, &io_buf_t::completed>;
 
 
@@ -59,6 +85,7 @@ struct io_buf_t
 
 struct async_receive_t
   : public io_buf_t
+  , public async_operation_t<async_receive_t>
 {
   void start (socket_t &socket, message_flags_t flags) noexcept;
 };
@@ -66,6 +93,7 @@ struct async_receive_t
 
 struct async_receive_from_t
   : public io_buf_t
+  , public async_operation_t<async_receive_from_t>
 {
   sockaddr_storage address;
   INT address_size;
@@ -76,6 +104,7 @@ struct async_receive_from_t
 
 struct async_send_to_t
   : public io_buf_t
+  , public async_operation_t<async_send_to_t>
 {
   void start (socket_t &socket,
     const void *address, size_t address_size,
@@ -86,6 +115,7 @@ struct async_send_to_t
 
 struct async_send_t
   : public io_buf_t
+  , public async_operation_t<async_send_t>
 {
   void start (socket_t &socket, message_flags_t flags) noexcept;
 };
@@ -93,6 +123,7 @@ struct async_send_t
 
 struct async_connect_t
   : public io_buf_t
+  , public async_operation_t<async_connect_t>
 {
   native_socket_t handle;
   bool finished;
@@ -106,6 +137,7 @@ struct async_connect_t
 
 struct async_accept_t
   : public io_buf_t
+  , public async_operation_t<async_accept_t>
 {
   native_socket_t accepted, acceptor;
   sockaddr_storage *local_address, *remote_address;
@@ -157,22 +189,20 @@ struct io_context_t
 
 
 struct io_buf_t
+  : public io_buf_base_t
 {
-  char *begin{}, *end{};
-  uintptr_t user_data{};
-  size_t request_id{};
   size_t transferred{};
-  std::error_code error{};
-
-  io_context_t *context{};
 
   mpsc_sync_t::intrusive_queue_hook_t queue_hook{};
   using queue_t = intrusive_queue_t<io_buf_t, mpsc_sync_t, &io_buf_t::queue_hook>;
+
+  bool try_complete (socket_t &socket) noexcept;
 };
 
 
 struct async_receive_from_t
   : public io_buf_t
+  , public async_operation_t<async_receive_from_t>
 {
   message_flags_t flags;
   sockaddr_storage address;
@@ -182,8 +212,19 @@ struct async_receive_from_t
 };
 
 
+struct async_receive_t
+  : public io_buf_t
+  , public async_operation_t<async_receive_t>
+{
+  message_flags_t flags;
+
+  void start (socket_t &socket, message_flags_t flags) noexcept;
+};
+
+
 struct async_send_to_t
   : public io_buf_t
+  , public async_operation_t<async_send_to_t>
 {
   void start (socket_t &socket,
     const void *address, size_t address_size,
@@ -227,9 +268,6 @@ struct io_context_t
   io_buf_t *get (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
-
-  io_buf_t *receive () noexcept;
-  io_buf_t *send () noexcept;
 };
 
 

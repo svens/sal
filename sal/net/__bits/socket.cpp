@@ -401,12 +401,17 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   msg.msg_iovlen = 1;
 
   auto size = handle(::recvmsg(native_handle, &msg, flags), error);
-  if (!size)
+  if (!size && data_size)
   {
     error = make_error_code(socket_errc_t::orderly_shutdown);
   }
   else if (size == -1)
   {
+    size = 0;
+  }
+  else if (msg.msg_flags & MSG_TRUNC)
+  {
+    error.assign(EMSGSIZE, std::generic_category());
     size = 0;
   }
   return size;

@@ -21,9 +21,6 @@
 #endif
 
 
-#include <iostream>
-
-
 __sal_begin
 
 
@@ -514,38 +511,29 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 }
 
 
-io_buf_t *io_context_t::receive () noexcept
+bool io_buf_t::try_complete (socket_t &socket) noexcept
 {
-  if (event->data)
+  error.clear();
+
+  if (request_id == async_receive_from_t::type_id())
   {
-    auto &socket = *static_cast<socket_t *>(event->udata);
-    auto *r = static_cast<async_receive_from_t *>(
-      socket.async_worker->pending_receive.try_pop()
+    auto *r = static_cast<async_receive_from_t *>(this);
+    transferred = socket.receive_from(begin, end - begin,
+      &r->address, &r->address_size,
+      r->flags,
+      error
     );
-    if (r)
-    {
-      r->error.clear();
-      r->transferred = socket.receive_from(
-        r->begin, r->end - r->begin,
-        &r->address, &r->address_size,
-        r->flags,
-        r->error
-      );
-      if (r->error != std::errc::operation_would_block)
-      {
-        event->data -= r->transferred;
-        return r;
-      }
-      socket.async_worker->pending_receive.push(r);
-    }
   }
-  return nullptr;
-}
+  else if (request_id == async_receive_t::type_id())
+  {
+    auto *r = static_cast<async_receive_t *>(this);
+    transferred = socket.receive(begin, end - begin,
+      r->flags,
+      error
+    );
+  }
 
-
-io_buf_t *io_context_t::send () noexcept
-{
-  return nullptr;
+  return error != std::errc::operation_would_block;
 }
 
 
@@ -553,10 +541,25 @@ io_buf_t *io_context_t::try_get () noexcept
 {
   while (event != last_event)
   {
-    if (auto *io_buf = event->filter == EVFILT_READ ? receive() : send())
+    if (event->data > 0)
     {
-      return io_buf;
+      auto &socket = *static_cast<socket_t *>(event->udata);
+      auto *pending_io = event->filter == EVFILT_READ
+        ? &socket.async_worker->pending_receive
+        : &socket.async_worker->pending_send;
+
+      if (auto *io_buf = pending_io->try_pop())
+      {
+        io_buf->context = this;
+        if (io_buf->try_complete(socket))
+        {
+          event->data -= io_buf->transferred;
+          return io_buf;
+        }
+        pending_io->push(io_buf);
+      }
     }
+
     ++event;
   }
   return immediate_completions.try_pop();
@@ -608,6 +611,27 @@ void async_receive_from_t::start (socket_t &socket, message_flags_t flags)
   address_size = sizeof(address);
   transferred = socket.receive_from(begin, end - begin,
     &address, &address_size,
+    flags,
+    error
+  );
+
+  if (error != std::errc::operation_would_block)
+  {
+    context->immediate_completions.push(this);
+  }
+  else
+  {
+    this->flags = flags;
+    socket.async_worker->pending_receive.push(this);
+  }
+}
+
+
+void async_receive_t::start (socket_t &socket, message_flags_t flags) noexcept
+{
+  error.clear();
+
+  transferred = socket.receive(begin, end - begin,
     flags,
     error
   );

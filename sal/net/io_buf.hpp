@@ -19,30 +19,6 @@ __sal_begin
 namespace net {
 
 
-namespace __bits {
-
-#if _MSC_VER
-
-template <typename T>
-inline uintptr_t type_id () noexcept
-{
-  static const T *p = nullptr;
-  return reinterpret_cast<uintptr_t>(&p);
-}
-
-#else
-
-template <typename T>
-constexpr uintptr_t type_id ()
-{
-  return reinterpret_cast<uintptr_t>(&type_id<T>);
-}
-
-#endif
-
-} // namespace __bits
-
-
 /**
  * Asynchronous socket operation I/O buffer.
  *
@@ -167,7 +143,7 @@ public:
     static_assert(std::is_trivially_destructible<Request>::value,
       "expected Request to be trivially destructible"
     );
-    buf::request_id = __bits::type_id<Request>();
+    buf::request_id = Request::type_id();
     reinterpret_cast<Request *>(this)->start(std::forward<Args>(args)...);
   }
 
@@ -175,7 +151,7 @@ public:
   template <typename Result>
   Result *result () noexcept
   {
-    if (buf::request_id == __bits::type_id<Result>())
+    if (buf::request_id == Result::type_id())
     {
       return reinterpret_cast<Result *>(this);
     }
