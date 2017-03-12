@@ -507,7 +507,6 @@ TEST_P(datagram_socket, async_receive_from_immediate_completion)
   service.associate(socket);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
-  std::this_thread::sleep_for(1ms);
 
   auto io_buf = context.make_buf();
   io_buf->user_data(2);
@@ -535,7 +534,6 @@ TEST_P(datagram_socket, async_receive_from_partially_immediate_completion)
   socket.send_to(sal::make_buf(case_name + "_one"), endpoint);
   socket.send_to(sal::make_buf(case_name + "_two"), endpoint);
   socket.send_to(sal::make_buf(case_name + "_three"), endpoint);
-  std::this_thread::sleep_for(1ms);
 
   // first read must succeed
   // (and in case of Reactor, fetch poller event)
@@ -680,7 +678,6 @@ TEST_P(datagram_socket, async_receive_from_peek_immediate_completion)
   service.associate(socket);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
-  std::this_thread::sleep_for(1ms);
 
   socket.async_receive_from(context.make_buf(), socket.peek);
 
@@ -734,7 +731,6 @@ TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
     service.associate(socket);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
-    std::this_thread::sleep_for(1ms);
 
     auto io_buf = context.make_buf();
     io_buf->resize(case_name.size() / 2);
@@ -765,6 +761,9 @@ TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
 
 TEST_P(datagram_socket, async_receive_from_empty_buf)
 {
+  // couldn't unify IOCP/kqueue behaviour without additional syscall
+  // but this is weird case anyway, prefer performance over unification
+
   {
     socket_t::endpoint_t endpoint(loopback(GetParam()));
     socket_t socket(endpoint);
@@ -795,9 +794,6 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     EXPECT_EQ(nullptr, context.get(0s));
 
 #else
-
-    // couldn't unify behaviour with IOCP without syscall
-    // but this is weird case anyway, don't care
 
     // 1st succeed immediately with 0B transferred
     EXPECT_TRUE(!error);
@@ -879,6 +875,8 @@ TEST_P(datagram_socket, async_receive)
   auto result = socket.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+
+  EXPECT_EQ(nullptr, socket.async_send_result(io_buf));
 }
 
 
@@ -1116,7 +1114,6 @@ TEST_P(datagram_socket, async_receive_less_than_send_immediate_completion)
     service.associate(socket);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
-    std::this_thread::sleep_for(1ms);
 
     auto io_buf = context.make_buf();
     io_buf->resize(case_name.size() / 2);
@@ -1147,6 +1144,9 @@ TEST_P(datagram_socket, async_receive_less_than_send_immediate_completion)
 
 TEST_P(datagram_socket, async_receive_empty_buf)
 {
+  // couldn't unify IOCP/kqueue behaviour without additional syscall
+  // but this is weird case anyway, prefer performance over unification
+
   {
     socket_t::endpoint_t endpoint(loopback(GetParam()));
     socket_t socket(endpoint);
@@ -1240,9 +1240,6 @@ TEST_P(datagram_socket, async_receive_empty_buf_immediate_completion)
 }
 
 
-#if __sal_os_windows
-
-
 TEST_P(datagram_socket, async_send_to)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
@@ -1273,56 +1270,6 @@ TEST_P(datagram_socket, async_send_to)
 }
 
 
-TEST_P(datagram_socket, async_send_to_before_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  // send
-  socket.async_send_to(make_buf(case_name), endpoint);
-  socket.shutdown(socket.shutdown_send);
-
-  // receive
-  char buf[1024];
-  std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), socket.receive_from(sal::make_buf(buf), endpoint));
-  EXPECT_EQ(buf, case_name);
-  EXPECT_EQ(socket.local_endpoint(), endpoint);
-
-  // async send result
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_send_to_result(io_buf);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name.size(), result->transferred());
-}
-
-
-TEST_P(datagram_socket, async_send_to_after_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  socket.shutdown(socket.shutdown_send);
-  socket.async_send_to(make_buf(case_name), endpoint);
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  std::error_code error;
-  auto result = socket.async_send_to_result(io_buf, error);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
-
-  EXPECT_THROW(
-    socket.async_send_to_result(io_buf),
-    std::system_error
-  );
-}
-
-
 TEST_P(datagram_socket, async_send_to_invalid)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
@@ -1340,7 +1287,7 @@ TEST_P(datagram_socket, async_send_to_invalid)
   auto result = socket.async_send_to_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
@@ -1364,7 +1311,7 @@ TEST_P(datagram_socket, async_send_to_empty)
   // receive
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(0, socket.receive_from(sal::make_buf(buf), endpoint));
+  EXPECT_EQ(0U, socket.receive_from(sal::make_buf(buf), endpoint));
   EXPECT_EQ(socket.local_endpoint(), endpoint);
 
   // async send result
@@ -1426,7 +1373,7 @@ TEST_P(datagram_socket, async_send)
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 
-  EXPECT_EQ(nullptr, socket.async_send_to_result(io_buf));
+  EXPECT_EQ(nullptr, socket.async_receive_result(io_buf));
 }
 
 
@@ -1446,7 +1393,7 @@ TEST_P(datagram_socket, async_send_not_connected)
   std::error_code error;
   auto result = socket.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_connected, error);
+  EXPECT_EQ(std::errc::destination_address_required, error);
   EXPECT_EQ(0U, result->transferred());
 
   // with exception
@@ -1500,7 +1447,12 @@ TEST_P(datagram_socket, async_send_after_shutdown)
   std::error_code error;
   auto result = socket.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
+
+#if __sal_os_windows
   EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+#else
+  EXPECT_EQ(std::errc::broken_pipe, error);
+#endif
 
   EXPECT_THROW(
     socket.async_send_result(io_buf),
@@ -1526,7 +1478,7 @@ TEST_P(datagram_socket, async_send_invalid)
   auto result = socket.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
@@ -1585,8 +1537,7 @@ TEST_P(datagram_socket, async_send_do_not_route)
 }
 
 
-#endif
-#endif // __sal_os_windows
+#endif // !__sal_os_linux
 
 
 } // namespace

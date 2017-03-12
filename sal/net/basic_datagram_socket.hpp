@@ -496,9 +496,6 @@ public:
   }
 
 
-#if __sal_os_windows
-
-
   struct async_send_t
     : public __bits::async_send_t
   {
@@ -512,7 +509,7 @@ public:
   void async_send (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_send_t>(impl_, flags);
+    io_buf->start<async_send_t>(base_t::impl_, flags);
     io_buf.release();
   }
 
@@ -546,7 +543,6 @@ public:
   }
 
 
-#endif // __sal_os_windows
 #endif // !__sal_os_linux
 };
 

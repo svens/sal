@@ -20,6 +20,8 @@
   #include <unistd.h>
 #endif
 
+#include <iostream>
+
 
 __sal_begin
 
@@ -109,6 +111,10 @@ void io_buf_t::io_result (int result) noexcept
   else if (e == WSAENOTSOCK)
   {
     error.assign(WSAEBADF, std::system_category());
+  }
+  else if (e == WSAENOTCONN)
+  {
+    error.assign(WSAEDESTADDRREQ, std::system_category());
   }
   else
   {
@@ -493,7 +499,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
   struct ::kevent change;
   EV_SET(&change,
     socket.native_handle,
-    EVFILT_READ | EVFILT_WRITE,
+    EVFILT_READ,
     EV_ADD | EV_CLEAR,
     0,
     0,
@@ -506,8 +512,6 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
     socket.async_worker.reset();
     return;
   }
-
-  socket.non_blocking(true, error);
 }
 
 
@@ -550,10 +554,10 @@ io_buf_t *io_context_t::try_get () noexcept
 
       if (auto *io_buf = pending_io->try_pop())
       {
-        io_buf->context = this;
         if (io_buf->try_complete(socket))
         {
           event->data -= io_buf->transferred;
+          io_buf->context = this;
           return io_buf;
         }
         pending_io->push(io_buf);
@@ -608,6 +612,7 @@ void async_receive_from_t::start (socket_t &socket, message_flags_t flags)
 {
   error.clear();
 
+  flags |= MSG_DONTWAIT;
   address_size = sizeof(address);
   transferred = socket.receive_from(begin, end - begin,
     &address, &address_size,
@@ -631,6 +636,7 @@ void async_receive_t::start (socket_t &socket, message_flags_t flags) noexcept
 {
   error.clear();
 
+  flags |= MSG_DONTWAIT;
   transferred = socket.receive(begin, end - begin,
     flags,
     error
@@ -652,10 +658,41 @@ void async_send_to_t::start (socket_t &socket,
   const void *address, size_t address_size,
   message_flags_t flags) noexcept
 {
-  (void)socket;
-  (void)address;
-  (void)address_size;
-  (void)flags;
+  error.clear();
+
+  flags |= MSG_DONTWAIT;
+  transferred = socket.send_to(begin, end - begin,
+    address, address_size,
+    flags,
+    error
+  );
+
+  if (error != std::errc::operation_would_block)
+  {
+    context->immediate_completions.push(this);
+  }
+  else
+  {
+    std::cout << "*** would block\n";
+  }
+}
+
+
+void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
+{
+  error.clear();
+
+  flags |= MSG_DONTWAIT;
+  transferred = socket.send(begin, end - begin, flags, error);
+
+  if (error != std::errc::operation_would_block)
+  {
+    context->immediate_completions.push(this);
+  }
+  else
+  {
+    std::cout << "*** would block\n";
+  }
 }
 
 

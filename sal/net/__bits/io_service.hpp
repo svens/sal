@@ -233,6 +233,14 @@ struct async_send_to_t
 };
 
 
+struct async_send_t
+  : public io_buf_t
+  , public async_operation_t<async_send_t>
+{
+  void start (socket_t &socket, message_flags_t flags) noexcept;
+};
+
+
 struct io_service_t
 {
   int queue;
