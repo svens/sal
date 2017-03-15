@@ -186,9 +186,9 @@ void socket_t::close (std::error_code &error) noexcept
 
 #else
 
-  if (async_worker)
+  if (async)
   {
-    async_worker.reset();
+    async.reset();
   }
 
   for (;;)

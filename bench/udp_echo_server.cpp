@@ -172,6 +172,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
           recv_sock.async_receive_from(std::move(io_buf));
         }
       }
+      std::cout << "exiting...\n";
     });
   }
 

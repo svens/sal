@@ -169,7 +169,7 @@ struct io_context_t
   ULONG max_events_per_wait;
   event_list_t completions;
   event_list_t::iterator completion{}, last_completion{};
-  io_buf_t::completed_queue_t immediate_completions{};
+  io_buf_t::completed_queue_t completed{};
 
 
   io_context_t (io_service_t &io_service, size_t max_events_per_wait) noexcept
@@ -193,10 +193,15 @@ struct io_buf_t
 {
   size_t transferred{};
 
-  mpsc_sync_t::intrusive_queue_hook_t queue_hook{};
-  using queue_t = intrusive_queue_t<io_buf_t, mpsc_sync_t, &io_buf_t::queue_hook>;
+  union
+  {
+    mpsc_sync_t::intrusive_queue_hook_t completed{}, pending;
+  };
+  using completed_queue_t = intrusive_queue_t<io_buf_t, mpsc_sync_t, &io_buf_t::completed>;
+  using pending_queue_t = intrusive_queue_t<io_buf_t, mpsc_sync_t, &io_buf_t::pending>;
 
-  bool try_complete (socket_t &socket) noexcept;
+  bool try_complete_receive (socket_t &socket) noexcept;
+  bool try_complete_send (socket_t &socket) noexcept;
 };
 
 
@@ -226,6 +231,10 @@ struct async_send_to_t
   : public io_buf_t
   , public async_operation_t<async_send_to_t>
 {
+  sockaddr_storage address;
+  size_t address_size;
+  message_flags_t flags;
+
   void start (socket_t &socket,
     const void *address, size_t address_size,
     message_flags_t flags
@@ -237,6 +246,8 @@ struct async_send_t
   : public io_buf_t
   , public async_operation_t<async_send_t>
 {
+  message_flags_t flags;
+
   void start (socket_t &socket, message_flags_t flags) noexcept;
 };
 
@@ -250,6 +261,9 @@ struct io_service_t
   ~io_service_t () noexcept;
 
   void associate (socket_t &socket, std::error_code &error) noexcept;
+
+  bool register_send_interest (socket_t &socket, std::error_code &error)
+    noexcept;
 };
 
 
@@ -261,8 +275,7 @@ struct io_context_t
 
   size_t max_events_per_wait;
   event_list_t events{};
-  event_list_t::iterator event{}, last_event{};
-  io_buf_t::queue_t immediate_completions{};
+  io_buf_t::completed_queue_t completed{};
 
 
   io_context_t (io_service_t &io_service, size_t max_events_per_wait) noexcept
@@ -271,11 +284,24 @@ struct io_context_t
   {}
 
 
-  io_buf_t *try_get () noexcept;
+  io_buf_t *try_get () noexcept
+  {
+    auto io_buf = completed.try_pop();
+    if (io_buf)
+    {
+      io_buf->context = this;
+    }
+    return io_buf;
+  }
+
 
   io_buf_t *get (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
+
+
+  void drain (socket_t &socket, int64_t max_size) noexcept;
+  void fill (socket_t &socket, int64_t max_size) noexcept;
 };
 
 

@@ -16,6 +16,7 @@
   #include <mswsock.h>
 #elif __sal_os_darwin
   #include <sal/assert.hpp>
+  #include <sal/spinlock.hpp>
   #include <sys/time.h>
   #include <unistd.h>
 #endif
@@ -92,7 +93,7 @@ void io_buf_t::io_result (int result) noexcept
   {
     // completed immediately, caller still owns data
     error.clear();
-    context->immediate_completions.push(this);
+    context->completed.push(this);
     return;
   }
 
@@ -120,7 +121,7 @@ void io_buf_t::io_result (int result) noexcept
   {
     error.assign(e, std::system_category());
   }
-  context->immediate_completions.push(this);
+  context->completed.push(this);
 }
 
 
@@ -211,7 +212,7 @@ void async_connect_t::start (socket_t &socket,
   {
     // immediate completion, caller still owns op
     error.clear();
-    context->immediate_completions.push(this);
+    context->completed.push(this);
     return;
   }
 
@@ -224,7 +225,7 @@ void async_connect_t::start (socket_t &socket,
 
   // failed immediately, caller owns op
   error.assign(e, std::system_category());
-  context->immediate_completions.push(this);
+  context->completed.push(this);
 }
 
 
@@ -265,7 +266,7 @@ void async_accept_t::start (socket_t &socket, int family) noexcept
   new_socket.open(family, SOCK_STREAM, IPPROTO_TCP, error);
   if (error)
   {
-    context->immediate_completions.push(this);
+    context->completed.push(this);
     return;
   }
 
@@ -284,7 +285,7 @@ void async_accept_t::start (socket_t &socket, int family) noexcept
   if (result == TRUE)
   {
     error.clear();
-    context->immediate_completions.push(this);
+    context->completed.push(this);
     return;
   }
 
@@ -295,7 +296,7 @@ void async_accept_t::start (socket_t &socket, int family) noexcept
   }
 
   error.assign(e, std::system_category());
-  context->immediate_completions.push(this);
+  context->completed.push(this);
 }
 
 
@@ -403,7 +404,7 @@ io_buf_t *io_context_t::try_get () noexcept
     io_buf->context = this;
     return io_buf;
   }
-  return immediate_completions.try_pop();
+  return completed.try_pop();
 }
 
 
@@ -444,24 +445,41 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
 
 struct async_worker_t
 {
-  io_buf_t::queue_t pending_receive{}, pending_send{};
+  spinlock_t receive_mutex{}, send_mutex{};
+  io_buf_t::pending_queue_t receive{}, send{};
+  bool already_registered_send_interest_{false};
 
   ~async_worker_t ()
   {
-    while (auto ev = pending_receive.try_pop())
+    while (auto ev = receive.try_pop())
     {
       ev->error = std::make_error_code(std::errc::operation_canceled);
-      ev->context->immediate_completions.push(ev);
+      ev->context->completed.push(ev);
     }
+    while (auto ev = send.try_pop())
+    {
+      ev->error = std::make_error_code(std::errc::operation_canceled);
+      ev->context->completed.push(ev);
+    }
+  }
 
-    // TODO: send?
+  io_buf_t *pending_receive () noexcept
+  {
+    std::lock_guard<spinlock_t> lock(receive_mutex);
+    return receive.try_pop();
+  }
+
+  io_buf_t *pending_send () noexcept
+  {
+    std::lock_guard<spinlock_t> lock(send_mutex);
+    return send.try_pop();
   }
 };
 
 
-void delete_async_worker (async_worker_t *async_worker) noexcept
+void delete_async_worker (async_worker_t *async) noexcept
 {
-  delete async_worker;
+  delete async;
 }
 
 
@@ -487,10 +505,10 @@ io_service_t::~io_service_t () noexcept
 void io_service_t::associate (socket_t &socket, std::error_code &error)
   noexcept
 {
-  sal_assert(socket.async_worker == nullptr);
+  sal_assert(socket.async == nullptr);
 
-  socket.async_worker.reset(new(std::nothrow) async_worker_t);
-  if (!socket.async_worker)
+  socket.async.reset(new(std::nothrow) async_worker_t);
+  if (!socket.async)
   {
     error = std::make_error_code(std::errc::not_enough_memory);
     return;
@@ -509,19 +527,47 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
   if (::kevent(queue, &change, 1, nullptr, 0, nullptr) == -1)
   {
     error.assign(errno, std::generic_category());
-    socket.async_worker.reset();
-    return;
+    socket.async.reset();
   }
 }
 
 
-bool io_buf_t::try_complete (socket_t &socket) noexcept
+bool io_service_t::register_send_interest (socket_t &socket, std::error_code &error)
+  noexcept
+{
+  if (socket.async->already_registered_send_interest_)
+  {
+    //return true;
+  }
+
+  struct ::kevent change;
+  EV_SET(&change,
+    socket.native_handle,
+    EVFILT_WRITE,
+    EV_ADD | EV_ONESHOT,
+    0,
+    0,
+    &socket
+  );
+
+  if (::kevent(queue, &change, 1, nullptr, 0, nullptr) != -1)
+  {
+    socket.async->already_registered_send_interest_ = true;
+    return true;
+  }
+
+  error.assign(errno, std::generic_category());
+  return false;
+}
+
+
+bool io_buf_t::try_complete_receive (socket_t &socket) noexcept
 {
   error.clear();
 
   if (request_id == async_receive_from_t::type_id())
   {
-    auto *r = static_cast<async_receive_from_t *>(this);
+    auto r = static_cast<async_receive_from_t *>(this);
     transferred = socket.receive_from(begin, end - begin,
       &r->address, &r->address_size,
       r->flags,
@@ -530,7 +576,7 @@ bool io_buf_t::try_complete (socket_t &socket) noexcept
   }
   else if (request_id == async_receive_t::type_id())
   {
-    auto *r = static_cast<async_receive_t *>(this);
+    auto r = static_cast<async_receive_t *>(this);
     transferred = socket.receive(begin, end - begin,
       r->flags,
       error
@@ -541,32 +587,81 @@ bool io_buf_t::try_complete (socket_t &socket) noexcept
 }
 
 
-io_buf_t *io_context_t::try_get () noexcept
+bool io_buf_t::try_complete_send (socket_t &socket) noexcept
 {
-  while (event != last_event)
-  {
-    if (event->data > 0)
-    {
-      auto &socket = *static_cast<socket_t *>(event->udata);
-      auto *pending_io = event->filter == EVFILT_READ
-        ? &socket.async_worker->pending_receive
-        : &socket.async_worker->pending_send;
+  error.clear();
 
-      if (auto *io_buf = pending_io->try_pop())
+  if (request_id == async_send_to_t::type_id())
+  {
+    auto r = static_cast<async_send_to_t *>(this);
+    transferred = socket.send_to(begin, end - begin,
+      &r->address, r->address_size,
+      r->flags,
+      error
+    );
+  }
+  else if (request_id == async_send_t::type_id())
+  {
+    auto r = static_cast<async_send_t *>(this);
+    transferred = socket.send(begin, end - begin,
+      r->flags,
+      error
+    );
+  }
+
+  return error != std::errc::operation_would_block;
+}
+
+
+void io_context_t::drain (socket_t &socket, int64_t max_size) noexcept
+{
+  while (max_size > 0)
+  {
+    if (auto io_buf = socket.async->pending_receive())
+    {
+      if (io_buf->try_complete_receive(socket))
       {
-        if (io_buf->try_complete(socket))
-        {
-          event->data -= io_buf->transferred;
-          io_buf->context = this;
-          return io_buf;
-        }
-        pending_io->push(io_buf);
+        max_size -= io_buf->transferred;
+        completed.push(io_buf);
+      }
+      else
+      {
+        socket.async->receive.push(io_buf);
+        return;
       }
     }
-
-    ++event;
+    else
+    {
+      return;
+    }
   }
-  return immediate_completions.try_pop();
+}
+
+
+void io_context_t::fill (socket_t &socket, int64_t max_size) noexcept
+{
+  auto i = 0;
+  while (max_size > 0)
+  {
+    if (auto io_buf = socket.async->pending_send())
+    {
+      if (io_buf->try_complete_send(socket))
+      {
+        max_size -= io_buf->transferred;
+        completed.push(io_buf);
+        ++i;
+      }
+      else
+      {
+        socket.async->send.push(io_buf);
+        return;
+      }
+    }
+    else
+    {
+      return;
+    }
+  }
 }
 
 
@@ -581,7 +676,7 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
   using namespace std::chrono;
 
   struct ::timespec ts, *t = nullptr;
-  if (timeout != milliseconds::max())
+  if (timeout != (milliseconds::max)())
   {
     auto s = duration_cast<seconds>(timeout);
     ts.tv_nsec = duration_cast<nanoseconds>(timeout - s).count();
@@ -589,20 +684,44 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
     t = &ts;
   }
 
-  event = events.begin();
+wait_for_events:
+
   auto n = ::kevent(io_service.queue,
     nullptr, 0,
     events.data(), max_events_per_wait,
     t
   );
-  if (n != -1)
+
+  if (n > 0)
   {
-    last_event = event + n;
-    return try_get();
+    for (auto i = 0;  i < n;  ++i)
+    {
+      auto &event = events[i];
+      auto &socket = *static_cast<socket_t *>(event.udata);
+      if (event.filter == EVFILT_READ)
+      {
+        drain(socket, event.data);
+      }
+      else
+      {
+        fill(socket, event.data);
+      }
+    }
+    if (auto io_buf = completed.try_pop())
+    {
+      return io_buf;
+    }
+    else if (timeout == (milliseconds::max)())
+    {
+      // other thread(s) won the race, wait again if no timeout
+      goto wait_for_events;
+    }
+  }
+  else if (n == -1)
+  {
+    error.assign(errno, std::generic_category());
   }
 
-  error.assign(errno, std::generic_category());
-  last_event = event;
   return nullptr;
 }
 
@@ -622,12 +741,12 @@ void async_receive_from_t::start (socket_t &socket, message_flags_t flags)
 
   if (error != std::errc::operation_would_block)
   {
-    context->immediate_completions.push(this);
+    context->completed.push(this);
   }
   else
   {
     this->flags = flags;
-    socket.async_worker->pending_receive.push(this);
+    socket.async->receive.push(this);
   }
 }
 
@@ -644,12 +763,12 @@ void async_receive_t::start (socket_t &socket, message_flags_t flags) noexcept
 
   if (error != std::errc::operation_would_block)
   {
-    context->immediate_completions.push(this);
+    context->completed.push(this);
   }
   else
   {
     this->flags = flags;
-    socket.async_worker->pending_receive.push(this);
+    socket.async->receive.push(this);
   }
 }
 
@@ -669,11 +788,19 @@ void async_send_to_t::start (socket_t &socket,
 
   if (error != std::errc::operation_would_block)
   {
-    context->immediate_completions.push(this);
+    context->completed.push(this);
+  }
+  else if (context->io_service.register_send_interest(socket, error))
+  {
+    std::cout << "*** would block\n";
+    std::memcpy(&this->address, address, address_size);
+    this->address_size = address_size;
+    this->flags = flags;
+    socket.async->send.push(this);
   }
   else
   {
-    std::cout << "*** would block\n";
+    context->completed.push(this);
   }
 }
 
@@ -687,11 +814,16 @@ void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
 
   if (error != std::errc::operation_would_block)
   {
-    context->immediate_completions.push(this);
+    context->completed.push(this);
+  }
+  else if (context->io_service.register_send_interest(socket, error))
+  {
+    this->flags = flags;
+    socket.async->send.push(this);
   }
   else
   {
-    std::cout << "*** would block\n";
+    context->completed.push(this);
   }
 }
 

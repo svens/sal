@@ -53,7 +53,7 @@ using message_flags_t = int;
 // asynchronous operations info
 struct async_worker_t;
 using async_worker_ptr = std::unique_ptr<async_worker_t, void(*)(async_worker_t *)>;
-void delete_async_worker (async_worker_t *async_worker) noexcept;
+void delete_async_worker (async_worker_t *async) noexcept;
 
 #endif
 
@@ -66,7 +66,7 @@ struct socket_t
   native_socket_t native_handle = invalid_socket;
 
 #if __sal_os_darwin
-  async_worker_ptr async_worker{nullptr, &delete_async_worker};
+  async_worker_ptr async{nullptr, &delete_async_worker};
 #endif
 
   socket_t () = default;
