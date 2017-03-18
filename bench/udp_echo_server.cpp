@@ -2,6 +2,7 @@
 #include <sal/net/internet.hpp>
 #include <sal/net/io_context.hpp>
 #include <sal/net/io_service.hpp>
+#include <csignal>
 #include <thread>
 #include <iostream>
 
@@ -18,7 +19,7 @@ using socket_t = protocol_t::socket_t;
 socket_t::endpoint_t server_endpoint(
   sal::net::ip::make_address_v4("127.0.0.1"), 8192
 );
-size_t receives = 64, threads = 1, buf_mul = 1;
+size_t receives = 64, thread_count = 1, buf_mul = 1;
 
 
 void print_stats (size_t active_threads, size_t packets, size_t size_bytes)
@@ -54,6 +55,29 @@ void print_stats (size_t active_threads, size_t packets, size_t size_bytes)
 }
 
 
+volatile sig_atomic_t done = false;
+
+#if __sal_os_windows
+
+BOOL ctrl_c (DWORD event_type) noexcept
+{
+  if (event_type == CTRL_C_EVENT)
+  {
+    done = true;
+  }
+  return done;
+}
+
+#else
+
+void ctrl_c (int) noexcept
+{
+  done = true;
+}
+
+#endif
+
+
 } // namespace
 
 
@@ -83,7 +107,7 @@ option_set_t options ()
       help("number of asynchronous receives per thread")
     )
     .add({"t", "threads"},
-      requires_argument("INT", threads),
+      requires_argument("INT", thread_count),
       help("number of threads")
     )
   ;
@@ -93,6 +117,12 @@ option_set_t options ()
 
 int run (const option_set_t &options, const argument_map_t &arguments)
 {
+#if __sal_os_windows
+  ::SetConsoleCtrlHandler(ctrl_c, true);
+#else
+  ::signal(SIGINT, ctrl_c);
+#endif
+
   server_endpoint.address(
     sal::net::ip::make_address_v4(
       options.back_or_default("address", { arguments })
@@ -105,7 +135,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   );
 
   receives = std::stoul(options.back_or_default("receives", { arguments }));
-  threads = std::stoul(options.back_or_default("threads", { arguments }));
+  thread_count = std::stoul(options.back_or_default("threads", { arguments }));
   buf_mul = std::stoul(options.back_or_default("buffer", { arguments }));
 
   sal::net::io_service_t io_svc;
@@ -137,17 +167,17 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   }
   io_svc.associate(send_sock);
 
-  std::vector<std::thread> thread;
+  std::vector<std::thread> threads;
   std::vector<std::pair<size_t, size_t>> thread_transferred;
-  while (thread.size() != threads)
+  while (threads.size() != thread_count)
   {
-    size_t index = thread.size();
+    size_t index = threads.size();
     thread_transferred.emplace_back();
 
-    thread.emplace_back([index, &io_svc, &recv_sock, &send_sock, &thread_transferred]
+    threads.emplace_back([index, &io_svc, &recv_sock, &send_sock, &thread_transferred]
     {
       auto io_ctx = io_svc.make_context(receives);
-      std::error_code error;
+      std::error_code ignore_error;
 
       // start initial reads
       for (auto i = receives;  i;  --i)
@@ -155,28 +185,39 @@ int run (const option_set_t &options, const argument_map_t &arguments)
         recv_sock.async_receive_from(io_ctx.make_buf());
       }
 
-      // infinite handling
       auto &transferred = thread_transferred[index];
-      while (auto io_buf = io_ctx.get())
+      for (;;)
       {
-        if (auto recv = socket_t::async_receive_from_result(io_buf, error))
+        auto io_buf = io_ctx.get(10s);
+
+        if (done)
         {
-          transferred.first++;
-          transferred.second += recv->transferred();
-          io_buf->resize(recv->transferred());
-          send_sock.async_send_to(std::move(io_buf), recv->endpoint());
+          break;
         }
-        else
+
+        if (io_buf)
         {
-          io_buf->reset();
-          recv_sock.async_receive_from(std::move(io_buf));
+          if (auto recv = socket_t::async_receive_from_result(io_buf, ignore_error))
+          {
+            transferred.first++;
+            transferred.second += recv->transferred();
+            io_buf->resize(recv->transferred());
+            send_sock.async_send_to(std::move(io_buf), recv->endpoint());
+          }
+          else
+          {
+            io_buf->reset();
+            recv_sock.async_receive_from(std::move(io_buf));
+          }
         }
       }
-      std::cout << "exiting...\n";
+
+      recv_sock.close(ignore_error);
+      send_sock.close(ignore_error);
     });
   }
 
-  while (true)
+  while (!done)
   {
     std::this_thread::sleep_for(1s);
 
@@ -192,6 +233,12 @@ int run (const option_set_t &options, const argument_map_t &arguments)
       transferred.first = transferred.second = 0;
     }
     print_stats(active_threads, packets, size);
+  }
+
+  std::cout << "exiting...\n";
+  for (auto &t: threads)
+  {
+    t.join();
   }
 
   return EXIT_SUCCESS;

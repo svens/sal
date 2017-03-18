@@ -65,7 +65,9 @@ struct socket_t
 {
   native_socket_t native_handle = invalid_socket;
 
-#if __sal_os_darwin
+#if __sal_os_windows
+  bool associated = false;
+#elif __sal_os_darwin
   async_worker_ptr async{nullptr, &delete_async_worker};
 #endif
 

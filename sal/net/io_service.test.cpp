@@ -24,38 +24,53 @@ struct net_io_service
   using stream_socket_t = sal::net::ip::tcp_t::socket_t;
   using acceptor_t = sal::net::ip::tcp_t::acceptor_t;
 
-  static auto &service ()
-  {
-    static sal::net::io_service_t svc;
-    return svc;
-  }
+  sal::net::io_service_t service;
 };
 
 
 TEST_F(net_io_service, make_context)
 {
-  auto ctx = service().make_context();
+  auto ctx = service.make_context();
   (void)ctx;
 }
 
 
 TEST_F(net_io_service, make_context_too_small_completion_count)
 {
-  auto ctx = service().make_context(0);
+  auto ctx = service.make_context(0);
   (void)ctx;
 }
 
 
 TEST_F(net_io_service, make_context_too_big_completion_count)
 {
-  auto ctx = service().make_context((std::numeric_limits<size_t>::max)());
+  auto ctx = service.make_context((std::numeric_limits<size_t>::max)());
   (void)ctx;
 }
 
 
 TEST_F(net_io_service, associate_datagram_socket)
 {
-  // TODO
+  datagram_socket_t socket(sal::net::ip::udp_t::v4());
+  std::error_code error;
+  service.associate(socket, error);
+  EXPECT_TRUE(!error);
+}
+
+
+TEST_F(net_io_service, associate_datagram_socket_multiple_times)
+{
+  datagram_socket_t socket(sal::net::ip::udp_t::v4());
+
+  std::error_code error;
+  service.associate(socket, error);
+  EXPECT_TRUE(!error);
+
+  service.associate(socket, error);
+  EXPECT_FALSE(!error);
+  EXPECT_EQ(sal::net::socket_errc_t::already_associated, error);
+
+  EXPECT_THROW(service.associate(socket), std::system_error);
 }
 
 
@@ -64,14 +79,20 @@ TEST_F(net_io_service, associate_datagram_socket_invalid)
   datagram_socket_t socket;
 
   std::error_code error;
-  service().associate(socket, error);
+  service.associate(socket, error);
   EXPECT_FALSE(!error);
 
-  EXPECT_THROW(service().associate(socket), std::system_error);
+  EXPECT_THROW(service.associate(socket), std::system_error);
 }
 
 
 TEST_F(net_io_service, associate_stream_socket)
+{
+  // TODO
+}
+
+
+TEST_F(net_io_service, associate_stream_socket_multiple_times)
 {
   // TODO
 }
@@ -82,14 +103,20 @@ TEST_F(net_io_service, associate_stream_socket_invalid)
   stream_socket_t socket;
 
   std::error_code error;
-  service().associate(socket, error);
+  service.associate(socket, error);
   EXPECT_FALSE(!error);
 
-  EXPECT_THROW(service().associate(socket), std::system_error);
+  EXPECT_THROW(service.associate(socket), std::system_error);
 }
 
 
 TEST_F(net_io_service, associate_acceptor_socket)
+{
+  // TODO
+}
+
+
+TEST_F(net_io_service, associate_acceptor_socket_multiple_times)
 {
   // TODO
 }
@@ -100,10 +127,10 @@ TEST_F(net_io_service, associate_acceptor_socket_invalid)
   acceptor_t socket;
 
   std::error_code error;
-  service().associate(socket, error);
+  service.associate(socket, error);
   EXPECT_FALSE(!error);
 
-  EXPECT_THROW(service().associate(socket), std::system_error);
+  EXPECT_THROW(service.associate(socket), std::system_error);
 }
 
 

@@ -5,6 +5,9 @@
 #include <thread>
 
 
+#include <sal/thread.hpp>
+
+
 namespace {
 
 
@@ -15,7 +18,7 @@ struct datagram_socket
   : public sal_test::with_value<sal::net::ip::udp_t>
 {
   using socket_t = sal::net::ip::udp_t::socket_t;
-  static constexpr sal::net::ip::port_t port = 8192;
+  static constexpr sal::net::ip::port_t port = 8195;
 
   socket_t::endpoint_t loopback (const sal::net::ip::udp_t &protocol) const
   {
@@ -27,10 +30,10 @@ struct datagram_socket
 
 #if __sal_os_windows || __sal_os_darwin
 
-  static sal::net::io_service_t service;
-  static sal::net::io_context_t context;
+  sal::net::io_service_t service;
+  sal::net::io_context_t context = service.make_context();
 
-  static sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
+  sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
   {
     auto io_buf = context.make_buf();
     io_buf->resize(content.size());
@@ -47,10 +50,6 @@ struct datagram_socket
 };
 
 constexpr sal::net::ip::port_t datagram_socket::port;
-#if __sal_os_windows || __sal_os_darwin
-  sal::net::io_service_t datagram_socket::service;
-  sal::net::io_context_t datagram_socket::context = service.make_context();
-#endif // __sal_os_windows
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, datagram_socket,
@@ -1349,6 +1348,76 @@ TEST_P(datagram_socket, async_send_to_do_not_route)
 }
 
 
+TEST_P(datagram_socket, DISABLED_async_send_to_overflow)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  service.associate(socket);
+
+  int send_buffer_size;
+  socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
+  size_t count = (send_buffer_size / sal::net::io_buf_t::max_size()) * 3;
+
+  std::array<std::thread, 2> threads;
+  auto expected_io_count = threads.max_size() * count;
+
+  // start receives
+  for (auto i = 0U;  i < expected_io_count;  ++i)
+  {
+    socket.async_receive_from(context.make_buf());
+  }
+
+  // send from multiple threads
+  for (auto &thread: threads)
+  {
+    thread = std::thread([this, count, &socket, &endpoint]
+    {
+      for (auto i = 0U;  i < count;  ++i)
+      {
+        socket.async_send_to(context.make_buf(), endpoint);
+      }
+    });
+  }
+
+  // dispatch
+  size_t sends = 0, receives = 0;
+  auto stop_time = std::chrono::steady_clock::now() + 3s;
+  while (std::chrono::steady_clock::now() < stop_time)
+  {
+    std::error_code error;
+    if (auto io_buf = context.get(1s))
+    {
+      if (socket.async_send_to_result(io_buf, error))
+      {
+        sends++;
+      }
+      else if (socket.async_receive_from_result(io_buf, error))
+      {
+        receives++;
+      }
+      else
+      {
+        FAIL() << "unexpected result";
+      }
+      EXPECT_TRUE(!error) << "value=" << error.value();
+    }
+    if (sends == expected_io_count && receives == expected_io_count)
+    {
+      break;
+    }
+  }
+
+  socket.close();
+  for (auto &thread: threads)
+  {
+    thread.join();
+  }
+
+  ASSERT_EQ(expected_io_count, sends);
+  EXPECT_EQ(expected_io_count, receives);
+}
+
+
 TEST_P(datagram_socket, async_send)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
@@ -1534,6 +1603,76 @@ TEST_P(datagram_socket, async_send_do_not_route)
   auto result = socket.async_send_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
+}
+
+
+TEST_P(datagram_socket, DISABLED_async_send_overflow)
+{
+  socket_t socket(loopback(GetParam()));
+  socket.connect(socket.local_endpoint());
+  service.associate(socket);
+
+  int send_buffer_size;
+  socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
+  size_t count = (send_buffer_size / sal::net::io_buf_t::max_size()) * 3;
+
+  std::array<std::thread, 2> threads;
+  auto expected_io_count = threads.max_size() * count;
+
+  // start receives
+  for (auto i = 0U;  i < expected_io_count;  ++i)
+  {
+    socket.async_receive(context.make_buf());
+  }
+
+  // send from multiple threads
+  for (auto &thread: threads)
+  {
+    thread = std::thread([this, count, &socket]
+    {
+      for (auto i = 0U;  i < count;  ++i)
+      {
+        socket.async_send(context.make_buf());
+      }
+    });
+  }
+
+  // dispatch
+  size_t sends = 0, receives = 0;
+  auto stop_time = std::chrono::steady_clock::now() + 3s;
+  while (std::chrono::steady_clock::now() < stop_time)
+  {
+    std::error_code error;
+    if (auto io_buf = context.get(1s))
+    {
+      if (socket.async_send_result(io_buf, error))
+      {
+        sends++;
+      }
+      else if (socket.async_receive_result(io_buf, error))
+      {
+        receives++;
+      }
+      else
+      {
+        FAIL() << "unexpected result";
+      }
+      EXPECT_TRUE(!error) << "value=" << error.value();
+    }
+    if (sends == expected_io_count && receives == expected_io_count)
+    {
+      break;
+    }
+  }
+
+  socket.close();
+  for (auto &thread: threads)
+  {
+    thread.join();
+  }
+
+  ASSERT_EQ(expected_io_count, sends);
+  EXPECT_EQ(expected_io_count, receives);
 }
 
 

@@ -9,16 +9,12 @@ namespace {
 struct net_io_context
   : public sal_test::fixture
 {
-  static auto &context ()
-  {
-    static sal::net::io_service_t svc;
-    static sal::net::io_context_t ctx = svc.make_context();
-    return ctx;
-  }
+  sal::net::io_service_t service;
+  sal::net::io_context_t context = service.make_context();
 
   auto make_buf ()
   {
-    return context().make_buf();
+    return context.make_buf();
   }
 };
 
@@ -37,12 +33,13 @@ TEST_F(net_io_context, make_buf)
 
 TEST_F(net_io_context, try_get_empty)
 {
-  EXPECT_EQ(nullptr, context().try_get());
+  EXPECT_EQ(nullptr, context.try_get());
 }
 
 
 TEST_F(net_io_context, try_get_not_empty)
 {
+  // sal::net::ip::udp_t::socket_t socket(sal::net::ip::udp_t::v4());
   // TODO
 }
 
@@ -66,11 +63,11 @@ TEST_F(net_io_context, get_invalid)
 TEST_F(net_io_context, get_invalid_time)
 {
   std::error_code error;
-  context().get((std::chrono::hours::max)(), error);
+  context.get((std::chrono::hours::max)(), error);
   EXPECT_FALSE(!error);
 
   EXPECT_THROW(
-    context().get((std::chrono::hours::max)()),
+    context.get((std::chrono::hours::max)()),
     std::system_error
   );
 }
@@ -92,16 +89,16 @@ TEST_F(net_io_context, get_not_empty)
 
 TEST_F(net_io_context, reclaim_empty)
 {
-  context().reclaim();
-  EXPECT_EQ(nullptr, context().try_get());
+  context.reclaim();
+  EXPECT_EQ(nullptr, context.try_get());
 }
 
 
 TEST_F(net_io_context, reclaim_not_empty)
 {
   // TODO
-  context().reclaim();
-  EXPECT_EQ(nullptr, context().try_get());
+  context.reclaim();
+  EXPECT_EQ(nullptr, context.try_get());
 }
 
 

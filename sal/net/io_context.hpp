@@ -94,9 +94,9 @@ public:
 
   void reclaim () noexcept
   {
-    while (auto *completed = __bits::io_context_t::try_get())
+    while (auto *io_buf = __bits::io_context_t::try_get())
     {
-      free_io_buf(static_cast<io_buf_t *>(completed));
+      free_io_buf(static_cast<io_buf_t *>(io_buf));
     }
   }
 
