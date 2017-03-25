@@ -18,7 +18,7 @@ var searchData=
   ['memory_5fwriter_5ft',['memory_writer_t',['../classsal_1_1memory__writer__t.html',1,'sal::memory_writer_t'],['../classsal_1_1memory__writer__t.html#afd3e84e426341cab2e59deac9da81212',1,'sal::memory_writer_t::memory_writer_t(T *begin, const T *end) noexcept'],['../classsal_1_1memory__writer__t.html#a778caa3f5a4beecb6f3786b9a3455427',1,'sal::memory_writer_t::memory_writer_t(T(&amp;array)[N]) noexcept'],['../classsal_1_1memory__writer__t.html#acd9e2748e1212254400b79b7458487a1',1,'sal::memory_writer_t::memory_writer_t(memory_writer_t &amp;&amp;that) noexcept']]],
   ['merge',['merge',['../classsal_1_1program__options_1_1option__set__t.html#a50deaf23e3540ce7226668f22aff67db',1,'sal::program_options::option_set_t']]],
   ['message',['message',['../structsal_1_1logger_1_1event__t.html#aa7cc87e596a383179245026615237d86',1,'sal::logger::event_t']]],
-  ['message_5fflags_5ft',['message_flags_t',['../classsal_1_1net_1_1socket__base__t.html#a1ebc46d4ff486a627ec906b0180a08ba',1,'sal::net::socket_base_t']]],
+  ['message_5fflags_5ft',['message_flags_t',['../classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f',1,'sal::net::socket_base_t']]],
   ['mpsc_5fsync_5ft',['mpsc_sync_t',['../structsal_1_1mpsc__sync__t.html',1,'sal']]],
   ['mutex_5ft',['mutex_t',['../classsal_1_1locked__ptr.html#aa8bdd103118232a2d0fb0611db454641',1,'sal::locked_ptr::mutex_t()'],['../classsal_1_1lockable__t.html#a659fc18de1d1d3ffaa11e2cf5f360bb7',1,'sal::lockable_t::mutex_t()']]]
 ];

@@ -1,8 +1,8 @@
 var classsal_1_1net_1_1basic__socket__t =
 [
     [ "endpoint_t", "classsal_1_1net_1_1basic__socket__t.html#aaeae680378245aa54a5b6560a2896adc", null ],
-    [ "message_flags_t", "classsal_1_1net_1_1basic__socket__t.html#a1ebc46d4ff486a627ec906b0180a08ba", null ],
-    [ "native_handle_t", "classsal_1_1net_1_1basic__socket__t.html#ad77c3369a235a84917ed9f329236a537", null ],
+    [ "message_flags_t", "classsal_1_1net_1_1basic__socket__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f", null ],
+    [ "native_handle_t", "classsal_1_1net_1_1basic__socket__t.html#a55e834d9bdde1d6d88d7feb28a6c68d1", null ],
     [ "protocol_t", "classsal_1_1net_1_1basic__socket__t.html#ade3ec6b2dba91df6dcbbbb78b4ff3f1b", null ],
     [ "shutdown_t", "classsal_1_1net_1_1basic__socket__t.html#a6e110dbceaf65cb763877367e6d07b65", null ],
     [ "wait_t", "classsal_1_1net_1_1basic__socket__t.html#a0f3cb53c35d555efbf9aa95d2517aa54", null ],
@@ -45,5 +45,6 @@ var classsal_1_1net_1_1basic__socket__t =
     [ "shutdown", "classsal_1_1net_1_1basic__socket__t.html#aa9b0432eaa7fb1624e260d51b73a5664", null ],
     [ "wait", "classsal_1_1net_1_1basic__socket__t.html#a0d100dac8f9d3777e18958044dfd2016", null ],
     [ "wait", "classsal_1_1net_1_1basic__socket__t.html#af77436f1ac6d197e37e08a32e6a2765c", null ],
+    [ "io_service_t", "classsal_1_1net_1_1basic__socket__t.html#a1d2f2b892d491072fab4974744faa478", null ],
     [ "impl_", "classsal_1_1net_1_1basic__socket__t.html#a11f002c39e5521a1c4358b3f473062ab", null ]
 ];

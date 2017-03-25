@@ -1,5 +1,8 @@
 var NAVTREEINDEX2 =
 {
+"classsal_1_1net_1_1ip_1_1address__t.html":[6,0,0,1,0,0],
+"classsal_1_1net_1_1ip_1_1address__t.html#a064815f5c4c1c1a30ac97edf6696f5b8":[6,0,0,1,0,0,3],
+"classsal_1_1net_1_1ip_1_1address__t.html#a14d56d51ecc5f99b97d94fb58aec435c":[6,0,0,1,0,0,19],
 "classsal_1_1net_1_1ip_1_1address__t.html#a23dfb88d0c2d66bab96de10540824d17":[6,0,0,1,0,0,11],
 "classsal_1_1net_1_1ip_1_1address__t.html#a26fdb1d97c3b96193657234838946065":[6,0,0,1,0,0,7],
 "classsal_1_1net_1_1ip_1_1address__t.html#a4b728c392e851ac7627a078e39304c2d":[6,0,0,1,0,0,15],
@@ -167,10 +170,10 @@ var NAVTREEINDEX2 =
 "classsal_1_1net_1_1ip_1_1udp__t.html#ae2385c9b9c4a426bda0235aa76f5290c":[6,0,0,1,0,11,1],
 "classsal_1_1net_1_1socket__base__t.html":[6,0,0,1,5],
 "classsal_1_1net_1_1socket__base__t.html#a0f3cb53c35d555efbf9aa95d2517aa54":[6,0,0,1,5,3],
-"classsal_1_1net_1_1socket__base__t.html#a1ebc46d4ff486a627ec906b0180a08ba":[6,0,0,1,5,0],
+"classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f":[6,0,0,1,5,0],
+"classsal_1_1net_1_1socket__base__t.html#a55e834d9bdde1d6d88d7feb28a6c68d1":[6,0,0,1,5,1],
 "classsal_1_1net_1_1socket__base__t.html#a5e081721749830508650f8f574162833":[6,0,0,1,5,4],
 "classsal_1_1net_1_1socket__base__t.html#a6e110dbceaf65cb763877367e6d07b65":[6,0,0,1,5,2],
-"classsal_1_1net_1_1socket__base__t.html#ad77c3369a235a84917ed9f329236a537":[6,0,0,1,5,1],
 "classsal_1_1net_1_1throw__on__error.html":[6,0,0,1,6],
 "classsal_1_1net_1_1throw__on__error.html#a0204a42a5ffc12869909886423fc1505":[6,0,0,1,6,2],
 "classsal_1_1net_1_1throw__on__error.html#a0f45fcd989a99958ced2a189af26b1ca":[6,0,0,1,6,1],
@@ -246,8 +249,5 @@ var NAVTREEINDEX2 =
 "file__sink_8hpp.html#a876afb41081aaec44e50bbfa322cc008":[7,0,0,0,3,3],
 "file__sink_8hpp.html#a887453b0085a8882e3827cd4ad57c0b3":[7,0,0,0,3,2],
 "file__sink_8hpp_source.html":[7,0,0,0,3],
-"files.html":[7,0],
-"format_8hpp.html":[7,0,0,9],
-"format_8hpp.html#a0addf3bf8942ab49157f2889ee24e512":[7,0,0,9,2],
-"format_8hpp.html#a3951adb4ad289fd1f30032173c8b57f3":[7,0,0,9,3]
+"files.html":[7,0]
 };

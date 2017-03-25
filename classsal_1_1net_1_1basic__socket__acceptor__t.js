@@ -1,7 +1,7 @@
 var classsal_1_1net_1_1basic__socket__acceptor__t =
 [
     [ "endpoint_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0", null ],
-    [ "message_flags_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a1ebc46d4ff486a627ec906b0180a08ba", null ],
+    [ "message_flags_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f", null ],
     [ "native_handle_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8", null ],
     [ "protocol_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a", null ],
     [ "shutdown_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a6e110dbceaf65cb763877367e6d07b65", null ],
@@ -12,14 +12,14 @@ var classsal_1_1net_1_1basic__socket__acceptor__t =
     [ "~basic_socket_acceptor_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a3c6103ab03ebcb91077478ced014404c", null ],
     [ "basic_socket_acceptor_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a96e45b1d1db8122ecbe4fb6b800bc1ce", null ],
     [ "basic_socket_acceptor_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a04eaea9df72c70ce182c450e2cdfadf3", null ],
-    [ "basic_socket_acceptor_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a41bd82869c313111874b0e97fe8e51ed", null ],
+    [ "basic_socket_acceptor_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a5e6b460ee4de34d5775ee865d9949fab", null ],
     [ "basic_socket_acceptor_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ab62bb68356976f1c1ac77c3f96dd29ed", null ],
     [ "accept", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ab9d3116c34243196081446d57d723c35", null ],
     [ "accept", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a8ed386d751dc5f9275746564f75fbd5b", null ],
     [ "accept", "classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4e5a8a3c9910b46a8f15b76986bb7b", null ],
     [ "accept", "classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca", null ],
-    [ "assign", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a09a87ea5d9e46c28e30c70df7a3cb7bd", null ],
-    [ "assign", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a014c353372929f973a66bfa628a77a75", null ],
+    [ "assign", "classsal_1_1net_1_1basic__socket__acceptor__t.html#af2e9dbf84c8bc82c972f8412878d4dfe", null ],
+    [ "assign", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a6aba349c46bb8c0e1e962e9237e8d993", null ],
     [ "bind", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ad909062536bc17e50f396a1bb313bd20", null ],
     [ "bind", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a8ef0fa2e4a5d372899a6b64aa324fe3c", null ],
     [ "close", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ae8cf97657ad592e238d44f2ff85ebc90", null ],
@@ -45,5 +45,6 @@ var classsal_1_1net_1_1basic__socket__acceptor__t =
     [ "set_option", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ac229943025f698241d07dfbb337e4cde", null ],
     [ "set_option", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ad8e5a3e732f7e05dd950c7c2c34b4977", null ],
     [ "wait", "classsal_1_1net_1_1basic__socket__acceptor__t.html#aa8d8c6a4edeb95c2cfa99a41bbf61502", null ],
-    [ "wait", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a628708def5fbc20075b01c8e45a48c1b", null ]
+    [ "wait", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a628708def5fbc20075b01c8e45a48c1b", null ],
+    [ "io_service_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a1d2f2b892d491072fab4974744faa478", null ]
 ];

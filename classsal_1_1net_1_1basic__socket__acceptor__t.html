@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.8.0</span>
+   &#160;<span id="projectnumber">0.9.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -93,6 +93,7 @@ $(document).ready(function(){initNavTree('classsal_1_1net_1_1basic__socket__acce
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
 <a href="classsal_1_1net_1_1basic__socket__acceptor__t-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt; Class Template Reference</div>  </div>
@@ -116,7 +117,7 @@ Inheritance diagram for sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:ab3524ba8ecd946427c97586eaab691a8"><td class="memItemLeft" align="right" valign="top"><a id="ab3524ba8ecd946427c97586eaab691a8"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> = <a class="el" href="classsal_1_1net_1_1socket__base__t.html#ad77c3369a235a84917ed9f329236a537">socket_base_t::native_handle_t</a></td></tr>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> = <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a55e834d9bdde1d6d88d7feb28a6c68d1">socket_base_t::native_handle_t</a></td></tr>
 <tr class="memdesc:ab3524ba8ecd946427c97586eaab691a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Native acceptor handle type. <br /></td></tr>
 <tr class="separator:ab3524ba8ecd946427c97586eaab691a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a328c75581d731063eda0521b1c8d9c5a"><td class="memItemLeft" align="right" valign="top"><a id="a328c75581d731063eda0521b1c8d9c5a"></a>
@@ -139,10 +140,10 @@ using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cla
 using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a0f3cb53c35d555efbf9aa95d2517aa54">wait_t</a> = __bits::wait_t</td></tr>
 <tr class="memdesc:a0f3cb53c35d555efbf9aa95d2517aa54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Socket waiting types. <br /></td></tr>
 <tr class="separator:a0f3cb53c35d555efbf9aa95d2517aa54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1ebc46d4ff486a627ec906b0180a08ba"><td class="memItemLeft" align="right" valign="top"><a id="a1ebc46d4ff486a627ec906b0180a08ba"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a1ebc46d4ff486a627ec906b0180a08ba">message_flags_t</a> = int</td></tr>
-<tr class="memdesc:a1ebc46d4ff486a627ec906b0180a08ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bitmask flags for send/receive functions. <br /></td></tr>
-<tr class="separator:a1ebc46d4ff486a627ec906b0180a08ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24268e8dc8c1d0bf429a3ec3e9840b6f"><td class="memItemLeft" align="right" valign="top"><a id="a24268e8dc8c1d0bf429a3ec3e9840b6f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">message_flags_t</a> = __bits::message_flags_t</td></tr>
+<tr class="memdesc:a24268e8dc8c1d0bf429a3ec3e9840b6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bitmask flags for send/receive functions. <br /></td></tr>
+<tr class="separator:a24268e8dc8c1d0bf429a3ec3e9840b6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -156,11 +157,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a96e45b1d1db8122ecbe4fb6b800bc1ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct and open new acceptor using <em>protocol</em>.  <a href="#a96e45b1d1db8122ecbe4fb6b800bc1ce">More...</a><br /></td></tr>
 <tr class="separator:a96e45b1d1db8122ecbe4fb6b800bc1ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04eaea9df72c70ce182c450e2cdfadf3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a04eaea9df72c70ce182c450e2cdfadf3">basic_socket_acceptor_t</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0">endpoint_t</a> &amp;endpoint, bool reuse_addr=true)</td></tr>
-<tr class="memdesc:a04eaea9df72c70ce182c450e2cdfadf3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new socket, open and bind to <em>endpoint</em>.  <a href="#a04eaea9df72c70ce182c450e2cdfadf3">More...</a><br /></td></tr>
+<tr class="memdesc:a04eaea9df72c70ce182c450e2cdfadf3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new acceptor, open and bind to <em>endpoint</em>.  <a href="#a04eaea9df72c70ce182c450e2cdfadf3">More...</a><br /></td></tr>
 <tr class="separator:a04eaea9df72c70ce182c450e2cdfadf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41bd82869c313111874b0e97fe8e51ed"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a41bd82869c313111874b0e97fe8e51ed">basic_socket_acceptor_t</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;handle)</td></tr>
-<tr class="memdesc:a41bd82869c313111874b0e97fe8e51ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new socket, <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#adf1e33e868e9352a98da1db269b4f0cc" title="Create new socket instance of protocol. ">open()</a> with <em>protocol</em> and <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad909062536bc17e50f396a1bb313bd20" title="Bind this socket to specified local endpoint. ">bind()</a> to <em>endpoint</em>.  <a href="#a41bd82869c313111874b0e97fe8e51ed">More...</a><br /></td></tr>
-<tr class="separator:a41bd82869c313111874b0e97fe8e51ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e6b460ee4de34d5775ee865d9949fab"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a5e6b460ee4de34d5775ee865d9949fab">basic_socket_acceptor_t</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;protocol, const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;handle)</td></tr>
+<tr class="memdesc:a5e6b460ee4de34d5775ee865d9949fab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new acceptor for pre-opened <em>handle</em> using <em>protocol</em>.  <a href="#a5e6b460ee4de34d5775ee865d9949fab">More...</a><br /></td></tr>
+<tr class="separator:a5e6b460ee4de34d5775ee865d9949fab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab821cdb26250ffc44d6250c4d615becf"><td class="memItemLeft" align="right" valign="top"><a id="ab821cdb26250ffc44d6250c4d615becf"></a>
 <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab821cdb26250ffc44d6250c4d615becf">operator=</a> (<a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a> &amp;&amp;that) noexcept</td></tr>
 <tr class="memdesc:ab821cdb26250ffc44d6250c4d615becf"><td class="mdescLeft">&#160;</td><td class="mdescRight">If this <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad62b0dd0f8dda9cb842aa6e5b4ff2a33" title="Return boolean indicating whether this socket was opened by previous call to open() or assign()...">is_open()</a>, <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a5b3fa4d6171ca64f18062fbe6ecfc3e1" title="Close socket, releasing all internal resources. ">close()</a> it and then move all internal resource from <em>that</em> to <em>this</em>. <br /></td></tr>
@@ -177,7 +178,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:abbb3eb2e1a9fed46640a6f0cdb19b84b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad62b0dd0f8dda9cb842aa6e5b4ff2a33"><td class="memItemLeft" align="right" valign="top"><a id="ad62b0dd0f8dda9cb842aa6e5b4ff2a33"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad62b0dd0f8dda9cb842aa6e5b4ff2a33">is_open</a> () const noexcept</td></tr>
-<tr class="memdesc:ad62b0dd0f8dda9cb842aa6e5b4ff2a33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return boolean indicating whether this socket was opened by previous call to <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#adf1e33e868e9352a98da1db269b4f0cc" title="Create new socket instance of protocol. ">open()</a> or <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a09a87ea5d9e46c28e30c70df7a3cb7bd" title="Assign previously opened native socket handle to this socket object. ">assign()</a>. <br /></td></tr>
+<tr class="memdesc:ad62b0dd0f8dda9cb842aa6e5b4ff2a33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return boolean indicating whether this socket was opened by previous call to <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#adf1e33e868e9352a98da1db269b4f0cc" title="Create new socket instance of protocol. ">open()</a> or <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#af2e9dbf84c8bc82c972f8412878d4dfe" title="Assign previously opened native socket handle (using protocol) to this socket object. ">assign()</a>. <br /></td></tr>
 <tr class="separator:ad62b0dd0f8dda9cb842aa6e5b4ff2a33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf1e33e868e9352a98da1db269b4f0cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#adf1e33e868e9352a98da1db269b4f0cc">open</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;protocol, std::error_code &amp;error) noexcept</td></tr>
 <tr class="memdesc:adf1e33e868e9352a98da1db269b4f0cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new socket instance of <em>protocol</em>.  <a href="#adf1e33e868e9352a98da1db269b4f0cc">More...</a><br /></td></tr>
@@ -185,12 +186,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a9e88615a96bd67c6560973d119c18c89"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a9e88615a96bd67c6560973d119c18c89">open</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;protocol)</td></tr>
 <tr class="memdesc:a9e88615a96bd67c6560973d119c18c89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new socket instance of <em>protocol</em>.  <a href="#a9e88615a96bd67c6560973d119c18c89">More...</a><br /></td></tr>
 <tr class="separator:a9e88615a96bd67c6560973d119c18c89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09a87ea5d9e46c28e30c70df7a3cb7bd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a09a87ea5d9e46c28e30c70df7a3cb7bd">assign</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;handle, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a09a87ea5d9e46c28e30c70df7a3cb7bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign previously opened native socket <em>handle</em> to this socket object.  <a href="#a09a87ea5d9e46c28e30c70df7a3cb7bd">More...</a><br /></td></tr>
-<tr class="separator:a09a87ea5d9e46c28e30c70df7a3cb7bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a014c353372929f973a66bfa628a77a75"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a014c353372929f973a66bfa628a77a75">assign</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;handle)</td></tr>
-<tr class="memdesc:a014c353372929f973a66bfa628a77a75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign previously opened native socket <em>handle</em> to this socket object.  <a href="#a014c353372929f973a66bfa628a77a75">More...</a><br /></td></tr>
-<tr class="separator:a014c353372929f973a66bfa628a77a75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2e9dbf84c8bc82c972f8412878d4dfe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#af2e9dbf84c8bc82c972f8412878d4dfe">assign</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;protocol, const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;handle, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:af2e9dbf84c8bc82c972f8412878d4dfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign previously opened native socket <em>handle</em> (using <em>protocol</em>) to this socket object.  <a href="#af2e9dbf84c8bc82c972f8412878d4dfe">More...</a><br /></td></tr>
+<tr class="separator:af2e9dbf84c8bc82c972f8412878d4dfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6aba349c46bb8c0e1e962e9237e8d993"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a6aba349c46bb8c0e1e962e9237e8d993">assign</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;protocol, const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;handle)</td></tr>
+<tr class="memdesc:a6aba349c46bb8c0e1e962e9237e8d993"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign previously opened native socket <em>handle</em> (using <em>protocol</em>) to this socket object.  <a href="#a6aba349c46bb8c0e1e962e9237e8d993">More...</a><br /></td></tr>
+<tr class="separator:a6aba349c46bb8c0e1e962e9237e8d993"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae8cf97657ad592e238d44f2ff85ebc90"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ae8cf97657ad592e238d44f2ff85ebc90">close</a> (std::error_code &amp;error) noexcept</td></tr>
 <tr class="memdesc:ae8cf97657ad592e238d44f2ff85ebc90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close socket, releasing all internal resources.  <a href="#ae8cf97657ad592e238d44f2ff85ebc90">More...</a><br /></td></tr>
 <tr class="separator:ae8cf97657ad592e238d44f2ff85ebc90"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -298,21 +299,27 @@ static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a0f
 <tr class="memdesc:a2c9bc860f06f459c017fa45cd8601b1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for socket become writable. <br /></td></tr>
 <tr class="separator:a2c9bc860f06f459c017fa45cd8601b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adae8cc6757a976ff0e6fecd5eb321dbb"><td class="memItemLeft" align="right" valign="top"><a id="adae8cc6757a976ff0e6fecd5eb321dbb"></a>
-static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a1ebc46d4ff486a627ec906b0180a08ba">message_flags_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#adae8cc6757a976ff0e6fecd5eb321dbb">peek</a> = MSG_PEEK</td></tr>
+static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">message_flags_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#adae8cc6757a976ff0e6fecd5eb321dbb">peek</a> = MSG_PEEK</td></tr>
 <tr class="memdesc:adae8cc6757a976ff0e6fecd5eb321dbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave received data in queue. <br /></td></tr>
 <tr class="separator:adae8cc6757a976ff0e6fecd5eb321dbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab609507b4e1ca8a3d098d90ece68677c"><td class="memItemLeft" align="right" valign="top"><a id="ab609507b4e1ca8a3d098d90ece68677c"></a>
-static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a1ebc46d4ff486a627ec906b0180a08ba">message_flags_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#ab609507b4e1ca8a3d098d90ece68677c">out_of_band</a> = MSG_OOB</td></tr>
+static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">message_flags_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#ab609507b4e1ca8a3d098d90ece68677c">out_of_band</a> = MSG_OOB</td></tr>
 <tr class="memdesc:ab609507b4e1ca8a3d098d90ece68677c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Out-of-band data. <br /></td></tr>
 <tr class="separator:ab609507b4e1ca8a3d098d90ece68677c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31562c9bf724050ebc89a46541c6561c"><td class="memItemLeft" align="right" valign="top"><a id="a31562c9bf724050ebc89a46541c6561c"></a>
-static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a1ebc46d4ff486a627ec906b0180a08ba">message_flags_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a31562c9bf724050ebc89a46541c6561c">do_not_route</a> = MSG_DONTROUTE</td></tr>
+static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">message_flags_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a31562c9bf724050ebc89a46541c6561c">do_not_route</a> = MSG_DONTROUTE</td></tr>
 <tr class="memdesc:a31562c9bf724050ebc89a46541c6561c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send without using routing tables. <br /></td></tr>
 <tr class="separator:a31562c9bf724050ebc89a46541c6561c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b2e860e6c1f101398bfe469c44676f0"><td class="memItemLeft" align="right" valign="top"><a id="a9b2e860e6c1f101398bfe469c44676f0"></a>
 static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a9b2e860e6c1f101398bfe469c44676f0">max_listen_connections</a> = SOMAXCONN</td></tr>
 <tr class="memdesc:a9b2e860e6c1f101398bfe469c44676f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Limit on length of the queue of pending incoming connections. <br /></td></tr>
 <tr class="separator:a9b2e860e6c1f101398bfe469c44676f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a1d2f2b892d491072fab4974744faa478"><td class="memItemLeft" align="right" valign="top"><a id="a1d2f2b892d491072fab4974744faa478"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>io_service_t</b></td></tr>
+<tr class="separator:a1d2f2b892d491072fab4974744faa478"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename AcceptableProtocol&gt;<br />
@@ -449,13 +456,13 @@ template&lt;typename AcceptableProtocol &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Construct new socket, open and bind to <em>endpoint</em>. </p>
+<p>Construct new acceptor, open and bind to <em>endpoint</em>. </p>
 <p>On failure, throw std::system_error </p>
 
 </div>
 </div>
-<a id="a41bd82869c313111874b0e97fe8e51ed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a41bd82869c313111874b0e97fe8e51ed">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[4/4]</span></h2>
+<a id="a5e6b460ee4de34d5775ee865d9949fab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e6b460ee4de34d5775ee865d9949fab">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -468,9 +475,19 @@ template&lt;typename AcceptableProtocol &gt; </div>
         <tr>
           <td class="memname"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::<a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;&#160;</td>
-          <td class="paramname"><em>handle</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>protocol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>handle</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -480,7 +497,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Construct new socket, <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#adf1e33e868e9352a98da1db269b4f0cc" title="Create new socket instance of protocol. ">open()</a> with <em>protocol</em> and <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad909062536bc17e50f396a1bb313bd20" title="Bind this socket to specified local endpoint. ">bind()</a> to <em>endpoint</em>. </p>
+<p>Construct new acceptor for pre-opened <em>handle</em> using <em>protocol</em>. </p>
 <p>On failure, throw std::system_error </p>
 
 </div>
@@ -619,8 +636,8 @@ template&lt;typename AcceptableProtocol &gt; </div>
 
 </div>
 </div>
-<a id="a09a87ea5d9e46c28e30c70df7a3cb7bd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09a87ea5d9e46c28e30c70df7a3cb7bd">&#9670;&nbsp;</a></span>assign() <span class="overload">[1/2]</span></h2>
+<a id="af2e9dbf84c8bc82c972f8412878d4dfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2e9dbf84c8bc82c972f8412878d4dfe">&#9670;&nbsp;</a></span>assign() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -633,6 +650,12 @@ template&lt;typename AcceptableProtocol &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::assign </td>
           <td>(</td>
+          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>protocol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;&#160;</td>
           <td class="paramname"><em>handle</em>, </td>
         </tr>
@@ -655,13 +678,13 @@ template&lt;typename AcceptableProtocol &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Assign previously opened native socket <em>handle</em> to this socket object. </p>
+<p>Assign previously opened native socket <em>handle</em> (using <em>protocol</em>) to this socket object. </p>
 <p>On failure, set <em>error</em>. </p>
 
 </div>
 </div>
-<a id="a014c353372929f973a66bfa628a77a75"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a014c353372929f973a66bfa628a77a75">&#9670;&nbsp;</a></span>assign() <span class="overload">[2/2]</span></h2>
+<a id="a6aba349c46bb8c0e1e962e9237e8d993"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6aba349c46bb8c0e1e962e9237e8d993">&#9670;&nbsp;</a></span>assign() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -674,9 +697,19 @@ template&lt;typename AcceptableProtocol &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::assign </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;&#160;</td>
-          <td class="paramname"><em>handle</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>protocol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8">native_handle_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>handle</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -686,7 +719,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Assign previously opened native socket <em>handle</em> to this socket object. </p>
+<p>Assign previously opened native socket <em>handle</em> (using <em>protocol</em>) to this socket object. </p>
 <p>On failure, throw std::system_error </p>
 
 </div>

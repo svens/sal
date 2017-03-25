@@ -1,7 +1,7 @@
 var classsal_1_1net_1_1basic__datagram__socket__t =
 [
     [ "endpoint_t", "classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c", null ],
-    [ "message_flags_t", "classsal_1_1net_1_1basic__datagram__socket__t.html#a1ebc46d4ff486a627ec906b0180a08ba", null ],
+    [ "message_flags_t", "classsal_1_1net_1_1basic__datagram__socket__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f", null ],
     [ "native_handle_t", "classsal_1_1net_1_1basic__datagram__socket__t.html#ae5ecb28d5808985ca8771d65ac0d266c", null ],
     [ "protocol_t", "classsal_1_1net_1_1basic__datagram__socket__t.html#a52647d41d64defa972245e8c3a66a780", null ],
     [ "shutdown_t", "classsal_1_1net_1_1basic__datagram__socket__t.html#a6e110dbceaf65cb763877367e6d07b65", null ],

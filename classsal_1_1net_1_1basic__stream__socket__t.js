@@ -1,7 +1,7 @@
 var classsal_1_1net_1_1basic__stream__socket__t =
 [
     [ "endpoint_t", "classsal_1_1net_1_1basic__stream__socket__t.html#aef95395826198db21a672aaad68f1171", null ],
-    [ "message_flags_t", "classsal_1_1net_1_1basic__stream__socket__t.html#a1ebc46d4ff486a627ec906b0180a08ba", null ],
+    [ "message_flags_t", "classsal_1_1net_1_1basic__stream__socket__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f", null ],
     [ "native_handle_t", "classsal_1_1net_1_1basic__stream__socket__t.html#a91f6809832bfd27c47f7aa4b507505e9", null ],
     [ "protocol_t", "classsal_1_1net_1_1basic__stream__socket__t.html#aa4b7f0e8ee419569050161eb08256ca5", null ],
     [ "shutdown_t", "classsal_1_1net_1_1basic__stream__socket__t.html#a6e110dbceaf65cb763877367e6d07b65", null ],

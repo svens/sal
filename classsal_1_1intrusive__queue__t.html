@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.8.0</span>
+   &#160;<span id="projectnumber">0.9.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -124,6 +124,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 T *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#adbef7021b05f1580b79df1275e7fe4ab">try_pop</a> () noexcept</td></tr>
 <tr class="memdesc:adbef7021b05f1580b79df1275e7fe4ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop next element from queue. If empty, return nullptr. <br /></td></tr>
 <tr class="separator:adbef7021b05f1580b79df1275e7fe4ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac20499592f91180b02d30ab7c6f86b67"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#ac20499592f91180b02d30ab7c6f86b67">empty</a> () const noexcept</td></tr>
+<tr class="memdesc:ac20499592f91180b02d30ab7c6f86b67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if queue has no elements.  <a href="#ac20499592f91180b02d30ab7c6f86b67">More...</a><br /></td></tr>
+<tr class="separator:ac20499592f91180b02d30ab7c6f86b67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename T, typename SyncPolicy, typename SyncPolicy::intrusive_queue_hook_t T::* Hook&gt;<br />
@@ -166,6 +169,36 @@ template&lt;typename T , typename SyncPolicy , typename SyncPolicy::intrusive_qu
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="ac20499592f91180b02d30ab7c6f86b67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac20499592f91180b02d30ab7c6f86b67">&#9670;&nbsp;</a></span>empty()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename SyncPolicy , typename SyncPolicy::intrusive_queue_hook_t T::* Hook&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t</a>&lt; T, SyncPolicy, Hook &gt;::empty </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return true if queue has no elements. </p>
+<p>This method returns reliably valid result only from consumer side. </p>
+
+</div>
+</div>
 <a id="ab61295bd1e6c94df551b0ece9e64bddc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab61295bd1e6c94df551b0ece9e64bddc">&#9670;&nbsp;</a></span>operator=()</h2>
 
