@@ -121,6 +121,16 @@ public:
   }
 
 
+  /**
+   * Return true if queue has no elements. This method returns reliably valid
+   * result only from consumer side.
+   */
+  bool empty () const noexcept
+  {
+    return tail_ == reinterpret_cast<const T *>(&sentry_);
+  }
+
+
 private:
 
   char sentry_[sizeof(T)];

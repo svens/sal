@@ -70,6 +70,12 @@ public:
   }
 
 
+  bool empty () const noexcept
+  {
+    return !tail_ || (!head_ && seq_ == last_seq_);
+  }
+
+
 private:
 
   volatile T *tail_{nullptr};
@@ -204,6 +210,12 @@ public:
     }
 
     return nullptr;
+  }
+
+
+  bool empty () const noexcept
+  {
+    return tail_.load(std::memory_order_acquire) == sentry_;
   }
 
 
