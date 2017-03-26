@@ -10,23 +10,12 @@ namespace {
 struct net_io_buf
   : public sal_test::fixture
 {
-  static auto &service ()
-  {
-    static sal::net::io_service_t svc;
-    return svc;
-  }
-
-
-  static auto &context ()
-  {
-    static sal::net::io_context_t ctx = service().make_context();
-    return ctx;
-  }
-
+  sal::net::io_service_t service;
+  sal::net::io_context_t context = service.make_context();
 
   auto make_buf ()
   {
-    return context().make_buf();
+    return context.make_buf();
   }
 };
 
@@ -34,7 +23,7 @@ struct net_io_buf
 TEST_F(net_io_buf, ctor)
 {
   auto buf = make_buf();
-  EXPECT_EQ(&context(), &buf->this_context());
+  EXPECT_EQ(&context, &buf->this_context());
 
   EXPECT_EQ(buf->data(), buf->begin());
   EXPECT_EQ(buf->head(), buf->begin());
@@ -129,13 +118,13 @@ TEST_F(net_io_buf, head_and_tail_gap)
 TEST_F(net_io_buf, reset)
 {
   auto buf = make_buf();
-  EXPECT_EQ(&context(), &buf->this_context());
+  EXPECT_EQ(&context, &buf->this_context());
 
   buf->begin(1);
   buf->resize(buf->max_size() - 2);
 
   buf->reset();
-  EXPECT_EQ(&context(), &buf->this_context());
+  EXPECT_EQ(&context, &buf->this_context());
 
   EXPECT_EQ(buf->head(), buf->begin());
   EXPECT_EQ(buf->tail(), buf->end());

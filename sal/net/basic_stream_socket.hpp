@@ -197,6 +197,7 @@ public:
   }
 
 
+#if !__sal_os_linux
 #if __sal_os_windows
 
 
@@ -237,6 +238,9 @@ public:
   }
 
 
+#endif
+
+
   struct async_receive_t
     : public __bits::async_receive_t
   {
@@ -250,7 +254,7 @@ public:
   void async_receive (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_receive_t>(impl_, flags);
+    io_buf->start<async_receive_t>(base_t::impl_, flags);
     io_buf.release();
   }
 
@@ -297,7 +301,7 @@ public:
   void async_send (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_send_t>(impl_, flags);
+    io_buf->start<async_send_t>(base_t::impl_, flags);
     io_buf.release();
   }
 
@@ -331,7 +335,7 @@ public:
   }
 
 
-#endif // __sal_os_windows
+#endif // !__sal_os_linux
 };
 
 

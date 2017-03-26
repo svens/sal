@@ -102,7 +102,15 @@ void io_buf_t::io_result (int result) noexcept
   if (result == 0)
   {
     // completed immediately, caller still owns data
-    error.clear();
+    if (transferred || request_id != async_receive_t::type_id())
+    {
+      error.clear();
+    }
+    else
+    {
+      // in case of receive, 0B means socket is closed
+      error = make_error_code(socket_errc_t::orderly_shutdown);
+    }
     context->completed.push(this);
     return;
   }
@@ -406,6 +414,11 @@ io_buf_t *io_context_t::try_get () noexcept
     if (NT_SUCCESS(status))
     {
       io_buf->transferred = entry.dwNumberOfBytesTransferred;
+      if (!io_buf->transferred
+        && io_buf->request_id == async_receive_t::type_id())
+      {
+        io_buf->error = make_error_code(socket_errc_t::orderly_shutdown);
+      }
     }
     else
     {
@@ -880,6 +893,10 @@ void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
 
   if (error != std::errc::operation_would_block)
   {
+    if (error == std::errc::broken_pipe)
+    {
+      error = make_error_code(socket_errc_t::orderly_shutdown);
+    }
     context->ready(this);
   }
   else

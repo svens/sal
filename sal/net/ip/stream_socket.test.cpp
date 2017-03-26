@@ -40,12 +40,12 @@ struct stream_socket
     ;
   }
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
-  static sal::net::io_service_t service;
-  static sal::net::io_context_t context;
+  sal::net::io_service_t service;
+  sal::net::io_context_t context = service.make_context();
 
-  static sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
+  sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
   {
     auto io_buf = context.make_buf();
     io_buf->resize(content.size());
@@ -58,15 +58,10 @@ struct stream_socket
     return std::string(static_cast<const char *>(io_buf->data()), size);
   }
 
-#endif // __sal_os_windows
+#endif // !__sal_os_linux
 };
 
 constexpr sal::net::ip::port_t stream_socket::port;
-
-#if __sal_os_windows
-  sal::net::io_service_t stream_socket::service;
-  sal::net::io_context_t stream_socket::context = service.make_context();
-#endif // __sal_os_windows
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, stream_socket,
@@ -550,6 +545,12 @@ TEST_P(stream_socket, async_connect_not_bound)
 }
 
 
+#endif
+
+
+#if !__sal_os_linux
+
+
 TEST_P(stream_socket, async_receive)
 {
   acceptor_t acceptor(loopback(GetParam()), true);
@@ -642,8 +643,16 @@ TEST_P(stream_socket, async_receive_two_send_immediate_completion)
 
     auto result = a.async_receive_result(io_buf);
     ASSERT_NE(nullptr, result);
-    EXPECT_EQ(case_name.size(), result->transferred());
-    EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+
+    if (case_name.size() == result->transferred())
+    {
+      EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+    }
+    else
+    {
+      EXPECT_EQ(case_name + case_name, to_string(io_buf, result->transferred()));
+      break;
+    }
   }
 }
 
@@ -727,9 +736,11 @@ TEST_P(stream_socket, async_receive_disconnected)
   auto io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
 
-  auto result = a.async_receive_result(io_buf);
+  std::error_code error;
+  auto result = a.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
 }
 
 
@@ -750,9 +761,11 @@ TEST_P(stream_socket, async_receive_disconnected_immediate_completion)
   auto io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
 
-  auto result = a.async_receive_result(io_buf);
+  std::error_code error;
+  auto result = a.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
 }
 
 
@@ -831,9 +844,25 @@ TEST_P(stream_socket, async_receive_before_shutdown)
   auto io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
 
+#if __sal_os_windows
+
   auto result = a.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
+
+#else
+
+  std::error_code error;
+  auto result = a.async_receive_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+
+  EXPECT_THROW(
+    a.async_receive_result(io_buf),
+    std::system_error
+  );
+
+#endif
 }
 
 
