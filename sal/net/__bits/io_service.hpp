@@ -208,7 +208,7 @@ struct io_buf_t
   >;
 
   bool retry_receive (socket_t &socket) noexcept;
-  bool retry_send (socket_t &socket) noexcept;
+  bool retry_send (socket_t &socket, uint16_t flags) noexcept;
 };
 
 
@@ -256,6 +256,20 @@ struct async_send_t
   message_flags_t flags;
 
   void start (socket_t &socket, message_flags_t flags) noexcept;
+};
+
+
+struct async_connect_t
+  : public io_buf_t
+  , public async_operation_t<async_connect_t>
+{
+  void start (socket_t &socket, const void *address, size_t address_size)
+    noexcept;
+
+  void finish (std::error_code &error) noexcept
+  {
+    error = this->error;
+  }
 };
 
 

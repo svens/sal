@@ -198,7 +198,6 @@ public:
 
 
 #if !__sal_os_linux
-#if __sal_os_windows
 
 
   //
@@ -213,7 +212,9 @@ public:
 
   void async_connect (io_buf_ptr &&io_buf, const endpoint_t &endpoint) noexcept
   {
-    io_buf->start<async_connect_t>(impl_, endpoint.data(), endpoint.size());
+    io_buf->start<async_connect_t>(base_t::impl_,
+      endpoint.data(), endpoint.size()
+    );
     io_buf.release();
   }
 
@@ -236,9 +237,6 @@ public:
       throw_on_error("basic_stream_socket::async_connect")
     );
   }
-
-
-#endif
 
 
   struct async_receive_t

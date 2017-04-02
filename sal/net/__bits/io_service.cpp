@@ -658,7 +658,7 @@ bool io_buf_t::retry_receive (socket_t &socket) noexcept
 }
 
 
-bool io_buf_t::retry_send (socket_t &socket) noexcept
+bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
 {
   error.clear();
 
@@ -681,6 +681,19 @@ bool io_buf_t::retry_send (socket_t &socket) noexcept
       r->flags,
       error
     );
+  }
+  else if (request_id == async_connect_t::type_id())
+  {
+    if (flags & EV_EOF)
+    {
+      error = std::make_error_code(std::errc::connection_refused);
+      printf(BRIGHT RED "%u\tConnection refused\n" NONE, sal::this_thread::get_id());
+    }
+    else
+    {
+      printf(BRIGHT GREEN "%u\tConnected\n" NONE, sal::this_thread::get_id());
+    }
+    return true;
   }
 
   if (error && error != std::errc::operation_would_block)
@@ -717,7 +730,7 @@ io_buf_t *io_context_t::retry_send (socket_t &socket) noexcept
 {
   if (auto *io_buf = socket.async->pop_send())
   {
-    if (io_buf->retry_send(socket))
+    if (io_buf->retry_send(socket, event->flags))
     {
       printf(GREEN "%u\tSent=%zu" NONE "\n", sal::this_thread::get_id(), io_buf->transferred);
       return io_buf;
@@ -902,6 +915,23 @@ void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
   else
   {
     this->flags = flags;
+    socket.async->push_send(this);
+  }
+}
+
+
+void async_connect_t::start (socket_t &socket,
+  const void *address, size_t address_size) noexcept
+{
+  error.clear();
+
+  socket.connect(address, address_size, error);
+  if (error != std::errc::operation_in_progress)
+  {
+    context->ready(this);
+  }
+  else
+  {
     socket.async->push_send(this);
   }
 }
