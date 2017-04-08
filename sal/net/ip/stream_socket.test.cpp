@@ -451,7 +451,7 @@ TEST_P(stream_socket, async_connect)
   auto result = a.async_connect_result(io_buf);
   ASSERT_NE(nullptr, result);
 
-  EXPECT_EQ(nullptr, a.async_receive_result(io_buf));
+  EXPECT_EQ(nullptr, acceptor_t::async_accept_result(io_buf));
 }
 
 
@@ -949,6 +949,23 @@ TEST_P(stream_socket, async_send)
   EXPECT_EQ(case_name.size(), result->transferred());
 
   EXPECT_EQ(nullptr, a.async_receive_result(io_buf));
+}
+
+
+TEST_P(stream_socket, async_send_not_connected)
+{
+  socket_t a(GetParam());
+  service.associate(a);
+
+  a.async_send(make_buf(case_name));
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  std::error_code error;
+  auto result = a.async_send_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::not_connected, error);
 }
 
 

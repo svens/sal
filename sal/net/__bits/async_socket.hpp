@@ -273,6 +273,18 @@ struct async_connect_t
 };
 
 
+struct async_accept_t
+  : public io_buf_t
+  , public async_operation_t<async_accept_t>
+{
+  native_socket_t accepted;
+  sockaddr_storage *local_address, *remote_address;
+
+  void start (socket_t &socket, int family) noexcept;
+  void finish (std::error_code &error) noexcept;
+};
+
+
 struct io_service_t
 {
   int queue;

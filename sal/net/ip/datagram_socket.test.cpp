@@ -366,7 +366,7 @@ TEST_P(datagram_socket, send_not_connected)
   {
     std::error_code error;
     socket.send(sal::make_buf(case_name), error);
-    EXPECT_EQ(std::errc::destination_address_required, error);
+    EXPECT_EQ(std::errc::not_connected, error);
   }
 
   {
@@ -1462,7 +1462,7 @@ TEST_P(datagram_socket, async_send_not_connected)
   std::error_code error;
   auto result = socket.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::destination_address_required, error);
+  EXPECT_EQ(std::errc::not_connected, error);
   EXPECT_EQ(0U, result->transferred());
 
   // with exception

@@ -7,7 +7,7 @@
   #pragma comment(lib, "ntdll")
 #endif
 
-#include <sal/net/__bits/io_service.hpp>
+#include <sal/net/__bits/async_socket.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/fwd.hpp>
 #include <mutex>
@@ -20,18 +20,6 @@
   #include <sys/time.h>
   #include <unistd.h>
 #endif
-
-#include <sal/thread.hpp>
-#include <iostream>
-
-
-#define NONE "\033[0m"
-#define BRIGHT "\033[1m"
-#define RED "\033[31m"
-#define GREEN "\033[32m"
-#define YELLOW "\033[33m"
-#define MAGENTA "\033[35m"
-#define CYAN "\033[36m"
 
 
 __sal_begin
@@ -130,10 +118,6 @@ void io_buf_t::io_result (int result) noexcept
   else if (e == WSAENOTSOCK)
   {
     error.assign(WSAEBADF, std::system_category());
-  }
-  else if (e == WSAENOTCONN)
-  {
-    error.assign(WSAEDESTADDRREQ, std::system_category());
   }
   else
   {
@@ -347,6 +331,10 @@ void async_accept_t::finish (std::error_code &result) noexcept
       }
       break;
 
+    case WSAENOTSOCK:
+      result = std::make_error_code(std::errc::bad_file_descriptor);
+      break;
+
     default:
       result = error;
       break;
@@ -494,10 +482,6 @@ inline ::timespec *to_timespec (::timespec *ts, const milliseconds &timeout)
   return nullptr;
 }
 
-inline void printf (...) noexcept
-{
-}
-
 } // namespace
 
 
@@ -511,25 +495,20 @@ struct async_worker_t
 
   mutex_t send_mutex{};
   io_buf_t::pending_send_queue_t send_queue{};
-  bool listen_writable = false;
 
 
   ~async_worker_t ()
   {
-    size_t pending_sends = 0, pending_receives = 0;
     while (auto ev = receive_queue.try_pop())
     {
-      ++pending_receives;
       ev->error = std::make_error_code(std::errc::operation_canceled);
       ev->context->ready(ev);
     }
     while (auto ev = send_queue.try_pop())
     {
-      ++pending_sends;
       ev->error = std::make_error_code(std::errc::operation_canceled);
       ev->context->ready(ev);
     }
-    printf("\n*\n* receives=%zu\n* sends=%zu\n*\n\n", pending_receives, pending_sends);
   }
 
 
@@ -628,10 +607,8 @@ bool io_buf_t::retry_receive (socket_t &socket) noexcept
 {
   error.clear();
 
-  const char *f = "<unknown>";
   if (request_id == async_receive_from_t::type_id())
   {
-    f = "receive_from";
     auto r = static_cast<async_receive_from_t *>(this);
     transferred = socket.receive_from(begin, end - begin,
       &r->address, &r->address_size,
@@ -641,17 +618,20 @@ bool io_buf_t::retry_receive (socket_t &socket) noexcept
   }
   else if (request_id == async_receive_t::type_id())
   {
-    f = "receive";
     auto r = static_cast<async_receive_t *>(this);
     transferred = socket.receive(begin, end - begin,
       r->flags,
       error
     );
   }
-
-  if (error && error != std::errc::operation_would_block)
+  else if (request_id == async_accept_t::type_id())
   {
-    printf(BRIGHT RED "%u\t%s=(%d, %p, %zu)\n" NONE, sal::this_thread::get_id(), f, error.value(), (void *)begin, (end - begin));
+    auto r = static_cast<async_accept_t *>(this);
+    size_t remote_address_size = sizeof(*r->remote_address);
+    r->accepted = socket.accept(r->remote_address, &remote_address_size,
+      false,
+      r->error
+    );
   }
 
   return error != std::errc::operation_would_block;
@@ -662,10 +642,8 @@ bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
 {
   error.clear();
 
-  const char *f = "<unknown>";
   if (request_id == async_send_to_t::type_id())
   {
-    f = "send_to";
     auto r = static_cast<async_send_to_t *>(this);
     transferred = socket.send_to(begin, end - begin,
       &r->address, r->address_size,
@@ -675,7 +653,6 @@ bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
   }
   else if (request_id == async_send_t::type_id())
   {
-    f = "send";
     auto r = static_cast<async_send_t *>(this);
     transferred = socket.send(begin, end - begin,
       r->flags,
@@ -687,18 +664,8 @@ bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
     if (flags & EV_EOF)
     {
       error = std::make_error_code(std::errc::connection_refused);
-      printf(BRIGHT RED "%u\tConnection refused\n" NONE, sal::this_thread::get_id());
-    }
-    else
-    {
-      printf(BRIGHT GREEN "%u\tConnected\n" NONE, sal::this_thread::get_id());
     }
     return true;
-  }
-
-  if (error && error != std::errc::operation_would_block)
-  {
-    printf(BRIGHT RED "%u\t%s=(%d, %p, %zu)\n" NONE, sal::this_thread::get_id(), f, error.value(), (void *)begin, (end - begin));
   }
 
   return error != std::errc::operation_would_block;
@@ -711,15 +678,9 @@ io_buf_t *io_context_t::retry_receive (socket_t &socket) noexcept
   {
     if (io_buf->retry_receive(socket))
     {
-      printf(GREEN "%u\tReceived=%zu" NONE "\n", sal::this_thread::get_id(), io_buf->transferred);
       return io_buf;
     }
-    printf(RED "%u\tReceive retry" NONE "\n", sal::this_thread::get_id());
     socket.async->push_receive(io_buf);
-  }
-  else
-  {
-    printf(MAGENTA "%u\tReceive empty" NONE "\n", sal::this_thread::get_id());
   }
 
   return nullptr;
@@ -732,15 +693,9 @@ io_buf_t *io_context_t::retry_send (socket_t &socket) noexcept
   {
     if (io_buf->retry_send(socket, event->flags))
     {
-      printf(GREEN "%u\tSent=%zu" NONE "\n", sal::this_thread::get_id(), io_buf->transferred);
       return io_buf;
     }
-    printf(RED "%u\tSend retry" NONE "\n", sal::this_thread::get_id());
     socket.async->push_send(io_buf);
-  }
-  else
-  {
-    printf(MAGENTA "%u\tSend empty" NONE "\n", sal::this_thread::get_id());
   }
 
   return nullptr;
@@ -762,10 +717,6 @@ io_buf_t *io_context_t::try_get () noexcept
     {
       io_buf = retry_send(socket);
     }
-    else
-    {
-      printf(BRIGHT RED "%u\tFilter=%hd, Flags=%hu, Data=%ld" NONE "\n", sal::this_thread::get_id(), event->filter, event->flags, event->data);
-    }
 
     if (io_buf)
     {
@@ -785,8 +736,6 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
   {
     return io_buf;
   }
-
-  printf("%u\tWait\n", sal::this_thread::get_id());
 
   for (::timespec ts, *timeout = to_timespec(&ts, timeout_ms);  /**/;  /**/)
   {
@@ -813,7 +762,6 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
     else
     {
       error.assign(errno, std::generic_category());
-      printf(BRIGHT RED "%u\tWait=%d" NONE "\n", sal::this_thread::get_id(), error.value());
     }
 
     return nullptr;
@@ -883,12 +831,10 @@ void async_send_to_t::start (socket_t &socket,
 
   if (error != std::errc::operation_would_block)
   {
-    printf("%u\tSent\n", sal::this_thread::get_id());
     context->ready(this);
   }
   else
   {
-    printf(YELLOW "%u\tPending" NONE "\n", sal::this_thread::get_id());
     std::memcpy(&this->address, address, address_size);
     this->address_size = address_size;
     this->flags = flags;
@@ -933,6 +879,47 @@ void async_connect_t::start (socket_t &socket,
   else
   {
     socket.async->push_send(this);
+  }
+}
+
+
+void async_accept_t::start (socket_t &socket, int family) noexcept
+{
+  (void)family;
+
+  error.clear();
+
+  auto *addresses = reinterpret_cast<sockaddr_storage *>(begin);
+  remote_address = &addresses[0];
+  local_address = &addresses[1];
+
+  auto remote_address_size = sizeof(*remote_address);
+  accepted = socket.accept(remote_address, &remote_address_size,
+    false,
+    error
+  );
+
+  if (error != std::errc::operation_would_block)
+  {
+    context->ready(this);
+  }
+  else
+  {
+    socket.async->push_receive(this);
+  }
+}
+
+
+void async_accept_t::finish (std::error_code &error) noexcept
+{
+  error = this->error;
+  if (!error)
+  {
+    socklen_t local_address_size = sizeof(*local_address);
+    ::getsockname(accepted,
+      reinterpret_cast<sockaddr *>(local_address),
+      &local_address_size
+    );
   }
 }
 

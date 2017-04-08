@@ -113,6 +113,10 @@ inline Result handle (Result result, std::error_code &error) noexcept
 
   if (result == -1)
   {
+    if (errno == EDESTADDRREQ)
+    {
+      errno = ENOTCONN;
+    }
     error.assign(errno, std::generic_category());
   }
 
@@ -579,10 +583,6 @@ size_t socket_t::send_to (const void *data, size_t data_size,
   if (result != SOCKET_ERROR)
   {
     return transferred;
-  }
-  else if (error.value() == WSAENOTCONN)
-  {
-    error.assign(WSAEDESTADDRREQ, std::system_category());
   }
 
   return 0;
