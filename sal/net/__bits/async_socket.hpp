@@ -304,7 +304,7 @@ struct io_context_t
   io_service_t &io_service;
 
 #if __sal_os_darwin
-  using event_t = struct ::kevent;
+  struct event_t: public ::kevent {};
 #elif __sal_os_linux
   using event_t = ::epoll_event;
 #endif
