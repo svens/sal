@@ -69,8 +69,6 @@ TEST_F(net_io_context, try_get_empty)
 
 TEST_F(net_io_context, try_get_not_empty)
 {
-#if !__sal_os_linux
-
   auto socket = make_socket();
 
   // because try_get does not wait actually, we need 2 packets:
@@ -80,15 +78,11 @@ TEST_F(net_io_context, try_get_not_empty)
 
   EXPECT_NE(nullptr, context.get());
   EXPECT_NE(nullptr, context.try_get());
-
-#endif
 }
 
 
 TEST_F(net_io_context, get_invalid)
 {
-#if !__sal_os_linux
-
   auto p_svc = std::make_unique<sal::net::io_service_t>();
   auto ctx = p_svc->make_context();
   p_svc.reset();
@@ -98,30 +92,7 @@ TEST_F(net_io_context, get_invalid)
   EXPECT_FALSE(!error);
 
   EXPECT_THROW(ctx.get(), std::system_error);
-
-#endif
 }
-
-
-#if !__sal_os_windows
-
-TEST_F(net_io_context, get_invalid_time)
-{
-#if !__sal_os_linux
-
-  std::error_code error;
-  context.get((std::chrono::hours::max)(), error);
-  EXPECT_FALSE(!error);
-
-  EXPECT_THROW(
-    context.get((std::chrono::hours::max)()),
-    std::system_error
-  );
-
-#endif
-}
-
-#endif // !__sal_os_windows
 
 
 TEST_F(net_io_context, get_empty)
@@ -132,13 +103,9 @@ TEST_F(net_io_context, get_empty)
 
 TEST_F(net_io_context, get_not_empty)
 {
-#if !__sal_os_linux
-
   auto socket = make_socket();
   socket.async_send(make_buf(case_name));
   EXPECT_NE(nullptr, context.get());
-
-#endif
 }
 
 
@@ -151,8 +118,6 @@ TEST_F(net_io_context, reclaim_empty)
 
 TEST_F(net_io_context, reclaim_not_empty)
 {
-#if !__sal_os_linux
-
   auto socket = make_socket();
   socket.async_send(make_buf("first"));
   socket.async_send(make_buf("second"));
@@ -162,8 +127,6 @@ TEST_F(net_io_context, reclaim_not_empty)
   EXPECT_EQ(2U, context.reclaim());
 
   EXPECT_EQ(nullptr, context.try_get());
-
-#endif
 }
 
 

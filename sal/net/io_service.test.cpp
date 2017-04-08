@@ -60,8 +60,6 @@ TEST_F(net_io_service, associate_datagram_socket)
 
 TEST_F(net_io_service, associate_datagram_socket_multiple_times)
 {
-#if !__sal_os_linux
-
   datagram_socket_t socket(sal::net::ip::udp_t::v4());
 
   std::error_code error;
@@ -73,15 +71,11 @@ TEST_F(net_io_service, associate_datagram_socket_multiple_times)
   EXPECT_EQ(sal::net::socket_errc_t::already_associated, error);
 
   EXPECT_THROW(service.associate(socket), std::system_error);
-
-#endif
 }
 
 
 TEST_F(net_io_service, associate_datagram_socket_invalid)
 {
-#if !__sal_os_linux
-
   datagram_socket_t socket;
 
   std::error_code error;
@@ -89,8 +83,6 @@ TEST_F(net_io_service, associate_datagram_socket_invalid)
   EXPECT_FALSE(!error);
 
   EXPECT_THROW(service.associate(socket), std::system_error);
-
-#endif
 }
 
 
@@ -105,8 +97,6 @@ TEST_F(net_io_service, associate_stream_socket)
 
 TEST_F(net_io_service, associate_stream_socket_multiple_times)
 {
-#if !__sal_os_linux
-
   stream_socket_t socket(sal::net::ip::tcp_t::v4());
 
   std::error_code error;
@@ -118,15 +108,11 @@ TEST_F(net_io_service, associate_stream_socket_multiple_times)
   EXPECT_EQ(sal::net::socket_errc_t::already_associated, error);
 
   EXPECT_THROW(service.associate(socket), std::system_error);
-
-#endif
 }
 
 
 TEST_F(net_io_service, associate_stream_socket_invalid)
 {
-#if !__sal_os_linux
-
   stream_socket_t socket;
 
   std::error_code error;
@@ -134,8 +120,6 @@ TEST_F(net_io_service, associate_stream_socket_invalid)
   EXPECT_FALSE(!error);
 
   EXPECT_THROW(service.associate(socket), std::system_error);
-
-#endif
 }
 
 
@@ -150,8 +134,6 @@ TEST_F(net_io_service, associate_acceptor_socket)
 
 TEST_F(net_io_service, associate_acceptor_socket_multiple_times)
 {
-#if !__sal_os_linux
-
   acceptor_t acceptor(sal::net::ip::tcp_t::v4());
 
   std::error_code error;
@@ -163,15 +145,11 @@ TEST_F(net_io_service, associate_acceptor_socket_multiple_times)
   EXPECT_EQ(sal::net::socket_errc_t::already_associated, error);
 
   EXPECT_THROW(service.associate(acceptor), std::system_error);
-
-#endif
 }
 
 
 TEST_F(net_io_service, associate_acceptor_socket_invalid)
 {
-#if !__sal_os_linux
-
   acceptor_t socket;
 
   std::error_code error;
@@ -179,8 +157,6 @@ TEST_F(net_io_service, associate_acceptor_socket_invalid)
   EXPECT_FALSE(!error);
 
   EXPECT_THROW(service.associate(socket), std::system_error);
-
-#endif
 }
 
 
