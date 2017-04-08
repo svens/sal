@@ -4,7 +4,7 @@
 
 #if __sal_os_windows
   #include <mswsock.h>
-#elif __sal_os_linux || __sal_os_darwin
+#elif __sal_os_darwin || __sal_os_linux
   #include <fcntl.h>
   #include <poll.h>
   #include <signal.h>
@@ -190,12 +190,10 @@ void socket_t::close (std::error_code &error) noexcept
 
 #else
 
-  #if __sal_os_darwin
   if (async)
   {
     async.reset();
   }
-  #endif
 
   for (;;)
   {

@@ -332,9 +332,6 @@ public:
   }
 
 
-#if !__sal_os_linux
-
-
   //
   // Asynchronous API
   //
@@ -394,6 +391,9 @@ public:
       throw_on_error("basic_datagram_socket::async_receive_from")
     );
   }
+
+
+#if !__sal_os_linux
 
 
   struct async_receive_t
