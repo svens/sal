@@ -700,17 +700,22 @@ bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
   else if (request_id == async_connect_t::type_id())
   {
 #if __sal_os_darwin
-
     if (flags & EV_EOF)
     {
       error = std::make_error_code(std::errc::connection_refused);
     }
-
 #elif __sal_os_linux
-
-    // TODO
-    (void)flags;
-
+    if (flags & EPOLLERR)
+    {
+      int data;
+      socklen_t size = sizeof(data);
+      ::getsockopt(socket.native_handle,
+        SOL_SOCKET,
+        SO_ERROR,
+        &data, &size
+      );
+      error.assign(data, std::generic_category());
+    }
 #endif
 
     return true;
@@ -730,7 +735,6 @@ io_buf_t *io_context_t::retry_receive (socket_t &socket) noexcept
     }
     socket.async->push_receive(io_buf);
   }
-
   return nullptr;
 }
 
@@ -742,17 +746,14 @@ io_buf_t *io_context_t::retry_send (socket_t &socket) noexcept
 #if __sal_os_darwin
     uint16_t flags = event->flags;
 #elif __sal_os_linux
-    uint16_t flags = 0;
+    uint16_t flags = event->events;
 #endif
-
     if (io_buf->retry_send(socket, flags))
     {
       return io_buf;
     }
-
     socket.async->push_send(io_buf);
   }
-
   return nullptr;
 }
 
@@ -780,17 +781,17 @@ io_buf_t *io_context_t::try_get () noexcept
 #elif __sal_os_linux
 
     auto &socket = *static_cast<socket_t *>(event->data.ptr);
-    if (event->events & EPOLLIN)
+    if (event->events & EPOLLERR)
+    {
+      io_buf = retry_send(socket);
+    }
+    else if (event->events & EPOLLIN)
     {
       io_buf = retry_receive(socket);
     }
     else if (event->events & EPOLLOUT)
     {
       io_buf = retry_send(socket);
-    }
-    else
-    {
-      printf("missing event handler: %d\n", event->events);
     }
 
 #endif
@@ -964,10 +965,6 @@ void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
 
   if (error != std::errc::operation_would_block)
   {
-    if (error == std::errc::broken_pipe)
-    {
-      error = make_error_code(socket_errc_t::orderly_shutdown);
-    }
     context->ready(this);
   }
   else

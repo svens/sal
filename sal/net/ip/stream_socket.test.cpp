@@ -40,8 +40,6 @@ struct stream_socket
     ;
   }
 
-#if !__sal_os_linux
-
   sal::net::io_service_t service;
   sal::net::io_context_t context = service.make_context();
 
@@ -57,8 +55,6 @@ struct stream_socket
   {
     return std::string(static_cast<const char *>(io_buf->data()), size);
   }
-
-#endif // !__sal_os_linux
 };
 
 constexpr sal::net::ip::port_t stream_socket::port;
@@ -421,9 +417,6 @@ TEST_P(stream_socket, no_delay)
   socket.get_option(socket_t::protocol_t::no_delay(&value));
   EXPECT_NE(original, value);
 }
-
-
-#if !__sal_os_linux
 
 
 TEST_P(stream_socket, async_connect)
@@ -876,13 +869,7 @@ TEST_P(stream_socket, async_receive_before_shutdown)
   auto io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
 
-#if __sal_os_windows
-
-  auto result = a.async_receive_result(io_buf);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name.size(), result->transferred());
-
-#else
+#if __sal_os_darwin
 
   std::error_code error;
   auto result = a.async_receive_result(io_buf, error);
@@ -893,6 +880,12 @@ TEST_P(stream_socket, async_receive_before_shutdown)
     a.async_receive_result(io_buf),
     std::system_error
   );
+
+#else
+
+  auto result = a.async_receive_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name.size(), result->transferred());
 
 #endif
 }
@@ -965,7 +958,7 @@ TEST_P(stream_socket, async_send_not_connected)
   std::error_code error;
   auto result = a.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_connected, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 }
 
 
@@ -1013,7 +1006,7 @@ TEST_P(stream_socket, async_send_after_shutdown)
   std::error_code error;
   auto result = a.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 
   EXPECT_THROW(
     a.async_send_result(io_buf),
@@ -1085,9 +1078,6 @@ TEST_P(stream_socket, async_send_disconnected_immediate_completion)
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 }
-
-
-#endif // __sal_os_windows
 
 
 } // namespace

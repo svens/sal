@@ -5,9 +5,6 @@
 #include <thread>
 
 
-#include <sal/thread.hpp>
-
-
 namespace {
 
 
@@ -1509,7 +1506,7 @@ TEST_P(datagram_socket, async_send_after_shutdown)
   std::error_code error;
   auto result = socket.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 
   EXPECT_THROW(
     socket.async_send_result(io_buf),

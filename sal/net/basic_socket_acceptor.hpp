@@ -493,8 +493,6 @@ public:
   }
 
 
-#if !__sal_os_linux
-
   //
   // Asynchronous API
   //
@@ -549,8 +547,6 @@ public:
       throw_on_error("basic_socket_acceptor::async_accept")
     );
   }
-
-#endif // !__sal_os_linux
 
 
 private:
