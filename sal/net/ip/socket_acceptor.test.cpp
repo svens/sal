@@ -73,7 +73,7 @@ TEST_P(socket_acceptor, ctor_move)
 }
 
 
-TEST_P(socket_acceptor, ctor_move_no_handle)
+TEST_P(socket_acceptor, ctor_move_invalid_handle)
 {
   acceptor_t a;
   EXPECT_FALSE(a.is_open());
@@ -115,6 +115,21 @@ TEST_P(socket_acceptor, ctor_endpoint)
   bool reuse_address;
   acceptor.get_option(sal::net::reuse_address(&reuse_address));
   EXPECT_TRUE(reuse_address);
+}
+
+
+TEST_P(socket_acceptor, ctor_address_already_in_use)
+{
+  acceptor_t::endpoint_t endpoint(GetParam(), port);
+  acceptor_t a(endpoint);
+  EXPECT_THROW(acceptor_t b(endpoint, false), std::system_error);
+}
+
+
+TEST_P(socket_acceptor, ctor_invalid_handle)
+{
+  auto h = sal::net::socket_base_t::invalid_socket;
+  EXPECT_THROW(acceptor_t(GetParam(), h), std::system_error);
 }
 
 
@@ -163,7 +178,7 @@ TEST_P(socket_acceptor, assign_not_closed)
 }
 
 
-TEST_P(socket_acceptor, assign_no_handle)
+TEST_P(socket_acceptor, assign_invalid_handle)
 {
   acceptor_t acceptor;
   auto h = sal::net::socket_base_t::invalid_socket;
@@ -218,7 +233,7 @@ TEST_P(socket_acceptor, close)
 }
 
 
-TEST_P(socket_acceptor, close_no_handle)
+TEST_P(socket_acceptor, close_invalid_handle)
 {
   acceptor_t acceptor;
 
@@ -385,7 +400,7 @@ TEST_P(socket_acceptor, accept)
 }
 
 
-TEST_P(socket_acceptor, accept_invalid)
+TEST_P(socket_acceptor, accept_with_invalid_socket)
 {
   acceptor_t acceptor;
 
@@ -397,6 +412,23 @@ TEST_P(socket_acceptor, accept_invalid)
 
   {
     EXPECT_THROW(acceptor.accept(), std::system_error);
+  }
+}
+
+
+TEST_P(socket_acceptor, accept_with_invalid_socket_and_endpoint)
+{
+  acceptor_t acceptor;
+  acceptor_t::endpoint_t endpoint;
+
+  {
+    std::error_code error;
+    acceptor.accept(endpoint, error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(acceptor.accept(endpoint), std::system_error);
   }
 }
 
@@ -436,6 +468,30 @@ TEST_P(socket_acceptor, enable_connection_aborted)
   acceptor.accept(endpoint, error);
   EXPECT_EQ(std::errc::connection_aborted, error);
   */
+}
+
+
+TEST_P(socket_acceptor, local_endpoint)
+{
+  auto endpoint = loopback(GetParam());
+  acceptor_t acceptor(endpoint);
+  EXPECT_EQ(endpoint, acceptor.local_endpoint());
+}
+
+
+TEST_P(socket_acceptor, local_endpoint_invalid)
+{
+  acceptor_t acceptor;
+
+  {
+    std::error_code error;
+    acceptor.local_endpoint(error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(acceptor.local_endpoint(), std::system_error);
+  }
 }
 
 

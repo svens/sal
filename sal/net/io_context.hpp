@@ -92,12 +92,15 @@ public:
   }
 
 
-  void reclaim () noexcept
+  size_t reclaim () noexcept
   {
+    auto count = 0;
     while (auto *io_buf = __bits::io_context_t::try_get())
     {
       free_io_buf(static_cast<io_buf_t *>(io_buf));
+      ++count;
     }
+    return count;
   }
 
 

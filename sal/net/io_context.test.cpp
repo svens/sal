@@ -1,9 +1,13 @@
 #include <sal/net/io_context.hpp>
 #include <sal/net/io_service.hpp>
+#include <sal/net/ip/udp.hpp>
 #include <sal/common.test.hpp>
 
 
 namespace {
+
+
+using namespace std::chrono_literals;
 
 
 struct net_io_context
@@ -15,6 +19,32 @@ struct net_io_context
   auto make_buf ()
   {
     return context.make_buf();
+  }
+
+  auto make_buf (const std::string &content)
+  {
+    auto io_buf = make_buf();
+    io_buf->resize(content.size());
+    std::memcpy(io_buf->data(), content.data(), content.size());
+    return io_buf;
+  }
+
+  using protocol_t = sal::net::ip::udp_t;
+  using socket_t = protocol_t::socket_t;
+
+  auto endpoint () const noexcept
+  {
+    return socket_t::endpoint_t(
+      sal::net::ip::address_v4_t::loopback(),
+      8188
+    );
+  }
+
+  auto make_socket ()
+  {
+    socket_t socket(endpoint());
+    service.associate(socket);
+    return socket;
   }
 };
 
@@ -39,8 +69,15 @@ TEST_F(net_io_context, try_get_empty)
 
 TEST_F(net_io_context, try_get_not_empty)
 {
-  // sal::net::ip::udp_t::socket_t socket(sal::net::ip::udp_t::v4());
-  // TODO
+  auto socket = make_socket();
+
+  // because try_get does not wait actually, we need 2 packets:
+  // first get() does polling and populates try_get list
+  socket.async_send(make_buf("first"));
+  socket.async_send(make_buf("second"));
+
+  EXPECT_NE(nullptr, context.get());
+  EXPECT_NE(nullptr, context.try_get());
 }
 
 
@@ -77,27 +114,35 @@ TEST_F(net_io_context, get_invalid_time)
 
 TEST_F(net_io_context, get_empty)
 {
-  // TODO
+  EXPECT_EQ(nullptr, context.get(1ms));
 }
 
 
 TEST_F(net_io_context, get_not_empty)
 {
-  // TODO
+  auto socket = make_socket();
+  socket.async_send(make_buf(case_name));
+  EXPECT_NE(nullptr, context.get());
 }
 
 
 TEST_F(net_io_context, reclaim_empty)
 {
-  context.reclaim();
+  EXPECT_EQ(0U, context.reclaim());
   EXPECT_EQ(nullptr, context.try_get());
 }
 
 
 TEST_F(net_io_context, reclaim_not_empty)
 {
-  // TODO
-  context.reclaim();
+  auto socket = make_socket();
+  socket.async_send(make_buf("first"));
+  socket.async_send(make_buf("second"));
+  socket.async_send(make_buf("third"));
+
+  EXPECT_NE(nullptr, context.get());
+  EXPECT_EQ(2U, context.reclaim());
+
   EXPECT_EQ(nullptr, context.try_get());
 }
 
