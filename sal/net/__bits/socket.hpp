@@ -5,6 +5,7 @@
 
 #if __sal_os_linux || __sal_os_darwin
   #include <sys/socket.h>
+  #include <memory>
 #elif __sal_os_windows
   #include <winsock2.h>
   #include <ws2tcpip.h>
@@ -49,6 +50,11 @@ using sa_family_t = ::sa_family_t;
 // send/recv flags
 using message_flags_t = int;
 
+// asynchronous operations info
+struct async_worker_t;
+using async_worker_ptr = std::unique_ptr<async_worker_t, void(*)(async_worker_t *)>;
+void delete_async_worker (async_worker_t *async) noexcept;
+
 #endif
 
 
@@ -58,6 +64,12 @@ enum class wait_t { read, write };
 struct socket_t
 {
   native_socket_t native_handle = invalid_socket;
+
+#if __sal_os_windows
+  bool associated = false;
+#elif __sal_os_darwin
+  async_worker_ptr async{nullptr, &delete_async_worker};
+#endif
 
   socket_t () = default;
 

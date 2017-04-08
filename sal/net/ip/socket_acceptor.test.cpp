@@ -23,12 +23,12 @@ struct socket_acceptor
     ;
   }
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
-  static sal::net::io_service_t service;
-  static sal::net::io_context_t context;
+  sal::net::io_service_t service;
+  sal::net::io_context_t context = service.make_context();
 
-  static sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
+  sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
   {
     auto io_buf = context.make_buf();
     io_buf->resize(content.size());
@@ -41,15 +41,10 @@ struct socket_acceptor
     return std::string(static_cast<const char *>(io_buf->data()), size);
   }
 
-#endif // __sal_os_windows
+#endif // !__sal_os_linux
 };
 
 constexpr sal::net::ip::port_t socket_acceptor::port;
-
-#if __sal_os_windows
-  sal::net::io_service_t socket_acceptor::service;
-  sal::net::io_context_t socket_acceptor::context = service.make_context();
-#endif // __sal_os_windows
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, socket_acceptor,
@@ -78,7 +73,7 @@ TEST_P(socket_acceptor, ctor_move)
 }
 
 
-TEST_P(socket_acceptor, ctor_move_no_handle)
+TEST_P(socket_acceptor, ctor_move_invalid_handle)
 {
   acceptor_t a;
   EXPECT_FALSE(a.is_open());
@@ -120,6 +115,21 @@ TEST_P(socket_acceptor, ctor_endpoint)
   bool reuse_address;
   acceptor.get_option(sal::net::reuse_address(&reuse_address));
   EXPECT_TRUE(reuse_address);
+}
+
+
+TEST_P(socket_acceptor, ctor_address_already_in_use)
+{
+  acceptor_t::endpoint_t endpoint(GetParam(), port);
+  acceptor_t a(endpoint);
+  EXPECT_THROW(acceptor_t b(endpoint, false), std::system_error);
+}
+
+
+TEST_P(socket_acceptor, ctor_invalid_handle)
+{
+  auto h = sal::net::socket_base_t::invalid_socket;
+  EXPECT_THROW(acceptor_t(GetParam(), h), std::system_error);
 }
 
 
@@ -168,7 +178,7 @@ TEST_P(socket_acceptor, assign_not_closed)
 }
 
 
-TEST_P(socket_acceptor, assign_no_handle)
+TEST_P(socket_acceptor, assign_invalid_handle)
 {
   acceptor_t acceptor;
   auto h = sal::net::socket_base_t::invalid_socket;
@@ -223,7 +233,7 @@ TEST_P(socket_acceptor, close)
 }
 
 
-TEST_P(socket_acceptor, close_no_handle)
+TEST_P(socket_acceptor, close_invalid_handle)
 {
   acceptor_t acceptor;
 
@@ -390,7 +400,7 @@ TEST_P(socket_acceptor, accept)
 }
 
 
-TEST_P(socket_acceptor, accept_invalid)
+TEST_P(socket_acceptor, accept_with_invalid_socket)
 {
   acceptor_t acceptor;
 
@@ -402,6 +412,23 @@ TEST_P(socket_acceptor, accept_invalid)
 
   {
     EXPECT_THROW(acceptor.accept(), std::system_error);
+  }
+}
+
+
+TEST_P(socket_acceptor, accept_with_invalid_socket_and_endpoint)
+{
+  acceptor_t acceptor;
+  acceptor_t::endpoint_t endpoint;
+
+  {
+    std::error_code error;
+    acceptor.accept(endpoint, error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(acceptor.accept(endpoint), std::system_error);
   }
 }
 
@@ -444,12 +471,37 @@ TEST_P(socket_acceptor, enable_connection_aborted)
 }
 
 
-#if __sal_os_windows
+TEST_P(socket_acceptor, local_endpoint)
+{
+  auto endpoint = loopback(GetParam());
+  acceptor_t acceptor(endpoint);
+  EXPECT_EQ(endpoint, acceptor.local_endpoint());
+}
+
+
+TEST_P(socket_acceptor, local_endpoint_invalid)
+{
+  acceptor_t acceptor;
+
+  {
+    std::error_code error;
+    acceptor.local_endpoint(error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(acceptor.local_endpoint(), std::system_error);
+  }
+}
+
+
+#if !__sal_os_linux
 
 
 TEST_P(socket_acceptor, async_accept)
 {
   acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
   service.associate(acceptor);
 
   acceptor.async_accept(context.make_buf());
@@ -477,6 +529,7 @@ TEST_P(socket_acceptor, async_accept)
 TEST_P(socket_acceptor, async_accept_immediate_completion)
 {
   acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
   service.associate(acceptor);
 
   socket_t a;
@@ -504,6 +557,7 @@ TEST_P(socket_acceptor, async_accept_immediate_completion)
 TEST_P(socket_acceptor, async_accept_result_twice)
 {
   acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
   service.associate(acceptor);
 
   socket_t a;
@@ -521,22 +575,19 @@ TEST_P(socket_acceptor, async_accept_result_twice)
 
   EXPECT_EQ(result1, result2);
 
-  /*
-  EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
+  EXPECT_EQ(a.local_endpoint(), result1->remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), result1->local_endpoint());
 
-  auto b = result->accepted();
+  auto b = result2->accepted();
   EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
   EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
-
-  EXPECT_EQ(nullptr, a.async_connect_result(io_buf));
-  */
 }
 
 
 TEST_P(socket_acceptor, async_accept_invalid)
 {
   acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
   service.associate(acceptor);
   acceptor.close();
 
@@ -549,7 +600,7 @@ TEST_P(socket_acceptor, async_accept_invalid)
     std::error_code error;
     auto result = acceptor.async_accept_result(io_buf, error);
     ASSERT_NE(nullptr, result);
-    EXPECT_EQ(std::errc::not_a_socket, error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
@@ -564,6 +615,7 @@ TEST_P(socket_acceptor, async_accept_invalid)
 TEST_P(socket_acceptor, async_accept_close_before_accept)
 {
   acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
   service.associate(acceptor);
 
   socket_t a;
@@ -590,7 +642,7 @@ TEST_P(socket_acceptor, async_accept_close_before_accept)
 }
 
 
-#endif // __sal_os_windows
+#endif // !__sal_os_linux
 
 
 } // namespace

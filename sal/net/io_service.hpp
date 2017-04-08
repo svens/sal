@@ -6,14 +6,13 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/io_service.hpp>
+#include <sal/net/__bits/async_socket.hpp>
 #include <sal/net/basic_socket.hpp>
 #include <sal/net/basic_socket_acceptor.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/io_context.hpp>
 
 
-#if __sal_os_windows
 __sal_begin
 
 
@@ -29,17 +28,17 @@ public:
   {}
 
 
-  io_context_t make_context (size_t completion_count = 16)
+  io_context_t make_context (size_t max_events_per_wait = 16)
   {
-    if (completion_count < 1)
+    if (max_events_per_wait < 1)
     {
-      completion_count = 1;
+      max_events_per_wait = 1;
     }
-    else if (completion_count > impl_.max_completion_count)
+    else if (max_events_per_wait > impl_.max_events_per_wait)
     {
-      completion_count = impl_.max_completion_count;
+      max_events_per_wait = impl_.max_events_per_wait;
     }
-    return io_context_t(impl_, completion_count);
+    return io_context_t(impl_, max_events_per_wait);
   }
 
 
@@ -83,4 +82,3 @@ private:
 
 
 __sal_end
-#endif // __sal_os_windows

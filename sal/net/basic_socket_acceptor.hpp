@@ -493,7 +493,7 @@ public:
   }
 
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
   //
   // Asynchronous API
@@ -550,7 +550,7 @@ public:
     );
   }
 
-#endif
+#endif // !__sal_os_linux
 
 
 private:

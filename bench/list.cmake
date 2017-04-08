@@ -11,11 +11,6 @@ list(APPEND sal_bench_modules
   bench/memory_writer.cpp
   bench/queue.cpp
   bench/spinlock.cpp
+  bench/udp_echo_client.cpp
+  bench/udp_echo_server.cpp
 )
-
-if(WIN32)
-  list(APPEND sal_bench_modules
-    bench/udp_echo_client.cpp
-    bench/udp_echo_server.cpp
-  )
-endif()

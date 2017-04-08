@@ -23,6 +23,7 @@ enum class socket_errc_t
 {
   already_open = 1,
   orderly_shutdown,
+  already_associated,
   not_found,
 };
 

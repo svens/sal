@@ -197,7 +197,7 @@ public:
   }
 
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
 
   //
@@ -212,7 +212,9 @@ public:
 
   void async_connect (io_buf_ptr &&io_buf, const endpoint_t &endpoint) noexcept
   {
-    io_buf->start<async_connect_t>(impl_, endpoint.data(), endpoint.size());
+    io_buf->start<async_connect_t>(base_t::impl_,
+      endpoint.data(), endpoint.size()
+    );
     io_buf.release();
   }
 
@@ -250,7 +252,7 @@ public:
   void async_receive (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_receive_t>(impl_, flags);
+    io_buf->start<async_receive_t>(base_t::impl_, flags);
     io_buf.release();
   }
 
@@ -297,7 +299,7 @@ public:
   void async_send (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_send_t>(impl_, flags);
+    io_buf->start<async_send_t>(base_t::impl_, flags);
     io_buf.release();
   }
 
@@ -331,7 +333,7 @@ public:
   }
 
 
-#endif // __sal_os_windows
+#endif // !__sal_os_linux
 };
 
 

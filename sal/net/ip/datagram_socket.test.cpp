@@ -2,6 +2,10 @@
 #include <sal/net/io_context.hpp>
 #include <sal/net/io_service.hpp>
 #include <sal/common.test.hpp>
+#include <thread>
+
+
+#include <sal/thread.hpp>
 
 
 namespace {
@@ -14,7 +18,7 @@ struct datagram_socket
   : public sal_test::with_value<sal::net::ip::udp_t>
 {
   using socket_t = sal::net::ip::udp_t::socket_t;
-  static constexpr sal::net::ip::port_t port = 8192;
+  static constexpr sal::net::ip::port_t port = 8195;
 
   socket_t::endpoint_t loopback (const sal::net::ip::udp_t &protocol) const
   {
@@ -24,12 +28,12 @@ struct datagram_socket
     ;
   }
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
-  static sal::net::io_service_t service;
-  static sal::net::io_context_t context;
+  sal::net::io_service_t service;
+  sal::net::io_context_t context = service.make_context();
 
-  static sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
+  sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
   {
     auto io_buf = context.make_buf();
     io_buf->resize(content.size());
@@ -42,14 +46,10 @@ struct datagram_socket
     return std::string(static_cast<const char *>(io_buf->data()), size);
   }
 
-#endif // __sal_os_windows
+#endif // !__sal_os_linux
 };
 
 constexpr sal::net::ip::port_t datagram_socket::port;
-#if __sal_os_windows
-  sal::net::io_service_t datagram_socket::service;
-  sal::net::io_context_t datagram_socket::context = service.make_context();
-#endif // __sal_os_windows
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, datagram_socket,
@@ -366,7 +366,7 @@ TEST_P(datagram_socket, send_not_connected)
   {
     std::error_code error;
     socket.send(sal::make_buf(case_name), error);
-    EXPECT_EQ(std::errc::destination_address_required, error);
+    EXPECT_EQ(std::errc::not_connected, error);
   }
 
   {
@@ -471,7 +471,7 @@ TEST_P(datagram_socket, send_do_not_route)
 }
 
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
 
 TEST_P(datagram_socket, async_receive_from)
@@ -522,48 +522,66 @@ TEST_P(datagram_socket, async_receive_from_immediate_completion)
 }
 
 
-TEST_P(datagram_socket, async_receive_from_before_shutdown)
+TEST_P(datagram_socket, async_receive_from_partially_immediate_completion)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
   service.associate(socket);
 
+  // start three writes and one read
   socket.async_receive_from(context.make_buf());
-  socket.shutdown(socket.shutdown_receive);
-  socket.send_to(sal::make_buf(case_name), endpoint);
+  socket.send_to(sal::make_buf(case_name + "_one"), endpoint);
+  socket.send_to(sal::make_buf(case_name + "_two"), endpoint);
+  socket.send_to(sal::make_buf(case_name + "_three"), endpoint);
 
+  // first read must succeed
+  // (and in case of Reactor, fetch poller event)
   auto io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
-
   auto result = socket.async_receive_from_result(io_buf);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(endpoint, result->endpoint());
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
-}
+  EXPECT_EQ(case_name + "_one", to_string(io_buf, result->transferred()));
 
+  // launch thread that will "steal" packet 'two'
+  auto t = std::thread([&]
+  {
+    auto context1 = service.make_context();
+    socket.async_receive_from(context1.make_buf());
+    auto io_buf = context1.get();
+    ASSERT_NE(nullptr, io_buf);
+    auto result = socket.async_receive_from_result(io_buf);
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ(case_name + "_two", to_string(io_buf, result->transferred()));
+    EXPECT_EQ(&context1, &io_buf->this_context());
+  });
+  t.join();
 
-TEST_P(datagram_socket, async_receive_from_after_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  socket.shutdown(socket.shutdown_receive);
+  // start remaining of reads (one will fail because of "stolen" packet)
   socket.async_receive_from(context.make_buf());
-  socket.send_to(sal::make_buf(case_name), endpoint);
+  socket.async_receive_from(context.make_buf());
 
-  auto io_buf = context.get();
+  // second this thread's reads third and final packet
+  io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+  result = socket.async_receive_from_result(io_buf);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(case_name + "_three", to_string(io_buf, result->transferred()));
+
+  // there is pending read but no data anymore
+  io_buf = context.get(1ms);
+  EXPECT_EQ(nullptr, io_buf);
+
+  // close socket
+  socket.close();
+  io_buf = context.get(1ms);
   ASSERT_NE(nullptr, io_buf);
 
+  // closing will cancel read
   std::error_code error;
-  auto result = socket.async_receive_from_result(io_buf, error);
+  result = socket.async_receive_from_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
-
-  EXPECT_THROW(
-    socket.async_receive_from_result(io_buf),
-    std::system_error
-  );
+  EXPECT_EQ(0U, result->transferred());
+  EXPECT_EQ(std::errc::operation_canceled, error);
 }
 
 
@@ -583,7 +601,7 @@ TEST_P(datagram_socket, async_receive_from_invalid)
   auto result = socket.async_receive_from_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(
     socket.async_receive_from_result(io_buf),
@@ -606,8 +624,8 @@ TEST_P(datagram_socket, async_receive_from_invalid_immediate_completion)
   std::error_code error;
   auto result = socket.async_receive_from_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_a_socket, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(
     socket.async_receive_from_result(io_buf),
@@ -643,6 +661,7 @@ TEST_P(datagram_socket, async_receive_from_peek)
   service.associate(socket);
 
   socket.async_receive_from(context.make_buf(), socket.peek);
+
   socket.send_to(sal::make_buf(case_name), endpoint);
 
   // regardless of peek, completion should be removed from queue
@@ -658,6 +677,7 @@ TEST_P(datagram_socket, async_receive_from_peek_immediate_completion)
   service.associate(socket);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
+
   socket.async_receive_from(context.make_buf(), socket.peek);
 
   // regardless of peek, completion should be removed from queue
@@ -686,11 +706,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send)
     auto result = socket_t::async_receive_from_result(io_buf, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(case_name.size() / 2, result->transferred());
-    EXPECT_EQ(
-      std::string(case_name, 0, case_name.size() / 2),
-      to_string(io_buf, result->transferred())
-    );
+    EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
@@ -726,11 +742,7 @@ TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
     auto result = socket_t::async_receive_from_result(io_buf, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(case_name.size() / 2, result->transferred());
-    EXPECT_EQ(
-      std::string(case_name, 0, case_name.size() / 2),
-      to_string(io_buf, result->transferred())
-    );
+    EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
@@ -748,6 +760,9 @@ TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
 
 TEST_P(datagram_socket, async_receive_from_empty_buf)
 {
+  // couldn't unify IOCP/kqueue behaviour without additional syscall
+  // but this is weird case anyway, prefer performance over unification
+
   {
     socket_t::endpoint_t endpoint(loopback(GetParam()));
     socket_t socket(endpoint);
@@ -765,20 +780,45 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     std::error_code error;
     auto result = socket_t::async_receive_from_result(io_buf, error);
     ASSERT_NE(nullptr, result);
+
+#if __sal_os_windows
+
+    // 1st receive is empty (because buf is empty)
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
-    // even with empty 1st read, 2nd should have nothing
+    // buf 2nd receive still have nothing
     io_buf->reset();
     socket.async_receive_from(std::move(io_buf));
     EXPECT_EQ(nullptr, context.get(0s));
+
+#else
+
+    // 1st succeed immediately with 0B transferred
+    EXPECT_TRUE(!error);
+    EXPECT_EQ(0U, result->transferred());
+
+    io_buf->reset();
+    socket.async_receive_from(std::move(io_buf));
+
+    // 2nd succeeds with originally sent packet
+    io_buf = context.get();
+    ASSERT_NE(nullptr, io_buf);
+    result = socket_t::async_receive_from_result(io_buf, error);
+    ASSERT_NE(nullptr, result);
+    EXPECT_TRUE(!error);
+    EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+
+#endif
   }
 
+#if __sal_os_windows
   // error from closed socket still in context
   EXPECT_THROW(
     socket_t::async_receive_from_result(context.get()),
     std::system_error
   );
+#endif
 }
 
 
@@ -790,6 +830,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf_immediate_completion)
     service.associate(socket);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
+    std::this_thread::sleep_for(1ms);
 
     auto io_buf = context.make_buf();
     io_buf->resize(0);
@@ -833,6 +874,8 @@ TEST_P(datagram_socket, async_receive)
   auto result = socket.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+
+  EXPECT_EQ(nullptr, socket.async_send_result(io_buf));
 }
 
 
@@ -934,49 +977,6 @@ TEST_P(datagram_socket, async_receive_connected_elsewhere_immediate_completion)
 }
 
 
-TEST_P(datagram_socket, async_receive_before_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  socket.async_receive(context.make_buf());
-  socket.shutdown(socket.shutdown_receive);
-  socket.send_to(sal::make_buf(case_name), endpoint);
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  auto result = socket.async_receive_result(io_buf);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
-}
-
-
-TEST_P(datagram_socket, async_receive_after_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  socket.shutdown(socket.shutdown_receive);
-  socket.async_receive(context.make_buf());
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  std::error_code error;
-  auto result = socket.async_receive_result(io_buf, error);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
-
-  EXPECT_THROW(
-    socket.async_receive_result(io_buf),
-    std::system_error
-  );
-}
-
-
 TEST_P(datagram_socket, async_receive_invalid)
 {
   socket_t socket(loopback(GetParam()));
@@ -992,7 +992,7 @@ TEST_P(datagram_socket, async_receive_invalid)
   auto result = socket.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(socket.async_receive_result(io_buf), std::system_error);
 }
@@ -1012,8 +1012,8 @@ TEST_P(datagram_socket, async_receive_invalid_immediate_completion)
   std::error_code error;
   auto result = socket.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_a_socket, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(socket.async_receive_result(io_buf), std::system_error);
 }
@@ -1089,11 +1089,7 @@ TEST_P(datagram_socket, async_receive_less_than_send)
     auto result = socket_t::async_receive_result(io_buf, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(case_name.size() / 2, result->transferred());
-    EXPECT_EQ(
-      std::string(case_name, 0, case_name.size() / 2),
-      to_string(io_buf, result->transferred())
-    );
+    EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
@@ -1129,11 +1125,7 @@ TEST_P(datagram_socket, async_receive_less_than_send_immediate_completion)
     auto result = socket_t::async_receive_result(io_buf, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(case_name.size() / 2, result->transferred());
-    EXPECT_EQ(
-      std::string(case_name, 0, case_name.size() / 2),
-      to_string(io_buf, result->transferred())
-    );
+    EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
     io_buf->reset();
@@ -1151,6 +1143,9 @@ TEST_P(datagram_socket, async_receive_less_than_send_immediate_completion)
 
 TEST_P(datagram_socket, async_receive_empty_buf)
 {
+  // couldn't unify IOCP/kqueue behaviour without additional syscall
+  // but this is weird case anyway, prefer performance over unification
+
   {
     socket_t::endpoint_t endpoint(loopback(GetParam()));
     socket_t socket(endpoint);
@@ -1168,6 +1163,9 @@ TEST_P(datagram_socket, async_receive_empty_buf)
     std::error_code error;
     auto result = socket_t::async_receive_result(io_buf, error);
     ASSERT_NE(nullptr, result);
+
+#if __sal_os_windows
+
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
@@ -1175,13 +1173,32 @@ TEST_P(datagram_socket, async_receive_empty_buf)
     io_buf->reset();
     socket.async_receive(std::move(io_buf));
     EXPECT_EQ(nullptr, context.get(0s));
+
+#else
+
+    EXPECT_TRUE(!error);
+    EXPECT_EQ(0U, result->transferred());
+
+    io_buf->reset();
+    socket.async_receive(std::move(io_buf));
+
+    io_buf = context.get();
+    ASSERT_NE(nullptr, io_buf);
+    result = socket_t::async_receive_result(io_buf, error);
+    ASSERT_NE(nullptr, result);
+    EXPECT_TRUE(!error);
+    EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+
+#endif
   }
 
+#if __sal_os_windows
   // error from closed socket still in context
   EXPECT_THROW(
     socket_t::async_receive_result(context.get()),
     std::system_error
   );
+#endif
 }
 
 
@@ -1193,6 +1210,7 @@ TEST_P(datagram_socket, async_receive_empty_buf_immediate_completion)
     service.associate(socket);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
+    std::this_thread::sleep_for(1ms);
 
     auto io_buf = context.make_buf();
     io_buf->resize(0);
@@ -1251,56 +1269,6 @@ TEST_P(datagram_socket, async_send_to)
 }
 
 
-TEST_P(datagram_socket, async_send_to_before_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  // send
-  socket.async_send_to(make_buf(case_name), endpoint);
-  socket.shutdown(socket.shutdown_send);
-
-  // receive
-  char buf[1024];
-  std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), socket.receive_from(sal::make_buf(buf), endpoint));
-  EXPECT_EQ(buf, case_name);
-  EXPECT_EQ(socket.local_endpoint(), endpoint);
-
-  // async send result
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_send_to_result(io_buf);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name.size(), result->transferred());
-}
-
-
-TEST_P(datagram_socket, async_send_to_after_shutdown)
-{
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
-
-  socket.shutdown(socket.shutdown_send);
-  socket.async_send_to(make_buf(case_name), endpoint);
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  std::error_code error;
-  auto result = socket.async_send_to_result(io_buf, error);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
-
-  EXPECT_THROW(
-    socket.async_send_to_result(io_buf),
-    std::system_error
-  );
-}
-
-
 TEST_P(datagram_socket, async_send_to_invalid)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
@@ -1317,8 +1285,8 @@ TEST_P(datagram_socket, async_send_to_invalid)
   std::error_code error;
   auto result = socket.async_send_to_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_a_socket, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
@@ -1342,7 +1310,7 @@ TEST_P(datagram_socket, async_send_to_empty)
   // receive
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(0, socket.receive_from(sal::make_buf(buf), endpoint));
+  EXPECT_EQ(0U, socket.receive_from(sal::make_buf(buf), endpoint));
   EXPECT_EQ(socket.local_endpoint(), endpoint);
 
   // async send result
@@ -1380,6 +1348,76 @@ TEST_P(datagram_socket, async_send_to_do_not_route)
 }
 
 
+TEST_P(datagram_socket, DISABLED_async_send_to_overflow)
+{
+  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  service.associate(socket);
+
+  int send_buffer_size;
+  socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
+  size_t count = (send_buffer_size / sal::net::io_buf_t::max_size()) * 3;
+
+  std::array<std::thread, 2> threads;
+  auto expected_io_count = threads.max_size() * count;
+
+  // start receives
+  for (auto i = 0U;  i < expected_io_count;  ++i)
+  {
+    socket.async_receive_from(context.make_buf());
+  }
+
+  // send from multiple threads
+  for (auto &thread: threads)
+  {
+    thread = std::thread([this, count, &socket, &endpoint]
+    {
+      for (auto i = 0U;  i < count;  ++i)
+      {
+        socket.async_send_to(context.make_buf(), endpoint);
+      }
+    });
+  }
+
+  // dispatch
+  size_t sends = 0, receives = 0;
+  auto stop_time = std::chrono::steady_clock::now() + 3s;
+  while (std::chrono::steady_clock::now() < stop_time)
+  {
+    std::error_code error;
+    if (auto io_buf = context.get(1s))
+    {
+      if (socket.async_send_to_result(io_buf, error))
+      {
+        sends++;
+      }
+      else if (socket.async_receive_from_result(io_buf, error))
+      {
+        receives++;
+      }
+      else
+      {
+        FAIL() << "unexpected result";
+      }
+      EXPECT_TRUE(!error) << "value=" << error.value();
+    }
+    if (sends == expected_io_count && receives == expected_io_count)
+    {
+      break;
+    }
+  }
+
+  socket.close();
+  for (auto &thread: threads)
+  {
+    thread.join();
+  }
+
+  ASSERT_EQ(expected_io_count, sends);
+  EXPECT_EQ(expected_io_count, receives);
+}
+
+
 TEST_P(datagram_socket, async_send)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
@@ -1404,7 +1442,7 @@ TEST_P(datagram_socket, async_send)
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 
-  EXPECT_EQ(nullptr, socket.async_send_to_result(io_buf));
+  EXPECT_EQ(nullptr, socket.async_receive_result(io_buf));
 }
 
 
@@ -1503,8 +1541,8 @@ TEST_P(datagram_socket, async_send_invalid)
   std::error_code error;
   auto result = socket.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::not_a_socket, error);
-  EXPECT_EQ(0, result->transferred());
+  EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
@@ -1563,7 +1601,77 @@ TEST_P(datagram_socket, async_send_do_not_route)
 }
 
 
-#endif // __sal_os_windows
+TEST_P(datagram_socket, DISABLED_async_send_overflow)
+{
+  socket_t socket(loopback(GetParam()));
+  socket.connect(socket.local_endpoint());
+  service.associate(socket);
+
+  int send_buffer_size;
+  socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
+  size_t count = (send_buffer_size / sal::net::io_buf_t::max_size()) * 3;
+
+  std::array<std::thread, 2> threads;
+  auto expected_io_count = threads.max_size() * count;
+
+  // start receives
+  for (auto i = 0U;  i < expected_io_count;  ++i)
+  {
+    socket.async_receive(context.make_buf());
+  }
+
+  // send from multiple threads
+  for (auto &thread: threads)
+  {
+    thread = std::thread([this, count, &socket]
+    {
+      for (auto i = 0U;  i < count;  ++i)
+      {
+        socket.async_send(context.make_buf());
+      }
+    });
+  }
+
+  // dispatch
+  size_t sends = 0, receives = 0;
+  auto stop_time = std::chrono::steady_clock::now() + 3s;
+  while (std::chrono::steady_clock::now() < stop_time)
+  {
+    std::error_code error;
+    if (auto io_buf = context.get(1s))
+    {
+      if (socket.async_send_result(io_buf, error))
+      {
+        sends++;
+      }
+      else if (socket.async_receive_result(io_buf, error))
+      {
+        receives++;
+      }
+      else
+      {
+        FAIL() << "unexpected result";
+      }
+      EXPECT_TRUE(!error) << "value=" << error.value();
+    }
+    if (sends == expected_io_count && receives == expected_io_count)
+    {
+      break;
+    }
+  }
+
+  socket.close();
+  for (auto &thread: threads)
+  {
+    thread.join();
+  }
+
+  ASSERT_EQ(expected_io_count, sends);
+  EXPECT_EQ(expected_io_count, receives);
+}
+
+
+#endif // !__sal_os_linux
 
 
 } // namespace

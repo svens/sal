@@ -24,6 +24,9 @@ socket_t::endpoint_t server_endpoint(
 size_t receives = 64, packet_size = 1024, interval_ms = 100, buf_mul = 1;
 
 
+#if !__sal_os_linux
+
+
 using sys_clock_t = steady_clock;
 using sys_time_t = sys_clock_t::time_point;
 
@@ -95,6 +98,9 @@ void received (const packet_info_t &packet)
 }
 
 
+#endif // !__sal_os_linux
+
+
 } // namespace
 
 
@@ -138,6 +144,8 @@ option_set_t options ()
 
 int run (const option_set_t &options, const argument_map_t &arguments)
 {
+#if !__sal_os_linux
+
   server_endpoint.address(
     sal::net::ip::make_address_v4(
       options.back_or_default("address", { arguments })
@@ -237,6 +245,13 @@ int run (const option_set_t &options, const argument_map_t &arguments)
 
     io_ctx.reclaim();
   }
+
+#else
+
+  (void)options;
+  (void)arguments;
+
+#endif // !__sal_os_linux
 
   return EXIT_SUCCESS;
 }

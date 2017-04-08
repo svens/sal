@@ -40,12 +40,12 @@ struct stream_socket
     ;
   }
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
-  static sal::net::io_service_t service;
-  static sal::net::io_context_t context;
+  sal::net::io_service_t service;
+  sal::net::io_context_t context = service.make_context();
 
-  static sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
+  sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
   {
     auto io_buf = context.make_buf();
     io_buf->resize(content.size());
@@ -58,15 +58,10 @@ struct stream_socket
     return std::string(static_cast<const char *>(io_buf->data()), size);
   }
 
-#endif // __sal_os_windows
+#endif // !__sal_os_linux
 };
 
 constexpr sal::net::ip::port_t stream_socket::port;
-
-#if __sal_os_windows
-  sal::net::io_service_t stream_socket::service;
-  sal::net::io_context_t stream_socket::context = service.make_context();
-#endif // __sal_os_windows
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, stream_socket,
@@ -428,17 +423,24 @@ TEST_P(stream_socket, no_delay)
 }
 
 
-#if __sal_os_windows
+#if !__sal_os_linux
 
 
 TEST_P(stream_socket, async_connect)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  acceptor_t acceptor(endpoint, true);
+  acceptor_t acceptor(loopback(GetParam()), true);
 
-  endpoint.port(endpoint.port() + 1);
-  socket_t a(endpoint);
+  socket_t a(GetParam());
   service.associate(a);
+
+#if __sal_os_windows
+  // ConnectEx requires socket to be bound
+  auto endpoint = acceptor.local_endpoint();
+  endpoint.port(endpoint.port() + 1);
+  a.bind(endpoint);
+#else
+  a.non_blocking(true);
+#endif
 
   a.async_connect(context.make_buf(), acceptor.local_endpoint());
   auto b = acceptor.accept();
@@ -449,15 +451,21 @@ TEST_P(stream_socket, async_connect)
   auto result = a.async_connect_result(io_buf);
   ASSERT_NE(nullptr, result);
 
-  EXPECT_EQ(nullptr, a.async_receive_result(io_buf));
+  EXPECT_EQ(nullptr, acceptor_t::async_accept_result(io_buf));
 }
 
 
 TEST_P(stream_socket, async_connect_connection_refused)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t a(endpoint);
+  socket_t a(GetParam());
   service.associate(a);
+
+  auto endpoint = loopback(GetParam());
+#if __sal_os_windows
+  a.bind(endpoint);
+#else
+  a.non_blocking(true);
+#endif
 
   endpoint.port(7);
   a.async_connect(context.make_buf(), endpoint);
@@ -479,7 +487,7 @@ TEST_P(stream_socket, async_connect_connection_refused)
 
 TEST_P(stream_socket, async_connect_already_connected)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  auto endpoint = loopback(GetParam());
   acceptor_t acceptor(endpoint, true);
 
   socket_t a;
@@ -507,8 +515,14 @@ TEST_P(stream_socket, async_connect_already_connected)
 
 TEST_P(stream_socket, async_connect_address_not_available)
 {
-  socket_t a(loopback(GetParam()));
+  socket_t a(GetParam());
   service.associate(a);
+
+#if __sal_os_windows
+  a.bind(loopback(GetParam()));
+#else
+  a.non_blocking(true);
+#endif
 
   a.async_connect(context.make_buf(), any(GetParam()));
 
@@ -518,7 +532,12 @@ TEST_P(stream_socket, async_connect_address_not_available)
   std::error_code error;
   auto result = a.async_connect_result(io_buf, error);
   ASSERT_NE(nullptr, result);
+
+#if __sal_os_windows
   EXPECT_EQ(std::errc::address_not_available, error);
+#else
+  EXPECT_EQ(std::errc::connection_refused, error);
+#endif
 
   EXPECT_THROW(
     a.async_connect_result(io_buf),
@@ -541,12 +560,25 @@ TEST_P(stream_socket, async_connect_not_bound)
   std::error_code error;
   auto result = a.async_connect_result(io_buf, error);
   ASSERT_NE(nullptr, result);
+
+#if __sal_os_windows
+
+  //
+  // bound socket for async_connect is ConnectEx-specific requirement
+  //
+
   EXPECT_EQ(std::errc::invalid_argument, error);
 
   EXPECT_THROW(
     a.async_connect_result(io_buf),
     std::system_error
   );
+
+#else
+
+  EXPECT_TRUE(!error);
+
+#endif
 }
 
 
@@ -570,6 +602,7 @@ TEST_P(stream_socket, async_receive)
   EXPECT_EQ(case_name.size(), result->transferred());
 
   EXPECT_EQ(nullptr, a.async_send_result(io_buf));
+  EXPECT_EQ(nullptr, a.async_connect_result(io_buf));
 }
 
 
@@ -642,8 +675,16 @@ TEST_P(stream_socket, async_receive_two_send_immediate_completion)
 
     auto result = a.async_receive_result(io_buf);
     ASSERT_NE(nullptr, result);
-    EXPECT_EQ(case_name.size(), result->transferred());
-    EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+
+    if (case_name.size() == result->transferred())
+    {
+      EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+    }
+    else
+    {
+      EXPECT_EQ(case_name + case_name, to_string(io_buf, result->transferred()));
+      break;
+    }
   }
 }
 
@@ -727,9 +768,11 @@ TEST_P(stream_socket, async_receive_disconnected)
   auto io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
 
-  auto result = a.async_receive_result(io_buf);
+  std::error_code error;
+  auto result = a.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
 }
 
 
@@ -750,9 +793,11 @@ TEST_P(stream_socket, async_receive_disconnected_immediate_completion)
   auto io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
 
-  auto result = a.async_receive_result(io_buf);
+  std::error_code error;
+  auto result = a.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
 }
 
 
@@ -831,9 +876,25 @@ TEST_P(stream_socket, async_receive_before_shutdown)
   auto io_buf = context.get();
   ASSERT_NE(nullptr, io_buf);
 
+#if __sal_os_windows
+
   auto result = a.async_receive_result(io_buf);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
+
+#else
+
+  std::error_code error;
+  auto result = a.async_receive_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+
+  EXPECT_THROW(
+    a.async_receive_result(io_buf),
+    std::system_error
+  );
+
+#endif
 }
 
 
@@ -888,6 +949,23 @@ TEST_P(stream_socket, async_send)
   EXPECT_EQ(case_name.size(), result->transferred());
 
   EXPECT_EQ(nullptr, a.async_receive_result(io_buf));
+}
+
+
+TEST_P(stream_socket, async_send_not_connected)
+{
+  socket_t a(GetParam());
+  service.associate(a);
+
+  a.async_send(make_buf(case_name));
+
+  auto io_buf = context.get();
+  ASSERT_NE(nullptr, io_buf);
+
+  std::error_code error;
+  auto result = a.async_send_result(io_buf, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::not_connected, error);
 }
 
 

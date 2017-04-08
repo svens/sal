@@ -6,7 +6,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/io_service.hpp>
+#include <sal/net/__bits/async_socket.hpp>
 #include <sal/net/io_buf.hpp>
 #include <sal/net/error.hpp>
 #include <array>
@@ -14,7 +14,6 @@
 #include <deque>
 
 
-#if __sal_os_windows
 __sal_begin
 
 
@@ -93,12 +92,15 @@ public:
   }
 
 
-  void reclaim () noexcept
+  size_t reclaim () noexcept
   {
-    while (auto *completed = __bits::io_context_t::try_get())
+    auto count = 0;
+    while (auto *io_buf = __bits::io_context_t::try_get())
     {
-      free_io_buf(static_cast<io_buf_t *>(completed));
+      free_io_buf(static_cast<io_buf_t *>(io_buf));
+      ++count;
     }
+    return count;
   }
 
 
@@ -126,4 +128,3 @@ private:
 
 
 __sal_end
-#endif // __sal_os_windows

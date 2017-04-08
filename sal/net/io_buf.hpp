@@ -6,7 +6,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/net/__bits/io_service.hpp>
+#include <sal/net/__bits/async_socket.hpp>
 #include <sal/net/fwd.hpp>
 #include <sal/assert.hpp>
 #include <sal/intrusive_queue.hpp>
@@ -14,34 +14,9 @@
 
 
 __sal_begin
-#if __sal_os_windows
 
 
 namespace net {
-
-
-namespace __bits {
-
-#if _MSC_VER
-
-template <typename T>
-inline uintptr_t type_id () noexcept
-{
-  static const T *p = nullptr;
-  return reinterpret_cast<uintptr_t>(&p);
-}
-
-#else
-
-template <typename T>
-constexpr uintptr_t type_id ()
-{
-  return reinterpret_cast<uintptr_t>(&type_id<T>);
-}
-
-#endif
-
-} // namespace __bits
 
 
 /**
@@ -168,7 +143,7 @@ public:
     static_assert(std::is_trivially_destructible<Request>::value,
       "expected Request to be trivially destructible"
     );
-    buf::request_id = __bits::type_id<Request>();
+    buf::request_id = Request::type_id();
     reinterpret_cast<Request *>(this)->start(std::forward<Args>(args)...);
   }
 
@@ -176,7 +151,7 @@ public:
   template <typename Result>
   Result *result () noexcept
   {
-    if (buf::request_id == __bits::type_id<Result>())
+    if (buf::request_id == Result::type_id())
     {
       return reinterpret_cast<Result *>(this);
     }
@@ -188,8 +163,8 @@ private:
 
   char request_data_[160];
   io_context_t * const owner_;
-  mpsc_sync_t::intrusive_queue_hook_t free_;
 
+  mpsc_sync_t::intrusive_queue_hook_t free_{};
   using free_list = intrusive_queue_t<
     io_buf_t, mpsc_sync_t, &io_buf_t::free_
   >;
@@ -204,10 +179,12 @@ private:
 
   io_buf_t (io_context_t *owner) noexcept
     : owner_(owner)
-  {}
+  {
+    (void)free_;
+  }
 
 
-  constexpr void static_check () const
+  static constexpr void static_check ()
   {
     static_assert(sizeof(io_buf_t) == 4096,
       "expected sizeof(io_buf_t) == 4096B"
@@ -225,5 +202,4 @@ using io_buf_ptr = std::unique_ptr<io_buf_t, void(*)(io_buf_t*)>;
 } // namespace net
 
 
-#endif // __sal_os_windows
 __sal_end
