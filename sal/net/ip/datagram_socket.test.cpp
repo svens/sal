@@ -488,7 +488,7 @@ TEST_P(datagram_socket, async_receive_from)
   EXPECT_EQ(endpoint, result->endpoint());
   EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 
-  // TODO(restore) EXPECT_EQ(nullptr, socket.async_send_to_result(io_buf));
+  EXPECT_EQ(nullptr, socket.async_send_to_result(io_buf));
 }
 
 
@@ -868,7 +868,7 @@ TEST_P(datagram_socket, async_receive)
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 
-  // TODO(restore) EXPECT_EQ(nullptr, socket.async_send_result(io_buf));
+  EXPECT_EQ(nullptr, socket.async_send_result(io_buf));
 }
 
 
@@ -1230,9 +1230,6 @@ TEST_P(datagram_socket, async_receive_empty_buf_immediate_completion)
     std::system_error
   );
 }
-
-
-#if !__sal_os_linux
 
 
 TEST_P(datagram_socket, async_send_to)
@@ -1665,9 +1662,6 @@ TEST_P(datagram_socket, DISABLED_async_send_overflow)
   ASSERT_EQ(expected_io_count, sends);
   EXPECT_EQ(expected_io_count, receives);
 }
-
-
-#endif // !__sal_os_linux
 
 
 } // namespace

@@ -440,9 +440,6 @@ public:
   }
 
 
-#if !__sal_os_linux
-
-
   struct async_send_to_t
     : public __bits::async_send_to_t
   {
@@ -541,9 +538,6 @@ public:
       throw_on_error("basic_datagram_socket::async_send")
     );
   }
-
-
-#endif // !__sal_os_linux
 };
 
 
