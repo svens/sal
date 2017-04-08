@@ -356,7 +356,7 @@ TEST_P(stream_socket, receive_after_shutdown)
   {
     std::error_code error;
     b.receive(sal::make_buf(buf), error);
-    EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+    EXPECT_EQ(std::errc::broken_pipe, error);
   }
 
   {
@@ -380,7 +380,7 @@ TEST_P(stream_socket, receive_after_remote_close)
   {
     std::error_code error;
     b.receive(sal::make_buf(buf), error);
-    EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+    EXPECT_EQ(std::errc::broken_pipe, error);
   }
 
   {
@@ -765,7 +765,7 @@ TEST_P(stream_socket, async_receive_disconnected)
   auto result = a.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 }
 
 
@@ -790,7 +790,7 @@ TEST_P(stream_socket, async_receive_disconnected_immediate_completion)
   auto result = a.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 }
 
 
@@ -874,7 +874,7 @@ TEST_P(stream_socket, async_receive_before_shutdown)
   std::error_code error;
   auto result = a.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 
   EXPECT_THROW(
     a.async_receive_result(io_buf),
@@ -909,7 +909,7 @@ TEST_P(stream_socket, async_receive_after_shutdown)
   std::error_code error;
   auto result = a.async_receive_result(io_buf, error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 
   EXPECT_THROW(
     a.async_receive_result(io_buf),
@@ -958,7 +958,12 @@ TEST_P(stream_socket, async_send_not_connected)
   std::error_code error;
   auto result = a.async_send_result(io_buf, error);
   ASSERT_NE(nullptr, result);
+
+#if __sal_os_linux
   EXPECT_EQ(std::errc::broken_pipe, error);
+#else
+  EXPECT_EQ(std::errc::not_connected, error);
+#endif
 }
 
 

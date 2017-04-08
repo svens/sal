@@ -631,7 +631,7 @@ TEST_P(socket_acceptor, async_accept_close_before_accept)
   auto b = result->accepted();
   char buf[1024];
   b.receive(sal::make_buf(buf), error);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 }
 
 

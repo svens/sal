@@ -96,7 +96,7 @@ void io_buf_t::io_result (int result) noexcept
     else
     {
       // in case of receive, 0B means socket is closed
-      error = make_error_code(socket_errc_t::orderly_shutdown);
+      error = make_error_code(std::errc::broken_pipe);
     }
     context->completed.push(this);
     return;
@@ -112,7 +112,7 @@ void io_buf_t::io_result (int result) noexcept
   // failed, caller owns data
   else if (e == WSAESHUTDOWN)
   {
-    error = make_error_code(socket_errc_t::orderly_shutdown);
+    error = make_error_code(std::errc::broken_pipe);
   }
   else if (e == WSAENOTSOCK)
   {
@@ -404,7 +404,7 @@ io_buf_t *io_context_t::try_get () noexcept
       if (!io_buf->transferred
         && io_buf->request_id == async_receive_t::type_id())
       {
-        io_buf->error = make_error_code(socket_errc_t::orderly_shutdown);
+        io_buf->error = make_error_code(std::errc::broken_pipe);
       }
     }
     else

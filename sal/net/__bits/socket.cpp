@@ -360,6 +360,7 @@ bool socket_t::wait (wait_t what, int timeout_ms, std::error_code &error)
   return false;
 }
 
+
 size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   std::error_code &error) noexcept
 {
@@ -389,7 +390,7 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
     {
       return transferred;
     }
-    error = make_error_code(socket_errc_t::orderly_shutdown);
+    error = make_error_code(std::errc::broken_pipe);
   }
 
   return 0;
@@ -407,7 +408,7 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   auto size = handle(::recvmsg(native_handle, &msg, flags), error);
   if (!size && data_size)
   {
-    error = make_error_code(socket_errc_t::orderly_shutdown);
+    error = make_error_code(std::errc::broken_pipe);
   }
   else if (size == -1)
   {
@@ -524,7 +525,7 @@ size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags
   }
   else if (error.value() == WSAESHUTDOWN)
   {
-    error.assign(EPIPE, std::generic_category());
+    error = make_error_code(std::errc::broken_pipe);
   }
 
   return 0;
