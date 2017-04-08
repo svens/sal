@@ -333,6 +333,67 @@ struct io_context_t
 };
 
 
+#elif __sal_os_linux
+
+
+struct io_buf_t
+  : public io_buf_base_t
+{};
+
+
+struct io_service_t
+{
+  static constexpr size_t max_events_per_wait = 1024;
+
+
+  io_service_t (std::error_code &error) noexcept
+  {
+    (void)error;
+  }
+
+
+  void associate (socket_t &socket, std::error_code &error) noexcept
+  {
+    (void)socket;
+    (void)error;
+  }
+};
+
+
+struct io_context_t
+{
+  size_t max_events_per_wait;
+
+
+  io_context_t (io_service_t &io_service, size_t max_events_per_wait) noexcept
+    : max_events_per_wait(max_events_per_wait)
+  {
+    (void)io_service;
+  }
+
+
+  void ready (io_buf_t *io_buf) noexcept
+  {
+    (void)io_buf;
+  }
+
+
+  io_buf_t *try_get () noexcept
+  {
+    return nullptr;
+  }
+
+
+  io_buf_t *get (const std::chrono::milliseconds &timeout,
+    std::error_code &error) noexcept
+  {
+    (void)timeout;
+    (void)error;
+    return nullptr;
+  }
+};
+
+
 #endif
 
 

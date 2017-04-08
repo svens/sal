@@ -190,10 +190,12 @@ void socket_t::close (std::error_code &error) noexcept
 
 #else
 
+  #if __sal_os_darwin
   if (async)
   {
     async.reset();
   }
+  #endif
 
   for (;;)
   {
