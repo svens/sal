@@ -774,18 +774,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     auto result = socket_t::async_receive_from_result(io_buf, error);
     ASSERT_NE(nullptr, result);
 
-#if __sal_os_linux || __sal_os_windows
-
-    // 1st receive is empty (because buf is empty)
-    EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(0U, result->transferred());
-
-    // buf 2nd receive still have nothing
-    io_buf->reset();
-    socket.async_receive_from(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
-
-#elif __sal_os_darwin
+#if __sal_os_darwin
 
     // 1st succeed immediately with 0B transferred
     EXPECT_TRUE(!error);
@@ -802,10 +791,21 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     EXPECT_TRUE(!error);
     EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 
+#else
+
+    // 1st receive is empty (because buf is empty)
+    EXPECT_EQ(std::errc::message_size, error);
+    EXPECT_EQ(0U, result->transferred());
+
+    // buf 2nd receive still have nothing
+    io_buf->reset();
+    socket.async_receive_from(std::move(io_buf));
+    EXPECT_EQ(nullptr, context.get(0s));
+
 #endif
   }
 
-#if __sal_os_linux || __sal_os_windows
+#if !__sal_os_darwin
   // error from closed socket still in context
   EXPECT_THROW(
     socket_t::async_receive_from_result(context.get()),
@@ -852,9 +852,6 @@ TEST_P(datagram_socket, async_receive_from_empty_buf_immediate_completion)
 }
 
 
-#if !__sal_os_linux
-
-
 TEST_P(datagram_socket, async_receive)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
@@ -871,7 +868,7 @@ TEST_P(datagram_socket, async_receive)
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 
-  EXPECT_EQ(nullptr, socket.async_send_result(io_buf));
+  // TODO(restore) EXPECT_EQ(nullptr, socket.async_send_result(io_buf));
 }
 
 
@@ -1160,17 +1157,7 @@ TEST_P(datagram_socket, async_receive_empty_buf)
     auto result = socket_t::async_receive_result(io_buf, error);
     ASSERT_NE(nullptr, result);
 
-#if __sal_os_windows
-
-    EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_EQ(0U, result->transferred());
-
-    // even with empty 1st read, 2nd should have nothing
-    io_buf->reset();
-    socket.async_receive(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
-
-#else
+#if __sal_os_darwin
 
     EXPECT_TRUE(!error);
     EXPECT_EQ(0U, result->transferred());
@@ -1185,10 +1172,20 @@ TEST_P(datagram_socket, async_receive_empty_buf)
     EXPECT_TRUE(!error);
     EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
 
+#else
+
+    EXPECT_EQ(std::errc::message_size, error);
+    EXPECT_EQ(0U, result->transferred());
+
+    // even with empty 1st read, 2nd should have nothing
+    io_buf->reset();
+    socket.async_receive(std::move(io_buf));
+    EXPECT_EQ(nullptr, context.get(0s));
+
 #endif
   }
 
-#if __sal_os_windows
+#if !__sal_os_darwin
   // error from closed socket still in context
   EXPECT_THROW(
     socket_t::async_receive_result(context.get()),
@@ -1233,6 +1230,9 @@ TEST_P(datagram_socket, async_receive_empty_buf_immediate_completion)
     std::system_error
   );
 }
+
+
+#if !__sal_os_linux
 
 
 TEST_P(datagram_socket, async_send_to)

@@ -393,9 +393,6 @@ public:
   }
 
 
-#if !__sal_os_linux
-
-
   struct async_receive_t
     : public __bits::async_receive_t
   {
@@ -441,6 +438,9 @@ public:
       throw_on_error("basic_datagram_socket::async_receive")
     );
   }
+
+
+#if !__sal_os_linux
 
 
   struct async_send_to_t
