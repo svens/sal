@@ -709,12 +709,19 @@ bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
     {
       int data;
       socklen_t size = sizeof(data);
-      ::getsockopt(socket.native_handle,
+      auto result = ::getsockopt(socket.native_handle,
         SOL_SOCKET,
         SO_ERROR,
         &data, &size
       );
-      error.assign(data, std::generic_category());
+      if (result == 0)
+      {
+        error.assign(data, std::generic_category());
+      }
+      else
+      {
+        error.assign(errno, std::generic_category());
+      }
     }
 #endif
 
@@ -1025,10 +1032,14 @@ void async_accept_t::finish (std::error_code &error) noexcept
   if (!error)
   {
     socklen_t local_address_size = sizeof(*local_address);
-    ::getsockname(accepted,
+    auto result = ::getsockname(accepted,
       reinterpret_cast<sockaddr *>(local_address),
       &local_address_size
     );
+    if (result == -1)
+    {
+      error.assign(errno, std::generic_category());
+    }
   }
 }
 
