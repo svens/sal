@@ -22,9 +22,6 @@ socket_t::endpoint_t server_endpoint(
 size_t receives = 64, thread_count = 1, buf_mul = 1;
 
 
-#if !__sal_os_linux
-
-
 void print_stats (size_t active_threads, size_t packets, size_t size_bytes)
 {
   std::ostringstream oss;
@@ -81,9 +78,6 @@ void ctrl_c (int) noexcept
 #endif
 
 
-#endif // !__sal_os_linux
-
-
 } // namespace
 
 
@@ -123,8 +117,6 @@ option_set_t options ()
 
 int run (const option_set_t &options, const argument_map_t &arguments)
 {
-#if !__sal_os_linux
-
 #if __sal_os_windows
   ::SetConsoleCtrlHandler(ctrl_c, true);
 #else
@@ -248,13 +240,6 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   {
     t.join();
   }
-
-#else
-
-  (void)options;
-  (void)arguments;
-
-#endif // !__sal_os_linux
 
   return EXIT_SUCCESS;
 }

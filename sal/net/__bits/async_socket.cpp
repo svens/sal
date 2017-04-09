@@ -622,7 +622,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 #elif __sal_os_linux
 
   struct ::epoll_event change;
-  change.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLET;
+  change.events = EPOLLIN | EPOLLOUT | EPOLLET;
   change.data.ptr = &socket;
 
   auto result = ::epoll_ctl(queue,

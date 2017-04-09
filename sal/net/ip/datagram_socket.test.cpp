@@ -1338,17 +1338,18 @@ TEST_P(datagram_socket, async_send_to_do_not_route)
 }
 
 
-TEST_P(datagram_socket, DISABLED_async_send_to_overflow)
+TEST_P(datagram_socket, async_send_to_overflow)
 {
   socket_t::endpoint_t endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
   service.associate(socket);
 
-  int send_buffer_size;
+  int send_buffer_size = 16*1024;
+  socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
   size_t count = (send_buffer_size / sal::net::io_buf_t::max_size()) * 3;
 
-  std::array<std::thread, 2> threads;
+  std::array<std::thread, 1> threads;
   auto expected_io_count = threads.max_size() * count;
 
   // start receives
@@ -1591,17 +1592,18 @@ TEST_P(datagram_socket, async_send_do_not_route)
 }
 
 
-TEST_P(datagram_socket, DISABLED_async_send_overflow)
+TEST_P(datagram_socket, async_send_overflow)
 {
   socket_t socket(loopback(GetParam()));
   socket.connect(socket.local_endpoint());
   service.associate(socket);
 
-  int send_buffer_size;
+  int send_buffer_size = 16*1024;
+  socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
   size_t count = (send_buffer_size / sal::net::io_buf_t::max_size()) * 3;
 
-  std::array<std::thread, 2> threads;
+  std::array<std::thread, 1> threads;
   auto expected_io_count = threads.max_size() * count;
 
   // start receives
