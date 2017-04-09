@@ -14,8 +14,7 @@
 
 #if __sal_os_windows
   #include <mswsock.h>
-#elif __sal_os_darwin
-  #include <sal/assert.hpp>
+#elif __sal_os_darwin || __sal_os_linux
   #include <sal/spinlock.hpp>
   #include <sys/time.h>
   #include <unistd.h>
@@ -97,7 +96,7 @@ void io_buf_t::io_result (int result) noexcept
     else
     {
       // in case of receive, 0B means socket is closed
-      error = make_error_code(socket_errc_t::orderly_shutdown);
+      error = make_error_code(std::errc::broken_pipe);
     }
     context->completed.push(this);
     return;
@@ -113,7 +112,7 @@ void io_buf_t::io_result (int result) noexcept
   // failed, caller owns data
   else if (e == WSAESHUTDOWN)
   {
-    error = make_error_code(socket_errc_t::orderly_shutdown);
+    error = make_error_code(std::errc::broken_pipe);
   }
   else if (e == WSAENOTSOCK)
   {
@@ -405,7 +404,7 @@ io_buf_t *io_context_t::try_get () noexcept
       if (!io_buf->transferred
         && io_buf->request_id == async_receive_t::type_id())
       {
-        io_buf->error = make_error_code(socket_errc_t::orderly_shutdown);
+        io_buf->error = make_error_code(std::errc::broken_pipe);
       }
     }
     else
@@ -462,8 +461,10 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
 }
 
 
-#elif __sal_os_darwin
+#elif __sal_os_darwin || __sal_os_linux
 
+
+#if __sal_os_darwin
 
 namespace {
 
@@ -483,6 +484,8 @@ inline ::timespec *to_timespec (::timespec *ts, const milliseconds &timeout)
 }
 
 } // namespace
+
+#endif
 
 
 struct async_worker_t
@@ -545,8 +548,21 @@ void delete_async_worker (async_worker_t *async) noexcept
 }
 
 
+namespace {
+
+inline int make_poller () noexcept
+{
+#if __sal_os_darwin
+  return ::kqueue();
+#elif __sal_os_linux
+  return ::epoll_create1(0);
+#endif
+}
+
+} // namespace
+
 io_service_t::io_service_t (std::error_code &error) noexcept
-  : queue(::kqueue())
+  : queue(make_poller())
 {
   if (queue == -1)
   {
@@ -577,6 +593,8 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
     return;
   }
 
+#if __sal_os_darwin
+
   std::array<struct ::kevent, 2> changes;
   EV_SET(&changes[0],
     socket.native_handle,
@@ -595,7 +613,27 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
     &socket
   );
 
-  if (::kevent(queue, changes.data(), changes.size(), nullptr, 0, nullptr) == -1)
+  auto result = ::kevent(queue,
+    changes.data(), changes.size(),
+    nullptr, 0,
+    nullptr
+  );
+
+#elif __sal_os_linux
+
+  struct ::epoll_event change;
+  change.events = EPOLLIN | EPOLLOUT | EPOLLET;
+  change.data.ptr = &socket;
+
+  auto result = ::epoll_ctl(queue,
+    EPOLL_CTL_ADD,
+    socket.native_handle,
+    &change
+  );
+
+#endif
+
+  if (result == -1)
   {
     error.assign(errno, std::generic_category());
     socket.async.reset();
@@ -661,10 +699,32 @@ bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
   }
   else if (request_id == async_connect_t::type_id())
   {
+#if __sal_os_darwin
     if (flags & EV_EOF)
     {
       error = std::make_error_code(std::errc::connection_refused);
     }
+#elif __sal_os_linux
+    if (flags & EPOLLERR)
+    {
+      int data;
+      socklen_t size = sizeof(data);
+      auto result = ::getsockopt(socket.native_handle,
+        SOL_SOCKET,
+        SO_ERROR,
+        &data, &size
+      );
+      if (result == 0)
+      {
+        error.assign(data, std::generic_category());
+      }
+      else
+      {
+        error.assign(errno, std::generic_category());
+      }
+    }
+#endif
+
     return true;
   }
 
@@ -682,7 +742,6 @@ io_buf_t *io_context_t::retry_receive (socket_t &socket) noexcept
     }
     socket.async->push_receive(io_buf);
   }
-
   return nullptr;
 }
 
@@ -691,24 +750,32 @@ io_buf_t *io_context_t::retry_send (socket_t &socket) noexcept
 {
   if (auto *io_buf = socket.async->pop_send())
   {
-    if (io_buf->retry_send(socket, event->flags))
+#if __sal_os_darwin
+    uint16_t flags = event->flags;
+#elif __sal_os_linux
+    uint16_t flags = event->events;
+#endif
+    if (io_buf->retry_send(socket, flags))
     {
       return io_buf;
     }
     socket.async->push_send(io_buf);
   }
-
   return nullptr;
 }
 
 
 io_buf_t *io_context_t::try_get () noexcept
 {
+
   while (event != last_event)
   {
-    auto &socket = *static_cast<socket_t *>(event->udata);
 
     io_buf_t *io_buf = nullptr;
+
+#if __sal_os_darwin
+
+    auto &socket = *static_cast<socket_t *>(event->udata);
     if (event->filter == EVFILT_READ)
     {
       io_buf = retry_receive(socket);
@@ -718,6 +785,24 @@ io_buf_t *io_context_t::try_get () noexcept
       io_buf = retry_send(socket);
     }
 
+#elif __sal_os_linux
+
+    auto &socket = *static_cast<socket_t *>(event->data.ptr);
+    if (event->events & EPOLLERR)
+    {
+      io_buf = retry_send(socket);
+    }
+    else if (event->events & EPOLLIN)
+    {
+      io_buf = retry_receive(socket);
+    }
+    else if (event->events & EPOLLOUT)
+    {
+      io_buf = retry_send(socket);
+    }
+
+#endif
+
     if (io_buf)
     {
       return io_buf;
@@ -725,6 +810,7 @@ io_buf_t *io_context_t::try_get () noexcept
 
     ++event;
   }
+
   return completed.try_pop();
 }
 
@@ -736,6 +822,8 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
   {
     return io_buf;
   }
+
+#if __sal_os_darwin
 
   for (::timespec ts, *timeout = to_timespec(&ts, timeout_ms);  /**/;  /**/)
   {
@@ -766,6 +854,38 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
 
     return nullptr;
   }
+
+#elif __sal_os_linux
+
+  int timeout = timeout_ms == timeout_ms.max() ? -1 : timeout_ms.count();
+
+  do
+  {
+    auto event_count = ::epoll_wait(io_service.queue,
+      events.data(), max_events_per_wait,
+      timeout
+    );
+
+    if (event_count > -1)
+    {
+      event = events.begin();
+      last_event = event + event_count;
+
+      if (auto io_buf = try_get())
+      {
+        return io_buf;
+      }
+    }
+    else
+    {
+      error.assign(errno, std::generic_category());
+      return nullptr;
+    }
+  } while (timeout == -1);
+
+  return nullptr;
+
+#endif
 }
 
 
@@ -852,10 +972,6 @@ void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
 
   if (error != std::errc::operation_would_block)
   {
-    if (error == std::errc::broken_pipe)
-    {
-      error = make_error_code(socket_errc_t::orderly_shutdown);
-    }
     context->ready(this);
   }
   else
@@ -916,10 +1032,14 @@ void async_accept_t::finish (std::error_code &error) noexcept
   if (!error)
   {
     socklen_t local_address_size = sizeof(*local_address);
-    ::getsockname(accepted,
+    auto result = ::getsockname(accepted,
       reinterpret_cast<sockaddr *>(local_address),
       &local_address_size
     );
+    if (result == -1)
+    {
+      error.assign(errno, std::generic_category());
+    }
   }
 }
 
