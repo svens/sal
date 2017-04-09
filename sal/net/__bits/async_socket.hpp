@@ -9,6 +9,8 @@
 #if __sal_os_darwin
   #include <sys/types.h>
   #include <sys/event.h>
+#elif __sal_os_linux
+  #include <sys/epoll.h>
 #endif
 
 
@@ -185,7 +187,7 @@ struct io_context_t
 };
 
 
-#elif __sal_os_darwin
+#elif __sal_os_darwin || __sal_os_linux
 
 
 struct io_buf_t
@@ -301,7 +303,13 @@ struct io_context_t
 {
   io_service_t &io_service;
 
-  using event_list_t = std::array<struct ::kevent, io_service_t::max_events_per_wait>;
+#if __sal_os_darwin
+  struct event_t: public ::kevent {};
+#elif __sal_os_linux
+  using event_t = ::epoll_event;
+#endif
+
+  using event_list_t = std::array<event_t, io_service_t::max_events_per_wait>;
 
   size_t max_events_per_wait;
   event_list_t events{};
@@ -330,67 +338,6 @@ struct io_context_t
   io_buf_t *get (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
-};
-
-
-#elif __sal_os_linux
-
-
-struct io_buf_t
-  : public io_buf_base_t
-{};
-
-
-struct io_service_t
-{
-  static constexpr size_t max_events_per_wait = 1024;
-
-
-  io_service_t (std::error_code &error) noexcept
-  {
-    (void)error;
-  }
-
-
-  void associate (socket_t &socket, std::error_code &error) noexcept
-  {
-    (void)socket;
-    (void)error;
-  }
-};
-
-
-struct io_context_t
-{
-  size_t max_events_per_wait;
-
-
-  io_context_t (io_service_t &io_service, size_t max_events_per_wait) noexcept
-    : max_events_per_wait(max_events_per_wait)
-  {
-    (void)io_service;
-  }
-
-
-  void ready (io_buf_t *io_buf) noexcept
-  {
-    (void)io_buf;
-  }
-
-
-  io_buf_t *try_get () noexcept
-  {
-    return nullptr;
-  }
-
-
-  io_buf_t *get (const std::chrono::milliseconds &timeout,
-    std::error_code &error) noexcept
-  {
-    (void)timeout;
-    (void)error;
-    return nullptr;
-  }
 };
 
 

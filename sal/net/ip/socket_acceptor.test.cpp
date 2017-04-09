@@ -23,8 +23,6 @@ struct socket_acceptor
     ;
   }
 
-#if !__sal_os_linux
-
   sal::net::io_service_t service;
   sal::net::io_context_t context = service.make_context();
 
@@ -40,8 +38,6 @@ struct socket_acceptor
   {
     return std::string(static_cast<const char *>(io_buf->data()), size);
   }
-
-#endif // !__sal_os_linux
 };
 
 constexpr sal::net::ip::port_t socket_acceptor::port;
@@ -495,9 +491,6 @@ TEST_P(socket_acceptor, local_endpoint_invalid)
 }
 
 
-#if !__sal_os_linux
-
-
 TEST_P(socket_acceptor, async_accept)
 {
   acceptor_t acceptor(loopback(GetParam()), true);
@@ -638,11 +631,8 @@ TEST_P(socket_acceptor, async_accept_close_before_accept)
   auto b = result->accepted();
   char buf[1024];
   b.receive(sal::make_buf(buf), error);
-  EXPECT_EQ(sal::net::socket_errc_t::orderly_shutdown, error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 }
-
-
-#endif // !__sal_os_linux
 
 
 } // namespace

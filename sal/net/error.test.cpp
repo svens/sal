@@ -75,7 +75,7 @@ TEST_F(net_socket_error, make_error_code_invalid)
 INSTANTIATE_TEST_CASE_P(net_socket_error, net_socket_error,
   ::testing::Values(
     sal::net::socket_errc_t::already_open,
-    sal::net::socket_errc_t::not_found
+    sal::net::socket_errc_t::already_associated
   )
 );
 

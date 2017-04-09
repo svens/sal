@@ -197,9 +197,6 @@ public:
   }
 
 
-#if !__sal_os_linux
-
-
   //
   // Asynchronous API
   //
@@ -331,9 +328,6 @@ public:
       throw_on_error("basic_stream_socket::async_send")
     );
   }
-
-
-#endif // !__sal_os_linux
 };
 
 

@@ -3,7 +3,7 @@
 #include <sal/config.hpp>
 #include <system_error>
 
-#if __sal_os_linux || __sal_os_darwin
+#if __sal_os_darwin || __sal_os_linux
   #include <sys/socket.h>
   #include <memory>
 #elif __sal_os_windows
@@ -67,7 +67,7 @@ struct socket_t
 
 #if __sal_os_windows
   bool associated = false;
-#elif __sal_os_darwin
+#elif __sal_os_darwin || __sal_os_linux
   async_worker_ptr async{nullptr, &delete_async_worker};
 #endif
 
