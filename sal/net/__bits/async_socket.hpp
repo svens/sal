@@ -197,10 +197,11 @@ struct io_buf_t
 
   union
   {
-    mpsc_sync_t::intrusive_queue_hook_t completed{}, pending_receive, pending_send;
+    no_sync_t::intrusive_queue_hook_t completed{};
+    mpsc_sync_t::intrusive_queue_hook_t pending_receive, pending_send;
   };
   using completed_queue_t = intrusive_queue_t<
-    io_buf_t, mpsc_sync_t, &io_buf_t::completed
+    io_buf_t, no_sync_t, &io_buf_t::completed
   >;
   using pending_receive_queue_t = intrusive_queue_t<
     io_buf_t, mpsc_sync_t, &io_buf_t::pending_receive
