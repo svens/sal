@@ -405,6 +405,10 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
+#if __sal_os_linux
+  flags |= MSG_NOSIGNAL;
+#endif
+
   auto size = handle(::recvmsg(native_handle, &msg, flags), error);
   if (!size && data_size)
   {
@@ -473,6 +477,10 @@ size_t socket_t::receive_from (void *data, size_t data_size,
   msg.msg_iovlen = 1;
   msg.msg_name = address;
   msg.msg_namelen = *address_size;
+
+#if __sal_os_linux
+  flags |= MSG_NOSIGNAL;
+#endif
 
   auto size = handle(::recvmsg(native_handle, &msg, flags), error);
   if (size >= 0)
