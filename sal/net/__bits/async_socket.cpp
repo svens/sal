@@ -477,6 +477,7 @@ struct async_worker_t
 
   mutex_t send_mutex{};
   io_buf_t::pending_send_queue_t send_queue{};
+  bool listen_writable = false;
 
 
   async_worker_t (socket_t &socket, io_service_t &io_service) noexcept
@@ -500,6 +501,8 @@ struct async_worker_t
   }
 
 
+  void push_send (io_buf_t *io_buf) noexcept;
+
   void receive (io_context_t &context, uint16_t flags) noexcept;
   void send (io_context_t &context, uint16_t flags) noexcept;
 };
@@ -508,6 +511,33 @@ struct async_worker_t
 void delete_async_worker (async_worker_t *async) noexcept
 {
   delete async;
+}
+
+
+void async_worker_t::push_send (io_buf_t *io_buf) noexcept
+{
+  lock_t lock(send_mutex);
+
+  send_queue.push(io_buf);
+
+  if (!listen_writable)
+  {
+    std::array<struct ::kevent, 1> changes;
+    EV_SET(&changes[0],
+      socket.native_handle,
+      EVFILT_WRITE,
+      EV_ADD,
+      0,
+      0,
+      &socket
+    );
+    ::kevent(io_service.queue,
+      changes.data(), changes.size(),
+      nullptr, 0,
+      nullptr
+    );
+    listen_writable = true;
+  }
 }
 
 
@@ -543,8 +573,27 @@ void async_worker_t::send (io_context_t &context, uint16_t flags) noexcept
     else
     {
       send_queue.push(io_buf);
-      break;
+      return;
     }
+  }
+
+  if (listen_writable)
+  {
+    std::array<struct ::kevent, 1> changes;
+    EV_SET(&changes[0],
+      socket.native_handle,
+      EVFILT_WRITE,
+      EV_DELETE,
+      0,
+      0,
+      &socket
+    );
+    ::kevent(io_service.queue,
+      changes.data(), changes.size(),
+      nullptr, 0,
+      nullptr
+    );
+    listen_writable = false;
   }
 }
 
@@ -619,18 +668,10 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 
 #if __sal_os_darwin
 
-  std::array<struct ::kevent, 2> changes;
+  std::array<struct ::kevent, 1> changes;
   EV_SET(&changes[0],
     socket.native_handle,
     EVFILT_READ,
-    EV_ADD | EV_CLEAR,
-    0,
-    0,
-    &socket
-  );
-  EV_SET(&changes[1],
-    socket.native_handle,
-    EVFILT_WRITE,
     EV_ADD | EV_CLEAR,
     0,
     0,
@@ -918,7 +959,7 @@ void async_send_to_t::start (socket_t &socket,
     std::memcpy(&this->address, address, address_size);
     this->address_size = address_size;
     this->flags = flags;
-    socket.async->send_queue.push(this);
+    socket.async->push_send(this);
   }
 }
 
@@ -937,7 +978,7 @@ void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
   else
   {
     this->flags = flags;
-    socket.async->send_queue.push(this);
+    socket.async->push_send(this);
   }
 }
 
@@ -954,7 +995,7 @@ void async_connect_t::start (socket_t &socket,
   }
   else
   {
-    socket.async->send_queue.push(this);
+    socket.async->push_send(this);
   }
 }
 
