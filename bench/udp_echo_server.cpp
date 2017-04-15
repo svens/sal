@@ -188,7 +188,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
       auto &transferred = thread_transferred[index];
       for (;;)
       {
-        auto io_buf = io_ctx.get(10s);
+        auto io_buf = io_ctx.get(1s);
 
         if (done)
         {

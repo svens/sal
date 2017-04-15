@@ -893,47 +893,43 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
 void async_receive_from_t::start (socket_t &socket, message_flags_t flags)
   noexcept
 {
-  error.clear();
-
   flags |= MSG_DONTWAIT;
+
+  error.clear();
   address_size = sizeof(address);
   transferred = socket.receive_from(begin, end - begin,
     &address, &address_size,
     flags,
     error
   );
-
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    this->flags = flags;
-    socket.async->receive_queue.push(this);
-  }
+
+  this->flags = flags;
+  socket.async->receive_queue.push(this);
 }
 
 
 void async_receive_t::start (socket_t &socket, message_flags_t flags) noexcept
 {
-  error.clear();
-
   flags |= MSG_DONTWAIT;
+
+  error.clear();
   transferred = socket.receive(begin, end - begin,
     flags,
     error
   );
-
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    this->flags = flags;
-    socket.async->receive_queue.push(this);
-  }
+
+  this->flags = flags;
+  socket.async->receive_queue.push(this);
 }
 
 
@@ -941,45 +937,41 @@ void async_send_to_t::start (socket_t &socket,
   const void *address, size_t address_size,
   message_flags_t flags) noexcept
 {
-  error.clear();
-
   flags |= MSG_DONTWAIT;
+
+  error.clear();
   transferred = socket.send_to(begin, end - begin,
     address, address_size,
     flags,
     error
   );
-
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    std::memcpy(&this->address, address, address_size);
-    this->address_size = address_size;
-    this->flags = flags;
-    socket.async->push_send(this);
-  }
+
+  std::memcpy(&this->address, address, address_size);
+  this->address_size = address_size;
+  this->flags = flags;
+  socket.async->push_send(this);
 }
 
 
 void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
 {
-  error.clear();
-
   flags |= MSG_DONTWAIT;
-  transferred = socket.send(begin, end - begin, flags, error);
 
+  error.clear();
+  transferred = socket.send(begin, end - begin, flags, error);
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    this->flags = flags;
-    socket.async->push_send(this);
-  }
+
+  this->flags = flags;
+  socket.async->push_send(this);
 }
 
 
@@ -987,16 +979,14 @@ void async_connect_t::start (socket_t &socket,
   const void *address, size_t address_size) noexcept
 {
   error.clear();
-
   socket.connect(address, address_size, error);
   if (error != std::errc::operation_in_progress)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    socket.async->push_send(this);
-  }
+
+  socket.async->push_send(this);
 }
 
 
@@ -1004,26 +994,24 @@ void async_accept_t::start (socket_t &socket, int family) noexcept
 {
   (void)family;
 
-  error.clear();
-
   auto *addresses = reinterpret_cast<sockaddr_storage *>(begin);
   remote_address = &addresses[0];
   local_address = &addresses[1];
 
   auto remote_address_size = sizeof(*remote_address);
+
+  error.clear();
   accepted = socket.accept(remote_address, &remote_address_size,
     false,
     error
   );
-
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    socket.async->receive_queue.push(this);
-  }
+
+  socket.async->receive_queue.push(this);
 }
 
 
