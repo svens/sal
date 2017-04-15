@@ -1408,7 +1408,7 @@ TEST_P(datagram_socket, async_send_to_overflow)
     thread.join();
   }
 
-  EXPECT_EQ(total_sends, sends);
+  ASSERT_EQ(total_sends, sends);
   EXPECT_EQ(total_sends, receives);
 }
 
@@ -1666,7 +1666,7 @@ TEST_P(datagram_socket, async_send_overflow)
     thread.join();
   }
 
-  EXPECT_EQ(total_sends, sends);
+  ASSERT_EQ(total_sends, sends);
   EXPECT_EQ(total_sends, receives);
 }
 

@@ -522,6 +522,8 @@ void async_worker_t::push_send (io_buf_t *io_buf) noexcept
 
   if (!listen_writable)
   {
+#if __sal_os_darwin
+
     std::array<struct ::kevent, 1> changes;
     EV_SET(&changes[0],
       socket.native_handle,
@@ -531,13 +533,29 @@ void async_worker_t::push_send (io_buf_t *io_buf) noexcept
       0,
       &socket
     );
-    ::kevent(io_service.queue,
+    (void)::kevent(io_service.queue,
       changes.data(), changes.size(),
       nullptr, 0,
       nullptr
     );
+
+#elif __sal_os_linux
+
+    struct ::epoll_event change;
+    change.events = EPOLLIN | EPOLLOUT | EPOLLET;
+    change.data.ptr = &socket;
+
+    (void)::epoll_ctl(io_service.queue,
+      EPOLL_CTL_MOD,
+      socket.native_handle,
+      &change
+    );
+
+#endif
+
     listen_writable = true;
   }
+
 }
 
 
@@ -579,6 +597,8 @@ void async_worker_t::send (io_context_t &context, uint16_t flags) noexcept
 
   if (listen_writable)
   {
+#if __sal_os_darwin
+
     std::array<struct ::kevent, 1> changes;
     EV_SET(&changes[0],
       socket.native_handle,
@@ -588,11 +608,26 @@ void async_worker_t::send (io_context_t &context, uint16_t flags) noexcept
       0,
       &socket
     );
-    ::kevent(io_service.queue,
+    (void)::kevent(io_service.queue,
       changes.data(), changes.size(),
       nullptr, 0,
       nullptr
     );
+
+#elif __sal_os_linux
+
+    struct ::epoll_event change;
+    change.events = EPOLLIN | EPOLLET;
+    change.data.ptr = &socket;
+
+    (void)::epoll_ctl(io_service.queue,
+      EPOLL_CTL_MOD,
+      socket.native_handle,
+      &change
+    );
+
+#endif
+
     listen_writable = false;
   }
 }
@@ -687,7 +722,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 #elif __sal_os_linux
 
   struct ::epoll_event change;
-  change.events = EPOLLIN | EPOLLOUT | EPOLLET;
+  change.events = EPOLLIN | EPOLLET;
   change.data.ptr = &socket;
 
   auto result = ::epoll_ctl(queue,
