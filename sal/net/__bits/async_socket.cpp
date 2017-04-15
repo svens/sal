@@ -502,9 +502,8 @@ struct async_worker_t
 
 
   void push_send (io_buf_t *io_buf) noexcept;
-
-  void receive (io_context_t &context, uint16_t flags) noexcept;
   void send (io_context_t &context, uint16_t flags) noexcept;
+  void receive (io_context_t &context, uint16_t flags) noexcept;
 };
 
 
@@ -554,26 +553,6 @@ void async_worker_t::push_send (io_buf_t *io_buf) noexcept
 #endif
 
     listen_writable = true;
-  }
-
-}
-
-
-void async_worker_t::receive (io_context_t &context, uint16_t flags) noexcept
-{
-  lock_t lock(receive_mutex);
-
-  while (auto *io_buf = receive_queue.try_pop())
-  {
-    if (io_buf->receive(socket, flags))
-    {
-      context.ready(io_buf);
-    }
-    else
-    {
-      receive_queue.push(io_buf);
-      break;
-    }
   }
 }
 
@@ -629,6 +608,25 @@ void async_worker_t::send (io_context_t &context, uint16_t flags) noexcept
 #endif
 
     listen_writable = false;
+  }
+}
+
+
+void async_worker_t::receive (io_context_t &context, uint16_t flags) noexcept
+{
+  lock_t lock(receive_mutex);
+
+  while (auto *io_buf = receive_queue.try_pop())
+  {
+    if (io_buf->receive(socket, flags))
+    {
+      context.ready(io_buf);
+    }
+    else
+    {
+      receive_queue.push(io_buf);
+      break;
+    }
   }
 }
 
