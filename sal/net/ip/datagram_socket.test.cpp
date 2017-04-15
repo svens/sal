@@ -1349,7 +1349,7 @@ TEST_P(datagram_socket, async_send_to_overflow)
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
   std::array<std::thread, 4> threads;
-  auto per_thread_sends = (send_buffer_size / sal::net::io_buf_t::max_size()) * 4;
+  auto per_thread_sends = (send_buffer_size / sal::net::io_buf_t::max_size()) * 16;
   auto total_sends = per_thread_sends * threads.max_size();
 
   // receives
@@ -1408,8 +1408,12 @@ TEST_P(datagram_socket, async_send_to_overflow)
     thread.join();
   }
 
+  // must send everything
   ASSERT_EQ(total_sends, sends);
-  EXPECT_EQ(total_sends, receives);
+
+  // but may drop some
+  // (randomly checking for at least 75%)
+  EXPECT_GT(total_sends, receives * 3 / 4);
 }
 
 
@@ -1607,7 +1611,7 @@ TEST_P(datagram_socket, async_send_overflow)
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
   std::array<std::thread, 4> threads;
-  size_t per_thread_sends = (send_buffer_size / sal::net::io_buf_t::max_size()) * 4;
+  size_t per_thread_sends = (send_buffer_size / sal::net::io_buf_t::max_size()) * 16;
   size_t total_sends = per_thread_sends * threads.max_size();
 
   // receives
@@ -1666,8 +1670,12 @@ TEST_P(datagram_socket, async_send_overflow)
     thread.join();
   }
 
+  // must send everything
   ASSERT_EQ(total_sends, sends);
-  EXPECT_EQ(total_sends, receives);
+
+  // but may drop some
+  // (randomly checking for at least 75%)
+  EXPECT_GT(total_sends, receives * 3 / 4);
 }
 
 

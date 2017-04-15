@@ -899,15 +899,11 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
     for (auto ev = events.begin(), end = ev + event_count;  ev != end;  ++ev)
     {
       auto &socket = *static_cast<socket_t *>(ev->data.ptr);
-      if (ev->events & EPOLLERR)
-      {
-        socket.async->send(*this, ev->events);
-      }
-      else if (ev->events & EPOLLIN)
+      if (ev->events & EPOLLIN)
       {
         socket.async->receive(*this, ev->events);
       }
-      else if (ev->events & EPOLLOUT)
+      if (ev->events & EPOLLOUT)
       {
         socket.async->send(*this, ev->events);
       }
