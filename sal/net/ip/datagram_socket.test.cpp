@@ -1344,68 +1344,76 @@ TEST_P(datagram_socket, async_send_to_overflow)
   socket_t socket(endpoint);
   service.associate(socket);
 
-  int send_buffer_size = 16*1024;
+  int send_buffer_size = 4*1024;
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
-  size_t count = (send_buffer_size / sal::net::io_buf_t::max_size()) * 3;
 
-  std::array<std::thread, 1> threads;
-  auto expected_io_count = threads.max_size() * count;
+  std::array<std::thread, 4> threads;
+  auto per_thread_sends = (send_buffer_size / sal::net::io_buf_t::max_size()) * 16;
+  auto total_sends = per_thread_sends * threads.max_size();
 
-  // start receives
-  for (auto i = 0U;  i < expected_io_count;  ++i)
+  // receives
+  for (auto i = 0U;  i != total_sends;  ++i)
   {
     socket.async_receive_from(context.make_buf());
   }
 
-  // send from multiple threads
+  std::atomic<size_t> sends{}, receives{};
   for (auto &thread: threads)
   {
-    thread = std::thread([this, count, &socket, &endpoint]
+    thread = std::thread([&]
     {
-      for (auto i = 0U;  i < count;  ++i)
+      auto ctx = service.make_context();
+
+      // sends
+      for (auto i = 0U;  i != per_thread_sends;  ++i)
       {
-        socket.async_send_to(context.make_buf(), endpoint);
+        socket.async_send_to(ctx.make_buf(), endpoint);
+      }
+
+      // completions
+      auto stop_time = std::chrono::steady_clock::now() + 250ms;
+      while (std::chrono::steady_clock::now() < stop_time)
+      {
+        std::error_code error;
+        if (auto io_buf = ctx.get(10ms, error))
+        {
+          EXPECT_TRUE(!error) << "context error: " << error.message();
+
+          if (socket.async_send_to_result(io_buf, error))
+          {
+            sends++;
+          }
+          else if (socket.async_receive_from_result(io_buf, error))
+          {
+            receives++;
+          }
+          else
+          {
+            FAIL() << "unexpected result";
+          }
+          EXPECT_TRUE(!error) << "socket error: " << error.message();
+
+          if (sends == total_sends && receives == total_sends)
+          {
+            break;
+          }
+        }
       }
     });
   }
 
-  // dispatch
-  size_t sends = 0, receives = 0;
-  auto stop_time = std::chrono::steady_clock::now() + 3s;
-  while (std::chrono::steady_clock::now() < stop_time)
-  {
-    std::error_code error;
-    if (auto io_buf = context.get(1s))
-    {
-      if (socket.async_send_to_result(io_buf, error))
-      {
-        sends++;
-      }
-      else if (socket.async_receive_from_result(io_buf, error))
-      {
-        receives++;
-      }
-      else
-      {
-        FAIL() << "unexpected result";
-      }
-      EXPECT_TRUE(!error) << "value=" << error.value();
-    }
-    if (sends == expected_io_count && receives == expected_io_count)
-    {
-      break;
-    }
-  }
-
-  socket.close();
   for (auto &thread: threads)
   {
     thread.join();
   }
 
-  ASSERT_EQ(expected_io_count, sends);
-  EXPECT_EQ(expected_io_count, receives);
+  // must send everything
+  ASSERT_EQ(total_sends, sends);
+
+  // but may drop some
+  // (randomly checking for at least 75%)
+  EXPECT_GT(total_sends, receives * 3 / 4);
 }
 
 
@@ -1598,68 +1606,76 @@ TEST_P(datagram_socket, async_send_overflow)
   socket.connect(socket.local_endpoint());
   service.associate(socket);
 
-  int send_buffer_size = 16*1024;
+  int send_buffer_size = 4*1024;
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
-  size_t count = (send_buffer_size / sal::net::io_buf_t::max_size()) * 3;
 
-  std::array<std::thread, 1> threads;
-  auto expected_io_count = threads.max_size() * count;
+  std::array<std::thread, 4> threads;
+  size_t per_thread_sends = (send_buffer_size / sal::net::io_buf_t::max_size()) * 16;
+  size_t total_sends = per_thread_sends * threads.max_size();
 
-  // start receives
-  for (auto i = 0U;  i < expected_io_count;  ++i)
+  // receives
+  for (auto i = 0U;  i != total_sends;  ++i)
   {
     socket.async_receive(context.make_buf());
   }
 
-  // send from multiple threads
+  std::atomic<size_t> sends{}, receives{};
   for (auto &thread: threads)
   {
-    thread = std::thread([this, count, &socket]
+    thread = std::thread([&]
     {
-      for (auto i = 0U;  i < count;  ++i)
+      auto ctx = service.make_context();
+
+      // sends
+      for (auto i = 0U;  i != per_thread_sends;  ++i)
       {
-        socket.async_send(context.make_buf());
+        socket.async_send(ctx.make_buf());
+      }
+
+      // completions
+      auto stop_time = std::chrono::steady_clock::now() + 250ms;
+      while (std::chrono::steady_clock::now() < stop_time)
+      {
+        std::error_code error;
+        if (auto io_buf = ctx.get(10ms, error))
+        {
+          EXPECT_TRUE(!error) << "context error: " << error.message();
+
+          if (socket.async_send_result(io_buf, error))
+          {
+            sends++;
+          }
+          else if (socket.async_receive_result(io_buf, error))
+          {
+            receives++;
+          }
+          else
+          {
+            FAIL() << "unexpected result";
+          }
+          EXPECT_TRUE(!error) << "socket error: " << error.message();
+
+          if (sends == total_sends && receives == total_sends)
+          {
+            break;
+          }
+        }
       }
     });
   }
 
-  // dispatch
-  size_t sends = 0, receives = 0;
-  auto stop_time = std::chrono::steady_clock::now() + 3s;
-  while (std::chrono::steady_clock::now() < stop_time)
-  {
-    std::error_code error;
-    if (auto io_buf = context.get(1s))
-    {
-      if (socket.async_send_result(io_buf, error))
-      {
-        sends++;
-      }
-      else if (socket.async_receive_result(io_buf, error))
-      {
-        receives++;
-      }
-      else
-      {
-        FAIL() << "unexpected result";
-      }
-      EXPECT_TRUE(!error) << "value=" << error.value();
-    }
-    if (sends == expected_io_count && receives == expected_io_count)
-    {
-      break;
-    }
-  }
-
-  socket.close();
   for (auto &thread: threads)
   {
     thread.join();
   }
 
-  ASSERT_EQ(expected_io_count, sends);
-  EXPECT_EQ(expected_io_count, receives);
+  // must send everything
+  ASSERT_EQ(total_sends, sends);
+
+  // but may drop some
+  // (randomly checking for at least 75%)
+  EXPECT_GT(total_sends, receives * 3 / 4);
 }
 
 

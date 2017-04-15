@@ -197,10 +197,11 @@ struct io_buf_t
 
   union
   {
-    mpsc_sync_t::intrusive_queue_hook_t completed{}, pending_receive, pending_send;
+    no_sync_t::intrusive_queue_hook_t completed{};
+    mpsc_sync_t::intrusive_queue_hook_t pending_receive, pending_send;
   };
   using completed_queue_t = intrusive_queue_t<
-    io_buf_t, mpsc_sync_t, &io_buf_t::completed
+    io_buf_t, no_sync_t, &io_buf_t::completed
   >;
   using pending_receive_queue_t = intrusive_queue_t<
     io_buf_t, mpsc_sync_t, &io_buf_t::pending_receive
@@ -209,8 +210,8 @@ struct io_buf_t
     io_buf_t, mpsc_sync_t, &io_buf_t::pending_send
   >;
 
-  bool retry_receive (socket_t &socket) noexcept;
-  bool retry_send (socket_t &socket, uint16_t flags) noexcept;
+  bool receive (socket_t &socket, uint16_t flags) noexcept;
+  bool send (socket_t &socket, uint16_t flags) noexcept;
 };
 
 
@@ -302,18 +303,7 @@ struct io_service_t
 struct io_context_t
 {
   io_service_t &io_service;
-
-#if __sal_os_darwin
-  struct event_t: public ::kevent {};
-#elif __sal_os_linux
-  using event_t = ::epoll_event;
-#endif
-
-  using event_list_t = std::array<event_t, io_service_t::max_events_per_wait>;
-
   size_t max_events_per_wait;
-  event_list_t events{};
-  event_list_t::iterator event{}, last_event{};
   io_buf_t::completed_queue_t completed{};
 
 
@@ -330,10 +320,11 @@ struct io_context_t
   }
 
 
-  io_buf_t *retry_receive (socket_t &socket) noexcept;
-  io_buf_t *retry_send (socket_t &socket) noexcept;
+  io_buf_t *try_get () noexcept
+  {
+    return completed.try_pop();
+  }
 
-  io_buf_t *try_get () noexcept;
 
   io_buf_t *get (const std::chrono::milliseconds &timeout,
     std::error_code &error

@@ -464,32 +464,11 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
 #elif __sal_os_darwin || __sal_os_linux
 
 
-#if __sal_os_darwin
-
-namespace {
-
-using namespace std::chrono;
-
-inline ::timespec *to_timespec (::timespec *ts, const milliseconds &timeout)
-  noexcept
-{
-  if (timeout != (milliseconds::max)())
-  {
-    auto s = duration_cast<seconds>(timeout);
-    ts->tv_nsec = duration_cast<nanoseconds>(timeout - s).count();
-    ts->tv_sec = s.count();
-    return ts;
-  }
-  return nullptr;
-}
-
-} // namespace
-
-#endif
-
-
 struct async_worker_t
 {
+  socket_t &socket;
+  io_service_t &io_service;
+
   using mutex_t = spinlock_t;
   using lock_t = std::lock_guard<mutex_t>;
 
@@ -498,6 +477,13 @@ struct async_worker_t
 
   mutex_t send_mutex{};
   io_buf_t::pending_send_queue_t send_queue{};
+  bool listen_writable = false;
+
+
+  async_worker_t (socket_t &socket, io_service_t &io_service) noexcept
+    : socket(socket)
+    , io_service(io_service)
+  {}
 
 
   ~async_worker_t ()
@@ -515,30 +501,9 @@ struct async_worker_t
   }
 
 
-  void push_receive (io_buf_t *io_buf) noexcept
-  {
-    receive_queue.push(io_buf);
-  }
-
-
-  io_buf_t *pop_receive () noexcept
-  {
-    lock_t lock(receive_mutex);
-    return receive_queue.try_pop();
-  }
-
-
-  void push_send (io_buf_t *io_buf) noexcept
-  {
-    send_queue.push(io_buf);
-  }
-
-
-  io_buf_t *pop_send () noexcept
-  {
-    lock_t lock(send_mutex);
-    return send_queue.try_pop();
-  }
+  void push_send (io_buf_t *io_buf) noexcept;
+  void send (io_context_t &context, uint16_t flags) noexcept;
+  void receive (io_context_t &context, uint16_t flags) noexcept;
 };
 
 
@@ -548,18 +513,159 @@ void delete_async_worker (async_worker_t *async) noexcept
 }
 
 
+void async_worker_t::push_send (io_buf_t *io_buf) noexcept
+{
+  lock_t lock(send_mutex);
+
+  send_queue.push(io_buf);
+
+  if (!listen_writable)
+  {
+#if __sal_os_darwin
+
+    std::array<struct ::kevent, 1> changes;
+    EV_SET(&changes[0],
+      socket.native_handle,
+      EVFILT_WRITE,
+      EV_ADD,
+      0,
+      0,
+      &socket
+    );
+    (void)::kevent(io_service.queue,
+      changes.data(), changes.size(),
+      nullptr, 0,
+      nullptr
+    );
+
+#elif __sal_os_linux
+
+    struct ::epoll_event change;
+    change.events = EPOLLIN | EPOLLOUT | EPOLLET;
+    change.data.ptr = &socket;
+
+    (void)::epoll_ctl(io_service.queue,
+      EPOLL_CTL_MOD,
+      socket.native_handle,
+      &change
+    );
+
+#endif
+
+    listen_writable = true;
+  }
+}
+
+
+void async_worker_t::send (io_context_t &context, uint16_t flags) noexcept
+{
+  lock_t lock(send_mutex);
+
+  while (auto *io_buf = send_queue.try_pop())
+  {
+    if (io_buf->send(socket, flags))
+    {
+      context.ready(io_buf);
+    }
+    else
+    {
+      send_queue.push(io_buf);
+      return;
+    }
+  }
+
+  if (listen_writable)
+  {
+#if __sal_os_darwin
+
+    std::array<struct ::kevent, 1> changes;
+    EV_SET(&changes[0],
+      socket.native_handle,
+      EVFILT_WRITE,
+      EV_DELETE,
+      0,
+      0,
+      &socket
+    );
+    (void)::kevent(io_service.queue,
+      changes.data(), changes.size(),
+      nullptr, 0,
+      nullptr
+    );
+
+#elif __sal_os_linux
+
+    struct ::epoll_event change;
+    change.events = EPOLLIN | EPOLLET;
+    change.data.ptr = &socket;
+
+    (void)::epoll_ctl(io_service.queue,
+      EPOLL_CTL_MOD,
+      socket.native_handle,
+      &change
+    );
+
+#endif
+
+    listen_writable = false;
+  }
+}
+
+
+void async_worker_t::receive (io_context_t &context, uint16_t flags) noexcept
+{
+  lock_t lock(receive_mutex);
+
+  while (auto *io_buf = receive_queue.try_pop())
+  {
+    if (io_buf->receive(socket, flags))
+    {
+      context.ready(io_buf);
+    }
+    else
+    {
+      receive_queue.push(io_buf);
+      break;
+    }
+  }
+}
+
+
 namespace {
+
+#if __sal_os_darwin
+
+using namespace std::chrono;
+
+inline ::timespec *to_timespec (::timespec *ts, const milliseconds &timeout)
+  noexcept
+{
+  if (timeout != (milliseconds::max)())
+  {
+    auto s = duration_cast<seconds>(timeout);
+    ts->tv_nsec = duration_cast<nanoseconds>(timeout - s).count();
+    ts->tv_sec = s.count();
+    return ts;
+  }
+  return nullptr;
+}
 
 inline int make_poller () noexcept
 {
-#if __sal_os_darwin
   return ::kqueue();
-#elif __sal_os_linux
-  return ::epoll_create1(0);
-#endif
 }
 
+#elif __sal_os_linux
+
+inline int make_poller () noexcept
+{
+  return ::epoll_create1(0);
+}
+
+#endif
+
 } // namespace
+
 
 io_service_t::io_service_t (std::error_code &error) noexcept
   : queue(make_poller())
@@ -586,7 +692,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
     return;
   }
 
-  socket.async.reset(new(std::nothrow) async_worker_t);
+  socket.async.reset(new(std::nothrow) async_worker_t(socket, *this));
   if (!socket.async)
   {
     error = std::make_error_code(std::errc::not_enough_memory);
@@ -595,18 +701,10 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 
 #if __sal_os_darwin
 
-  std::array<struct ::kevent, 2> changes;
+  std::array<struct ::kevent, 1> changes;
   EV_SET(&changes[0],
     socket.native_handle,
     EVFILT_READ,
-    EV_ADD | EV_CLEAR,
-    0,
-    0,
-    &socket
-  );
-  EV_SET(&changes[1],
-    socket.native_handle,
-    EVFILT_WRITE,
     EV_ADD | EV_CLEAR,
     0,
     0,
@@ -622,7 +720,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 #elif __sal_os_linux
 
   struct ::epoll_event change;
-  change.events = EPOLLIN | EPOLLOUT | EPOLLET;
+  change.events = EPOLLIN | EPOLLET;
   change.data.ptr = &socket;
 
   auto result = ::epoll_ctl(queue,
@@ -641,7 +739,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 }
 
 
-bool io_buf_t::retry_receive (socket_t &socket) noexcept
+bool io_buf_t::receive (socket_t &socket, uint16_t /*flags*/) noexcept
 {
   error.clear();
 
@@ -676,7 +774,7 @@ bool io_buf_t::retry_receive (socket_t &socket) noexcept
 }
 
 
-bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
+bool io_buf_t::send (socket_t &socket, uint16_t flags) noexcept
 {
   error.clear();
 
@@ -732,89 +830,6 @@ bool io_buf_t::retry_send (socket_t &socket, uint16_t flags) noexcept
 }
 
 
-io_buf_t *io_context_t::retry_receive (socket_t &socket) noexcept
-{
-  if (auto *io_buf = socket.async->pop_receive())
-  {
-    if (io_buf->retry_receive(socket))
-    {
-      return io_buf;
-    }
-    socket.async->push_receive(io_buf);
-  }
-  return nullptr;
-}
-
-
-io_buf_t *io_context_t::retry_send (socket_t &socket) noexcept
-{
-  if (auto *io_buf = socket.async->pop_send())
-  {
-#if __sal_os_darwin
-    uint16_t flags = event->flags;
-#elif __sal_os_linux
-    uint16_t flags = event->events;
-#endif
-    if (io_buf->retry_send(socket, flags))
-    {
-      return io_buf;
-    }
-    socket.async->push_send(io_buf);
-  }
-  return nullptr;
-}
-
-
-io_buf_t *io_context_t::try_get () noexcept
-{
-
-  while (event != last_event)
-  {
-
-    io_buf_t *io_buf = nullptr;
-
-#if __sal_os_darwin
-
-    auto &socket = *static_cast<socket_t *>(event->udata);
-    if (event->filter == EVFILT_READ)
-    {
-      io_buf = retry_receive(socket);
-    }
-    else if (event->filter == EVFILT_WRITE)
-    {
-      io_buf = retry_send(socket);
-    }
-
-#elif __sal_os_linux
-
-    auto &socket = *static_cast<socket_t *>(event->data.ptr);
-    if (event->events & EPOLLERR)
-    {
-      io_buf = retry_send(socket);
-    }
-    else if (event->events & EPOLLIN)
-    {
-      io_buf = retry_receive(socket);
-    }
-    else if (event->events & EPOLLOUT)
-    {
-      io_buf = retry_send(socket);
-    }
-
-#endif
-
-    if (io_buf)
-    {
-      return io_buf;
-    }
-
-    ++event;
-  }
-
-  return completed.try_pop();
-}
-
-
 io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
   std::error_code &error) noexcept
 {
@@ -825,7 +840,10 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
 
 #if __sal_os_darwin
 
-  for (::timespec ts, *timeout = to_timespec(&ts, timeout_ms);  /**/;  /**/)
+  ::timespec ts, *timeout = to_timespec(&ts, timeout_ms);
+  std::array<struct ::kevent, io_service_t::max_events_per_wait> events;
+
+  do
   {
     auto event_count = ::kevent(io_service.queue,
       nullptr, 0,
@@ -833,31 +851,35 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
       timeout
     );
 
-    if (event_count > -1)
-    {
-      event = events.begin();
-      last_event = event + event_count;
-
-      if (auto io_buf = try_get())
-      {
-        return io_buf;
-      }
-      else if (!timeout)
-      {
-        continue;
-      }
-    }
-    else
+    if (event_count == -1)
     {
       error.assign(errno, std::generic_category());
+      return nullptr;
     }
 
-    return nullptr;
-  }
+    for (auto ev = events.begin(), end = ev + event_count; ev != end;  ++ev)
+    {
+      auto &socket = *static_cast<socket_t *>(ev->udata);
+      if (ev->filter == EVFILT_READ)
+      {
+        socket.async->receive(*this, ev->flags);
+      }
+      else if (ev->filter == EVFILT_WRITE)
+      {
+        socket.async->send(*this, ev->flags);
+      }
+    }
+
+    if (auto io_buf = try_get())
+    {
+      return io_buf;
+    }
+  } while (!timeout);
 
 #elif __sal_os_linux
 
   int timeout = timeout_ms == timeout_ms.max() ? -1 : timeout_ms.count();
+  std::array<::epoll_event, io_service_t::max_events_per_wait> events;
 
   do
   {
@@ -866,73 +888,77 @@ io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
       timeout
     );
 
-    if (event_count > -1)
-    {
-      event = events.begin();
-      last_event = event + event_count;
-
-      if (auto io_buf = try_get())
-      {
-        return io_buf;
-      }
-    }
-    else
+    if (event_count == -1)
     {
       error.assign(errno, std::generic_category());
       return nullptr;
     }
+
+    for (auto ev = events.begin(), end = ev + event_count;  ev != end;  ++ev)
+    {
+      auto &socket = *static_cast<socket_t *>(ev->data.ptr);
+      if (ev->events & EPOLLIN)
+      {
+        socket.async->receive(*this, ev->events);
+      }
+      if (ev->events & EPOLLOUT)
+      {
+        socket.async->send(*this, ev->events);
+      }
+    }
+
+    if (auto io_buf = try_get())
+    {
+      return io_buf;
+    }
   } while (timeout == -1);
 
-  return nullptr;
-
 #endif
+
+  return nullptr;
 }
 
 
 void async_receive_from_t::start (socket_t &socket, message_flags_t flags)
   noexcept
 {
-  error.clear();
-
   flags |= MSG_DONTWAIT;
+
+  error.clear();
   address_size = sizeof(address);
   transferred = socket.receive_from(begin, end - begin,
     &address, &address_size,
     flags,
     error
   );
-
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    this->flags = flags;
-    socket.async->push_receive(this);
-  }
+
+  this->flags = flags;
+  socket.async->receive_queue.push(this);
 }
 
 
 void async_receive_t::start (socket_t &socket, message_flags_t flags) noexcept
 {
-  error.clear();
-
   flags |= MSG_DONTWAIT;
+
+  error.clear();
   transferred = socket.receive(begin, end - begin,
     flags,
     error
   );
-
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    this->flags = flags;
-    socket.async->push_receive(this);
-  }
+
+  this->flags = flags;
+  socket.async->receive_queue.push(this);
 }
 
 
@@ -940,45 +966,41 @@ void async_send_to_t::start (socket_t &socket,
   const void *address, size_t address_size,
   message_flags_t flags) noexcept
 {
-  error.clear();
-
   flags |= MSG_DONTWAIT;
+
+  error.clear();
   transferred = socket.send_to(begin, end - begin,
     address, address_size,
     flags,
     error
   );
-
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    std::memcpy(&this->address, address, address_size);
-    this->address_size = address_size;
-    this->flags = flags;
-    socket.async->push_send(this);
-  }
+
+  std::memcpy(&this->address, address, address_size);
+  this->address_size = address_size;
+  this->flags = flags;
+  socket.async->push_send(this);
 }
 
 
 void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
 {
-  error.clear();
-
   flags |= MSG_DONTWAIT;
-  transferred = socket.send(begin, end - begin, flags, error);
 
+  error.clear();
+  transferred = socket.send(begin, end - begin, flags, error);
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    this->flags = flags;
-    socket.async->push_send(this);
-  }
+
+  this->flags = flags;
+  socket.async->push_send(this);
 }
 
 
@@ -986,16 +1008,14 @@ void async_connect_t::start (socket_t &socket,
   const void *address, size_t address_size) noexcept
 {
   error.clear();
-
   socket.connect(address, address_size, error);
   if (error != std::errc::operation_in_progress)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    socket.async->push_send(this);
-  }
+
+  socket.async->push_send(this);
 }
 
 
@@ -1003,26 +1023,24 @@ void async_accept_t::start (socket_t &socket, int family) noexcept
 {
   (void)family;
 
-  error.clear();
-
   auto *addresses = reinterpret_cast<sockaddr_storage *>(begin);
   remote_address = &addresses[0];
   local_address = &addresses[1];
 
   auto remote_address_size = sizeof(*remote_address);
+
+  error.clear();
   accepted = socket.accept(remote_address, &remote_address_size,
     false,
     error
   );
-
   if (error != std::errc::operation_would_block)
   {
     context->ready(this);
+    return;
   }
-  else
-  {
-    socket.async->push_receive(this);
-  }
+
+  socket.async->receive_queue.push(this);
 }
 
 
