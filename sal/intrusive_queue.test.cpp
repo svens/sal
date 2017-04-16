@@ -1,12 +1,16 @@
 #include <sal/intrusive_queue.hpp>
 #include <sal/common.test.hpp>
+#include <thread>
 
 
 namespace {
 
 
+using namespace std::chrono_literals;
+
+
 template <typename QueueHook>
-struct test
+struct intrusive_queue
   : public sal_test::with_type<QueueHook>
 {
   struct foo_t
@@ -18,24 +22,24 @@ struct test
 };
 
 
-using types = testing::Types<
+using sync_types = testing::Types<
   sal::no_sync_t,
   sal::spsc_sync_t,
   sal::mpsc_sync_t
 >;
 
 
-TYPED_TEST_CASE_P(test);
+TYPED_TEST_CASE(intrusive_queue, sync_types);
 
 
-TYPED_TEST_P(test, ctor)
+TYPED_TEST(intrusive_queue, ctor)
 {
   ASSERT_EQ(nullptr, this->queue.try_pop());
   EXPECT_TRUE(this->queue.empty());
 }
 
 
-TYPED_TEST_P(test, move_ctor_empty)
+TYPED_TEST(intrusive_queue, move_ctor_empty)
 {
   ASSERT_EQ(nullptr, this->queue.try_pop());
 
@@ -45,7 +49,7 @@ TYPED_TEST_P(test, move_ctor_empty)
 }
 
 
-TYPED_TEST_P(test, move_ctor_empty_1)
+TYPED_TEST(intrusive_queue, move_ctor_empty_1)
 {
   typename TestFixture::foo_t f;
   this->queue.push(&f);
@@ -62,7 +66,7 @@ TYPED_TEST_P(test, move_ctor_empty_1)
 }
 
 
-TYPED_TEST_P(test, move_ctor_single)
+TYPED_TEST(intrusive_queue, move_ctor_single)
 {
   typename TestFixture::foo_t f;
   this->queue.push(&f);
@@ -78,7 +82,7 @@ TYPED_TEST_P(test, move_ctor_single)
 }
 
 
-TYPED_TEST_P(test, move_ctor_single_1)
+TYPED_TEST(intrusive_queue, move_ctor_single_1)
 {
   typename TestFixture::foo_t f1, f2;
   this->queue.push(&f1);
@@ -99,7 +103,7 @@ TYPED_TEST_P(test, move_ctor_single_1)
 }
 
 
-TYPED_TEST_P(test, move_ctor_multiple)
+TYPED_TEST(intrusive_queue, move_ctor_multiple)
 {
   typename TestFixture::foo_t f1, f2;
   this->queue.push(&f1);
@@ -119,7 +123,7 @@ TYPED_TEST_P(test, move_ctor_multiple)
 }
 
 
-TYPED_TEST_P(test, move_ctor_multiple_1)
+TYPED_TEST(intrusive_queue, move_ctor_multiple_1)
 {
   typename TestFixture::foo_t f1, f2, f3;
   this->queue.push(&f1);
@@ -141,7 +145,7 @@ TYPED_TEST_P(test, move_ctor_multiple_1)
 }
 
 
-TYPED_TEST_P(test, move_assign_empty)
+TYPED_TEST(intrusive_queue, move_assign_empty)
 {
   typename TestFixture::queue_t q;
   q = std::move(this->queue);
@@ -150,7 +154,7 @@ TYPED_TEST_P(test, move_assign_empty)
 }
 
 
-TYPED_TEST_P(test, move_assign_empty_1)
+TYPED_TEST(intrusive_queue, move_assign_empty_1)
 {
   typename TestFixture::queue_t q;
 
@@ -164,7 +168,7 @@ TYPED_TEST_P(test, move_assign_empty_1)
 }
 
 
-TYPED_TEST_P(test, move_assign_single)
+TYPED_TEST(intrusive_queue, move_assign_single)
 {
   typename TestFixture::queue_t q;
 
@@ -182,7 +186,7 @@ TYPED_TEST_P(test, move_assign_single)
 }
 
 
-TYPED_TEST_P(test, move_assign_single_1)
+TYPED_TEST(intrusive_queue, move_assign_single_1)
 {
   typename TestFixture::queue_t q;
 
@@ -202,7 +206,7 @@ TYPED_TEST_P(test, move_assign_single_1)
 }
 
 
-TYPED_TEST_P(test, move_assign_multiple)
+TYPED_TEST(intrusive_queue, move_assign_multiple)
 {
   typename TestFixture::queue_t q;
 
@@ -224,7 +228,7 @@ TYPED_TEST_P(test, move_assign_multiple)
 }
 
 
-TYPED_TEST_P(test, move_assign_multiple_1)
+TYPED_TEST(intrusive_queue, move_assign_multiple_1)
 {
   typename TestFixture::queue_t q;
 
@@ -248,7 +252,7 @@ TYPED_TEST_P(test, move_assign_multiple_1)
 }
 
 
-TYPED_TEST_P(test, single_push_pop)
+TYPED_TEST(intrusive_queue, single_push_pop)
 {
   typename TestFixture::foo_t f;
   ASSERT_TRUE(this->queue.empty());
@@ -264,7 +268,7 @@ TYPED_TEST_P(test, single_push_pop)
 }
 
 
-TYPED_TEST_P(test, multiple_push_pop)
+TYPED_TEST(intrusive_queue, multiple_push_pop)
 {
   typename TestFixture::foo_t f1, f2, f3;
   ASSERT_TRUE(this->queue.empty());
@@ -287,7 +291,7 @@ TYPED_TEST_P(test, multiple_push_pop)
 }
 
 
-TYPED_TEST_P(test, interleaved_push_pop)
+TYPED_TEST(intrusive_queue, interleaved_push_pop)
 {
   // push 1, 2
   typename TestFixture::foo_t f1, f2;
@@ -323,30 +327,70 @@ TYPED_TEST_P(test, interleaved_push_pop)
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(test,
-  ctor,
+TEST(intrusive_queue, spsc)
+{
+  using fixture_t = intrusive_queue<sal::spsc_sync_t>;
+  std::array<fixture_t::foo_t, 100'000> data{};
+  fixture_t::queue_t queue;
 
-  move_ctor_empty,
-  move_ctor_empty_1,
-  move_ctor_single,
-  move_ctor_single_1,
-  move_ctor_multiple,
-  move_ctor_multiple_1,
+  // consumer
+  auto consumer = std::thread([&]
+  {
+    for (auto i = 0U;  i != data.size();  /**/)
+    {
+      if (auto p = queue.try_pop())
+      {
+        ASSERT_EQ(&data[i], p);
+        ++i;
+      }
+      std::this_thread::yield();
+    }
+  });
 
-  move_assign_empty,
-  move_assign_empty_1,
-  move_assign_single,
-  move_assign_single_1,
-  move_assign_multiple,
-  move_assign_multiple_1,
+  std::this_thread::sleep_for(1ms);
 
-  single_push_pop,
-  multiple_push_pop,
-  interleaved_push_pop
-);
+  // producer
+  for (auto &p: data)
+  {
+    queue.push(&p);
+    std::this_thread::yield();
+  }
+
+  consumer.join();
+}
 
 
-INSTANTIATE_TYPED_TEST_CASE_P(intrusive_queue, test, types);
+TEST(intrusive_queue, mpsc)
+{
+  using fixture_t = intrusive_queue<sal::mpsc_sync_t>;
+  std::array<fixture_t::foo_t, 100'000> data{};
+  fixture_t::queue_t queue;
+
+  // consumer
+  auto consumer = std::thread([&]
+  {
+    for (auto i = 0U;  i != data.size();  /**/)
+    {
+      if (auto p = queue.try_pop())
+      {
+        ASSERT_EQ(&data[i], p);
+        ++i;
+      }
+      std::this_thread::yield();
+    }
+  });
+
+  std::this_thread::sleep_for(1ms);
+
+  // producer
+  for (auto &p: data)
+  {
+    queue.push(&p);
+    std::this_thread::yield();
+  }
+
+  consumer.join();
+}
 
 
 } // namespace
