@@ -184,17 +184,26 @@ public:
   }
 
 
-  /// Attempt to read maximum \a size bytes into \a data. Returns number of
-  /// bytes actually read.
-  size_t read (char *data, size_t size, std::error_code &error)
-    noexcept;
-
-
-  /// \copydoc read
-  /// \throws std::system_error on read error
-  size_t read (char *data, size_t size)
+  /**
+   * Attempt to read data into \a buf (but not more than buf.size() bytes)
+   * \returns number of bytes actually read.
+   */
+  template <typename Ptr>
+  size_t read (const Ptr &buf, std::error_code &error) noexcept
   {
-    return read(data, size, throw_on_error("file::read"));
+    return read(buf.data(), buf.size(), error);
+  }
+
+
+  /**
+   * Attempt to read data into \a buf (but not more than buf.size() bytes)
+   * \returns number of bytes actually read.
+   * \throws std::system_error on read error
+   */
+  template <typename Ptr>
+  size_t read (const Ptr &buf)
+  {
+    return read(buf, throw_on_error("file::read"));
   }
 
 
@@ -236,8 +245,8 @@ private:
     }
   }
 
-  size_t write (const void *data, size_t size, std::error_code &error)
-    noexcept;
+  size_t write (const void *data, size_t size, std::error_code &error) noexcept;
+  size_t read (void *data, size_t size, std::error_code &error) noexcept;
 };
 
 

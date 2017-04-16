@@ -7,6 +7,7 @@ namespace {
 
 
 using file = sal_test::fixture;
+using sal::make_buf;
 
 
 constexpr std::ios::openmode in_out = std::ios::in | std::ios::out;
@@ -269,8 +270,8 @@ TEST_F(file, write_out_success)
     sal::file_t file;
     EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
     EXPECT_TRUE(file.is_open());
-    EXPECT_EQ(first.size(), file.write(sal::make_buf(first)));
-    EXPECT_EQ(second.size(), file.write(sal::make_buf(second)));
+    EXPECT_EQ(first.size(), file.write(make_buf(first)));
+    EXPECT_EQ(second.size(), file.write(make_buf(second)));
   }
 
   std::ifstream fin{name};
@@ -293,7 +294,7 @@ TEST_F(file, write_trunc_success)
     EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
     EXPECT_TRUE(file.is_open());
     auto d = case_name + "first\n";
-    EXPECT_EQ(d.size(), file.write(sal::make_buf(d)));
+    EXPECT_EQ(d.size(), file.write(make_buf(d)));
   }
 
   std::ifstream fin{name};
@@ -310,7 +311,7 @@ TEST_F(file, write_trunc_success)
     );
     EXPECT_TRUE(file.is_open());
     auto d = case_name + "second\n";
-    EXPECT_EQ(d.size(), file.write(sal::make_buf(d)));
+    EXPECT_EQ(d.size(), file.write(make_buf(d)));
   }
 
   fin.open(name);
@@ -332,7 +333,7 @@ TEST_F(file, write_append_success)
     EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::out));
     EXPECT_TRUE(file.is_open());
     auto d = case_name + "first\n";
-    EXPECT_EQ(d.size(), file.write(sal::make_buf(d)));
+    EXPECT_EQ(d.size(), file.write(make_buf(d)));
   }
 
   std::ifstream fin{name};
@@ -348,7 +349,7 @@ TEST_F(file, write_append_success)
     );
     EXPECT_TRUE(file.is_open());
     auto d = case_name + "second\n";
-    EXPECT_EQ(d.size(), file.write(sal::make_buf(d)));
+    EXPECT_EQ(d.size(), file.write(make_buf(d)));
   }
 
   fin.open(name);
@@ -371,7 +372,7 @@ TEST_F(file, write_in_fail)
   EXPECT_NO_THROW(file = sal::file_t::open(name, std::ios::in));
   EXPECT_TRUE(file.is_open());
 
-  EXPECT_THROW(file.write(sal::make_buf(case_name)), std::system_error);
+  EXPECT_THROW(file.write(make_buf(case_name)), std::system_error);
 
   file.close();
 
@@ -389,7 +390,7 @@ TEST_F(file, write_closed_fail)
   file.close();
   EXPECT_FALSE(file.is_open());
 
-  EXPECT_THROW(file.write(sal::make_buf(case_name)), std::system_error);
+  EXPECT_THROW(file.write(make_buf(case_name)), std::system_error);
 
   std::remove(name.c_str());
 }
@@ -405,7 +406,7 @@ TEST_F(file, read_in_success)
   EXPECT_TRUE(file.is_open());
 
   char line[1024];
-  EXPECT_EQ(case_name.size(), file.read(line, sizeof(line)));
+  EXPECT_EQ(case_name.size(), file.read(make_buf(line)));
   EXPECT_EQ(case_name, std::string(line, line + case_name.size()));
   file.close();
 
@@ -423,11 +424,11 @@ TEST_F(file, read_eof_success)
   EXPECT_TRUE(file.is_open());
 
   char line[1024];
-  EXPECT_EQ(case_name.size(), file.read(line, case_name.size()));
+  EXPECT_EQ(case_name.size(), file.read(make_buf(line)));
   EXPECT_EQ(case_name, std::string(line, line + case_name.size()));
 
   std::error_code error;
-  EXPECT_EQ(0U, file.read(line, sizeof(line), error));
+  EXPECT_EQ(0U, file.read(make_buf(line), error));
   EXPECT_FALSE(error);
 
   file.close();
@@ -446,7 +447,7 @@ TEST_F(file, read_out_fail)
   EXPECT_TRUE(file.is_open());
 
   char line[1024];
-  EXPECT_THROW(file.read(line, sizeof(line)), std::system_error);
+  EXPECT_THROW(file.read(make_buf(line)), std::system_error);
   file.close();
 
   std::remove(name.c_str());
@@ -465,15 +466,15 @@ TEST_F(file, seek_success)
   int64_t file_pos;
   EXPECT_NO_THROW(file_pos = file.seek(-3, std::ios::end));
   EXPECT_EQ(2, file_pos);
-  EXPECT_EQ(2U, file.write(sal::make_buf("st", 2)));
+  EXPECT_EQ(2U, file.write(make_buf("st", 2)));
 
   EXPECT_NO_THROW(file_pos = file.seek(1, std::ios::beg));
   EXPECT_EQ(1, file_pos);
-  EXPECT_EQ(1U, file.write(sal::make_buf("e", 1)));
+  EXPECT_EQ(1U, file.write(make_buf("e", 1)));
 
   EXPECT_NO_THROW(file_pos = file.seek(-2, std::ios::cur));
   EXPECT_EQ(0, file_pos);
-  EXPECT_EQ(1U, file.write(sal::make_buf("t", 1)));
+  EXPECT_EQ(1U, file.write(make_buf("t", 1)));
 
   file.close();
 
@@ -502,14 +503,14 @@ TEST_F(file, seek_past_end_success)
 
   EXPECT_NO_THROW(file_pos = file.seek(2, std::ios::cur));
   EXPECT_EQ(4, file_pos);
-  EXPECT_NO_THROW(file.write(sal::make_buf("\n", 1)));
+  EXPECT_NO_THROW(file.write(make_buf("\n", 1)));
 
   EXPECT_NO_THROW(file_pos = file.seek(0, std::ios::beg));
   EXPECT_EQ(0, file_pos);
 
   char data[1024];
   size_t result;
-  EXPECT_NO_THROW(result = file.read(data, sizeof(data)));
+  EXPECT_NO_THROW(result = file.read(make_buf(data)));
   EXPECT_EQ(5U, result);
   EXPECT_EQ('t', data[0]);
   EXPECT_EQ('e', data[1]);
