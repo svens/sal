@@ -1,5 +1,6 @@
 #include <sal/intrusive_queue.hpp>
 #include <sal/common.test.hpp>
+#include <array>
 #include <thread>
 
 
@@ -330,7 +331,7 @@ TYPED_TEST(intrusive_queue, interleaved_push_pop)
 TEST(intrusive_queue, spsc)
 {
   using fixture_t = intrusive_queue<sal::spsc_sync_t>;
-  std::array<fixture_t::foo_t, 100'000> data{};
+  std::array<fixture_t::foo_t, 10'000> data{};
   fixture_t::queue_t queue;
 
   // consumer
@@ -363,7 +364,7 @@ TEST(intrusive_queue, spsc)
 TEST(intrusive_queue, mpsc)
 {
   using fixture_t = intrusive_queue<sal::mpsc_sync_t>;
-  std::array<fixture_t::foo_t, 100'000> data{};
+  std::array<fixture_t::foo_t, 10'000> data{};
   fixture_t::queue_t queue;
 
   // consumer

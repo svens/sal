@@ -11,7 +11,7 @@ struct queue
   : public sal_test::with_type<SyncPolicy>
 {
   using queue_t = sal::queue_t<int, SyncPolicy>;
-  queue_t queue{};
+  queue_t queue_{};
 };
 
 
@@ -27,38 +27,38 @@ TYPED_TEST_CASE(queue, sync_types);
 TYPED_TEST(queue, ctor)
 {
   int i;
-  ASSERT_EQ(false, this->queue.try_pop(&i));
+  ASSERT_EQ(false, this->queue_.try_pop(&i));
 }
 
 
 TYPED_TEST(queue, move_ctor_empty)
 {
   int i;
-  ASSERT_EQ(false, this->queue.try_pop(&i));
+  ASSERT_EQ(false, this->queue_.try_pop(&i));
 
-  auto q = std::move(this->queue);
+  auto q = std::move(this->queue_);
   ASSERT_EQ(false, q.try_pop(&i));
 }
 
 
 TYPED_TEST(queue, move_ctor_empty_1)
 {
-  this->queue.push(1);
+  this->queue_.push(1);
 
   int i = 0;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
 
-  auto q = std::move(this->queue);
+  auto q = std::move(this->queue_);
   ASSERT_EQ(false, q.try_pop(&i));
 }
 
 
 TYPED_TEST(queue, move_ctor_single)
 {
-  this->queue.push(1);
+  this->queue_.push(1);
 
-  auto q = std::move(this->queue);
+  auto q = std::move(this->queue_);
 
   int i = 0;
   ASSERT_EQ(true, q.try_pop(&i));
@@ -70,14 +70,14 @@ TYPED_TEST(queue, move_ctor_single)
 
 TYPED_TEST(queue, move_ctor_single_1)
 {
-  this->queue.push(1);
-  this->queue.push(2);
+  this->queue_.push(1);
+  this->queue_.push(2);
 
   int i = 0;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
 
-  auto q = std::move(this->queue);
+  auto q = std::move(this->queue_);
   ASSERT_EQ(true, q.try_pop(&i));
   EXPECT_EQ(2, i);
 
@@ -87,10 +87,10 @@ TYPED_TEST(queue, move_ctor_single_1)
 
 TYPED_TEST(queue, move_ctor_multiple)
 {
-  this->queue.push(1);
-  this->queue.push(2);
+  this->queue_.push(1);
+  this->queue_.push(2);
 
-  auto q = std::move(this->queue);
+  auto q = std::move(this->queue_);
 
   int i = 0;
   ASSERT_EQ(true, q.try_pop(&i));
@@ -105,15 +105,15 @@ TYPED_TEST(queue, move_ctor_multiple)
 
 TYPED_TEST(queue, move_ctor_multiple_1)
 {
-  this->queue.push(1);
-  this->queue.push(2);
-  this->queue.push(3);
+  this->queue_.push(1);
+  this->queue_.push(2);
+  this->queue_.push(3);
 
   int i;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
 
-  auto q = std::move(this->queue);
+  auto q = std::move(this->queue_);
 
   ASSERT_EQ(true, q.try_pop(&i));
   EXPECT_EQ(2, i);
@@ -128,7 +128,7 @@ TYPED_TEST(queue, move_ctor_multiple_1)
 TYPED_TEST(queue, move_assign_empty)
 {
   typename TestFixture::queue_t q;
-  q = std::move(this->queue);
+  q = std::move(this->queue_);
 
   int i;
   ASSERT_EQ(false, q.try_pop(&i));
@@ -139,13 +139,13 @@ TYPED_TEST(queue, move_assign_empty_1)
 {
   typename TestFixture::queue_t q;
 
-  this->queue.push(1);
+  this->queue_.push(1);
 
   int i = 0;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
 
-  q = std::move(this->queue);
+  q = std::move(this->queue_);
   ASSERT_EQ(false, q.try_pop(&i));
 }
 
@@ -154,9 +154,9 @@ TYPED_TEST(queue, move_assign_single)
 {
   typename TestFixture::queue_t q;
 
-  this->queue.push(1);
+  this->queue_.push(1);
 
-  q = std::move(this->queue);
+  q = std::move(this->queue_);
 
   int i = 0;
   ASSERT_EQ(true, q.try_pop(&i));
@@ -170,14 +170,14 @@ TYPED_TEST(queue, move_assign_single_1)
 {
   typename TestFixture::queue_t q;
 
-  this->queue.push(1);
-  this->queue.push(2);
+  this->queue_.push(1);
+  this->queue_.push(2);
 
   int i = 0;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
 
-  q = std::move(this->queue);
+  q = std::move(this->queue_);
   ASSERT_EQ(true, q.try_pop(&i));
   EXPECT_EQ(2, i);
 
@@ -189,10 +189,10 @@ TYPED_TEST(queue, move_assign_multiple)
 {
   typename TestFixture::queue_t q;
 
-  this->queue.push(1);
-  this->queue.push(2);
+  this->queue_.push(1);
+  this->queue_.push(2);
 
-  q = std::move(this->queue);
+  q = std::move(this->queue_);
 
   int i = 0;
   ASSERT_EQ(true, q.try_pop(&i));
@@ -209,15 +209,15 @@ TYPED_TEST(queue, move_assign_multiple_1)
 {
   typename TestFixture::queue_t q;
 
-  this->queue.push(1);
-  this->queue.push(2);
-  this->queue.push(3);
+  this->queue_.push(1);
+  this->queue_.push(2);
+  this->queue_.push(3);
 
   int i = 0;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
 
-  q = std::move(this->queue);
+  q = std::move(this->queue_);
 
   ASSERT_EQ(true, q.try_pop(&i));
   EXPECT_EQ(2, i);
@@ -231,57 +231,57 @@ TYPED_TEST(queue, move_assign_multiple_1)
 
 TYPED_TEST(queue, single_push_pop)
 {
-  this->queue.push(1);
+  this->queue_.push(1);
 
   int i = 0;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
 
-  ASSERT_EQ(false, this->queue.try_pop(&i));
+  ASSERT_EQ(false, this->queue_.try_pop(&i));
 }
 
 
 TYPED_TEST(queue, multiple_push_pop)
 {
-  this->queue.push(1);
-  this->queue.push(2);
-  this->queue.push(3);
+  this->queue_.push(1);
+  this->queue_.push(2);
+  this->queue_.push(3);
 
   int i = 0;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(2, i);
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(3, i);
 
-  ASSERT_EQ(false, this->queue.try_pop(&i));
+  ASSERT_EQ(false, this->queue_.try_pop(&i));
 }
 
 
 TYPED_TEST(queue, interleaved_push_pop)
 {
-  this->queue.push(1);
-  this->queue.push(2);
+  this->queue_.push(1);
+  this->queue_.push(2);
 
   int i = 0;
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(1, i);
 
-  this->queue.push(3);
+  this->queue_.push(3);
 
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(2, i);
 
-  this->queue.push(2);
+  this->queue_.push(2);
 
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(3, i);
 
-  ASSERT_EQ(true, this->queue.try_pop(&i));
+  ASSERT_EQ(true, this->queue_.try_pop(&i));
   EXPECT_EQ(2, i);
 
-  ASSERT_EQ(false, this->queue.try_pop(&i));
+  ASSERT_EQ(false, this->queue_.try_pop(&i));
 }
 
 
