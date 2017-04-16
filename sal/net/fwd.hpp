@@ -26,11 +26,6 @@ namespace net {
 const std::error_code &init () noexcept;
 
 
-// Error
-enum class socket_errc_t;
-class throw_on_error;
-
-
 // Socket
 class socket_base_t;
 template <typename Protocol> class basic_socket_t;

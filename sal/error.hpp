@@ -59,4 +59,41 @@ inline void throw_system_error [[noreturn]] (const std::error_code &error,
 }
 
 
+/**
+ * Helper class to catch std::error_code and throw std::system_error if there
+ * was an error.
+ */
+class throw_on_error
+{
+public:
+
+  throw_on_error () = delete;
+  throw_on_error (const throw_on_error &) = delete;
+  throw_on_error &operator= (const throw_on_error &) = delete;
+
+  /// Construct error thrower with message \a msg
+  throw_on_error (const char *msg) noexcept
+    : msg_(msg)
+  {}
+
+  ~throw_on_error () noexcept(false)
+  {
+    if (code_)
+    {
+      throw_system_error(code_, msg_);
+    }
+  }
+
+  operator std::error_code& () noexcept
+  {
+    return code_;
+  }
+
+private:
+
+  std::error_code code_{};
+  const char * const msg_;
+};
+
+
 __sal_end
