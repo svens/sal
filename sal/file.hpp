@@ -6,6 +6,7 @@
  */
 
 #include <sal/config.hpp>
+#include <sal/buf_ptr.hpp>
 #include <sal/error.hpp>
 #include <ios>
 #include <string>
@@ -50,7 +51,7 @@ public:
   /// \throws std::system_error on error
   static file_t create (const std::string &name, open_mode mode)
   {
-    return create(name, mode, throw_on_error("file_t::create"));
+    return create(name, mode, throw_on_error("file::create"));
   }
 
 
@@ -65,7 +66,7 @@ public:
   /// \throws std::system_error on error
   static file_t open (const std::string &name, open_mode mode)
   {
-    return open(name, mode, throw_on_error("file_t::open"));
+    return open(name, mode, throw_on_error("file::open"));
   }
 
 
@@ -80,7 +81,7 @@ public:
   /// \throws std::system_error on error
   static file_t open_or_create (const std::string &name, open_mode mode)
   {
-    return open_or_create(name, mode, throw_on_error("file_t::open_or_create"));
+    return open_or_create(name, mode, throw_on_error("file::open_or_create"));
   }
 
 
@@ -97,7 +98,7 @@ public:
   /// \throws std::system_error on error
   static file_t unique (std::string &name)
   {
-    return unique(name, throw_on_error("file_t::unique"));
+    return unique(name, throw_on_error("file::unique"));
   }
 
 
@@ -144,7 +145,7 @@ public:
   /// \throws std::system_error on error
   void close ()
   {
-    close(throw_on_error("file_t::close"));
+    close(throw_on_error("file::close"));
   }
 
 
@@ -162,17 +163,24 @@ public:
   }
 
 
-  /// Attempt to write \a size bytes of \a data to file. Returns number of
-  /// bytes actually written.
-  size_t write (const char *data, size_t size, std::error_code &error)
-    noexcept;
-
-
-  /// \copydoc write
-  /// \throws std::system_error on write error
-  size_t write (const char *data, size_t size)
+  /// Attempt to write \a buf to file.
+  /// \returns number of bytes actually written.
+  template <typename Ptr>
+  size_t write (const Ptr &buf, std::error_code &error) noexcept
   {
-    return write(data, size, throw_on_error("file_t::write"));
+    return write((const char *)buf.data(), buf.size(), error);
+  }
+
+
+  /**
+   * Attempt to write \a buf to file.
+   * \returns number of bytes actually written.
+   * \throws std::system_error on write error
+   */
+  template <typename Ptr>
+  size_t write (const Ptr &buf)
+  {
+    return write(buf, throw_on_error("file::write"));
   }
 
 
@@ -186,7 +194,7 @@ public:
   /// \throws std::system_error on read error
   size_t read (char *data, size_t size)
   {
-    return read(data, size, throw_on_error("file_t::read"));
+    return read(data, size, throw_on_error("file::read"));
   }
 
 
@@ -204,29 +212,32 @@ public:
   /// \throws std::system_error on seek error.
   int64_t seek (int64_t offset, seek_dir whence)
   {
-    return seek(offset, whence, throw_on_error("file_t::seek"));
+    return seek(offset, whence, throw_on_error("file::seek"));
   }
 
 
 private:
 
-    native_handle handle_ = null;
+  native_handle handle_ = null;
 
-    file_t (native_handle handle)
-        : handle_(handle)
-    {}
+  file_t (native_handle handle)
+    : handle_(handle)
+  {}
 
-    file_t (const file_t &) = delete;
-    file_t &operator= (const file_t &) = delete;
+  file_t (const file_t &) = delete;
+  file_t &operator= (const file_t &) = delete;
 
-    void ensure_closed () noexcept
+  void ensure_closed () noexcept
+  {
+    if (is_open())
     {
-      if (is_open())
-      {
-        std::error_code error;
-        close(error);
-      }
+      std::error_code error;
+      close(error);
     }
+  }
+
+  size_t write (const void *data, size_t size, std::error_code &error)
+    noexcept;
 };
 
 

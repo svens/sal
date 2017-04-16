@@ -276,7 +276,7 @@ void file_t::close (std::error_code &error) noexcept
 }
 
 
-size_t file_t::write (const char *data, size_t size, std::error_code &error)
+size_t file_t::write (const void *data, size_t size, std::error_code &error)
   noexcept
 {
 #if __sal_os_windows

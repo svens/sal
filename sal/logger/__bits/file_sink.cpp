@@ -251,7 +251,7 @@ file_t file_sink_t::make_file ()
     << "\n# log=" << filename << ';'
     << "\n# pid=" << get_this_process_id() << ';'
     << "\n#\n\n";
-  size_ += file.write(header.data(), header.size());
+  size_ += file.write(make_buf(header));
 
   return file;
 }
@@ -288,7 +288,7 @@ void file_sink_t::sink_event_write (event_t &event)
   }
   else
   {
-    file_.write(event.message.data(), event.message.size());
+    file_.write(make_buf(event.message));
   }
 }
 
