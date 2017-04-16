@@ -6,6 +6,7 @@
  */
 
 #include <sal/config.hpp>
+#include <sal/buf_ptr.hpp>
 #include <sal/error.hpp>
 #include <ios>
 #include <string>
@@ -50,12 +51,7 @@ public:
   /// \throws std::system_error on error
   static file_t create (const std::string &name, open_mode mode)
   {
-    std::error_code error;
-    if (auto f = create(name, mode, error))
-    {
-      return f;
-    }
-    throw_system_error(error, "file_t::create: ", name);
+    return create(name, mode, throw_on_error("file::create"));
   }
 
 
@@ -70,12 +66,7 @@ public:
   /// \throws std::system_error on error
   static file_t open (const std::string &name, open_mode mode)
   {
-    std::error_code error;
-    if (auto f = open(name, mode, error))
-    {
-      return f;
-    }
-    throw_system_error(error, "file_t::open: ", name);
+    return open(name, mode, throw_on_error("file::open"));
   }
 
 
@@ -90,12 +81,7 @@ public:
   /// \throws std::system_error on error
   static file_t open_or_create (const std::string &name, open_mode mode)
   {
-    std::error_code error;
-    if (auto f = open_or_create(name, mode, error))
-    {
-      return f;
-    }
-    throw_system_error(error, "file_t::open_or_create: ", name);
+    return open_or_create(name, mode, throw_on_error("file::open_or_create"));
   }
 
 
@@ -112,12 +98,7 @@ public:
   /// \throws std::system_error on error
   static file_t unique (std::string &name)
   {
-    std::error_code error;
-    if (auto f = unique(name, error))
-    {
-      return f;
-    }
-    throw_system_error(error, "file_t::unique: ", name);
+    return unique(name, throw_on_error("file::unique"));
   }
 
 
@@ -164,12 +145,7 @@ public:
   /// \throws std::system_error on error
   void close ()
   {
-    std::error_code error;
-    close(error);
-    if (error)
-    {
-      throw_system_error(error, "file_t::close");
-    }
+    close(throw_on_error("file::close"));
   }
 
 
@@ -187,43 +163,47 @@ public:
   }
 
 
-  /// Attempt to write \a size bytes of \a data to file. Returns number of
-  /// bytes actually written.
-  size_t write (const char *data, size_t size, std::error_code &error)
-    noexcept;
-
-
-  /// \copydoc write
-  /// \throws std::system_error on write error
-  size_t write (const char *data, size_t size)
+  /// Attempt to write \a buf to file.
+  /// \returns number of bytes actually written.
+  template <typename Ptr>
+  size_t write (const Ptr &buf, std::error_code &error) noexcept
   {
-    std::error_code error;
-    auto result = write(data, size, error);
-    if (error)
-    {
-      throw_system_error(error, "file_t::write");
-    }
-    return result;
+    return write((const char *)buf.data(), buf.size(), error);
   }
 
 
-  /// Attempt to read maximum \a size bytes into \a data. Returns number of
-  /// bytes actually read.
-  size_t read (char *data, size_t size, std::error_code &error)
-    noexcept;
-
-
-  /// \copydoc read
-  /// \throws std::system_error on read error
-  size_t read (char *data, size_t size)
+  /**
+   * Attempt to write \a buf to file.
+   * \returns number of bytes actually written.
+   * \throws std::system_error on write error
+   */
+  template <typename Ptr>
+  size_t write (const Ptr &buf)
   {
-    std::error_code error;
-    auto result = read(data, size, error);
-    if (error)
-    {
-      throw_system_error(error, "file_t::read");
-    }
-    return result;
+    return write(buf, throw_on_error("file::write"));
+  }
+
+
+  /**
+   * Attempt to read data into \a buf (but not more than buf.size() bytes)
+   * \returns number of bytes actually read.
+   */
+  template <typename Ptr>
+  size_t read (const Ptr &buf, std::error_code &error) noexcept
+  {
+    return read(buf.data(), buf.size(), error);
+  }
+
+
+  /**
+   * Attempt to read data into \a buf (but not more than buf.size() bytes)
+   * \returns number of bytes actually read.
+   * \throws std::system_error on read error
+   */
+  template <typename Ptr>
+  size_t read (const Ptr &buf)
+  {
+    return read(buf, throw_on_error("file::read"));
   }
 
 
@@ -241,35 +221,32 @@ public:
   /// \throws std::system_error on seek error.
   int64_t seek (int64_t offset, seek_dir whence)
   {
-    std::error_code error;
-    auto result = seek(offset, whence, error);
-    if (error)
-    {
-      throw_system_error(error, "file_t::seek");
-    }
-    return result;
+    return seek(offset, whence, throw_on_error("file::seek"));
   }
 
 
 private:
 
-    native_handle handle_ = null;
+  native_handle handle_ = null;
 
-    file_t (native_handle handle)
-        : handle_(handle)
-    {}
+  file_t (native_handle handle)
+    : handle_(handle)
+  {}
 
-    file_t (const file_t &) = delete;
-    file_t &operator= (const file_t &) = delete;
+  file_t (const file_t &) = delete;
+  file_t &operator= (const file_t &) = delete;
 
-    void ensure_closed () noexcept
+  void ensure_closed () noexcept
+  {
+    if (is_open())
     {
-      if (is_open())
-      {
-        std::error_code error;
-        close(error);
-      }
+      std::error_code error;
+      close(error);
     }
+  }
+
+  size_t write (const void *data, size_t size, std::error_code &error) noexcept;
+  size_t read (void *data, size_t size, std::error_code &error) noexcept;
 };
 
 
