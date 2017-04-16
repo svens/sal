@@ -5,6 +5,7 @@
  */
 
 #include <sal/config.hpp>
+#include <sal/char_array.hpp>
 #include <algorithm>
 #include <array>
 #include <string>
@@ -136,6 +137,17 @@ inline buf_ptr make_buf (const buf_ptr &ptr, size_t max_bytes) noexcept
 
 
 /**
+ * Construct buf_ptr using region owned by \a data
+ */
+template <size_t N>
+inline buf_ptr make_buf (char_array_t<N> &data) noexcept
+{
+  // not nice, but ok: returned area is initialized
+  return buf_ptr(const_cast<char *>(data.data()), data.size());
+}
+
+
+/**
  * Construct buf_ptr using region owned by \a data.
  */
 template <typename T, size_t N>
@@ -177,6 +189,20 @@ inline buf_ptr make_buf (std::basic_string<T, Traits, Allocator> &data)
   noexcept
 {
   return buf_ptr(&data[0], data.size() * sizeof(T));
+}
+
+
+/**
+ * Construct buf_ptr using region owned by \a data but not more than
+ * \a max_bytes
+ */
+template <size_t N>
+inline buf_ptr make_buf (char_array_t<N> &data, size_t max_bytes) noexcept
+{
+  // not nice, but ok: returned area is initialized
+  return buf_ptr(const_cast<char *>(data.data()),
+    (std::min)(max_bytes, data.size())
+  );
 }
 
 
@@ -349,6 +375,16 @@ inline const_buf_ptr make_buf (const const_buf_ptr &ptr, size_t max_bytes)
 
 
 /**
+ * Construct const_buf_ptr using region owned by \a data
+ */
+template <size_t N>
+inline const_buf_ptr make_buf (const char_array_t<N> &data) noexcept
+{
+  return const_buf_ptr(data.data(), data.size());
+}
+
+
+/**
  * Construct const_buf_ptr using region owned by \a data.
  */
 template <typename T, size_t N>
@@ -390,6 +426,18 @@ inline const_buf_ptr make_buf (
   const std::basic_string<T, Traits, Allocator> &data) noexcept
 {
   return const_buf_ptr(&data[0], data.size() * sizeof(T));
+}
+
+
+/**
+ * Construct const_buf_ptr using region owned by \a data but not more than
+ * \a max_bytes.
+ */
+template <size_t N>
+inline const_buf_ptr make_buf (const char_array_t<N> &data, size_t max_bytes)
+  noexcept
+{
+  return const_buf_ptr(data.data(), (std::min)(max_bytes, data.size()));
 }
 
 
