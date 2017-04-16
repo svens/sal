@@ -50,12 +50,7 @@ public:
   /// \throws std::system_error on error
   static file_t create (const std::string &name, open_mode mode)
   {
-    std::error_code error;
-    if (auto f = create(name, mode, error))
-    {
-      return f;
-    }
-    throw_system_error(error, "file_t::create: ", name);
+    return create(name, mode, throw_on_error("file_t::create"));
   }
 
 
@@ -70,12 +65,7 @@ public:
   /// \throws std::system_error on error
   static file_t open (const std::string &name, open_mode mode)
   {
-    std::error_code error;
-    if (auto f = open(name, mode, error))
-    {
-      return f;
-    }
-    throw_system_error(error, "file_t::open: ", name);
+    return open(name, mode, throw_on_error("file_t::open"));
   }
 
 
@@ -90,12 +80,7 @@ public:
   /// \throws std::system_error on error
   static file_t open_or_create (const std::string &name, open_mode mode)
   {
-    std::error_code error;
-    if (auto f = open_or_create(name, mode, error))
-    {
-      return f;
-    }
-    throw_system_error(error, "file_t::open_or_create: ", name);
+    return open_or_create(name, mode, throw_on_error("file_t::open_or_create"));
   }
 
 
@@ -112,12 +97,7 @@ public:
   /// \throws std::system_error on error
   static file_t unique (std::string &name)
   {
-    std::error_code error;
-    if (auto f = unique(name, error))
-    {
-      return f;
-    }
-    throw_system_error(error, "file_t::unique: ", name);
+    return unique(name, throw_on_error("file_t::unique"));
   }
 
 
@@ -164,12 +144,7 @@ public:
   /// \throws std::system_error on error
   void close ()
   {
-    std::error_code error;
-    close(error);
-    if (error)
-    {
-      throw_system_error(error, "file_t::close");
-    }
+    close(throw_on_error("file_t::close"));
   }
 
 
@@ -197,13 +172,7 @@ public:
   /// \throws std::system_error on write error
   size_t write (const char *data, size_t size)
   {
-    std::error_code error;
-    auto result = write(data, size, error);
-    if (error)
-    {
-      throw_system_error(error, "file_t::write");
-    }
-    return result;
+    return write(data, size, throw_on_error("file_t::write"));
   }
 
 
@@ -217,13 +186,7 @@ public:
   /// \throws std::system_error on read error
   size_t read (char *data, size_t size)
   {
-    std::error_code error;
-    auto result = read(data, size, error);
-    if (error)
-    {
-      throw_system_error(error, "file_t::read");
-    }
-    return result;
+    return read(data, size, throw_on_error("file_t::read"));
   }
 
 
@@ -241,13 +204,7 @@ public:
   /// \throws std::system_error on seek error.
   int64_t seek (int64_t offset, seek_dir whence)
   {
-    std::error_code error;
-    auto result = seek(offset, whence, error);
-    if (error)
-    {
-      throw_system_error(error, "file_t::seek");
-    }
-    return result;
+    return seek(offset, whence, throw_on_error("file_t::seek"));
   }
 
 
