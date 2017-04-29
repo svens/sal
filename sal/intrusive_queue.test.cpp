@@ -347,7 +347,7 @@ TEST(intrusive_queue, spsc)
       }
       else
       {
-        ASSERT_GT(10 * data.max_size(), ++miss);
+        ASSERT_GT(data.max_size() * data.max_size(), ++miss);
       }
       std::this_thread::yield();
     }
@@ -385,7 +385,7 @@ TEST(intrusive_queue, mpsc)
       }
       else
       {
-        ASSERT_GT(10 * data.max_size(), ++miss);
+        ASSERT_GT(data.max_size() * data.max_size(), ++miss);
       }
       std::this_thread::yield();
     }
