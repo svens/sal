@@ -245,6 +245,7 @@ void async_connect_t::finish (std::error_code &result) noexcept
         );
         finished = true;
       }
+      result.clear();
       return;
 
     case ERROR_INVALID_NETNAME:
@@ -328,6 +329,7 @@ void async_accept_t::finish (std::error_code &result) noexcept
 
         finished = true;
       }
+      result.clear();
       break;
 
     case WSAENOTSOCK:
@@ -432,6 +434,8 @@ io_buf_t *io_context_t::try_get () noexcept
 io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout,
   std::error_code &error) noexcept
 {
+  error.clear();
+
   if (auto io_buf = try_get())
   {
     return io_buf;
@@ -833,6 +837,8 @@ bool io_buf_t::send (socket_t &socket, uint16_t flags) noexcept
 io_buf_t *io_context_t::get (const std::chrono::milliseconds &timeout_ms,
   std::error_code &error) noexcept
 {
+  error.clear();
+
   if (auto io_buf = try_get())
   {
     return io_buf;

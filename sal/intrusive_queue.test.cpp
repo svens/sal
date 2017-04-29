@@ -337,12 +337,17 @@ TEST(intrusive_queue, spsc)
   // consumer
   auto consumer = std::thread([&]
   {
+    size_t miss = 0;
     for (auto i = 0U;  i != data.size();  /**/)
     {
       if (auto p = queue.try_pop())
       {
-        ASSERT_EQ(&data[i], p);
-        ++i;
+        ASSERT_EQ(&data[i++], p);
+        miss = 0;
+      }
+      else
+      {
+        ASSERT_GT(data.max_size() * data.max_size(), ++miss);
       }
       std::this_thread::yield();
     }
@@ -370,12 +375,17 @@ TEST(intrusive_queue, mpsc)
   // consumer
   auto consumer = std::thread([&]
   {
+    auto miss = 0U;
     for (auto i = 0U;  i != data.size();  /**/)
     {
       if (auto p = queue.try_pop())
       {
-        ASSERT_EQ(&data[i], p);
-        ++i;
+        ASSERT_EQ(&data[i++], p);
+        miss = 0;
+      }
+      else
+      {
+        ASSERT_GT(data.max_size() * data.max_size(), ++miss);
       }
       std::this_thread::yield();
     }

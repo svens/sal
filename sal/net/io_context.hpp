@@ -2,6 +2,8 @@
 
 /**
  * \file sal/net/io_context.hpp
+ *
+ * Per-thread io_service_t representative.
  */
 
 
@@ -20,6 +22,20 @@ __sal_begin
 namespace net {
 
 
+/**
+ * Per I/O thread representative of io_service_t. It also maintains per-thread
+ * resources (io_buf_t pool, etc). Each instance of io_context_t maintains own
+ * operations and completions queues.
+ *
+ * To wait for completions, call get() repeatedly that returns next completion
+ * from queue. If queue is empty, it uses io_service_t to get batch of next
+ * completions that'll be returned one by one to application.
+ *
+ * This class is not meant to be instantiated directly but through
+ * io_service_t::make_context(). Instances must be kept alive until all of
+ * buffers allocated using make_buf() are finished and returned to owner
+ * thread's io_context_t pool.
+ */
 class io_context_t
   : public __bits::io_context_t
 {
@@ -28,10 +44,19 @@ public:
   io_context_t (const io_context_t &) = delete;
   io_context_t &operator= (const io_context_t &) = delete;
 
+  /// Move ctor
   io_context_t (io_context_t &&) = default;
+
+  /// Move assign
   io_context_t &operator= (io_context_t &&) = default;
 
 
+  /**
+   * Allocate handle (io_buf_t) for asynchronous operation. It first tries to
+   * return handle from internal pool of free handles. On exhaustion, next
+   * batch of handles are allocated and one of them is returned. On allocation
+   * failure, internal ```std::dequeue::emplace_back()``` throws an exception.
+   */
   io_buf_ptr make_buf ()
   {
     io_buf_ptr io_buf{free_.try_pop(), &io_context_t::free_io_buf};
@@ -46,6 +71,10 @@ public:
   }
 
 
+  /**
+   * Return next asynchronous operation completion or \c nullptr if none. This
+   * method does not block or wait for next batch of completions.
+   */
   io_buf_ptr try_get () noexcept
   {
     auto io_buf = __bits::io_context_t::try_get();
@@ -56,6 +85,13 @@ public:
   }
 
 
+  /**
+   * Return next asynchronous operation completion. If none is immediately
+   * ready, this method waits for more completions until \a timeout has
+   * passed. If still no completions, \c nullptr is returned.
+   *
+   * On failure, \a error is set.
+   */
   template <typename Rep, typename Period>
   io_buf_ptr get (const std::chrono::duration<Rep, Period> &timeout,
     std::error_code &error) noexcept
@@ -71,6 +107,13 @@ public:
   }
 
 
+  /**
+   * Return next asynchronous operation completion. If none is immediately
+   * ready, this method waits for more completions until \a timeout has
+   * passed. If still no completions, \c nullptr is returned.
+   *
+   * On failure, std::system_error is thrown.
+   */
   template <typename Rep, typename Period>
   io_buf_ptr get (const std::chrono::duration<Rep, Period> &timeout)
   {
@@ -78,12 +121,26 @@ public:
   }
 
 
+  /**
+   * Return next asynchronous operation completion. If none is immediately
+   * ready, this method waits indefinitely until next completion is ready to
+   * be returned.
+   *
+   * On failure, \a error is set.
+   */
   io_buf_ptr get (std::error_code &error) noexcept
   {
     return get((std::chrono::milliseconds::max)(), error);
   }
 
 
+  /**
+   * Return next asynchronous operation completion. If none is immediately
+   * ready, this method waits indefinitely until next completion is ready to
+   * be returned.
+   *
+   * On failure, std::system_error is thrown.
+   */
   io_buf_ptr get ()
   {
     return get((std::chrono::milliseconds::max)(),
@@ -92,6 +149,10 @@ public:
   }
 
 
+  /**
+   * Iterate and release all already completed asynchronous operations.
+   * \returns number of completions released.
+   */
   size_t reclaim () noexcept
   {
     auto count = 0;
