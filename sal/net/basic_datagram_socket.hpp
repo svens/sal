@@ -21,6 +21,8 @@ namespace net {
 
 /**
  * Datagram socket
+ *
+ * For more information about asynchronous API usage, see io_service_t.
  */
 template <typename Protocol>
 class basic_datagram_socket_t
@@ -235,7 +237,7 @@ public:
 
 
   /**
-   * Write daa of \a buf into this socket for delivering to \a endpoint. On
+   * Write data of \a buf into this socket for delivering to \a endpoint. On
    * success, returns number of bytes sent. On failure, throw
    * std::system_error
    */
@@ -337,9 +339,15 @@ public:
   //
 
 
+  /**
+   * async_receive_from() result.
+   */
   struct async_receive_from_t
     : public __bits::async_receive_from_t
   {
+    /**
+     * Packet sender endpoint.
+     */
     const endpoint_t &endpoint () const noexcept
     {
       return *reinterpret_cast<const endpoint_t *>(
@@ -347,6 +355,9 @@ public:
       );
     }
 
+    /**
+     * Number of bytes received.
+     */
     size_t transferred () const noexcept
     {
       return __bits::async_receive_from_t::transferred;
@@ -354,6 +365,10 @@ public:
   };
 
 
+  /**
+   * Start async_receive_from()
+   * \see receive_from()
+   */
   void async_receive_from (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
@@ -362,28 +377,39 @@ public:
   }
 
 
+  /**
+   * Start async_receive_from()
+   * \see receive_from()
+   */
   void async_receive_from (io_buf_ptr &&io_buf) noexcept
   {
     async_receive_from(std::move(io_buf), socket_base_t::message_flags_t{});
   }
 
 
+  /**
+   * Extract and return pointer to async_receive_from() result from \a io_buf
+   * or nullptr if \a io_buf does not represent async_receive_from()
+   * operation.
+   */
   static const async_receive_from_t *async_receive_from_result (
     const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
     if (auto result = io_buf->result<async_receive_from_t>())
     {
-      if (result->error)
-      {
-        error = result->error;
-      }
+      error = result->error;
       return result;
     }
     return nullptr;
   }
 
 
+  /**
+   * Extract and return pointer to async_receive_from() result from \a io_buf
+   * or nullptr if \a io_buf does not represent async_receive_from()
+   * operation.
+   */
   static const async_receive_from_t *async_receive_from_result (
     const io_buf_ptr &io_buf)
   {
@@ -393,9 +419,15 @@ public:
   }
 
 
+  /**
+   * async_receive() result.
+   */
   struct async_receive_t
     : public __bits::async_receive_t
   {
+    /**
+     * Number of bytes received.
+     */
     size_t transferred () const noexcept
     {
       return __bits::async_receive_t::transferred;
@@ -403,6 +435,10 @@ public:
   };
 
 
+  /**
+   * Start async_receive().
+   * \see receive()
+   */
   void async_receive (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
@@ -411,27 +447,36 @@ public:
   }
 
 
+  /**
+   * Start async_receive().
+   * \see receive()
+   */
   void async_receive (io_buf_ptr &&io_buf) noexcept
   {
     async_receive(std::move(io_buf), socket_base_t::message_flags_t{});
   }
 
 
+  /**
+   * Extract and return pointer to async_receive() result from \a io_buf or
+   * nullptr if \a io_buf does not represent async_receive() operation.
+   */
   static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
     if (auto result = io_buf->result<async_receive_t>())
     {
-      if (result->error)
-      {
-        error = result->error;
-      }
+      error = result->error;
       return result;
     }
     return nullptr;
   }
 
 
+  /**
+   * Extract and return pointer to async_receive() result from \a io_buf or
+   * nullptr if \a io_buf does not represent async_receive() operation.
+   */
   static const async_receive_t *async_receive_result (const io_buf_ptr &io_buf)
   {
     return async_receive_result(io_buf,
@@ -440,9 +485,15 @@ public:
   }
 
 
+  /**
+   * async_send_to() result.
+   */
   struct async_send_to_t
     : public __bits::async_send_to_t
   {
+    /**
+     * Number of bytes sent.
+     */
     size_t transferred () const noexcept
     {
       return __bits::async_send_to_t::transferred;
@@ -450,6 +501,10 @@ public:
   };
 
 
+  /**
+   * Start async_send_to().
+   * \see send_to()
+   */
   void async_send_to (io_buf_ptr &&io_buf,
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags) noexcept
@@ -462,6 +517,10 @@ public:
   }
 
 
+  /**
+   * Start async_send_to().
+   * \see send_to()
+   */
   void async_send_to (io_buf_ptr &&io_buf, const endpoint_t &endpoint) noexcept
   {
     async_send_to(std::move(io_buf), endpoint,
@@ -470,21 +529,26 @@ public:
   }
 
 
+  /**
+   * Extract and return pointer to async_send_to() result from \a io_buf or
+   * nullptr if \a io_buf does not represent async_send_to() operation.
+   */
   static const async_send_to_t *async_send_to_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
     if (auto result = io_buf->result<async_send_to_t>())
     {
-      if (result->error)
-      {
-        error = result->error;
-      }
+      error = result->error;
       return result;
     }
     return nullptr;
   }
 
 
+  /**
+   * Extract and return pointer to async_send_to() result from \a io_buf or
+   * nullptr if \a io_buf does not represent async_send_to() operation.
+   */
   static const async_send_to_t *async_send_to_result (const io_buf_ptr &io_buf)
   {
     return async_send_to_result(io_buf,
@@ -493,9 +557,15 @@ public:
   }
 
 
+  /**
+   * async_send() result.
+   */
   struct async_send_t
     : public __bits::async_send_t
   {
+    /**
+     * Number of bytes sent.
+     */
     size_t transferred () const noexcept
     {
       return __bits::async_send_t::transferred;
@@ -503,6 +573,10 @@ public:
   };
 
 
+  /**
+   * Start async_send().
+   * \see send()
+   */
   void async_send (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
@@ -511,27 +585,36 @@ public:
   }
 
 
+  /**
+   * Start async_send().
+   * \see send()
+   */
   void async_send (io_buf_ptr &&io_buf) noexcept
   {
     async_send(std::move(io_buf), socket_base_t::message_flags_t{});
   }
 
 
+  /**
+   * Extract and return pointer to async_send() result from \a io_buf or
+   * nullptr if \a io_buf does not represent async_send() operation.
+   */
   static const async_send_t *async_send_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
     if (auto result = io_buf->result<async_send_t>())
     {
-      if (result->error)
-      {
-        error = result->error;
-      }
+      error = result->error;
       return result;
     }
     return nullptr;
   }
 
 
+  /**
+   * Extract and return pointer to async_send() result from \a io_buf or
+   * nullptr if \a io_buf does not represent async_send() operation.
+   */
   static const async_send_t *async_send_result (const io_buf_ptr &io_buf)
   {
     return async_send_result(io_buf,

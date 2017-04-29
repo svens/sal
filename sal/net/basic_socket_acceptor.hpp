@@ -24,6 +24,8 @@ namespace net {
  * Object of class basic_socket_acceptor_t is used to listen and queue
  * incoming socket connections. Socket object that represent incoming
  * connections are dequeued by calling accept().
+ *
+ * For more information about asynchronous API usage, see io_service_t.
  */
 template <typename AcceptableProtocol>
 class basic_socket_acceptor_t
@@ -498,9 +500,15 @@ public:
   //
 
 
+  /**
+   * async_accept() result.
+   */
   struct async_accept_t
     : public __bits::async_accept_t
   {
+    /**
+     * Local endpoint of accepted socket.
+     */
     const endpoint_t &local_endpoint () const noexcept
     {
       return *reinterpret_cast<const endpoint_t *>(
@@ -508,6 +516,9 @@ public:
       );
     }
 
+    /**
+     * Remote endpoint of accepted socket.
+     */
     const endpoint_t &remote_endpoint () const noexcept
     {
       return *reinterpret_cast<const endpoint_t *>(
@@ -515,6 +526,13 @@ public:
       );
     }
 
+    /**
+     * Return accepted socket.
+     *
+     * \note Call it only once, first socket becomes owner of handle.
+     * Following calls will acquire handle also, leading to multiple native
+     * handle closes.
+     */
     socket_t accepted () const noexcept
     {
       return __bits::async_accept_t::accepted;
@@ -522,6 +540,10 @@ public:
   };
 
 
+  /**
+   * Start async_accept().
+   * \see accept()
+   */
   void async_accept (io_buf_ptr &&io_buf) noexcept
   {
     io_buf->start<async_accept_t>(impl_, family_);
@@ -529,6 +551,10 @@ public:
   }
 
 
+  /**
+   * Extract and return pointer to async_accept() result from \a io_buf or
+   * nullptr if \a io_buf does not represent async_accept() operation.
+   */
   static const async_accept_t *async_accept_result (const io_buf_ptr &io_buf,
     std::error_code &error) noexcept
   {
@@ -541,6 +567,10 @@ public:
   }
 
 
+  /**
+   * Extract and return pointer to async_accept() result from \a io_buf or
+   * nullptr if \a io_buf does not represent async_accept() operation.
+   */
   static const async_accept_t *async_accept_result (const io_buf_ptr &io_buf)
   {
     return async_accept_result(io_buf,

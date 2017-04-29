@@ -99,7 +99,11 @@ inline Result handle (Result result, std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
-  if (result == SOCKET_ERROR)
+  if (result != SOCKET_ERROR)
+  {
+    error.clear();
+  }
+  else
   {
     auto e = ::WSAGetLastError();
     if (e == WSAENOTSOCK)
@@ -111,7 +115,11 @@ inline Result handle (Result result, std::error_code &error) noexcept
 
 #else
 
-  if (result == -1)
+  if (result != -1)
+  {
+    error.clear();
+  }
+  else
   {
     if (errno == EDESTADDRREQ)
     {
