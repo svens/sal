@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -97,6 +97,7 @@ $(document).ready(function(){initNavTree('buf__ptr_8hpp.html','');});
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="char__array_8hpp_source.html">sal/char_array.hpp</a>&gt;</code><br />
 <code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;array&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
@@ -135,6 +136,11 @@ buf_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="b
 buf_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a0fcf060ef617f4fcd7f5d6ef0266b485">sal::make_buf</a> (const buf_ptr &amp;ptr, size_t max_bytes) noexcept</td></tr>
 <tr class="memdesc:a0fcf060ef617f4fcd7f5d6ef0266b485"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new <a class="el" href="classsal_1_1buf__ptr.html" title="buf_ptr represents contiguous region of raw memory with specified size. ">buf_ptr</a> as copy of <em>ptr</em> with up <em>max_bytes</em>. <br /></td></tr>
 <tr class="separator:a0fcf060ef617f4fcd7f5d6ef0266b485"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3eb8f8bb61b7b2bd688387ec8175e96"><td class="memTemplParams" colspan="2"><a id="ae3eb8f8bb61b7b2bd688387ec8175e96"></a>
+template&lt;size_t N&gt; </td></tr>
+<tr class="memitem:ae3eb8f8bb61b7b2bd688387ec8175e96"><td class="memTemplItemLeft" align="right" valign="top">buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#ae3eb8f8bb61b7b2bd688387ec8175e96">sal::make_buf</a> (char_array_t&lt; N &gt; &amp;data) noexcept</td></tr>
+<tr class="memdesc:ae3eb8f8bb61b7b2bd688387ec8175e96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <a class="el" href="classsal_1_1buf__ptr.html" title="buf_ptr represents contiguous region of raw memory with specified size. ">buf_ptr</a> using region owned by <em>data</em>. <br /></td></tr>
+<tr class="separator:ae3eb8f8bb61b7b2bd688387ec8175e96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31b42b1a8d70aabfc664fb1b0a31d0a6"><td class="memTemplParams" colspan="2"><a id="a31b42b1a8d70aabfc664fb1b0a31d0a6"></a>
 template&lt;typename T , size_t N&gt; </td></tr>
 <tr class="memitem:a31b42b1a8d70aabfc664fb1b0a31d0a6"><td class="memTemplItemLeft" align="right" valign="top">buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a31b42b1a8d70aabfc664fb1b0a31d0a6">sal::make_buf</a> (T(&amp;data)[N]) noexcept</td></tr>
@@ -153,6 +159,11 @@ template&lt;typename T , size_t N&gt; </td></tr>
 <tr class="memitem:a5b1aa7b64858525dcd17601abede2182"><td class="memTemplItemLeft" align="right" valign="top">buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a5b1aa7b64858525dcd17601abede2182">sal::make_buf</a> (std::basic_string&lt; T, Traits, Allocator &gt; &amp;data) noexcept</td></tr>
 <tr class="memdesc:a5b1aa7b64858525dcd17601abede2182"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <a class="el" href="classsal_1_1buf__ptr.html" title="buf_ptr represents contiguous region of raw memory with specified size. ">buf_ptr</a> using region owned by <em>data</em>.  <a href="buf__ptr_8hpp.html#a5b1aa7b64858525dcd17601abede2182">More...</a><br /></td></tr>
 <tr class="separator:a5b1aa7b64858525dcd17601abede2182"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af75f412ad62e8b12a334495712d039d5"><td class="memTemplParams" colspan="2"><a id="af75f412ad62e8b12a334495712d039d5"></a>
+template&lt;size_t N&gt; </td></tr>
+<tr class="memitem:af75f412ad62e8b12a334495712d039d5"><td class="memTemplItemLeft" align="right" valign="top">buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#af75f412ad62e8b12a334495712d039d5">sal::make_buf</a> (char_array_t&lt; N &gt; &amp;data, size_t max_bytes) noexcept</td></tr>
+<tr class="memdesc:af75f412ad62e8b12a334495712d039d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <a class="el" href="classsal_1_1buf__ptr.html" title="buf_ptr represents contiguous region of raw memory with specified size. ">buf_ptr</a> using region owned by <em>data</em> but not more than <em>max_bytes</em>. <br /></td></tr>
+<tr class="separator:af75f412ad62e8b12a334495712d039d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29a6bf3fff9bd9c226615615d4c78603"><td class="memTemplParams" colspan="2"><a id="a29a6bf3fff9bd9c226615615d4c78603"></a>
 template&lt;typename T , size_t N&gt; </td></tr>
 <tr class="memitem:a29a6bf3fff9bd9c226615615d4c78603"><td class="memTemplItemLeft" align="right" valign="top">buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a29a6bf3fff9bd9c226615615d4c78603">sal::make_buf</a> (T(&amp;data)[N], size_t max_bytes) noexcept</td></tr>
@@ -193,6 +204,11 @@ const_buf_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" h
 const_buf_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a1c113b292cd0e73ef7185db123acbc0a">sal::make_buf</a> (const const_buf_ptr &amp;ptr, size_t max_bytes) noexcept</td></tr>
 <tr class="memdesc:a1c113b292cd0e73ef7185db123acbc0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new <a class="el" href="classsal_1_1const__buf__ptr.html" title="const_buf_ptr represents contiguous region of raw memory with specified size. ">const_buf_ptr</a> as copy of <em>ptr</em> with up <em>max_bytes</em>. <br /></td></tr>
 <tr class="separator:a1c113b292cd0e73ef7185db123acbc0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4fd06e1f384464114c4b9598b28f7d9"><td class="memTemplParams" colspan="2"><a id="ac4fd06e1f384464114c4b9598b28f7d9"></a>
+template&lt;size_t N&gt; </td></tr>
+<tr class="memitem:ac4fd06e1f384464114c4b9598b28f7d9"><td class="memTemplItemLeft" align="right" valign="top">const_buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#ac4fd06e1f384464114c4b9598b28f7d9">sal::make_buf</a> (const char_array_t&lt; N &gt; &amp;data) noexcept</td></tr>
+<tr class="memdesc:ac4fd06e1f384464114c4b9598b28f7d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <a class="el" href="classsal_1_1const__buf__ptr.html" title="const_buf_ptr represents contiguous region of raw memory with specified size. ">const_buf_ptr</a> using region owned by <em>data</em>. <br /></td></tr>
+<tr class="separator:ac4fd06e1f384464114c4b9598b28f7d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2468817c870bb9a69d38a215843ec1d"><td class="memTemplParams" colspan="2"><a id="ae2468817c870bb9a69d38a215843ec1d"></a>
 template&lt;typename T , size_t N&gt; </td></tr>
 <tr class="memitem:ae2468817c870bb9a69d38a215843ec1d"><td class="memTemplItemLeft" align="right" valign="top">const_buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#ae2468817c870bb9a69d38a215843ec1d">sal::make_buf</a> (const T(&amp;data)[N]) noexcept</td></tr>
@@ -211,6 +227,11 @@ template&lt;typename T , size_t N&gt; </td></tr>
 <tr class="memitem:ac5af9b5f6e3582e07514a9848bcd73f4"><td class="memTemplItemLeft" align="right" valign="top">const_buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#ac5af9b5f6e3582e07514a9848bcd73f4">sal::make_buf</a> (const std::basic_string&lt; T, Traits, Allocator &gt; &amp;data) noexcept</td></tr>
 <tr class="memdesc:ac5af9b5f6e3582e07514a9848bcd73f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <a class="el" href="classsal_1_1const__buf__ptr.html" title="const_buf_ptr represents contiguous region of raw memory with specified size. ">const_buf_ptr</a> using region owned by <em>data</em>.  <a href="buf__ptr_8hpp.html#ac5af9b5f6e3582e07514a9848bcd73f4">More...</a><br /></td></tr>
 <tr class="separator:ac5af9b5f6e3582e07514a9848bcd73f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bc47890c4f4452108e38dbfbf13c69d"><td class="memTemplParams" colspan="2"><a id="a8bc47890c4f4452108e38dbfbf13c69d"></a>
+template&lt;size_t N&gt; </td></tr>
+<tr class="memitem:a8bc47890c4f4452108e38dbfbf13c69d"><td class="memTemplItemLeft" align="right" valign="top">const_buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a8bc47890c4f4452108e38dbfbf13c69d">sal::make_buf</a> (const char_array_t&lt; N &gt; &amp;data, size_t max_bytes) noexcept</td></tr>
+<tr class="memdesc:a8bc47890c4f4452108e38dbfbf13c69d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <a class="el" href="classsal_1_1const__buf__ptr.html" title="const_buf_ptr represents contiguous region of raw memory with specified size. ">const_buf_ptr</a> using region owned by <em>data</em> but not more than <em>max_bytes</em>. <br /></td></tr>
+<tr class="separator:a8bc47890c4f4452108e38dbfbf13c69d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b5e7bab5700e1781b6b665a1a19ce3e"><td class="memTemplParams" colspan="2"><a id="a6b5e7bab5700e1781b6b665a1a19ce3e"></a>
 template&lt;typename T , size_t N&gt; </td></tr>
 <tr class="memitem:a6b5e7bab5700e1781b6b665a1a19ce3e"><td class="memTemplItemLeft" align="right" valign="top">const_buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a6b5e7bab5700e1781b6b665a1a19ce3e">sal::make_buf</a> (const T(&amp;data)[N], size_t max_bytes) noexcept</td></tr>

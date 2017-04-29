@@ -4,6 +4,26 @@ var hierarchy =
     [ "sal::net::ip::address_v4_t", "classsal_1_1net_1_1ip_1_1address__v4__t.html", null ],
     [ "sal::net::ip::address_v6_t", "classsal_1_1net_1_1ip_1_1address__v6__t.html", null ],
     [ "sal::program_options::argument_map_t", "classsal_1_1program__options_1_1argument__map__t.html", null ],
+    [ "async_accept_t", null, [
+      [ "sal::net::basic_socket_acceptor_t< AcceptableProtocol >::async_accept_t", "structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html", null ]
+    ] ],
+    [ "async_connect_t", null, [
+      [ "sal::net::basic_stream_socket_t< Protocol >::async_connect_t", "structsal_1_1net_1_1basic__stream__socket__t_1_1async__connect__t.html", null ]
+    ] ],
+    [ "async_receive_from_t", null, [
+      [ "sal::net::basic_datagram_socket_t< Protocol >::async_receive_from_t", "structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html", null ]
+    ] ],
+    [ "async_receive_t", null, [
+      [ "sal::net::basic_datagram_socket_t< Protocol >::async_receive_t", "structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html", null ],
+      [ "sal::net::basic_stream_socket_t< Protocol >::async_receive_t", "structsal_1_1net_1_1basic__stream__socket__t_1_1async__receive__t.html", null ]
+    ] ],
+    [ "async_send_t", null, [
+      [ "sal::net::basic_datagram_socket_t< Protocol >::async_send_t", "structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html", null ],
+      [ "sal::net::basic_stream_socket_t< Protocol >::async_send_t", "structsal_1_1net_1_1basic__stream__socket__t_1_1async__send__t.html", null ]
+    ] ],
+    [ "async_send_to_t", null, [
+      [ "sal::net::basic_datagram_socket_t< Protocol >::async_send_to_t", "structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html", null ]
+    ] ],
     [ "sal::net::ip::basic_endpoint_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html", null ],
     [ "sal::net::ip::basic_resolver_entry_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__resolver__entry__t.html", null ],
     [ "sal::net::ip::basic_resolver_results_iterator_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__resolver__results__iterator__t.html", null ],
@@ -43,6 +63,14 @@ var hierarchy =
     [ "sal::file_t", "classsal_1_1file__t.html", null ],
     [ "sal::spsc_sync_t::intrusive_queue_hook_t", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html", null ],
     [ "sal::intrusive_queue_t< T, SyncPolicy, Hook >", "classsal_1_1intrusive__queue__t.html", null ],
+    [ "sal::intrusive_queue_t< io_buf_t, mpsc_sync_t, &io_buf_t::free_ >", "classsal_1_1intrusive__queue__t.html", null ],
+    [ "io_buf_t", null, [
+      [ "sal::net::io_buf_t", "classsal_1_1net_1_1io__buf__t.html", null ]
+    ] ],
+    [ "io_context_t", null, [
+      [ "sal::net::io_context_t", "classsal_1_1net_1_1io__context__t.html", null ]
+    ] ],
+    [ "sal::net::io_service_t", "classsal_1_1net_1_1io__service__t.html", null ],
     [ "sal::lockable_t< T, Mutex >", "classsal_1_1lockable__t.html", null ],
     [ "sal::locked_ptr< T, Mutex >", "classsal_1_1locked__ptr.html", null ],
     [ "sal::mpsc_sync_t", "structsal_1_1mpsc__sync__t.html", null ],
@@ -67,6 +95,6 @@ var hierarchy =
     [ "sal::spinlock_t", "classsal_1_1spinlock__t.html", null ],
     [ "sal::spsc_sync_t", "structsal_1_1spsc__sync__t.html", null ],
     [ "sal::net::ip::tcp_t", "classsal_1_1net_1_1ip_1_1tcp__t.html", null ],
-    [ "sal::net::throw_on_error", "classsal_1_1net_1_1throw__on__error.html", null ],
+    [ "sal::throw_on_error", "classsal_1_1throw__on__error.html", null ],
     [ "sal::net::ip::udp_t", "classsal_1_1net_1_1ip_1_1udp__t.html", null ]
 ];

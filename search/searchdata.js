@@ -11,7 +11,7 @@ var indexSectionsWithContent =
   8: "mos",
   9: "s",
   10: "lp",
-  11: "lost"
+  11: "lnost"
 };
 
 var indexSectionNames =

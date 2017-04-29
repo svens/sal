@@ -1,5 +1,8 @@
 var classsal_1_1net_1_1basic__stream__socket__t =
 [
+    [ "async_connect_t", "structsal_1_1net_1_1basic__stream__socket__t_1_1async__connect__t.html", null ],
+    [ "async_receive_t", "structsal_1_1net_1_1basic__stream__socket__t_1_1async__receive__t.html", "structsal_1_1net_1_1basic__stream__socket__t_1_1async__receive__t" ],
+    [ "async_send_t", "structsal_1_1net_1_1basic__stream__socket__t_1_1async__send__t.html", "structsal_1_1net_1_1basic__stream__socket__t_1_1async__send__t" ],
     [ "endpoint_t", "classsal_1_1net_1_1basic__stream__socket__t.html#aef95395826198db21a672aaad68f1171", null ],
     [ "message_flags_t", "classsal_1_1net_1_1basic__stream__socket__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f", null ],
     [ "native_handle_t", "classsal_1_1net_1_1basic__stream__socket__t.html#a91f6809832bfd27c47f7aa4b507505e9", null ],
@@ -14,6 +17,11 @@ var classsal_1_1net_1_1basic__stream__socket__t =
     [ "basic_stream_socket_t", "classsal_1_1net_1_1basic__stream__socket__t.html#a690433b5c71cc31acc8d418c5f066ca1", null ],
     [ "assign", "classsal_1_1net_1_1basic__stream__socket__t.html#ab653601df646fbc177f849eba0ad4d96", null ],
     [ "assign", "classsal_1_1net_1_1basic__stream__socket__t.html#a339b81c5342574fd989a8173981cb539", null ],
+    [ "async_connect", "classsal_1_1net_1_1basic__stream__socket__t.html#abf4964d335bb85243ca0a33a60ea435d", null ],
+    [ "async_receive", "classsal_1_1net_1_1basic__stream__socket__t.html#ab42781e4d11a726571a0b0a0ee2a6c2f", null ],
+    [ "async_receive", "classsal_1_1net_1_1basic__stream__socket__t.html#ab0d8172d7b17e22a6430cd4423117b0b", null ],
+    [ "async_send", "classsal_1_1net_1_1basic__stream__socket__t.html#a921d8e89fd838e20120c7a90c9df33d9", null ],
+    [ "async_send", "classsal_1_1net_1_1basic__stream__socket__t.html#a412a70b1ad29c6d232e4f8a0a6202453", null ],
     [ "available", "classsal_1_1net_1_1basic__stream__socket__t.html#a80bf8139f26f5b89e8b95d06a4478052", null ],
     [ "available", "classsal_1_1net_1_1basic__stream__socket__t.html#ab940170abfff7ce84213e40c227bc65b", null ],
     [ "bind", "classsal_1_1net_1_1basic__stream__socket__t.html#a2209db75642b8a9a2fded8667ac7afd3", null ],

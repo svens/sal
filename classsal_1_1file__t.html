@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -144,18 +144,22 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:ad65fe7f090f75b49e4fbfd7d6e23fe01"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#ad65fe7f090f75b49e4fbfd7d6e23fe01">operator bool</a> () const noexcept</td></tr>
 <tr class="memdesc:ad65fe7f090f75b49e4fbfd7d6e23fe01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>this</em> file is opened.  <a href="#ad65fe7f090f75b49e4fbfd7d6e23fe01">More...</a><br /></td></tr>
 <tr class="separator:ad65fe7f090f75b49e4fbfd7d6e23fe01"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93cdc694da22e1dc1bb9c5e07abdcec1"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#a93cdc694da22e1dc1bb9c5e07abdcec1">write</a> (const char *data, size_t size, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a93cdc694da22e1dc1bb9c5e07abdcec1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to write <em>size</em> bytes of <em>data</em> to file.  <a href="#a93cdc694da22e1dc1bb9c5e07abdcec1">More...</a><br /></td></tr>
-<tr class="separator:a93cdc694da22e1dc1bb9c5e07abdcec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a552afd00f984f28810502db993fd3bc0"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#a552afd00f984f28810502db993fd3bc0">write</a> (const char *data, size_t size)</td></tr>
-<tr class="memdesc:a552afd00f984f28810502db993fd3bc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to write <em>size</em> bytes of <em>data</em> to file.  <a href="#a552afd00f984f28810502db993fd3bc0">More...</a><br /></td></tr>
-<tr class="separator:a552afd00f984f28810502db993fd3bc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4cffda0d1764b52601b77773730cf52e"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#a4cffda0d1764b52601b77773730cf52e">read</a> (char *data, size_t size, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a4cffda0d1764b52601b77773730cf52e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to read maximum <em>size</em> bytes into <em>data</em>.  <a href="#a4cffda0d1764b52601b77773730cf52e">More...</a><br /></td></tr>
-<tr class="separator:a4cffda0d1764b52601b77773730cf52e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed6d76aaa730bc202d072fae29068c0a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#aed6d76aaa730bc202d072fae29068c0a">read</a> (char *data, size_t size)</td></tr>
-<tr class="memdesc:aed6d76aaa730bc202d072fae29068c0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to read maximum <em>size</em> bytes into <em>data</em>.  <a href="#aed6d76aaa730bc202d072fae29068c0a">More...</a><br /></td></tr>
-<tr class="separator:aed6d76aaa730bc202d072fae29068c0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ff0664fb9a42c6e6f61cf958b0d8289"><td class="memTemplParams" colspan="2">template&lt;typename Ptr &gt; </td></tr>
+<tr class="memitem:a3ff0664fb9a42c6e6f61cf958b0d8289"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#a3ff0664fb9a42c6e6f61cf958b0d8289">write</a> (const Ptr &amp;buf, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a3ff0664fb9a42c6e6f61cf958b0d8289"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to write <em>buf</em> to file.  <a href="#a3ff0664fb9a42c6e6f61cf958b0d8289">More...</a><br /></td></tr>
+<tr class="separator:a3ff0664fb9a42c6e6f61cf958b0d8289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b6c03c6eed48e74abfc0d7bb67a5d6e"><td class="memTemplParams" colspan="2">template&lt;typename Ptr &gt; </td></tr>
+<tr class="memitem:a9b6c03c6eed48e74abfc0d7bb67a5d6e"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#a9b6c03c6eed48e74abfc0d7bb67a5d6e">write</a> (const Ptr &amp;buf)</td></tr>
+<tr class="memdesc:a9b6c03c6eed48e74abfc0d7bb67a5d6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to write <em>buf</em> to file.  <a href="#a9b6c03c6eed48e74abfc0d7bb67a5d6e">More...</a><br /></td></tr>
+<tr class="separator:a9b6c03c6eed48e74abfc0d7bb67a5d6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6712b43cd08e3465e7542095aacab4a"><td class="memTemplParams" colspan="2">template&lt;typename Ptr &gt; </td></tr>
+<tr class="memitem:ab6712b43cd08e3465e7542095aacab4a"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#ab6712b43cd08e3465e7542095aacab4a">read</a> (const Ptr &amp;buf, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:ab6712b43cd08e3465e7542095aacab4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to read data into <em>buf</em> (but not more than buf.size() bytes)  <a href="#ab6712b43cd08e3465e7542095aacab4a">More...</a><br /></td></tr>
+<tr class="separator:ab6712b43cd08e3465e7542095aacab4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0b8edecb0c381c99ee6e4ac1317e75e"><td class="memTemplParams" colspan="2">template&lt;typename Ptr &gt; </td></tr>
+<tr class="memitem:af0b8edecb0c381c99ee6e4ac1317e75e"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#af0b8edecb0c381c99ee6e4ac1317e75e">read</a> (const Ptr &amp;buf)</td></tr>
+<tr class="memdesc:af0b8edecb0c381c99ee6e4ac1317e75e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to read data into <em>buf</em> (but not more than buf.size() bytes)  <a href="#af0b8edecb0c381c99ee6e4ac1317e75e">More...</a><br /></td></tr>
+<tr class="separator:af0b8edecb0c381c99ee6e4ac1317e75e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba3d0047710d5088687d040f0a6fbb6c"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1file__t.html#aba3d0047710d5088687d040f0a6fbb6c">seek</a> (int64_t offset, <a class="el" href="classsal_1_1file__t.html#a9b4e0cfe72460c9d8e67183b057d955c">seek_dir</a> whence, std::error_code &amp;error) noexcept</td></tr>
 <tr class="memdesc:aba3d0047710d5088687d040f0a6fbb6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move file pointer by <em>offset</em> from <em>whence</em>.  <a href="#aba3d0047710d5088687d040f0a6fbb6c">More...</a><br /></td></tr>
 <tr class="separator:aba3d0047710d5088687d040f0a6fbb6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -566,11 +570,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="a4cffda0d1764b52601b77773730cf52e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4cffda0d1764b52601b77773730cf52e">&#9670;&nbsp;</a></span>read() <span class="overload">[1/2]</span></h2>
+<a id="ab6712b43cd08e3465e7542095aacab4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6712b43cd08e3465e7542095aacab4a">&#9670;&nbsp;</a></span>read() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename Ptr &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -578,14 +584,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
         <tr>
           <td class="memname">size_t sal::file_t::read </td>
           <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
+          <td class="paramtype">const Ptr &amp;&#160;</td>
+          <td class="paramname"><em>buf</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -601,21 +601,23 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Attempt to read maximum <em>size</em> bytes into <em>data</em>. </p>
-<p>Returns number of bytes actually read. </p>
+<p>Attempt to read data into <em>buf</em> (but not more than buf.size() bytes) </p>
+<dl class="section return"><dt>Returns</dt><dd>number of bytes actually read. </dd></dl>
 
 </div>
 </div>
-<a id="aed6d76aaa730bc202d072fae29068c0a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed6d76aaa730bc202d072fae29068c0a">&#9670;&nbsp;</a></span>read() <span class="overload">[2/2]</span></h2>
+<a id="af0b8edecb0c381c99ee6e4ac1317e75e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af0b8edecb0c381c99ee6e4ac1317e75e">&#9670;&nbsp;</a></span>read() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename Ptr &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -623,19 +625,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
         <tr>
           <td class="memname">size_t sal::file_t::read </td>
           <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const Ptr &amp;&#160;</td>
+          <td class="paramname"><em>buf</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -645,8 +637,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </table>
 </div><div class="memdoc">
 
-<p>Attempt to read maximum <em>size</em> bytes into <em>data</em>. </p>
-<p>Returns number of bytes actually read. </p><dl class="exception"><dt>Exceptions</dt><dd>
+<p>Attempt to read data into <em>buf</em> (but not more than buf.size() bytes) </p>
+<dl class="section return"><dt>Returns</dt><dd>number of bytes actually read. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::system_error</td><td>on read error </td></tr>
   </table>
@@ -820,11 +813,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="a93cdc694da22e1dc1bb9c5e07abdcec1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93cdc694da22e1dc1bb9c5e07abdcec1">&#9670;&nbsp;</a></span>write() <span class="overload">[1/2]</span></h2>
+<a id="a3ff0664fb9a42c6e6f61cf958b0d8289"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ff0664fb9a42c6e6f61cf958b0d8289">&#9670;&nbsp;</a></span>write() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename Ptr &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -832,14 +827,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
         <tr>
           <td class="memname">size_t sal::file_t::write </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
+          <td class="paramtype">const Ptr &amp;&#160;</td>
+          <td class="paramname"><em>buf</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -855,21 +844,23 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Attempt to write <em>size</em> bytes of <em>data</em> to file. </p>
-<p>Returns number of bytes actually written. </p>
+<p>Attempt to write <em>buf</em> to file. </p>
+<dl class="section return"><dt>Returns</dt><dd>number of bytes actually written. </dd></dl>
 
 </div>
 </div>
-<a id="a552afd00f984f28810502db993fd3bc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a552afd00f984f28810502db993fd3bc0">&#9670;&nbsp;</a></span>write() <span class="overload">[2/2]</span></h2>
+<a id="a9b6c03c6eed48e74abfc0d7bb67a5d6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b6c03c6eed48e74abfc0d7bb67a5d6e">&#9670;&nbsp;</a></span>write() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename Ptr &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -877,19 +868,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
         <tr>
           <td class="memname">size_t sal::file_t::write </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const Ptr &amp;&#160;</td>
+          <td class="paramname"><em>buf</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -899,8 +880,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </table>
 </div><div class="memdoc">
 
-<p>Attempt to write <em>size</em> bytes of <em>data</em> to file. </p>
-<p>Returns number of bytes actually written. </p><dl class="exception"><dt>Exceptions</dt><dd>
+<p>Attempt to write <em>buf</em> to file. </p>
+<dl class="section return"><dt>Returns</dt><dd>number of bytes actually written. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::system_error</td><td>on write error </td></tr>
   </table>

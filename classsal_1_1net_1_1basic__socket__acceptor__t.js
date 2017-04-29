@@ -1,5 +1,6 @@
 var classsal_1_1net_1_1basic__socket__acceptor__t =
 [
+    [ "async_accept_t", "structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html", "structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t" ],
     [ "endpoint_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0", null ],
     [ "message_flags_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f", null ],
     [ "native_handle_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ab3524ba8ecd946427c97586eaab691a8", null ],
@@ -20,6 +21,7 @@ var classsal_1_1net_1_1basic__socket__acceptor__t =
     [ "accept", "classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca", null ],
     [ "assign", "classsal_1_1net_1_1basic__socket__acceptor__t.html#af2e9dbf84c8bc82c972f8412878d4dfe", null ],
     [ "assign", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a6aba349c46bb8c0e1e962e9237e8d993", null ],
+    [ "async_accept", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a", null ],
     [ "bind", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ad909062536bc17e50f396a1bb313bd20", null ],
     [ "bind", "classsal_1_1net_1_1basic__socket__acceptor__t.html#a8ef0fa2e4a5d372899a6b64aa324fe3c", null ],
     [ "close", "classsal_1_1net_1_1basic__socket__acceptor__t.html#ae8cf97657ad592e238d44f2ff85ebc90", null ],

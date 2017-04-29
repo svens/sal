@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -90,8 +90,10 @@ $(document).ready(function(){initNavTree('classsal_1_1net_1_1basic__socket__acce
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classsal_1_1net_1_1basic__socket__acceptor__t-members.html">List of all members</a>  </div>
@@ -114,6 +116,12 @@ Inheritance diagram for sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol
 </map>
  </div></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a> result.  <a href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:ab3524ba8ecd946427c97586eaab691a8"><td class="memItemLeft" align="right" valign="top"><a id="ab3524ba8ecd946427c97586eaab691a8"></a>
@@ -271,6 +279,20 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:acfd0e6322617af2b71355091944a09ee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0">endpoint_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#acfd0e6322617af2b71355091944a09ee">local_endpoint</a> () const</td></tr>
 <tr class="memdesc:acfd0e6322617af2b71355091944a09ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the locally-bound endpoint associated with the socket.  <a href="#acfd0e6322617af2b71355091944a09ee">More...</a><br /></td></tr>
 <tr class="separator:acfd0e6322617af2b71355091944a09ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab84453ec2cc9dc5a440b9e659ae4b85a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a">async_accept</a> (<a class="el" href="io__buf_8hpp.html#a79f2ba8ccf4a1f0a691e45e81b57b442">io_buf_ptr</a> &amp;&amp;io_buf) noexcept</td></tr>
+<tr class="memdesc:ab84453ec2cc9dc5a440b9e659ae4b85a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a>.  <a href="#ab84453ec2cc9dc5a440b9e659ae4b85a">More...</a><br /></td></tr>
+<tr class="separator:ab84453ec2cc9dc5a440b9e659ae4b85a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:af5b9bb93f14ec18da6a865ad3e4ab9b7"><td class="memItemLeft" align="right" valign="top"><a id="af5b9bb93f14ec18da6a865ad3e4ab9b7"></a>
+static const <a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#af5b9bb93f14ec18da6a865ad3e4ab9b7">async_accept_result</a> (const <a class="el" href="io__buf_8hpp.html#a79f2ba8ccf4a1f0a691e45e81b57b442">io_buf_ptr</a> &amp;io_buf, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:af5b9bb93f14ec18da6a865ad3e4ab9b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a> result from <em>io_buf</em> or nullptr if <em>io_buf</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a> operation. <br /></td></tr>
+<tr class="separator:af5b9bb93f14ec18da6a865ad3e4ab9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d4ed75f13db56c7312fd1910a89bc4c"><td class="memItemLeft" align="right" valign="top"><a id="a8d4ed75f13db56c7312fd1910a89bc4c"></a>
+static const <a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a8d4ed75f13db56c7312fd1910a89bc4c">async_accept_result</a> (const <a class="el" href="io__buf_8hpp.html#a79f2ba8ccf4a1f0a691e45e81b57b442">io_buf_ptr</a> &amp;io_buf)</td></tr>
+<tr class="memdesc:a8d4ed75f13db56c7312fd1910a89bc4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a> result from <em>io_buf</em> or nullptr if <em>io_buf</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a> operation. <br /></td></tr>
+<tr class="separator:a8d4ed75f13db56c7312fd1910a89bc4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -326,7 +348,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>io_service_t</b></td
 class sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</h3>
 
 <p>Object of class <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html" title="Object of class basic_socket_acceptor_t is used to listen and queue incoming socket connections...">basic_socket_acceptor_t</a> is used to listen and queue incoming socket connections. </p>
-<p>Socket object that represent incoming connections are dequeued by calling <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a>. </p>
+<p>Socket object that represent incoming connections are dequeued by calling <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a>.</p>
+<p>For more information about asynchronous API usage, see <a class="el" href="classsal_1_1net_1_1io__service__t.html" title="Asynchronous networking I/O completion service. ">io_service_t</a>. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a88518b134c6f356dbec270ca878a244d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a88518b134c6f356dbec270ca878a244d">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[1/4]</span></h2>
@@ -334,7 +357,7 @@ class sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</h3>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -365,7 +388,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -395,7 +418,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -426,7 +449,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -467,7 +490,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -509,7 +532,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -550,7 +573,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -581,7 +604,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -612,7 +635,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -642,7 +665,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -689,7 +712,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -724,13 +747,44 @@ template&lt;typename AcceptableProtocol &gt; </div>
 
 </div>
 </div>
+<a id="ab84453ec2cc9dc5a440b9e659ae4b85a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab84453ec2cc9dc5a440b9e659ae4b85a">&#9670;&nbsp;</a></span>async_accept()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename AcceptableProtocol&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::async_accept </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="io__buf_8hpp.html#a79f2ba8ccf4a1f0a691e45e81b57b442">io_buf_ptr</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>io_buf</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Start <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a> </dd></dl>
+
+</div>
+</div>
 <a id="ad909062536bc17e50f396a1bb313bd20"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad909062536bc17e50f396a1bb313bd20">&#9670;&nbsp;</a></span>bind() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -771,7 +825,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -802,7 +856,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -833,7 +887,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -863,7 +917,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -894,7 +948,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <div class="memtemplate">
 template&lt;typename GettableSocketOption &gt; </div>
 <table class="mlabels">
@@ -937,7 +991,7 @@ template&lt;typename GettableSocketOption &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <div class="memtemplate">
 template&lt;typename GettableSocketOption &gt; </div>
 <table class="mlabels">
@@ -970,7 +1024,7 @@ template&lt;typename GettableSocketOption &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1011,7 +1065,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1042,7 +1096,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1073,7 +1127,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1103,7 +1157,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1144,7 +1198,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1175,7 +1229,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1206,7 +1260,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1236,7 +1290,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1277,7 +1331,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1308,7 +1362,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <div class="memtemplate">
 template&lt;typename SettableSocketOption &gt; </div>
 <table class="mlabels">
@@ -1351,7 +1405,7 @@ template&lt;typename SettableSocketOption &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <div class="memtemplate">
 template&lt;typename SettableSocketOption &gt; </div>
 <table class="mlabels">
@@ -1384,7 +1438,7 @@ template&lt;typename SettableSocketOption &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <div class="memtemplate">
 template&lt;class Rep , class Period &gt; </div>
 <table class="mlabels">
@@ -1433,7 +1487,7 @@ template&lt;class Rep , class Period &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
+template&lt;typename AcceptableProtocol&gt; </div>
 <div class="memtemplate">
 template&lt;class Rep , class Period &gt; </div>
 <table class="mlabels">

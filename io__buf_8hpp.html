@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.9.0</span>
+   &#160;<span id="projectnumber">0.10.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -89,19 +89,41 @@ $(document).ready(function(){initNavTree('io__buf_8hpp.html','');});
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a>  </div>
   <div class="headertitle">
 <div class="title">io_buf.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Generic asynchronous operation buffer.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
-<code>#include &lt;sal/net/__bits/io_service.hpp&gt;</code><br />
+<code>#include &lt;sal/net/__bits/async_socket.hpp&gt;</code><br />
 <code>#include &lt;<a class="el" href="net_2fwd_8hpp_source.html">sal/net/fwd.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="assert_8hpp_source.html">sal/assert.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="intrusive__queue_8hpp_source.html">sal/intrusive_queue.hpp</a>&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
 </div>
 <p><a href="io__buf_8hpp_source.html">Go to the source code of this file.</a></p>
-</div><!-- contents -->
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1io__buf__t.html">sal::net::io_buf_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronous socket operation handle and associated I/O data buffer.  <a href="classsal_1_1net_1_1io__buf__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a79f2ba8ccf4a1f0a691e45e81b57b442"><td class="memItemLeft" align="right" valign="top"><a id="a79f2ba8ccf4a1f0a691e45e81b57b442"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="io__buf_8hpp.html#a79f2ba8ccf4a1f0a691e45e81b57b442">sal::net::io_buf_ptr</a> = std::unique_ptr&lt; io_buf_t, void(*)(io_buf_t *)&gt;</td></tr>
+<tr class="memdesc:a79f2ba8ccf4a1f0a691e45e81b57b442"><td class="mdescLeft">&#160;</td><td class="mdescRight">String owner pointer to asyncronous operation handle. <br /></td></tr>
+<tr class="separator:a79f2ba8ccf4a1f0a691e45e81b57b442"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Generic asynchronous operation buffer. </p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

@@ -28,8 +28,10 @@ var annotated_dup =
         [ "basic_socket_acceptor_t", "classsal_1_1net_1_1basic__socket__acceptor__t.html", "classsal_1_1net_1_1basic__socket__acceptor__t" ],
         [ "basic_socket_t", "classsal_1_1net_1_1basic__socket__t.html", "classsal_1_1net_1_1basic__socket__t" ],
         [ "basic_stream_socket_t", "classsal_1_1net_1_1basic__stream__socket__t.html", "classsal_1_1net_1_1basic__stream__socket__t" ],
-        [ "socket_base_t", "classsal_1_1net_1_1socket__base__t.html", "classsal_1_1net_1_1socket__base__t" ],
-        [ "throw_on_error", "classsal_1_1net_1_1throw__on__error.html", "classsal_1_1net_1_1throw__on__error" ]
+        [ "io_buf_t", "classsal_1_1net_1_1io__buf__t.html", "classsal_1_1net_1_1io__buf__t" ],
+        [ "io_context_t", "classsal_1_1net_1_1io__context__t.html", "classsal_1_1net_1_1io__context__t" ],
+        [ "io_service_t", "classsal_1_1net_1_1io__service__t.html", "classsal_1_1net_1_1io__service__t" ],
+        [ "socket_base_t", "classsal_1_1net_1_1socket__base__t.html", "classsal_1_1net_1_1socket__base__t" ]
       ] ],
       [ "program_options", null, [
         [ "argument_map_t", "classsal_1_1program__options_1_1argument__map__t.html", "classsal_1_1program__options_1_1argument__map__t" ],
@@ -60,6 +62,7 @@ var annotated_dup =
       [ "spinlock_t", "classsal_1_1spinlock__t.html", "classsal_1_1spinlock__t" ],
       [ "spsc_sync_t", "structsal_1_1spsc__sync__t.html", [
         [ "intrusive_queue_hook_t", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t" ]
-      ] ]
+      ] ],
+      [ "throw_on_error", "classsal_1_1throw__on__error.html", "classsal_1_1throw__on__error" ]
     ] ]
 ];
