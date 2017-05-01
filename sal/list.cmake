@@ -7,6 +7,7 @@ list(APPEND sal_sources
   sal/char_array.hpp
   sal/crypto_hash.hpp
   sal/__bits/crypto_hash.hpp
+  sal/__bits/crypto_hash.cpp
   sal/error.hpp
   sal/file.hpp
   sal/file.cpp

@@ -104,19 +104,6 @@ struct sha_1: public sal::sha_1
 
 
 // https://en.wikipedia.org/wiki/SHA-2 {{{1
-struct sha_224: public sal::sha_224
-{
-  std::unordered_map<std::string, std::string> expected =
-  {
-    { empty, "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f" },
-    { lazy_dog, "730e109bd7a8a32b1cb9d9a09aa2325d2430587ddbc0c38bad911525" },
-    { lazy_cog, "fee755f44a55f20fb3362cdc3c493615b3cb574ed95ce610ee5b1e9b" },
-    { lazy_dog + lazy_cog, "09e0d516bf3ce3ffa1164cc2d2a7165e23948b490248e1f43b11e5b2" },
-  };
-};
-
-
-// https://en.wikipedia.org/wiki/SHA-2 {{{1
 struct sha_256: public sal::sha_256
 {
   std::unordered_map<std::string, std::string> expected =
@@ -160,7 +147,6 @@ using hash_types = ::testing::Types<
   md4,
   md5,
   sha_1,
-  sha_224,
   sha_256,
   sha_384,
   sha_512

@@ -4,8 +4,11 @@
 // It is incuded from sal/crypto_hash.hpp
 
 
+#include <sal/config.hpp>
 #if __sal_os_darwin
   #include <CommonCrypto/CommonDigest.h>
+#elif __sal_os_windows
+  /* Everything in .cpp */
 #else
   #error Unsupported platform
 #endif
@@ -156,40 +159,6 @@ private:
 };
 
 
-class sha_224_t
-{
-public:
-
-  sha_224_t ()
-  {
-    CC_SHA224_Init(&ctx_);
-  }
-
-  static constexpr size_t size () noexcept
-  {
-    return CC_SHA224_DIGEST_LENGTH;
-  }
-
-  template <typename Ptr>
-  void add (const Ptr &ptr) noexcept
-  {
-    CC_SHA224_Update(&ctx_, ptr.data(), ptr.size());
-  }
-
-  template <typename Ptr>
-  void finish (Ptr &ptr) noexcept
-  {
-    CC_SHA224_Final(ptr.data(), &ctx_);
-    CC_SHA224_Init(&ctx_);
-  }
-
-
-private:
-
-  CC_SHA256_CTX ctx_{};
-};
-
-
 class sha_256_t
 {
 public:
@@ -289,6 +258,138 @@ public:
 private:
 
   CC_SHA512_CTX ctx_{};
+};
+
+
+#elif __sal_os_windows
+
+
+class basic_hash_t
+{
+public:
+
+  template <typename Ptr>
+  void add (const Ptr &ptr) noexcept
+  {
+    add(ptr.data(), ptr.size());
+  }
+
+  template <typename Ptr>
+  void finish (Ptr &ptr) noexcept
+  {
+    finish(ptr.data(), ptr.size());
+  }
+
+protected:
+
+  uintptr_t handle_;
+
+  basic_hash_t (uintptr_t handle) noexcept
+    : handle_(handle)
+  {}
+
+  ~basic_hash_t () noexcept;
+
+  void add (const void *data, size_t lenght);
+  void finish (const void *data, size_t lenght);
+};
+
+
+class md2_t
+  : public basic_hash_t
+{
+public:
+
+  md2_t ();
+
+  static constexpr size_t size () noexcept
+  {
+    return 16U;
+  }
+};
+
+
+class md4_t
+  : public basic_hash_t
+{
+public:
+
+  md4_t ();
+
+  static constexpr size_t size () noexcept
+  {
+    return 16U;
+  }
+};
+
+
+class md5_t
+  : public basic_hash_t
+{
+public:
+
+  md5_t ();
+
+  static constexpr size_t size () noexcept
+  {
+    return 16U;
+  }
+};
+
+
+class sha_1_t
+  : public basic_hash_t
+{
+public:
+
+  sha_1_t ();
+
+  static constexpr size_t size () noexcept
+  {
+    return 20U;
+  }
+};
+
+
+class sha_256_t
+  : public basic_hash_t
+{
+public:
+
+  sha_256_t ();
+
+  static constexpr size_t size () noexcept
+  {
+    return 32U;
+  }
+};
+
+
+class sha_384_t
+  : public basic_hash_t
+{
+public:
+
+  sha_384_t ();
+
+  static constexpr size_t size () noexcept
+  {
+    return 48U;
+  }
+};
+
+
+class sha_512_t
+  : public basic_hash_t
+{
+public:
+
+  sha_512_t ();
+
+  static constexpr size_t size () noexcept
+  {
+    return 64U;
+  }
 };
 
 
