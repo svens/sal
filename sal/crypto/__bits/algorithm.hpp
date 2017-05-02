@@ -32,7 +32,7 @@ public:
     CC_MD2_Init(&ctx_);
   }
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return CC_MD2_DIGEST_LENGTH;
   }
@@ -66,7 +66,7 @@ public:
     CC_MD4_Init(&ctx_);
   }
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return CC_MD4_DIGEST_LENGTH;
   }
@@ -100,7 +100,7 @@ public:
     CC_MD5_Init(&ctx_);
   }
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return CC_MD5_DIGEST_LENGTH;
   }
@@ -134,7 +134,7 @@ public:
     CC_SHA1_Init(&ctx_);
   }
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return CC_SHA1_DIGEST_LENGTH;
   }
@@ -168,7 +168,7 @@ public:
     CC_SHA256_Init(&ctx_);
   }
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return CC_SHA256_DIGEST_LENGTH;
   }
@@ -202,7 +202,7 @@ public:
     CC_SHA384_Init(&ctx_);
   }
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return CC_SHA384_DIGEST_LENGTH;
   }
@@ -236,7 +236,7 @@ public:
     CC_SHA512_Init(&ctx_);
   }
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return CC_SHA512_DIGEST_LENGTH;
   }
@@ -302,7 +302,7 @@ public:
 
   md2_t ();
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return 16U;
   }
@@ -316,7 +316,7 @@ public:
 
   md4_t ();
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return 16U;
   }
@@ -330,7 +330,7 @@ public:
 
   md5_t ();
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return 16U;
   }
@@ -344,7 +344,7 @@ public:
 
   sha_1_t ();
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return 20U;
   }
@@ -358,7 +358,7 @@ public:
 
   sha_256_t ();
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return 32U;
   }
@@ -372,7 +372,7 @@ public:
 
   sha_384_t ();
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return 48U;
   }
@@ -386,7 +386,7 @@ public:
 
   sha_512_t ();
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
     return 64U;
   }

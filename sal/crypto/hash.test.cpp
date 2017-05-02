@@ -18,7 +18,7 @@ struct crypto_hash
 
   std::string finish ()
   {
-    std::vector<uint8_t> result(hash.size());
+    std::vector<uint8_t> result(hash.digest_size());
     hash.finish(result);
 
     std::string string_result;
@@ -159,7 +159,7 @@ TYPED_TEST_CASE(crypto_hash, hash_types);
 
 TYPED_TEST(crypto_hash, no_add)
 {
-  EXPECT_NE(0U, this->hash.size());
+  EXPECT_NE(0U, this->hash.digest_size());
   EXPECT_EQ(this->type.expected[empty], this->finish());
 }
 
@@ -169,7 +169,7 @@ TYPED_TEST(crypto_hash, no_add)
 TYPED_TEST(crypto_hash, invalid_result_size)
 {
   this->hash.add(this->case_name);
-  std::vector<uint8_t> r(this->hash.size() / 2);
+  std::vector<uint8_t> r(this->hash.digest_size() / 2);
   EXPECT_THROW(this->hash.finish(r), std::logic_error);
 }
 

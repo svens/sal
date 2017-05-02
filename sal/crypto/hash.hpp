@@ -31,9 +31,9 @@ class hash_t
 {
 public:
 
-  static constexpr size_t size () noexcept
+  static constexpr size_t digest_size () noexcept
   {
-    return T::size();
+    return T::digest_size();
   }
 
 
@@ -47,7 +47,7 @@ public:
   template <typename Ptr>
   void finish (Ptr &ptr)
   {
-    sal_assert(ptr.size() >= impl_.size());
+    sal_assert(ptr.size() >= impl_.digest_size());
     impl_.finish(ptr);
   }
 

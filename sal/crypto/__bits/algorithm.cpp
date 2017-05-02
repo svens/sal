@@ -77,7 +77,7 @@ algorithm_provider_t::algorithm_provider_t (LPCWSTR id,
 template <typename T>
 uintptr_t hash_impl (LPCWSTR id)
 {
-  static algorithm_provider_t algorithm{id, 0, T::size()};
+  static algorithm_provider_t algorithm{id, 0, T::digest_size()};
 
   BCRYPT_HASH_HANDLE hash_handle;
   call(::BCryptCreateHash,
