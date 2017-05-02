@@ -17,7 +17,7 @@
 __sal_begin
 
 
-namespace __bits {
+namespace crypto { namespace __bits {
 
 
 #if __sal_os_darwin
@@ -396,7 +396,7 @@ public:
 #endif
 
 
-} // namespace __bits
+}} // namespace crypto::__bits
 
 
 __sal_end

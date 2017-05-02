@@ -8,10 +8,13 @@
 
 #include <sal/config.hpp>
 #include <sal/assert.hpp>
-#include <sal/__bits/crypto_hash.hpp>
+#include <sal/crypto/__bits/algorithm.hpp>
 
 
 __sal_begin
+
+
+namespace crypto {
 
 
 using md2 = __bits::md2_t;
@@ -24,7 +27,7 @@ using sha_512 = __bits::sha_512_t;
 
 
 template <typename T>
-class crypto_hash_t
+class hash_t
 {
 public:
 
@@ -53,6 +56,9 @@ private:
 
   T impl_;
 };
+
+
+} // namespace crypto
 
 
 __sal_end

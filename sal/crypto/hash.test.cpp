@@ -1,4 +1,4 @@
-#include <sal/crypto_hash.hpp>
+#include <sal/crypto/hash.hpp>
 #include <sal/common.test.hpp>
 #include <sal/buf_ptr.hpp>
 #include <string>
@@ -14,7 +14,7 @@ struct crypto_hash
   : public sal_test::with_type<HashType>
 {
   HashType type;
-  sal::crypto_hash_t<HashType> hash;
+  sal::crypto::hash_t<HashType> hash;
 
   std::string finish ()
   {
@@ -52,7 +52,7 @@ inline auto to_vector (const std::string &data)
 
 
 // https://en.wikipedia.org/wiki/MD2 {{{1
-struct md2: public sal::md2
+struct md2: public sal::crypto::md2
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -65,7 +65,7 @@ struct md2: public sal::md2
 
 
 // https://en.wikipedia.org/wiki/MD4 {{{1
-struct md4: public sal::md4
+struct md4: public sal::crypto::md4
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -78,7 +78,7 @@ struct md4: public sal::md4
 
 
 // https://en.wikipedia.org/wiki/MD5 {{{1
-struct md5: public sal::md5
+struct md5: public sal::crypto::md5
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -91,7 +91,7 @@ struct md5: public sal::md5
 
 
 // https://en.wikipedia.org/wiki/SHA-1 {{{1
-struct sha_1: public sal::sha_1
+struct sha_1: public sal::crypto::sha_1
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -104,7 +104,7 @@ struct sha_1: public sal::sha_1
 
 
 // https://en.wikipedia.org/wiki/SHA-2 {{{1
-struct sha_256: public sal::sha_256
+struct sha_256: public sal::crypto::sha_256
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -117,7 +117,7 @@ struct sha_256: public sal::sha_256
 
 
 // https://en.wikipedia.org/wiki/SHA-2 {{{1
-struct sha_384: public sal::sha_384
+struct sha_384: public sal::crypto::sha_384
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -130,7 +130,7 @@ struct sha_384: public sal::sha_384
 
 
 // https://en.wikipedia.org/wiki/SHA-2 {{{1
-struct sha_512: public sal::sha_512
+struct sha_512: public sal::crypto::sha_512
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -140,6 +140,9 @@ struct sha_512: public sal::sha_512
     { lazy_dog + lazy_cog, "9a1eacc4b2de80d412e8e28aa918c22450246c9d249559e6cba45145feebd05298c8d91cde493acd7c2bf9ed5c86612a7f8c8323c10913d8b4703c8d6bcd99f8" },
   };
 };
+
+
+// tests {{{1
 
 
 using hash_types = ::testing::Types<
@@ -152,9 +155,6 @@ using hash_types = ::testing::Types<
   sha_512
 >;
 TYPED_TEST_CASE(crypto_hash, hash_types);
-
-
-// tests {{{1
 
 
 TYPED_TEST(crypto_hash, no_add)

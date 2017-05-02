@@ -5,9 +5,6 @@ list(APPEND sal_sources
   sal/buf_ptr.hpp
   sal/builtins.hpp
   sal/char_array.hpp
-  sal/crypto_hash.hpp
-  sal/__bits/crypto_hash.hpp
-  sal/__bits/crypto_hash.cpp
   sal/error.hpp
   sal/file.hpp
   sal/file.cpp
@@ -35,7 +32,6 @@ list(APPEND sal_unittests
   sal/builtins.test.cpp
   sal/char_array.test.cpp
   sal/common.test.hpp
-  sal/crypto_hash.test.cpp
   sal/error.test.cpp
   sal/file.test.cpp
   sal/format.test.cpp
@@ -51,6 +47,7 @@ list(APPEND sal_unittests
 
 
 # submodules
+include(sal/crypto/list.cmake)
 include(sal/logger/list.cmake)
 include(sal/net/list.cmake)
 include(sal/program_options/list.cmake)

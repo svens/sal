@@ -9,14 +9,14 @@
   #pragma comment(lib, "ntdll")
 #endif
 
-#include <sal/__bits/crypto_hash.hpp>
+#include <sal/crypto/__bits/algorithm.hpp>
 #include <sal/assert.hpp>
 #include <sal/error.hpp>
 
 
 __sal_begin
 
-namespace __bits {
+namespace crypto { namespace __bits {
 
 
 #if __sal_os_windows
@@ -160,6 +160,7 @@ sha_512_t::sha_512_t ()
 #endif
 
 
-} // namespace __bits
+}} // namespace crypto::__bits
+
 
 __sal_end
