@@ -4,6 +4,8 @@
 
 #if __sal_os_darwin
   #include <CommonCrypto/CommonDigest.h>
+#elif __sal_os_linux
+  // TODO
 #elif __sal_os_windows
   // everything in .cpp
 #else
@@ -26,6 +28,16 @@ namespace crypto { namespace __bits {
   using sha256_ctx = CC_SHA256_CTX;
   using sha384_ctx = CC_SHA512_CTX;
   using sha512_ctx = CC_SHA512_CTX;
+
+#elif __sal_os_linux
+
+  using md2_ctx = uintptr_t;
+  using md4_ctx = uintptr_t;
+  using md5_ctx = uintptr_t;
+  using sha1_ctx = uintptr_t;
+  using sha256_ctx = uintptr_t;
+  using sha384_ctx = uintptr_t;
+  using sha512_ctx = uintptr_t;
 
 #elif __sal_os_windows
 

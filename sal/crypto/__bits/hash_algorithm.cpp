@@ -183,6 +183,8 @@ void sha_512_t::hash_t::finish (void *result) noexcept
 }
 
 
+#elif __sal_os_linux // {{{1
+// TODO
 #elif __sal_os_windows // {{{1
 
 
