@@ -1,14 +1,14 @@
 #pragma once
 
 /**
- * \file sal/crypto_hash.hpp
+ * \file sal/crypto/hash.hpp
  * Cryptographic hash functions
  */
 
 
 #include <sal/config.hpp>
 #include <sal/assert.hpp>
-#include <sal/crypto/__bits/algorithm.hpp>
+#include <sal/crypto/__bits/hash_algorithm.hpp>
 
 
 __sal_begin
@@ -33,28 +33,28 @@ public:
 
   static constexpr size_t digest_size () noexcept
   {
-    return T::digest_size();
+    return T::digest_size;
   }
 
 
   template <typename Ptr>
-  void add (const Ptr &ptr) noexcept
+  void add (const Ptr &data) noexcept
   {
-    impl_.add(ptr);
+    impl_.add(data.data(), data.size());
   }
 
 
   template <typename Ptr>
-  void finish (Ptr &ptr)
+  void finish (const Ptr &result)
   {
-    sal_assert(ptr.size() >= impl_.digest_size());
-    impl_.finish(ptr);
+    sal_assert(result.size() >= digest_size());
+    impl_.finish(result.data());
   }
 
 
 private:
 
-  T impl_;
+  typename T::hash_t impl_{};
 };
 
 

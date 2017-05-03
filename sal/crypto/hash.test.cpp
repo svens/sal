@@ -13,13 +13,13 @@ template <typename HashType>
 struct crypto_hash
   : public sal_test::with_type<HashType>
 {
-  HashType type;
-  sal::crypto::hash_t<HashType> hash;
+  using hash_t = HashType;
+  hash_t hash;
 
   std::string finish ()
   {
-    std::vector<uint8_t> result(hash.digest_size());
-    hash.finish(result);
+    uint8_t result[HashType::digest_size()];
+    hash.finish(sal::make_buf(result));
 
     std::string string_result;
     for (auto b: result)
@@ -39,20 +39,8 @@ std::string empty = "",
   lazy_cog = "The quick brown fox jumps over the lazy cog";
 
 
-inline auto to_ptr (const std::string &data)
-{
-  return sal::make_buf(data);
-}
-
-
-inline auto to_vector (const std::string &data)
-{
-  return std::vector<uint8_t>{data.begin(), data.end()};
-}
-
-
 // https://en.wikipedia.org/wiki/MD2 {{{1
-struct md2: public sal::crypto::md2
+struct md2: public sal::crypto::hash_t<sal::crypto::md2>
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -65,7 +53,7 @@ struct md2: public sal::crypto::md2
 
 
 // https://en.wikipedia.org/wiki/MD4 {{{1
-struct md4: public sal::crypto::md4
+struct md4: public sal::crypto::hash_t<sal::crypto::md4>
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -78,7 +66,7 @@ struct md4: public sal::crypto::md4
 
 
 // https://en.wikipedia.org/wiki/MD5 {{{1
-struct md5: public sal::crypto::md5
+struct md5: public sal::crypto::hash_t<sal::crypto::md5>
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -91,7 +79,7 @@ struct md5: public sal::crypto::md5
 
 
 // https://en.wikipedia.org/wiki/SHA-1 {{{1
-struct sha_1: public sal::crypto::sha_1
+struct sha_1: public sal::crypto::hash_t<sal::crypto::sha_1>
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -104,7 +92,7 @@ struct sha_1: public sal::crypto::sha_1
 
 
 // https://en.wikipedia.org/wiki/SHA-2 {{{1
-struct sha_256: public sal::crypto::sha_256
+struct sha_256: public sal::crypto::hash_t<sal::crypto::sha_256>
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -117,7 +105,7 @@ struct sha_256: public sal::crypto::sha_256
 
 
 // https://en.wikipedia.org/wiki/SHA-2 {{{1
-struct sha_384: public sal::crypto::sha_384
+struct sha_384: public sal::crypto::hash_t<sal::crypto::sha_384>
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -130,7 +118,7 @@ struct sha_384: public sal::crypto::sha_384
 
 
 // https://en.wikipedia.org/wiki/SHA-2 {{{1
-struct sha_512: public sal::crypto::sha_512
+struct sha_512: public sal::crypto::hash_t<sal::crypto::sha_512>
 {
   std::unordered_map<std::string, std::string> expected =
   {
@@ -159,8 +147,8 @@ TYPED_TEST_CASE(crypto_hash, hash_types);
 
 TYPED_TEST(crypto_hash, no_add)
 {
-  EXPECT_NE(0U, this->hash.digest_size());
-  EXPECT_EQ(this->type.expected[empty], this->finish());
+  EXPECT_NE(0U, TypeParam::digest_size());
+  EXPECT_EQ(this->hash.expected[empty], this->finish());
 }
 
 
@@ -168,9 +156,8 @@ TYPED_TEST(crypto_hash, no_add)
 
 TYPED_TEST(crypto_hash, invalid_result_size)
 {
-  this->hash.add(this->case_name);
-  std::vector<uint8_t> r(this->hash.digest_size() / 2);
-  EXPECT_THROW(this->hash.finish(r), std::logic_error);
+  uint8_t result[TypeParam::hash_t::digest_size() / 2];
+  EXPECT_THROW(this->hash.finish(sal::make_buf(result)), std::logic_error);
 }
 
 #endif
@@ -178,97 +165,61 @@ TYPED_TEST(crypto_hash, invalid_result_size)
 
 TYPED_TEST(crypto_hash, reuse_object)
 {
-  this->hash.add(to_ptr(empty));
-  EXPECT_EQ(this->type.expected[empty], this->finish());
+  this->hash.add(sal::make_buf(empty));
+  EXPECT_EQ(this->hash.expected[empty], this->finish());
 
   this->hash.add(lazy_dog);
-  EXPECT_EQ(this->type.expected[lazy_dog], this->finish());
+  EXPECT_EQ(this->hash.expected[lazy_dog], this->finish());
 
-  this->hash.add(to_vector(lazy_cog));
-  EXPECT_EQ(this->type.expected[lazy_cog], this->finish());
+  this->hash.add(std::vector<uint8_t>(lazy_cog.begin(), lazy_cog.end()));
+  EXPECT_EQ(this->hash.expected[lazy_cog], this->finish());
 }
 
 
 TYPED_TEST(crypto_hash, multiple_add)
 {
-  this->hash.add(to_ptr(lazy_dog));
-  this->hash.add(to_ptr(lazy_cog));
-  EXPECT_EQ(this->type.expected[lazy_dog + lazy_cog], this->finish());
+  this->hash.add(sal::make_buf(lazy_dog));
+  this->hash.add(sal::make_buf(lazy_cog));
+  EXPECT_EQ(this->hash.expected[lazy_dog + lazy_cog], this->finish());
 
   this->hash.add(lazy_dog + lazy_cog);
-  EXPECT_EQ(this->type.expected[lazy_dog + lazy_cog], this->finish());
+  EXPECT_EQ(this->hash.expected[lazy_dog + lazy_cog], this->finish());
 }
 
 
-// "" {{{1
-
-
-TYPED_TEST(crypto_hash, empty_string)
+TYPED_TEST(crypto_hash, string)
 {
-  this->hash.add(empty);
-  EXPECT_EQ(this->type.expected[empty], this->finish());
+  for (auto &kv: this->hash.expected)
+  {
+    auto &data = kv.first;
+    auto &expected = kv.second;
+    this->hash.add(data);
+    EXPECT_EQ(expected, this->finish());
+  }
 }
 
 
-TYPED_TEST(crypto_hash, empty_vector)
+TYPED_TEST(crypto_hash, vector)
 {
-  this->hash.add(to_vector(empty));
-  EXPECT_EQ(this->type.expected[empty], this->finish());
+  for (auto &kv: this->hash.expected)
+  {
+    std::vector<uint8_t> data{kv.first.begin(), kv.first.end()};
+    auto &expected = kv.second;
+    this->hash.add(data);
+    EXPECT_EQ(expected, this->finish());
+  }
 }
 
 
-TYPED_TEST(crypto_hash, empty_array)
+TYPED_TEST(crypto_hash, buf_ptr)
 {
-  this->hash.add(to_ptr(empty));
-  EXPECT_EQ(this->type.expected[empty], this->finish());
-}
-
-
-// "The quick brown fox jumps over the lazy dog" {{{1
-
-
-TYPED_TEST(crypto_hash, lazy_dog_string)
-{
-  this->hash.add(lazy_dog);
-  EXPECT_EQ(this->type.expected[lazy_dog], this->finish());
-}
-
-
-TYPED_TEST(crypto_hash, lazy_dog_vector)
-{
-  this->hash.add(to_vector(lazy_dog));
-  EXPECT_EQ(this->type.expected[lazy_dog], this->finish());
-}
-
-
-TYPED_TEST(crypto_hash, lazy_dog_array)
-{
-  this->hash.add(to_ptr(lazy_dog));
-  EXPECT_EQ(this->type.expected[lazy_dog], this->finish());
-}
-
-
-// "The quick brown fox jumps over the lazy cog" {{{1
-
-
-TYPED_TEST(crypto_hash, lazy_cog_string)
-{
-  this->hash.add(lazy_cog);
-  EXPECT_EQ(this->type.expected[lazy_cog], this->finish());
-}
-
-
-TYPED_TEST(crypto_hash, lazy_cog_vector)
-{
-  this->hash.add(to_vector(lazy_cog));
-  EXPECT_EQ(this->type.expected[lazy_cog], this->finish());
-}
-
-
-TYPED_TEST(crypto_hash, lazy_cog_array)
-{
-  this->hash.add(to_ptr(lazy_cog));
-  EXPECT_EQ(this->type.expected[lazy_cog], this->finish());
+  for (auto &kv: this->hash.expected)
+  {
+    auto data = sal::make_buf(kv.first);
+    auto &expected = kv.second;
+    this->hash.add(data);
+    EXPECT_EQ(expected, this->finish());
+  }
 }
 
 
