@@ -8,8 +8,6 @@
 
 namespace {
 
-#if !__sal_os_linux
-
 template <typename HashType>
 struct crypto_hash
   : public sal_test::with_type<HashType>
@@ -194,8 +192,6 @@ TYPED_TEST(crypto_hash, buf_ptr)
     EXPECT_EQ(expected, this->finish());
   }
 }
-
-#endif
 
 
 } // namespace

@@ -5,7 +5,7 @@
 #if __sal_os_darwin
   #include <CommonCrypto/CommonDigest.h>
 #elif __sal_os_linux
-  // TODO
+  // everything in .cpp
 #elif __sal_os_windows
   // everything in .cpp
 #else
@@ -29,11 +29,11 @@ namespace crypto { namespace __bits {
 
 #elif __sal_os_linux
 
-  using md5_ctx = uintptr_t;
-  using sha1_ctx = uintptr_t;
-  using sha256_ctx = uintptr_t;
-  using sha384_ctx = uintptr_t;
-  using sha512_ctx = uintptr_t;
+  using md5_ctx = int;
+  using sha1_ctx = int;
+  using sha256_ctx = int;
+  using sha384_ctx = int;
+  using sha512_ctx = int;
 
 #elif __sal_os_windows
 
@@ -59,8 +59,8 @@ struct md5_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size) noexcept;
-  void finish (void *result) noexcept;
+  void add (const void *data, size_t size);
+  void finish (void *result);
 };
 
 
@@ -77,8 +77,8 @@ struct sha_1_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size) noexcept;
-  void finish (void *result) noexcept;
+  void add (const void *data, size_t size);
+  void finish (void *result);
 };
 
 
@@ -95,8 +95,8 @@ struct sha_256_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size) noexcept;
-  void finish (void *result) noexcept;
+  void add (const void *data, size_t size);
+  void finish (void *result);
 };
 
 
@@ -113,8 +113,8 @@ struct sha_384_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size) noexcept;
-  void finish (void *result) noexcept;
+  void add (const void *data, size_t size);
+  void finish (void *result);
 };
 
 
@@ -131,8 +131,8 @@ struct sha_512_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size) noexcept;
-  void finish (void *result) noexcept;
+  void add (const void *data, size_t size);
+  void finish (void *result);
 };
 
 

@@ -36,7 +36,7 @@ public:
 
 
   template <typename Ptr>
-  void add (const Ptr &data) noexcept
+  void add (const Ptr &data)
   {
     impl_.add(data.data(), data.size());
   }
