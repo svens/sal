@@ -38,8 +38,10 @@ class async_worker_t
 {
 public:
 
-  // inherit ctor, no additional functionality
-  using basic_worker_t::basic_worker_t;
+  template <typename... Options>
+  async_worker_t (Options &&...options)
+    : basic_worker_t(std::forward<Options>(options)...)
+  {}
 
 
 private:

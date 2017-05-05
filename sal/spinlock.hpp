@@ -27,14 +27,14 @@ __sal_begin
 
 
 /// Busy spinning policy for spinlock_t::lock(SpinYield)
-inline void busy_spin (size_t iter_count) noexcept
+inline void busy_spin (size_t iter_count)
 {
   (void)iter_count;
 }
 
 
 /// Remaining timeslice yielding policy for spinlock_t::lock(SpinYield)
-inline void yield_spin (size_t iter_count) noexcept
+inline void yield_spin (size_t iter_count)
 {
   (void)iter_count;
   std::this_thread::yield();
@@ -54,7 +54,7 @@ inline void yield_spin (size_t iter_count) noexcept
  *     Sleep i.e. let OS scheduler suspend core if it decides so
  */
 template <size_t BusySpinCount>
-inline void adaptive_spin (size_t iter_count) noexcept
+inline void adaptive_spin (size_t iter_count)
 {
   if (iter_count < BusySpinCount)
   {
@@ -103,7 +103,7 @@ public:
    * customize waiting loop.
    */
   template <typename SpinYield>
-  void lock (SpinYield yield) noexcept(noexcept(yield(1)))
+  void lock (SpinYield yield)
   {
     for (size_t spin_count = 0;  !try_lock();  ++spin_count)
     {
@@ -113,7 +113,7 @@ public:
 
 
   /// Lock spinlock using adaptive_spin<100> as yielding policy
-  void lock () noexcept
+  void lock ()
   {
     lock(adaptive_spin<100>);
   }
