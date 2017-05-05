@@ -40,32 +40,6 @@ std::string empty = "",
   lazy_cog = "The quick brown fox jumps over the lazy cog";
 
 
-// https://en.wikipedia.org/wiki/MD2 {{{1
-struct md2: public sal::crypto::hash_t<sal::crypto::md2>
-{
-  std::unordered_map<std::string, std::string> expected =
-  {
-    { empty, "8350e5a3e24c153df2275c9f80692773" },
-    { lazy_dog, "03d85a0d629d2c442e987525319fc471" },
-    { lazy_cog, "6b890c9292668cdbbfda00a4ebf31f05" },
-    { lazy_dog + lazy_cog, "6308dfc05a246d8a0df67345937b1e0e" },
-  };
-};
-
-
-// https://en.wikipedia.org/wiki/MD4 {{{1
-struct md4: public sal::crypto::hash_t<sal::crypto::md4>
-{
-  std::unordered_map<std::string, std::string> expected =
-  {
-    { empty, "31d6cfe0d16ae931b73c59d7e0c089c0" },
-    { lazy_dog, "1bee69a46ba811185c194762abaeae90" },
-    { lazy_cog, "b86e130ce7028da59e672d56ad0113df" },
-    { lazy_dog + lazy_cog, "16779fc4e9e2bb13313cfdd8cf8b849c" },
-  };
-};
-
-
 // https://en.wikipedia.org/wiki/MD5 {{{1
 struct md5: public sal::crypto::hash_t<sal::crypto::md5>
 {
@@ -135,8 +109,6 @@ struct sha_512: public sal::crypto::hash_t<sal::crypto::sha_512>
 
 
 using hash_types = ::testing::Types<
-  md2,
-  md4,
   md5,
   sha_1,
   sha_256,

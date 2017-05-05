@@ -17,8 +17,6 @@ __sal_begin
 namespace crypto {
 
 
-using md2 = __bits::md2_t;
-using md4 = __bits::md4_t;
 using md5 = __bits::md5_t;
 using sha_1 = __bits::sha_1_t;
 using sha_256 = __bits::sha_256_t;

@@ -22,52 +22,6 @@ namespace crypto { namespace __bits {
 #if __sal_os_darwin // {{{1
 
 
-md2_t::hash_t::hash_t () // {{{2
-{
-  CC_MD2_Init(&ctx);
-}
-
-
-md2_t::hash_t::~hash_t () noexcept
-{}
-
-
-void md2_t::hash_t::add (const void *data, size_t size) noexcept
-{
-  CC_MD2_Update(&ctx, data, size);
-}
-
-
-void md2_t::hash_t::finish (void *result) noexcept
-{
-  CC_MD2_Final(static_cast<uint8_t *>(result), &ctx);
-  CC_MD2_Init(&ctx);
-}
-
-
-md4_t::hash_t::hash_t () // {{{2
-{
-  CC_MD4_Init(&ctx);
-}
-
-
-md4_t::hash_t::~hash_t () noexcept
-{}
-
-
-void md4_t::hash_t::add (const void *data, size_t size) noexcept
-{
-  CC_MD4_Update(&ctx, data, size);
-}
-
-
-void md4_t::hash_t::finish (void *result) noexcept
-{
-  CC_MD4_Final(static_cast<uint8_t *>(result), &ctx);
-  CC_MD4_Init(&ctx);
-}
-
-
 md5_t::hash_t::hash_t () // {{{2
 {
   CC_MD5_Init(&ctx);
@@ -286,52 +240,6 @@ void hash_finish (uintptr_t handle, void *result, size_t size) noexcept
 
 
 } // namespace
-
-
-md2_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<md2_t>(BCRYPT_MD2_ALGORITHM))
-{}
-
-
-md2_t::hash_t::~hash_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-void md2_t::hash_t::add (const void *data, size_t size) noexcept
-{
-  hash_add(ctx, data, size);
-}
-
-
-void md2_t::hash_t::finish (void *result) noexcept
-{
-  hash_finish(ctx, result, digest_size);
-}
-
-
-md4_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<md4_t>(BCRYPT_MD4_ALGORITHM))
-{}
-
-
-md4_t::hash_t::~hash_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-void md4_t::hash_t::add (const void *data, size_t size) noexcept
-{
-  hash_add(ctx, data, size);
-}
-
-
-void md4_t::hash_t::finish (void *result) noexcept
-{
-  hash_finish(ctx, result, digest_size);
-}
 
 
 md5_t::hash_t::hash_t () // {{{2
