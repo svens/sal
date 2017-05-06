@@ -59,78 +59,113 @@ struct md5_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
+
+  hash_t (hash_t &&that) noexcept;
+  hash_t &operator= (hash_t &&that) noexcept;
+
+  hash_t (const hash_t &) = delete;
+  hash_t &operator= (const hash_t &) = delete;
+
   void update (const void *data, size_t size);
   void finish (void *result);
 };
 
 
-struct sha_1_t // {{{1
+struct sha1_t // {{{1
 {
   static constexpr size_t digest_size = 20U;
   struct hash_t;
 };
 
 
-struct sha_1_t::hash_t
+struct sha1_t::hash_t
 {
   sha1_ctx ctx{};
 
   hash_t ();
   ~hash_t () noexcept;
+
+  hash_t (hash_t &&that) noexcept;
+  hash_t &operator= (hash_t &&that) noexcept;
+
+  hash_t (const hash_t &) = delete;
+  hash_t &operator= (const hash_t &) = delete;
+
   void update (const void *data, size_t size);
   void finish (void *result);
 };
 
 
-struct sha_256_t // {{{1
+struct sha256_t // {{{1
 {
   static constexpr size_t digest_size = 32U;
   struct hash_t;
 };
 
 
-struct sha_256_t::hash_t
+struct sha256_t::hash_t
 {
   sha256_ctx ctx{};
 
   hash_t ();
   ~hash_t () noexcept;
+
+  hash_t (hash_t &&that) noexcept;
+  hash_t &operator= (hash_t &&that) noexcept;
+
+  hash_t (const hash_t &) = delete;
+  hash_t &operator= (const hash_t &) = delete;
+
   void update (const void *data, size_t size);
   void finish (void *result);
 };
 
 
-struct sha_384_t // {{{1
+struct sha384_t // {{{1
 {
   static constexpr size_t digest_size = 48U;
   struct hash_t;
 };
 
 
-struct sha_384_t::hash_t
+struct sha384_t::hash_t
 {
   sha384_ctx ctx{};
 
   hash_t ();
   ~hash_t () noexcept;
+
+  hash_t (hash_t &&that) noexcept;
+  hash_t &operator= (hash_t &&that) noexcept;
+
+  hash_t (const hash_t &) = delete;
+  hash_t &operator= (const hash_t &) = delete;
+
   void update (const void *data, size_t size);
   void finish (void *result);
 };
 
 
-struct sha_512_t // {{{1
+struct sha512_t // {{{1
 {
   static constexpr size_t digest_size = 64U;
   struct hash_t;
 };
 
 
-struct sha_512_t::hash_t
+struct sha512_t::hash_t
 {
   sha512_ctx ctx{};
 
   hash_t ();
   ~hash_t () noexcept;
+
+  hash_t (hash_t &&that) noexcept;
+  hash_t &operator= (hash_t &&that) noexcept;
+
+  hash_t (const hash_t &) = delete;
+  hash_t &operator= (const hash_t &) = delete;
+
   void update (const void *data, size_t size);
   void finish (void *result);
 };

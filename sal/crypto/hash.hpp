@@ -18,10 +18,10 @@ namespace crypto {
 
 
 using md5 = __bits::md5_t;
-using sha_1 = __bits::sha_1_t;
-using sha_256 = __bits::sha_256_t;
-using sha_384 = __bits::sha_384_t;
-using sha_512 = __bits::sha_512_t;
+using sha1 = __bits::sha1_t;
+using sha256 = __bits::sha256_t;
+using sha384 = __bits::sha384_t;
+using sha512 = __bits::sha512_t;
 
 
 template <typename T>
