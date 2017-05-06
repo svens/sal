@@ -6,6 +6,7 @@
  */
 
 #include <sal/config.hpp>
+#include <sal/builtins.hpp>
 #include <sal/char_array.hpp>
 #include <stdexcept>
 #include <system_error>
@@ -94,6 +95,32 @@ private:
   std::error_code code_{};
   const char * const msg_;
 };
+
+
+/**
+ * \def sal_fail_if(condition)
+ *
+ * If \a condition is true, throw logic_error with \a condition as message
+ * prepended with source location (file:line)
+ */
+#define sal_throw_if(condition) \
+  sal::__bits::throw_if(condition, \
+    __sal_at ": Failed because '" #condition "'" \
+  )
+
+
+namespace __bits {
+
+template <size_t MsgSize>
+inline void throw_if (bool condition, const char (&msg)[MsgSize])
+{
+  if (sal_unlikely(condition))
+  {
+    throw_logic_error(msg);
+  }
+}
+
+} // namespace __bits
 
 
 __sal_end

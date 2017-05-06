@@ -101,4 +101,28 @@ TEST_F(error, system_error)
 }
 
 
+TEST_F(error, throw_if_with_true)
+{
+  try
+  {
+    sal_throw_if(1 < 2);
+    FAIL() << "shouldn't reach here";
+  }
+  catch (const std::logic_error &e)
+  {
+    EXPECT_NE(std::string::npos, std::string(e.what()).find("1 < 2"));
+  }
+  catch (...)
+  {
+    FAIL() << "shouldn't reach here";
+  }
+}
+
+
+TEST_F(error, throw_if_with_false)
+{
+  EXPECT_NO_THROW(sal_throw_if(1 > 2));
+}
+
+
 } // namespace
