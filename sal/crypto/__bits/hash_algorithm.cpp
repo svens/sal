@@ -39,7 +39,7 @@ md5_t::hash_t::~hash_t () noexcept
 {}
 
 
-void md5_t::hash_t::add (const void *data, size_t size)
+void md5_t::hash_t::update (const void *data, size_t size)
 {
   CC_MD5_Update(&ctx, data, size);
 }
@@ -62,7 +62,7 @@ sha_1_t::hash_t::~hash_t () noexcept
 {}
 
 
-void sha_1_t::hash_t::add (const void *data, size_t size)
+void sha_1_t::hash_t::update (const void *data, size_t size)
 {
   CC_SHA1_Update(&ctx, data, size);
 }
@@ -85,7 +85,7 @@ sha_256_t::hash_t::~hash_t () noexcept
 {}
 
 
-void sha_256_t::hash_t::add (const void *data, size_t size)
+void sha_256_t::hash_t::update (const void *data, size_t size)
 {
   CC_SHA256_Update(&ctx, data, size);
 }
@@ -108,7 +108,7 @@ sha_384_t::hash_t::~hash_t () noexcept
 {}
 
 
-void sha_384_t::hash_t::add (const void *data, size_t size)
+void sha_384_t::hash_t::update (const void *data, size_t size)
 {
   CC_SHA384_Update(&ctx, data, size);
 }
@@ -131,7 +131,7 @@ sha_512_t::hash_t::~hash_t () noexcept
 {}
 
 
-void sha_512_t::hash_t::add (const void *data, size_t size)
+void sha_512_t::hash_t::update (const void *data, size_t size)
 {
   CC_SHA512_Update(&ctx, data, size);
 }
@@ -232,7 +232,7 @@ void hash_release (int handle) noexcept
 }
 
 
-void hash_add (int handle, const void *data, size_t size) noexcept
+void hash_update (int handle, const void *data, size_t size) noexcept
 {
   // MSG_MORE: more data to come, do not calculate hash yet
   if (::send(handle, data, size, MSG_MORE) != static_cast<ssize_t>(size))
@@ -288,9 +288,9 @@ md5_t::hash_t::~hash_t () noexcept
 }
 
 
-void md5_t::hash_t::add (const void *data, size_t size)
+void md5_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -311,9 +311,9 @@ sha_1_t::hash_t::~hash_t () noexcept
 }
 
 
-void sha_1_t::hash_t::add (const void *data, size_t size)
+void sha_1_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -334,9 +334,9 @@ sha_256_t::hash_t::~hash_t () noexcept
 }
 
 
-void sha_256_t::hash_t::add (const void *data, size_t size)
+void sha_256_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -357,9 +357,9 @@ sha_384_t::hash_t::~hash_t () noexcept
 }
 
 
-void sha_384_t::hash_t::add (const void *data, size_t size)
+void sha_384_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -380,9 +380,9 @@ sha_512_t::hash_t::~hash_t () noexcept
 }
 
 
-void sha_512_t::hash_t::add (const void *data, size_t size)
+void sha_512_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -470,7 +470,7 @@ void hash_release (uintptr_t handle) noexcept
 }
 
 
-void hash_add (uintptr_t handle, const void *data, size_t size) noexcept
+void hash_update (uintptr_t handle, const void *data, size_t size) noexcept
 {
   call(::BCryptHashData,
     reinterpret_cast<BCRYPT_HASH_HANDLE>(handle),
@@ -506,9 +506,9 @@ md5_t::hash_t::~hash_t () noexcept
 }
 
 
-void md5_t::hash_t::add (const void *data, size_t size)
+void md5_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -529,9 +529,9 @@ sha_1_t::hash_t::~hash_t () noexcept
 }
 
 
-void sha_1_t::hash_t::add (const void *data, size_t size)
+void sha_1_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -552,9 +552,9 @@ sha_256_t::hash_t::~hash_t () noexcept
 }
 
 
-void sha_256_t::hash_t::add (const void *data, size_t size)
+void sha_256_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -575,9 +575,9 @@ sha_384_t::hash_t::~hash_t () noexcept
 }
 
 
-void sha_384_t::hash_t::add (const void *data, size_t size)
+void sha_384_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 
@@ -598,9 +598,9 @@ sha_512_t::hash_t::~hash_t () noexcept
 }
 
 
-void sha_512_t::hash_t::add (const void *data, size_t size)
+void sha_512_t::hash_t::update (const void *data, size_t size)
 {
-  hash_add(ctx, data, size);
+  hash_update(ctx, data, size);
 }
 
 

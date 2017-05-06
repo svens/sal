@@ -59,7 +59,7 @@ struct md5_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size);
+  void update (const void *data, size_t size);
   void finish (void *result);
 };
 
@@ -77,7 +77,7 @@ struct sha_1_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size);
+  void update (const void *data, size_t size);
   void finish (void *result);
 };
 
@@ -95,7 +95,7 @@ struct sha_256_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size);
+  void update (const void *data, size_t size);
   void finish (void *result);
 };
 
@@ -113,7 +113,7 @@ struct sha_384_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size);
+  void update (const void *data, size_t size);
   void finish (void *result);
 };
 
@@ -131,7 +131,7 @@ struct sha_512_t::hash_t
 
   hash_t ();
   ~hash_t () noexcept;
-  void add (const void *data, size_t size);
+  void update (const void *data, size_t size);
   void finish (void *result);
 };
 

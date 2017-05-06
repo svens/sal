@@ -36,9 +36,9 @@ public:
 
 
   template <typename Ptr>
-  void add (const Ptr &data)
+  void update (const Ptr &data)
   {
-    impl_.add(data.data(), data.size());
+    impl_.update(data.data(), data.size());
   }
 
 

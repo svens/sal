@@ -136,24 +136,24 @@ TYPED_TEST(crypto_hash, invalid_result_size)
 
 TYPED_TEST(crypto_hash, reuse_object)
 {
-  this->hash.add(sal::make_buf(empty));
+  this->hash.update(sal::make_buf(empty));
   EXPECT_EQ(this->hash.expected[empty], this->finish());
 
-  this->hash.add(lazy_dog);
+  this->hash.update(lazy_dog);
   EXPECT_EQ(this->hash.expected[lazy_dog], this->finish());
 
-  this->hash.add(std::vector<uint8_t>(lazy_cog.begin(), lazy_cog.end()));
+  this->hash.update(std::vector<uint8_t>(lazy_cog.begin(), lazy_cog.end()));
   EXPECT_EQ(this->hash.expected[lazy_cog], this->finish());
 }
 
 
-TYPED_TEST(crypto_hash, multiple_add)
+TYPED_TEST(crypto_hash, multiple_update)
 {
-  this->hash.add(sal::make_buf(lazy_dog));
-  this->hash.add(sal::make_buf(lazy_cog));
+  this->hash.update(sal::make_buf(lazy_dog));
+  this->hash.update(sal::make_buf(lazy_cog));
   EXPECT_EQ(this->hash.expected[lazy_dog + lazy_cog], this->finish());
 
-  this->hash.add(lazy_dog + lazy_cog);
+  this->hash.update(lazy_dog + lazy_cog);
   EXPECT_EQ(this->hash.expected[lazy_dog + lazy_cog], this->finish());
 }
 
@@ -164,7 +164,7 @@ TYPED_TEST(crypto_hash, string)
   {
     auto &data = kv.first;
     auto &expected = kv.second;
-    this->hash.add(data);
+    this->hash.update(data);
     EXPECT_EQ(expected, this->finish());
   }
 }
@@ -176,7 +176,7 @@ TYPED_TEST(crypto_hash, vector)
   {
     std::vector<uint8_t> data{kv.first.begin(), kv.first.end()};
     auto &expected = kv.second;
-    this->hash.add(data);
+    this->hash.update(data);
     EXPECT_EQ(expected, this->finish());
   }
 }
@@ -188,7 +188,7 @@ TYPED_TEST(crypto_hash, buf_ptr)
   {
     auto data = sal::make_buf(kv.first);
     auto &expected = kv.second;
-    this->hash.add(data);
+    this->hash.update(data);
     EXPECT_EQ(expected, this->finish());
   }
 }
