@@ -35,6 +35,15 @@ public:
   }
 
 
+  hash_t () = default;
+
+  hash_t (hash_t &&) noexcept = default;
+  hash_t &operator= (hash_t &&) noexcept = default;
+
+  hash_t (const hash_t &) = delete;
+  hash_t &operator= (const hash_t &) = delete;
+
+
   template <typename Ptr>
   void update (const Ptr &data)
   {
