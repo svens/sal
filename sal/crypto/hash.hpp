@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/assert.hpp>
+#include <sal/error.hpp>
 #include <sal/crypto/__bits/hash_algorithm.hpp>
 
 
@@ -45,7 +45,7 @@ public:
   template <typename Ptr>
   void finish (const Ptr &result)
   {
-    sal_assert(result.size() >= digest_size());
+    sal_throw_if(result.size() < digest_size());
     impl_.finish(result.data());
   }
 
