@@ -152,7 +152,7 @@ TYPED_TEST(crypto_hash, reuse_object)
 }
 
 
-TYPED_TEST(crypto_hash, multiple_update)
+TYPED_TEST(crypto_hash, multiple_updates)
 {
   sal::crypto::hash_t<TypeParam> hash;
 
@@ -162,6 +162,16 @@ TYPED_TEST(crypto_hash, multiple_update)
 
   hash.update(lazy_dog + lazy_cog);
   EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(hash));
+}
+
+
+TYPED_TEST(crypto_hash, multiple_instances)
+{
+  sal::crypto::hash_t<TypeParam> dog, cog;
+  dog.update(lazy_dog);
+  cog.update(lazy_cog);
+  EXPECT_EQ(expected<TypeParam>[lazy_dog], finish(dog));
+  EXPECT_EQ(expected<TypeParam>[lazy_cog], finish(cog));
 }
 
 

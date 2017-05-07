@@ -273,6 +273,30 @@ TYPED_TEST(crypto_hmac, multiple_update_with_key)
 }
 
 
+TYPED_TEST(crypto_hmac, multiple_instances)
+{
+  sal::crypto::hmac_t<TypeParam> dog, cog;
+
+  dog.update(lazy_dog);
+  cog.update(lazy_cog);
+
+  EXPECT_EQ(expected<TypeParam>[lazy_dog], finish(dog));
+  EXPECT_EQ(expected<TypeParam>[lazy_cog], finish(cog));
+}
+
+
+TYPED_TEST(crypto_hmac, multiple_instances_with_key)
+{
+  sal::crypto::hmac_t<TypeParam> dog{key}, cog{key};
+
+  dog.update(lazy_dog);
+  cog.update(lazy_cog);
+
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog], finish(dog));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_cog], finish(cog));
+}
+
+
 TYPED_TEST(crypto_hmac, string)
 {
   sal::crypto::hmac_t<TypeParam> hmac;

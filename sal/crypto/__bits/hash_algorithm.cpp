@@ -12,7 +12,6 @@
 #include <sal/crypto/__bits/hash_algorithm.hpp>
 #include <sal/assert.hpp>
 #include <sal/error.hpp>
-#include <memory>
 
 #if __sal_os_linux
   #include <linux/if_alg.h>
@@ -30,356 +29,196 @@ namespace crypto { namespace __bits {
 
 md5_t::hash_t::hash_t () // {{{2
 {
-  CC_MD5_Init(&ctx);
+  CC_MD5_Init(this);
 }
-
-
-md5_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{}
-
-
-md5_t::hash_t &md5_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx, &that.ctx + 1, &ctx);
-  return *this;
-}
-
-
-md5_t::hash_t::~hash_t () noexcept
-{}
 
 
 void md5_t::hash_t::update (const void *data, size_t size)
 {
-  CC_MD5_Update(&ctx, data, size);
+  CC_MD5_Update(this, data, size);
 }
 
 
 void md5_t::hash_t::finish (void *result)
 {
-  CC_MD5_Final(static_cast<uint8_t *>(result), &ctx);
-  CC_MD5_Init(&ctx);
+  CC_MD5_Final(static_cast<uint8_t *>(result), this);
+  CC_MD5_Init(this);
 }
 
 
 md5_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
 {
-  CCHmacInit(&ctx[0], kCCHmacAlgMD5, key, size);
-  std::uninitialized_copy(&ctx[0], &ctx[1], &ctx[1]);
+  CCHmacInit(&original, kCCHmacAlgMD5, key, size);
+  current = original;
 }
-
-
-md5_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx{that.ctx[0], that.ctx[1]}
-{}
-
-
-md5_t::hmac_t &md5_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx[0], &that.ctx[2], &ctx[0]);
-  return *this;
-}
-
-
-md5_t::hmac_t::~hmac_t () noexcept
-{}
 
 
 void md5_t::hmac_t::update (const void *data, size_t size)
 {
-  CCHmacUpdate(&ctx[0], data, size);
+  CCHmacUpdate(&current, data, size);
 }
 
 
 void md5_t::hmac_t::finish (void *result)
 {
-  CCHmacFinal(&ctx[0], result);
-  std::uninitialized_copy(&ctx[1], &ctx[2], &ctx[0]);
+  CCHmacFinal(&current, result);
+  current = original;
 }
 
 
 sha1_t::hash_t::hash_t () // {{{2
 {
-  CC_SHA1_Init(&ctx);
-}
-
-
-sha1_t::hash_t::~hash_t () noexcept
-{}
-
-
-sha1_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{}
-
-
-sha1_t::hash_t &sha1_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx, &that.ctx + 1, &ctx);
-  return *this;
+  CC_SHA1_Init(this);
 }
 
 
 void sha1_t::hash_t::update (const void *data, size_t size)
 {
-  CC_SHA1_Update(&ctx, data, size);
+  CC_SHA1_Update(this, data, size);
 }
 
 
 void sha1_t::hash_t::finish (void *result)
 {
-  CC_SHA1_Final(static_cast<uint8_t *>(result), &ctx);
-  CC_SHA1_Init(&ctx);
+  CC_SHA1_Final(static_cast<uint8_t *>(result), this);
+  CC_SHA1_Init(this);
 }
 
 
 sha1_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
 {
-  CCHmacInit(&ctx[0], kCCHmacAlgSHA1, key, size);
-  std::uninitialized_copy(&ctx[0], &ctx[1], &ctx[1]);
+  CCHmacInit(&original, kCCHmacAlgSHA1, key, size);
+  current = original;
 }
-
-
-sha1_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx{that.ctx[0], that.ctx[1]}
-{}
-
-
-sha1_t::hmac_t &sha1_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx[0], &that.ctx[2], &ctx[0]);
-  return *this;
-}
-
-
-sha1_t::hmac_t::~hmac_t () noexcept
-{}
 
 
 void sha1_t::hmac_t::update (const void *data, size_t size)
 {
-  CCHmacUpdate(&ctx[0], data, size);
+  CCHmacUpdate(&current, data, size);
 }
 
 
 void sha1_t::hmac_t::finish (void *result)
 {
-  CCHmacFinal(&ctx[0], result);
-  std::uninitialized_copy(&ctx[1], &ctx[2], &ctx[0]);
+  CCHmacFinal(&current, result);
+  current = original;
 }
 
 
 sha256_t::hash_t::hash_t () // {{{2
 {
-  CC_SHA256_Init(&ctx);
-}
-
-
-sha256_t::hash_t::~hash_t () noexcept
-{}
-
-
-sha256_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{}
-
-
-sha256_t::hash_t &sha256_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx, &that.ctx + 1, &ctx);
-  return *this;
+  CC_SHA256_Init(this);
 }
 
 
 void sha256_t::hash_t::update (const void *data, size_t size)
 {
-  CC_SHA256_Update(&ctx, data, size);
+  CC_SHA256_Update(this, data, size);
 }
 
 
 void sha256_t::hash_t::finish (void *result)
 {
-  CC_SHA256_Final(static_cast<uint8_t *>(result), &ctx);
-  CC_SHA256_Init(&ctx);
+  CC_SHA256_Final(static_cast<uint8_t *>(result), this);
+  CC_SHA256_Init(this);
 }
 
 
 sha256_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
 {
-  CCHmacInit(&ctx[0], kCCHmacAlgSHA256, key, size);
-  std::uninitialized_copy(&ctx[0], &ctx[1], &ctx[1]);
+  CCHmacInit(&original, kCCHmacAlgSHA256, key, size);
+  current = original;
 }
-
-
-sha256_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx{that.ctx[0], that.ctx[1]}
-{}
-
-
-sha256_t::hmac_t &sha256_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx[0], &that.ctx[2], &ctx[0]);
-  return *this;
-}
-
-
-sha256_t::hmac_t::~hmac_t () noexcept
-{}
 
 
 void sha256_t::hmac_t::update (const void *data, size_t size)
 {
-  CCHmacUpdate(&ctx[0], data, size);
+  CCHmacUpdate(&current, data, size);
 }
 
 
 void sha256_t::hmac_t::finish (void *result)
 {
-  CCHmacFinal(&ctx[0], result);
-  std::uninitialized_copy(&ctx[1], &ctx[2], &ctx[0]);
+  CCHmacFinal(&current, result);
+  current = original;
 }
 
 
 sha384_t::hash_t::hash_t () // {{{2
 {
-  CC_SHA384_Init(&ctx);
-}
-
-
-sha384_t::hash_t::~hash_t () noexcept
-{}
-
-
-sha384_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{}
-
-
-sha384_t::hash_t &sha384_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx, &that.ctx + 1, &ctx);
-  return *this;
+  CC_SHA384_Init(this);
 }
 
 
 void sha384_t::hash_t::update (const void *data, size_t size)
 {
-  CC_SHA384_Update(&ctx, data, size);
+  CC_SHA384_Update(this, data, size);
 }
 
 
 void sha384_t::hash_t::finish (void *result)
 {
-  CC_SHA384_Final(static_cast<uint8_t *>(result), &ctx);
-  CC_SHA384_Init(&ctx);
+  CC_SHA384_Final(static_cast<uint8_t *>(result), this);
+  CC_SHA384_Init(this);
 }
 
 
 sha384_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
 {
-  CCHmacInit(&ctx[0], kCCHmacAlgSHA384, key, size);
-  std::uninitialized_copy(&ctx[0], &ctx[1], &ctx[1]);
+  CCHmacInit(&original, kCCHmacAlgSHA384, key, size);
+  current = original;
 }
-
-
-sha384_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx{that.ctx[0], that.ctx[1]}
-{}
-
-
-sha384_t::hmac_t &sha384_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx[0], &that.ctx[2], &ctx[0]);
-  return *this;
-}
-
-
-sha384_t::hmac_t::~hmac_t () noexcept
-{}
 
 
 void sha384_t::hmac_t::update (const void *data, size_t size)
 {
-  CCHmacUpdate(&ctx[0], data, size);
+  CCHmacUpdate(&current, data, size);
 }
 
 
 void sha384_t::hmac_t::finish (void *result)
 {
-  CCHmacFinal(&ctx[0], result);
-  std::uninitialized_copy(&ctx[1], &ctx[2], &ctx[0]);
+  CCHmacFinal(&current, result);
+  current = original;
 }
 
 
 sha512_t::hash_t::hash_t () // {{{2
 {
-  CC_SHA512_Init(&ctx);
-}
-
-
-sha512_t::hash_t::~hash_t () noexcept
-{}
-
-
-sha512_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{}
-
-
-sha512_t::hash_t &sha512_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx, &that.ctx + 1, &ctx);
-  return *this;
+  CC_SHA512_Init(this);
 }
 
 
 void sha512_t::hash_t::update (const void *data, size_t size)
 {
-  CC_SHA512_Update(&ctx, data, size);
+  CC_SHA512_Update(this, data, size);
 }
 
 
 void sha512_t::hash_t::finish (void *result)
 {
-  CC_SHA512_Final(static_cast<uint8_t *>(result), &ctx);
-  CC_SHA512_Init(&ctx);
+  CC_SHA512_Final(static_cast<uint8_t *>(result), this);
+  CC_SHA512_Init(this);
 }
 
 
 sha512_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
 {
-  CCHmacInit(&ctx[0], kCCHmacAlgSHA512, key, size);
-  std::uninitialized_copy(&ctx[0], &ctx[1], &ctx[1]);
+  CCHmacInit(&original, kCCHmacAlgSHA512, key, size);
+  current = original;
 }
-
-
-sha512_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx{that.ctx[0], that.ctx[1]}
-{}
-
-
-sha512_t::hmac_t &sha512_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  std::uninitialized_copy(&that.ctx[0], &that.ctx[2], &ctx[0]);
-  return *this;
-}
-
-
-sha512_t::hmac_t::~hmac_t () noexcept
-{}
 
 
 void sha512_t::hmac_t::update (const void *data, size_t size)
 {
-  CCHmacUpdate(&ctx[0], data, size);
+  CCHmacUpdate(&current, data, size);
 }
 
 
 void sha512_t::hmac_t::finish (void *result)
 {
-  CCHmacFinal(&ctx[0], result);
-  std::uninitialized_copy(&ctx[1], &ctx[2], &ctx[0]);
+  CCHmacFinal(&current, result);
+  current = original;
 }
 
 
@@ -766,30 +605,14 @@ algorithm_driver_t::algorithm_driver_t (LPCWSTR id,
 }
 
 
-template <typename Algorithm>
-uintptr_t make_hash (LPCWSTR id)
+template <typename Algorithm,
+  DWORD flags_if_hmac = BCRYPT_ALG_HANDLE_HMAC_FLAG
+>
+uintptr_t make_worker (LPCWSTR id,
+  const void *key = nullptr,
+  size_t size = 0U)
 {
-  static algorithm_driver_t driver(id, 0, Algorithm::digest_size);
-
-  BCRYPT_HASH_HANDLE handle;
-  call(::BCryptCreateHash,
-    driver.handle,
-    &handle,
-    nullptr, 0,
-    nullptr, 0,
-    BCRYPT_HASH_REUSABLE_FLAG
-  );
-  return reinterpret_cast<uintptr_t>(handle);
-}
-
-
-template <typename Algorithm>
-uintptr_t make_hmac (LPCWSTR id, const void *key, size_t size)
-{
-  static algorithm_driver_t driver(id,
-    BCRYPT_ALG_HANDLE_HMAC_FLAG,
-    Algorithm::digest_size
-  );
+  static algorithm_driver_t driver(id, flags_if_hmac, Algorithm::digest_size);
 
   BCRYPT_HASH_HANDLE handle;
   call(::BCryptCreateHash,
@@ -804,7 +627,26 @@ uintptr_t make_hmac (LPCWSTR id, const void *key, size_t size)
 }
 
 
-void hash_release (uintptr_t handle) noexcept
+} // namespace
+
+
+basic_hash_t::basic_hash_t (basic_hash_t &&that) noexcept
+  : handle(that.handle)
+{
+  that.handle = 0U;
+}
+
+
+basic_hash_t &basic_hash_t::operator= (basic_hash_t &&that) noexcept
+{
+  using std::swap;
+  auto tmp{std::move(that)};
+  swap(handle, tmp.handle);
+  return *this;
+}
+
+
+basic_hash_t::~basic_hash_t () noexcept
 {
   if (handle != 0U)
   {
@@ -812,8 +654,7 @@ void hash_release (uintptr_t handle) noexcept
   }
 }
 
-
-void hash_update (uintptr_t handle, const void *data, size_t size) noexcept
+void basic_hash_t::update (const void *data, size_t size)
 {
   call(::BCryptHashData,
     reinterpret_cast<BCRYPT_HASH_HANDLE>(handle),
@@ -824,7 +665,7 @@ void hash_update (uintptr_t handle, const void *data, size_t size) noexcept
 }
 
 
-void hash_finish (uintptr_t handle, void *result, size_t size) noexcept
+void basic_hash_t::finish (void *result, size_t size)
 {
   call(::BCryptFinishHash,
     reinterpret_cast<BCRYPT_HASH_HANDLE>(handle),
@@ -835,396 +676,173 @@ void hash_finish (uintptr_t handle, void *result, size_t size) noexcept
 }
 
 
-} // namespace
-
-
 md5_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<md5_t>(BCRYPT_MD5_ALGORITHM))
+  : basic_hash_t(make_worker<md5_t, 0>(BCRYPT_MD5_ALGORITHM))
 {}
-
-
-md5_t::hash_t::~hash_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-md5_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-md5_t::hash_t &md5_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void md5_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hash_t::update(data, size);
 }
 
 
 void md5_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hash_t::finish(result, digest_size);
 }
 
 
 md5_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
-  : ctx(make_hmac<md5_t>(BCRYPT_MD5_ALGORITHM, key, size))
+  : basic_hmac_t(make_worker<md5_t>(BCRYPT_MD5_ALGORITHM, key, size))
 {}
-
-
-md5_t::hmac_t::~hmac_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-md5_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-md5_t::hmac_t &md5_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void md5_t::hmac_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hmac_t::update(data, size);
 }
 
 
 void md5_t::hmac_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hmac_t::finish(result, digest_size);
 }
 
 
 sha1_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<sha1_t>(BCRYPT_SHA1_ALGORITHM))
+  : basic_hash_t(make_worker<sha1_t, 0>(BCRYPT_SHA1_ALGORITHM))
 {}
-
-
-sha1_t::hash_t::~hash_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-sha1_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-sha1_t::hash_t &sha1_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void sha1_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hash_t::update(data, size);
 }
 
 
 void sha1_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hash_t::finish(result, digest_size);
 }
 
 
 sha1_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
-  : ctx(make_hmac<sha1_t>(BCRYPT_SHA1_ALGORITHM, key, size))
+  : basic_hmac_t(make_worker<sha1_t>(BCRYPT_SHA1_ALGORITHM, key, size))
 {}
-
-
-sha1_t::hmac_t::~hmac_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-sha1_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-sha1_t::hmac_t &sha1_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void sha1_t::hmac_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hmac_t::update(data, size);
 }
 
 
 void sha1_t::hmac_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hmac_t::finish(result, digest_size);
 }
 
 
 sha256_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<sha256_t>(BCRYPT_SHA256_ALGORITHM))
+  : basic_hash_t(make_worker<sha256_t, 0>(BCRYPT_SHA256_ALGORITHM))
 {}
-
-
-sha256_t::hash_t::~hash_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-sha256_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-sha256_t::hash_t &sha256_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void sha256_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hash_t::update(data, size);
 }
 
 
 void sha256_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hash_t::finish(result, digest_size);
 }
 
 
 sha256_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
-  : ctx(make_hmac<sha256_t>(BCRYPT_SHA256_ALGORITHM, key, size))
+  : basic_hmac_t(make_worker<sha256_t>(BCRYPT_SHA256_ALGORITHM, key, size))
 {}
-
-
-sha256_t::hmac_t::~hmac_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-sha256_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-sha256_t::hmac_t &sha256_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void sha256_t::hmac_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hmac_t::update(data, size);
 }
 
 
 void sha256_t::hmac_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hmac_t::finish(result, digest_size);
 }
 
 
 sha384_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<sha384_t>(BCRYPT_SHA384_ALGORITHM))
+  : basic_hash_t(make_worker<sha384_t, 0>(BCRYPT_SHA384_ALGORITHM))
 {}
-
-
-sha384_t::hash_t::~hash_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-sha384_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-sha384_t::hash_t &sha384_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void sha384_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hash_t::update(data, size);
 }
 
 
 void sha384_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hash_t::finish(result, digest_size);
 }
 
 
 sha384_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
-  : ctx(make_hmac<sha384_t>(BCRYPT_SHA384_ALGORITHM, key, size))
+  : basic_hmac_t(make_worker<sha384_t>(BCRYPT_SHA384_ALGORITHM, key, size))
 {}
-
-
-sha384_t::hmac_t::~hmac_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-sha384_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-sha384_t::hmac_t &sha384_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void sha384_t::hmac_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hmac_t::update(data, size);
 }
 
 
 void sha384_t::hmac_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hmac_t::finish(result, digest_size);
 }
 
 
 sha512_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<sha512_t>(BCRYPT_SHA512_ALGORITHM))
+  : basic_hash_t(make_worker<sha512_t, 0>(BCRYPT_SHA512_ALGORITHM))
 {}
-
-
-sha512_t::hash_t::~hash_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-sha512_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-sha512_t::hash_t &sha512_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void sha512_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hash_t::update(data, size);
 }
 
 
 void sha512_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hash_t::finish(result, digest_size);
 }
 
 
 sha512_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
-  : ctx(make_hmac<sha512_t>(BCRYPT_SHA512_ALGORITHM, key, size))
+  : basic_hmac_t(make_worker<sha512_t>(BCRYPT_SHA512_ALGORITHM, key, size))
 {}
-
-
-sha512_t::hmac_t::~hmac_t () noexcept
-{
-  hash_release(ctx);
-}
-
-
-sha512_t::hmac_t::hmac_t (hmac_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = 0;
-}
-
-
-sha512_t::hmac_t &sha512_t::hmac_t::operator= (hmac_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
-}
 
 
 void sha512_t::hmac_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  basic_hmac_t::update(data, size);
 }
 
 
 void sha512_t::hmac_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  basic_hmac_t::finish(result, digest_size);
 }
 
 
