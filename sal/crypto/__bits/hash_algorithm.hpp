@@ -6,7 +6,10 @@
   #include <CommonCrypto/CommonDigest.h>
   #include <CommonCrypto/CommonHMAC.h>
 #elif __sal_os_linux
-  // everything in .cpp
+  #include <openssl/hmac.h>
+  #include <openssl/md5.h>
+  #include <openssl/sha.h>
+  #include <memory>
 #elif __sal_os_windows
   // everything in .cpp
 #else
@@ -20,7 +23,7 @@ __sal_begin
 namespace crypto { namespace __bits {
 
 
-#if __sal_os_darwin
+#if __sal_os_darwin //{{{1
 
   template <typename Context>
   struct basic_hash_t
@@ -64,15 +67,51 @@ namespace crypto { namespace __bits {
   using sha384_hmac_t = basic_hmac_t;
   using sha512_hmac_t = basic_hmac_t;
 
-#elif __sal_os_linux
+#elif __sal_os_linux //{{{1
 
-  using md5_hash_t = int;
-  using sha1_hash_t = int;
-  using sha256_hash_t = int;
-  using sha384_hash_t = int;
-  using sha512_hash_t = int;
+  template <typename Context>
+  struct basic_hash_t
+    : protected Context
+  {
+    basic_hash_t () noexcept = default;
 
-#elif __sal_os_windows
+    basic_hash_t (const basic_hash_t &) noexcept = delete;
+    basic_hash_t &operator= (const basic_hash_t &) noexcept = delete;
+
+    basic_hash_t (basic_hash_t &&) noexcept = default;
+    basic_hash_t &operator= (basic_hash_t &&) noexcept = default;
+
+    ~basic_hash_t () noexcept = default;
+  };
+
+  using md5_hash_t = basic_hash_t<MD5_CTX>;
+  using sha1_hash_t = basic_hash_t<SHA_CTX>;
+  using sha256_hash_t = basic_hash_t<SHA256_CTX>;
+  using sha384_hash_t = basic_hash_t<SHA512_CTX>;
+  using sha512_hash_t = basic_hash_t<SHA512_CTX>;
+
+  struct basic_hmac_t
+  {
+    std::unique_ptr<HMAC_CTX> context;
+
+    basic_hmac_t () noexcept;
+
+    basic_hmac_t (const basic_hmac_t &) noexcept = delete;
+    basic_hmac_t &operator= (const basic_hmac_t &) noexcept = delete;
+
+    basic_hmac_t (basic_hmac_t &&) noexcept = default;
+    basic_hmac_t &operator= (basic_hmac_t &&that) noexcept = default;
+
+    ~basic_hmac_t () noexcept;
+  };
+
+  using md5_hmac_t = basic_hmac_t;
+  using sha1_hmac_t = basic_hmac_t;
+  using sha256_hmac_t = basic_hmac_t;
+  using sha384_hmac_t = basic_hmac_t;
+  using sha512_hmac_t = basic_hmac_t;
+
+#elif __sal_os_windows //{{{1
 
   struct basic_hash_t
   {
@@ -128,10 +167,10 @@ struct md5_t // {{{1
     : protected md5_hmac_t
   {
     hmac_t ()
-      : hmac_t(nullptr, 0U)
+      : hmac_t("", 0U)
     {}
 
-    hmac_t (const void *key, size_t length);
+    hmac_t (const void *key, size_t size);
 
     void update (const void *data, size_t size);
     void finish (void *result);
@@ -157,10 +196,10 @@ struct sha1_t // {{{1
     : protected sha1_hmac_t
   {
     hmac_t ()
-      : hmac_t(nullptr, 0U)
+      : hmac_t("", 0U)
     {}
 
-    hmac_t (const void *key, size_t length);
+    hmac_t (const void *key, size_t size);
 
     void update (const void *data, size_t size);
     void finish (void *result);
@@ -186,10 +225,10 @@ struct sha256_t // {{{1
     : protected sha256_hmac_t
   {
     hmac_t ()
-      : hmac_t(nullptr, 0U)
+      : hmac_t("", 0U)
     {}
 
-    hmac_t (const void *key, size_t length);
+    hmac_t (const void *key, size_t size);
 
     void update (const void *data, size_t size);
     void finish (void *result);
@@ -215,10 +254,10 @@ struct sha384_t // {{{1
     : protected sha384_hmac_t
   {
     hmac_t ()
-      : hmac_t(nullptr, 0U)
+      : hmac_t("", 0U)
     {}
 
-    hmac_t (const void *key, size_t length);
+    hmac_t (const void *key, size_t size);
 
     void update (const void *data, size_t size);
     void finish (void *result);
@@ -244,10 +283,10 @@ struct sha512_t // {{{1
     : protected sha512_hmac_t
   {
     hmac_t ()
-      : hmac_t(nullptr, 0U)
+      : hmac_t("", 0U)
     {}
 
-    hmac_t (const void *key, size_t length);
+    hmac_t (const void *key, size_t size);
 
     void update (const void *data, size_t size);
     void finish (void *result);

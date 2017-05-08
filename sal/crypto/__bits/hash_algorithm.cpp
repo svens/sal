@@ -13,11 +13,6 @@
 #include <sal/assert.hpp>
 #include <sal/error.hpp>
 
-#if __sal_os_linux
-  #include <linux/if_alg.h>
-  #include <sys/socket.h>
-  #include <unistd.h>
-#endif
 
 __sal_begin
 
@@ -227,327 +222,233 @@ void sha512_t::hmac_t::finish (void *result)
 
 namespace {
 
-
-struct algorithm_driver_t
+inline void fix_key (const void *&key, size_t &size) noexcept
 {
-  int handle = -1;
-
-  template <size_t M, size_t N>
-  algorithm_driver_t (const char (&type)[M], const char (&name)[N]);
-
-  ~algorithm_driver_t () noexcept
+  if (!key || !size)
   {
-    if (handle != -1)
-    {
-      ::close(handle);
-    }
-  }
-
-  int make_worker ();
-};
-
-
-template <size_t M, size_t N>
-algorithm_driver_t::algorithm_driver_t (const char (&type)[M], const char (&name)[N])
-  : handle(::socket(AF_ALG, SOCK_SEQPACKET, 0))
-{
-  if (handle == -1)
-  {
-    throw_system_error(
-      std::error_code(errno, std::generic_category()),
-      "af_alg.socket"
-    );
-  }
-
-  sockaddr_alg alg{};
-  alg.salg_family = AF_ALG;
-
-  static_assert(sizeof(alg.salg_type) >= M, "too long algorithm type name");
-  std::uninitialized_copy(type, type + M, reinterpret_cast<char *>(alg.salg_type));
-
-  static_assert(sizeof(alg.salg_name) >= N, "too long algorithm name");
-  std::uninitialized_copy(name, name + N, reinterpret_cast<char *>(alg.salg_name));
-
-  if (::bind(handle, reinterpret_cast<sockaddr *>(&alg), sizeof(alg)) == -1)
-  {
-    throw_system_error(
-      std::error_code(errno, std::generic_category()),
-      "af_alg.bind"
-    );
+    key = "";
+    size = 0U;
   }
 }
-
-
-int algorithm_driver_t::make_worker ()
-{
-  auto worker = ::accept(handle, nullptr, 0);
-  if (worker != -1)
-  {
-    return worker;
-  }
-
-  throw_system_error(
-    std::error_code(errno, std::generic_category()),
-    "af_alg.accept"
-  );
-}
-
-
-template <typename Algorithm, size_t N>
-int make_hash (const char (&algorithm_name)[N])
-{
-  static algorithm_driver_t driver{"hash", algorithm_name};
-  return driver.make_worker();
-}
-
-
-void hash_release (int handle) noexcept
-{
-  if (handle != -1)
-  {
-    (void)::close(handle);
-  }
-}
-
-
-void hash_update (int handle, const void *data, size_t size) noexcept
-{
-  // MSG_MORE: more data to come, do not calculate hash yet
-  if (::send(handle, data, size, MSG_MORE) != static_cast<ssize_t>(size))
-  {
-    throw_system_error(
-      std::error_code(errno, std::generic_category()),
-      "af_alg.send"
-    );
-  }
-}
-
-
-void hash_finish (int handle, void *result, size_t size) noexcept
-{
-  // final block, calculate hash
-  if (::send(handle, "", 0, 0) == -1)
-  {
-    throw_system_error(
-      std::error_code(errno, std::generic_category()),
-      "af_alg.send"
-    );
-  }
-
-  iovec iov{};
-  iov.iov_base = result;
-  iov.iov_len = size;
-
-  msghdr msg{};
-  msg.msg_iov = &iov;
-  msg.msg_iovlen = 1;
-
-  if (::recvmsg(handle, &msg, 0) == -1)
-  {
-    throw_system_error(
-      std::error_code(errno, std::generic_category()),
-      "af_alg.recvmsg"
-    );
-  }
-}
-
 
 } // namespace
 
 
+basic_hmac_t::basic_hmac_t () noexcept
+  : context{std::make_unique<HMAC_CTX>()}
+{
+  HMAC_CTX_init(context.get());
+}
+
+
+basic_hmac_t::~basic_hmac_t () noexcept
+{
+  if (context)
+  {
+    HMAC_CTX_cleanup(context.get());
+  }
+}
+
+
 md5_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<md5_t>("md5"))
-{}
-
-
-md5_t::hash_t::~hash_t () noexcept
 {
-  hash_release(ctx);
-}
-
-
-md5_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = -1;
-}
-
-
-md5_t::hash_t &md5_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
+  MD5_Init(this);
 }
 
 
 void md5_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  MD5_Update(this, data, size);
 }
 
 
 void md5_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  MD5_Final(static_cast<uint8_t *>(result), this);
+  MD5_Init(this);
+}
+
+
+md5_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
+{
+  fix_key(key, size);
+  HMAC_Init_ex(context.get(), key, size, EVP_md5(), nullptr);
+}
+
+
+void md5_t::hmac_t::update (const void *data, size_t size)
+{
+  HMAC_Update(context.get(), static_cast<const uint8_t *>(data), size);
+}
+
+
+void md5_t::hmac_t::finish (void *result)
+{
+  unsigned size = digest_size;
+  HMAC_Final(context.get(), static_cast<uint8_t *>(result), &size);
+  HMAC_Init_ex(context.get(), nullptr, 0, nullptr, nullptr);
 }
 
 
 sha1_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<sha1_t>("sha1"))
-{}
-
-
-sha1_t::hash_t::~hash_t () noexcept
 {
-  hash_release(ctx);
-}
-
-
-sha1_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = -1;
-}
-
-
-sha1_t::hash_t &sha1_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
+  SHA1_Init(this);
 }
 
 
 void sha1_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  SHA1_Update(this, data, size);
 }
 
 
 void sha1_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  SHA1_Final(static_cast<uint8_t *>(result), this);
+  SHA1_Init(this);
+}
+
+
+sha1_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
+{
+  fix_key(key, size);
+  HMAC_Init_ex(context.get(), key, size, EVP_sha1(), nullptr);
+}
+
+
+void sha1_t::hmac_t::update (const void *data, size_t size)
+{
+  HMAC_Update(context.get(), static_cast<const uint8_t *>(data), size);
+}
+
+
+void sha1_t::hmac_t::finish (void *result)
+{
+  unsigned size;
+  HMAC_Final(context.get(), static_cast<uint8_t *>(result), &size);
+  HMAC_Init_ex(context.get(), nullptr, 0, nullptr, nullptr);
 }
 
 
 sha256_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<sha256_t>("sha256"))
-{}
-
-
-sha256_t::hash_t::~hash_t () noexcept
 {
-  hash_release(ctx);
-}
-
-
-sha256_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = -1;
-}
-
-
-sha256_t::hash_t &sha256_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
+  SHA256_Init(this);
 }
 
 
 void sha256_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  SHA256_Update(this, data, size);
 }
 
 
 void sha256_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  SHA256_Final(static_cast<uint8_t *>(result), this);
+  SHA256_Init(this);
+}
+
+
+sha256_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
+{
+  fix_key(key, size);
+  HMAC_Init_ex(context.get(), key, size, EVP_sha256(), nullptr);
+}
+
+
+void sha256_t::hmac_t::update (const void *data, size_t size)
+{
+  HMAC_Update(context.get(), static_cast<const uint8_t *>(data), size);
+}
+
+
+void sha256_t::hmac_t::finish (void *result)
+{
+  unsigned size;
+  HMAC_Final(context.get(), static_cast<uint8_t *>(result), &size);
+  HMAC_Init_ex(context.get(), nullptr, 0, nullptr, nullptr);
 }
 
 
 sha384_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<sha384_t>("sha384"))
-{}
-
-
-sha384_t::hash_t::~hash_t () noexcept
 {
-  hash_release(ctx);
-}
-
-
-sha384_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = -1;
-}
-
-
-sha384_t::hash_t &sha384_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
+  SHA384_Init(this);
 }
 
 
 void sha384_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  SHA384_Update(this, data, size);
 }
 
 
 void sha384_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  SHA384_Final(static_cast<uint8_t *>(result), this);
+  SHA384_Init(this);
+}
+
+
+sha384_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
+{
+  fix_key(key, size);
+  HMAC_Init_ex(context.get(), key, size, EVP_sha384(), nullptr);
+}
+
+
+void sha384_t::hmac_t::update (const void *data, size_t size)
+{
+  HMAC_Update(context.get(), static_cast<const uint8_t *>(data), size);
+}
+
+
+void sha384_t::hmac_t::finish (void *result)
+{
+  unsigned size;
+  HMAC_Final(context.get(), static_cast<uint8_t *>(result), &size);
+  HMAC_Init_ex(context.get(), nullptr, 0, nullptr, nullptr);
 }
 
 
 sha512_t::hash_t::hash_t () // {{{2
-  : ctx(make_hash<sha512_t>("sha512"))
-{}
-
-
-sha512_t::hash_t::~hash_t () noexcept
 {
-  hash_release(ctx);
-}
-
-
-sha512_t::hash_t::hash_t (hash_t &&that) noexcept
-  : ctx(that.ctx)
-{
-  that.ctx = -1;
-}
-
-
-sha512_t::hash_t &sha512_t::hash_t::operator= (hash_t &&that) noexcept
-{
-  using std::swap;
-  auto tmp{std::move(that)};
-  swap(ctx, tmp.ctx);
-  return *this;
+  SHA512_Init(this);
 }
 
 
 void sha512_t::hash_t::update (const void *data, size_t size)
 {
-  hash_update(ctx, data, size);
+  SHA512_Update(this, data, size);
 }
 
 
 void sha512_t::hash_t::finish (void *result)
 {
-  hash_finish(ctx, result, digest_size);
+  SHA512_Final(static_cast<uint8_t *>(result), this);
+  SHA512_Init(this);
 }
+
+
+sha512_t::hmac_t::hmac_t (const void *key, size_t size) // {{{2
+{
+  fix_key(key, size);
+  HMAC_Init_ex(context.get(), key, size, EVP_sha512(), nullptr);
+}
+
+
+void sha512_t::hmac_t::update (const void *data, size_t size)
+{
+  HMAC_Update(context.get(), static_cast<const uint8_t *>(data), size);
+}
+
+
+void sha512_t::hmac_t::finish (void *result)
+{
+  unsigned size;
+  HMAC_Final(context.get(), static_cast<uint8_t *>(result), &size);
+  HMAC_Init_ex(context.get(), nullptr, 0, nullptr, nullptr);
+}
+
 
 
 #elif __sal_os_windows // {{{1

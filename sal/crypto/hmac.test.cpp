@@ -13,13 +13,11 @@ template <typename Algorithm>
 using crypto_hmac = sal_test::with_type<Algorithm>;
 
 using hash_types = ::testing::Types<
-#if !__sal_os_linux
   sal::crypto::md5,
   sal::crypto::sha1,
   sal::crypto::sha256,
   sal::crypto::sha384,
   sal::crypto::sha512
-#endif
 >;
 
 TYPED_TEST_CASE(crypto_hmac, hash_types);
