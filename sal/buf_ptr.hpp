@@ -39,6 +39,24 @@ public:
 
 
   /**
+   * Return byte pointer to beginning of region.
+   */
+  uint8_t *begin () const noexcept
+  {
+    return reinterpret_cast<uint8_t *>(begin_);
+  }
+
+
+  /**
+   * Return byte pointer to end of region.
+   */
+  uint8_t *end () const noexcept
+  {
+    return reinterpret_cast<uint8_t *>(end_);
+  }
+
+
+  /**
    * Return raw pointer to beginning of region.
    */
   void *data () const noexcept
@@ -273,6 +291,24 @@ public:
     : begin_(static_cast<const char *>(region))
     , end_(begin_ + size)
   {}
+
+
+  /**
+   * Return byte pointer to beginning of region.
+   */
+  const uint8_t *begin () const noexcept
+  {
+    return reinterpret_cast<const uint8_t *>(begin_);
+  }
+
+
+  /**
+   * Return byte pointer to end of region.
+   */
+  const uint8_t *end () const noexcept
+  {
+    return reinterpret_cast<const uint8_t *>(end_);
+  }
 
 
   /**
