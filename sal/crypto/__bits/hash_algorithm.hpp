@@ -160,6 +160,7 @@ struct md5_t // {{{1
     hash_t ();
     void update (const void *data, size_t size);
     void finish (void *result);
+    static void one_shot (const void *data, size_t size, void *result);
   };
 
 
@@ -174,6 +175,11 @@ struct md5_t // {{{1
 
     void update (const void *data, size_t size);
     void finish (void *result);
+
+    static void one_shot (const void *key, size_t key_size,
+      const void *data, size_t data_size,
+      void *result
+    );
   };
 };
 
@@ -189,6 +195,7 @@ struct sha1_t // {{{1
     hash_t ();
     void update (const void *data, size_t size);
     void finish (void *result);
+    static void one_shot (const void *data, size_t size, void *result);
   };
 
 
@@ -203,6 +210,11 @@ struct sha1_t // {{{1
 
     void update (const void *data, size_t size);
     void finish (void *result);
+
+    static void one_shot (const void *key, size_t key_size,
+      const void *data, size_t data_size,
+      void *result
+    );
   };
 };
 
@@ -218,6 +230,7 @@ struct sha256_t // {{{1
     hash_t ();
     void update (const void *data, size_t size);
     void finish (void *result);
+    static void one_shot (const void *data, size_t size, void *result);
   };
 
 
@@ -232,6 +245,11 @@ struct sha256_t // {{{1
 
     void update (const void *data, size_t size);
     void finish (void *result);
+
+    static void one_shot (const void *key, size_t key_size,
+      const void *data, size_t data_size,
+      void *result
+    );
   };
 };
 
@@ -247,6 +265,7 @@ struct sha384_t // {{{1
     hash_t ();
     void update (const void *data, size_t size);
     void finish (void *result);
+    static void one_shot (const void *data, size_t size, void *result);
   };
 
 
@@ -261,6 +280,11 @@ struct sha384_t // {{{1
 
     void update (const void *data, size_t size);
     void finish (void *result);
+
+    static void one_shot (const void *key, size_t key_size,
+      const void *data, size_t data_size,
+      void *result
+    );
   };
 };
 
@@ -276,6 +300,7 @@ struct sha512_t // {{{1
     hash_t ();
     void update (const void *data, size_t size);
     void finish (void *result);
+    static void one_shot (const void *data, size_t size, void *result);
   };
 
 
@@ -290,6 +315,11 @@ struct sha512_t // {{{1
 
     void update (const void *data, size_t size);
     void finish (void *result);
+
+    static void one_shot (const void *key, size_t key_size,
+      const void *data, size_t data_size,
+      void *result
+    );
   };
 };
 

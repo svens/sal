@@ -59,6 +59,14 @@ public:
   }
 
 
+  template <typename DataPtr, typename ResultPtr>
+  static void one_shot (const DataPtr &data, const ResultPtr &result)
+  {
+    sal_throw_if(result.size() < digest_size());
+    T::hash_t::one_shot(data.data(), data.size(), result.data());
+  }
+
+
 private:
 
   typename T::hash_t impl_{};

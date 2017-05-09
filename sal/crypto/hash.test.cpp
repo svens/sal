@@ -79,21 +79,26 @@ string_map sha512 =
 template <> string_map &expected<sal::crypto::sha512> = sha512;
 
 
+template <typename Ptr>
+std::string to_string (const Ptr &data)
+{
+  std::string result;
+  for (auto &b: data)
+  {
+    char buf[3];
+    snprintf(buf, sizeof(buf), "%02x", static_cast<uint32_t>(b));
+    result += buf;
+  }
+  return result;
+}
+
+
 template <typename Algorithm>
 std::string finish (sal::crypto::hash_t<Algorithm> &hash)
 {
   uint8_t result[sal::crypto::hash_t<Algorithm>::digest_size()];
   hash.finish(sal::make_buf(result));
-
-  std::string string_result;
-  for (auto b: result)
-  {
-    char buf[3];
-    snprintf(buf, sizeof(buf), "%02x", static_cast<uint32_t>(b));
-    string_result += buf;
-  }
-
-  return string_result;
+  return to_string(sal::make_buf(result));
 }
 
 
@@ -204,6 +209,18 @@ TYPED_TEST(crypto_hash, buf_ptr)
   {
     hash.update(sal::make_buf(kv.first));
     EXPECT_EQ(kv.second, finish(hash));
+  }
+}
+
+
+TYPED_TEST(crypto_hash, one_shot)
+{
+  for (auto &kv: expected<TypeParam>)
+  {
+    uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size()];
+    sal::crypto::hash_t<TypeParam>::one_shot(kv.first, sal::make_buf(result));
+    EXPECT_EQ(kv.second, to_string(sal::make_buf(result)))
+      << "   Input: " << kv.first;
   }
 }
 

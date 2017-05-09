@@ -125,21 +125,26 @@ string_map sha512_with_key =
 template <> string_map &expected_with_key<sal::crypto::sha512> = sha512_with_key;
 
 
+template <typename Ptr>
+std::string to_string (const Ptr &data)
+{
+  std::string result;
+  for (auto &b: data)
+  {
+    char buf[3];
+    snprintf(buf, sizeof(buf), "%02x", static_cast<uint32_t>(b));
+    result += buf;
+  }
+  return result;
+}
+
+
 template <typename Algorithm>
 std::string finish (sal::crypto::hmac_t<Algorithm> &hmac)
 {
   uint8_t result[sal::crypto::hmac_t<Algorithm>::digest_size()];
   hmac.finish(sal::make_buf(result));
-
-  std::string string_result;
-  for (auto b: result)
-  {
-    char buf[3];
-    snprintf(buf, sizeof(buf), "%02x", static_cast<uint32_t>(b));
-    string_result += buf;
-  }
-
-  return string_result;
+  return to_string(sal::make_buf(result));
 }
 
 
@@ -357,6 +362,30 @@ TYPED_TEST(crypto_hmac, buf_ptr_with_key)
   {
     hmac.update(sal::make_buf(kv.first));
     EXPECT_EQ(kv.second, finish(hmac));
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, one_shot)
+{
+  for (auto &kv: expected<TypeParam>)
+  {
+    uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size()];
+    sal::crypto::hmac_t<TypeParam>::one_shot(kv.first, sal::make_buf(result));
+    EXPECT_EQ(kv.second, to_string(sal::make_buf(result)))
+      << "   Input: " << kv.first;
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, one_shot_with_key)
+{
+  for (auto &kv: expected_with_key<TypeParam>)
+  {
+    uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size()];
+    sal::crypto::hmac_t<TypeParam>::one_shot(key, kv.first, sal::make_buf(result));
+    EXPECT_EQ(kv.second, to_string(sal::make_buf(result)))
+      << "   Input: " << kv.first;
   }
 }
 
