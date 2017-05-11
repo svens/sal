@@ -664,6 +664,7 @@ struct algorithm_provider_t
 
   algorithm_provider_t (LPCWSTR id, DWORD flags, size_t expected_hash_length)
   {
+    flags |= BCRYPT_HASH_REUSABLE_FLAG;
     call(::BCryptOpenAlgorithmProvider, &handle, id, nullptr, flags);
 
     DWORD hash_length, cbData;
