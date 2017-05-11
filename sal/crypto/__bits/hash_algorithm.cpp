@@ -7,7 +7,6 @@
   #include <ntstatus.h>
   #pragma comment(lib, "ncrypt")
   #pragma comment(lib, "ntdll")
-  #include <mutex>
 #endif
 
 #include <sal/crypto/__bits/hash_algorithm.hpp>
