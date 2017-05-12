@@ -1,17 +1,11 @@
-#if defined(_WIN32) || defined(_WIN64)
-  #define WIN32_NO_STATUS
-  #include <windows.h>
-  #include <bcrypt.h>
-  #undef WIN32_NO_STATUS
-  #include <winternl.h>
-  #include <ntstatus.h>
-  #pragma comment(lib, "ncrypt")
-  #pragma comment(lib, "ntdll")
-#endif
-
+#include <sal/__bits/platform_sdk.hpp>
 #include <sal/crypto/__bits/hash_algorithm.hpp>
 #include <sal/assert.hpp>
 #include <sal/error.hpp>
+
+#if __sal_os_windows
+  #include <bcrypt.h>
+#endif
 
 
 __sal_begin
