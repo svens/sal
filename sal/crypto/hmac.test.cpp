@@ -9,10 +9,10 @@
 namespace {
 
 
-template <typename Algorithm>
-using crypto_hmac = sal_test::with_type<Algorithm>;
+template <typename Digest>
+using crypto_hmac = sal_test::with_type<Digest>;
 
-using hash_types = ::testing::Types<
+using types = ::testing::Types<
   sal::crypto::md5,
   sal::crypto::sha1,
   sal::crypto::sha256,
@@ -20,7 +20,7 @@ using hash_types = ::testing::Types<
   sal::crypto::sha512
 >;
 
-TYPED_TEST_CASE(crypto_hmac, hash_types);
+TYPED_TEST_CASE(crypto_hmac, types);
 
 
 std::string key = "key",
@@ -31,8 +31,8 @@ std::string key = "key",
 
 using string_map = std::map<std::string, std::string>;
 
-template <typename Algorithm> const bool expected = false;
-template <typename Algorithm> const bool expected_with_key = false;
+template <typename Digest> const bool expected = false;
+template <typename Digest> const bool expected_with_key = false;
 
 string_map md5 =
 {
@@ -139,12 +139,68 @@ std::string to_string (const Ptr &data)
 }
 
 
-template <typename Algorithm>
-std::string finish (sal::crypto::hmac_t<Algorithm> &hmac)
+template <typename Digest>
+std::string finish (sal::crypto::hmac_t<Digest> &hmac)
 {
-  uint8_t result[sal::crypto::hmac_t<Algorithm>::digest_size()];
+  uint8_t result[sal::crypto::hmac_t<Digest>::digest_size()];
   hmac.finish(sal::make_buf(result));
   return to_string(sal::make_buf(result));
+}
+
+
+TYPED_TEST(crypto_hmac, copy_ctor)
+{
+  sal::crypto::hmac_t<TypeParam> h1;
+  h1.update(lazy_dog);
+  auto h2 = h1;
+
+  h1.update(lazy_cog);
+  h2.update(lazy_cog);
+
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h1));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+}
+
+
+TYPED_TEST(crypto_hmac, copy_ctor_with_key)
+{
+  sal::crypto::hmac_t<TypeParam> h1{key};
+  h1.update(lazy_dog);
+  auto h2 = h1;
+
+  h1.update(lazy_cog);
+  h2.update(lazy_cog);
+
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h1));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+}
+
+
+TYPED_TEST(crypto_hmac, copy_assign)
+{
+  sal::crypto::hmac_t<TypeParam> h1, h2;
+  h1.update(lazy_dog);
+  h2 = h1;
+
+  h1.update(lazy_cog);
+  h2.update(lazy_cog);
+
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h1));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+}
+
+
+TYPED_TEST(crypto_hmac, copy_assign_with_key)
+{
+  sal::crypto::hmac_t<TypeParam> h1{key}, h2;
+  h1.update(lazy_dog);
+  h2 = h1;
+
+  h1.update(lazy_cog);
+  h2.update(lazy_cog);
+
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h1));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h2));
 }
 
 

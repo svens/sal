@@ -7,8 +7,8 @@
 
 
 #include <sal/config.hpp>
-#include <sal/error.hpp>
 #include <sal/crypto/hash.hpp>
+#include <sal/error.hpp>
 
 
 __sal_begin
@@ -17,35 +17,38 @@ __sal_begin
 namespace crypto {
 
 
-template <typename T>
+template <typename Digest>
 class hmac_t
 {
 public:
 
   static constexpr size_t digest_size () noexcept
   {
-    return T::digest_size;
+    return __bits::digest_size_v<Digest>;
   }
 
 
-  hmac_t () = default;
+  hmac_t ()
+    : hmac_t(nullptr, 0U)
+  {}
+
 
   template <typename Ptr>
   hmac_t (const Ptr &key)
-    : impl_{key.data(), key.size()}
+    : hmac_t(key.data(), key.size())
   {}
 
-  hmac_t (hmac_t &&) noexcept = default;
-  hmac_t &operator= (hmac_t &&) noexcept = default;
 
-  hmac_t (const hmac_t &) = delete;
-  hmac_t &operator= (const hmac_t &) = delete;
+  hmac_t (const hmac_t &) = default;
+  hmac_t &operator= (const hmac_t &) = default;
+  hmac_t (hmac_t &&) = default;
+  hmac_t &operator= (hmac_t &&) = default;
 
 
   template <typename Ptr>
   void update (const Ptr &data)
   {
-    impl_.update(data.data(), data.size());
+    update(data.data(), data.size());
   }
 
 
@@ -53,7 +56,7 @@ public:
   void finish (const Ptr &result)
   {
     sal_throw_if(result.size() < digest_size());
-    impl_.finish(result.data());
+    finish(result.data(), result.size());
   }
 
 
@@ -63,9 +66,9 @@ public:
     const ResultPtr &result)
   {
     sal_throw_if(result.size() < digest_size());
-    T::hmac_t::one_shot(key.data(), key.size(),
+    one_shot(key.data(), key.size(),
       data.data(), data.size(),
-      result.data()
+      result.data(), result.size()
     );
   }
 
@@ -74,16 +77,27 @@ public:
   static void one_shot (const DataPtr &data, const ResultPtr &result)
   {
     sal_throw_if(result.size() < digest_size());
-    T::hmac_t::one_shot(nullptr, 0U,
+    one_shot(nullptr, 0U,
       data.data(), data.size(),
-      result.data()
+      result.data(), result.size()
     );
   }
 
 
 private:
 
-  typename T::hmac_t impl_{};
+  typename Digest::hmac_t ctx_;
+
+  hmac_t (const void *key, size_t size);
+
+  void update (const void *data, size_t size);
+  void finish (void *result, size_t size);
+
+  static void one_shot (
+    const void *key, size_t key_size,
+    const void *data, size_t data_size,
+    void *result, size_t result_size
+  );
 };
 
 

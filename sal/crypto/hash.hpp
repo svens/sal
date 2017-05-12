@@ -7,8 +7,8 @@
 
 
 #include <sal/config.hpp>
+#include <sal/crypto/__bits/digest.hpp>
 #include <sal/error.hpp>
-#include <sal/crypto/__bits/hash_algorithm.hpp>
 
 
 __sal_begin
@@ -24,30 +24,29 @@ using sha384 = __bits::sha384_t;
 using sha512 = __bits::sha512_t;
 
 
-template <typename T>
+template <typename Digest>
 class hash_t
 {
 public:
 
   static constexpr size_t digest_size () noexcept
   {
-    return T::digest_size;
+    return __bits::digest_size_v<Digest>;
   }
 
 
-  hash_t () = default;
+  hash_t ();
 
-  hash_t (hash_t &&) noexcept = default;
-  hash_t &operator= (hash_t &&) noexcept = default;
-
-  hash_t (const hash_t &) = delete;
-  hash_t &operator= (const hash_t &) = delete;
+  hash_t (const hash_t &) = default;
+  hash_t &operator= (const hash_t &) = default;
+  hash_t (hash_t &&) = default;
+  hash_t &operator= (hash_t &&) = default;
 
 
   template <typename Ptr>
   void update (const Ptr &data)
   {
-    impl_.update(data.data(), data.size());
+    update(data.data(), data.size());
   }
 
 
@@ -55,7 +54,7 @@ public:
   void finish (const Ptr &result)
   {
     sal_throw_if(result.size() < digest_size());
-    impl_.finish(result.data());
+    finish(result.data(), result.size());
   }
 
 
@@ -63,13 +62,21 @@ public:
   static void one_shot (const DataPtr &data, const ResultPtr &result)
   {
     sal_throw_if(result.size() < digest_size());
-    T::hash_t::one_shot(data.data(), data.size(), result.data());
+    one_shot(data.data(), data.size(), result.data(), result.size());
   }
 
 
 private:
 
-  typename T::hash_t impl_{};
+  typename Digest::hash_t ctx_{};
+
+  void update (const void *data, size_t size);
+  void finish (void *result, size_t size);
+
+  static void one_shot (
+    const void *data, size_t data_size,
+    void *result, size_t result_size
+  );
 };
 
 

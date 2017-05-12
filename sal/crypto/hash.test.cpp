@@ -9,10 +9,10 @@
 namespace {
 
 
-template <typename Algorithm>
-using crypto_hash = sal_test::with_type<Algorithm>;
+template <typename Digest>
+using crypto_hash = sal_test::with_type<Digest>;
 
-using hash_types = ::testing::Types<
+using types = ::testing::Types<
   sal::crypto::md5,
   sal::crypto::sha1,
   sal::crypto::sha256,
@@ -20,7 +20,7 @@ using hash_types = ::testing::Types<
   sal::crypto::sha512
 >;
 
-TYPED_TEST_CASE(crypto_hash, hash_types);
+TYPED_TEST_CASE(crypto_hash, types);
 
 
 std::string empty = "",
@@ -30,7 +30,7 @@ std::string empty = "",
 
 using string_map = std::map<std::string, std::string>;
 
-template <typename Algorithm>
+template <typename Digest>
 const bool expected = false;
 
 string_map md5 =
@@ -93,12 +93,40 @@ std::string to_string (const Ptr &data)
 }
 
 
-template <typename Algorithm>
-std::string finish (sal::crypto::hash_t<Algorithm> &hash)
+template <typename Digest>
+std::string finish (sal::crypto::hash_t<Digest> &hash)
 {
-  uint8_t result[sal::crypto::hash_t<Algorithm>::digest_size()];
+  uint8_t result[sal::crypto::hash_t<Digest>::digest_size()];
   hash.finish(sal::make_buf(result));
   return to_string(sal::make_buf(result));
+}
+
+
+TYPED_TEST(crypto_hash, copy_ctor)
+{
+  sal::crypto::hash_t<TypeParam> h1;
+  h1.update(lazy_dog);
+  auto h2 = h1;
+
+  h1.update(lazy_cog);
+  h2.update(lazy_cog);
+
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h1));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+}
+
+
+TYPED_TEST(crypto_hash, copy_assign)
+{
+  sal::crypto::hash_t<TypeParam> h1, h2;
+  h1.update(lazy_dog);
+  h2 = h1;
+
+  h1.update(lazy_cog);
+  h2.update(lazy_cog);
+
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h1));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
 }
 
 
