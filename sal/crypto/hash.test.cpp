@@ -9,8 +9,8 @@
 namespace {
 
 
-template <typename Digest>
-using crypto_hash = sal_test::with_type<Digest>;
+template <typename Algorithm>
+using crypto_hash = sal_test::with_type<Algorithm>;
 
 using types = ::testing::Types<
   sal::crypto::md5,
@@ -30,7 +30,7 @@ std::string empty = "",
 
 using string_map = std::map<std::string, std::string>;
 
-template <typename Digest>
+template <typename Algorithm>
 const bool expected = false;
 
 string_map md5 =
@@ -93,10 +93,10 @@ std::string to_string (const Ptr &data)
 }
 
 
-template <typename Digest>
-std::string finish (sal::crypto::hash_t<Digest> &hash)
+template <typename Algorithm>
+std::string finish (sal::crypto::hash_t<Algorithm> &hash)
 {
-  uint8_t result[sal::crypto::hash_t<Digest>::digest_size()];
+  uint8_t result[sal::crypto::hash_t<Algorithm>::digest_size()];
   hash.finish(sal::make_buf(result));
   return to_string(sal::make_buf(result));
 }

@@ -9,8 +9,8 @@
 namespace {
 
 
-template <typename Digest>
-using crypto_hmac = sal_test::with_type<Digest>;
+template <typename Algorithm>
+using crypto_hmac = sal_test::with_type<Algorithm>;
 
 using types = ::testing::Types<
   sal::crypto::md5,
@@ -31,8 +31,8 @@ std::string key = "key",
 
 using string_map = std::map<std::string, std::string>;
 
-template <typename Digest> const bool expected = false;
-template <typename Digest> const bool expected_with_key = false;
+template <typename Algorithm> const bool expected = false;
+template <typename Algorithm> const bool expected_with_key = false;
 
 string_map md5 =
 {
@@ -139,10 +139,10 @@ std::string to_string (const Ptr &data)
 }
 
 
-template <typename Digest>
-std::string finish (sal::crypto::hmac_t<Digest> &hmac)
+template <typename Algorithm>
+std::string finish (sal::crypto::hmac_t<Algorithm> &hmac)
 {
-  uint8_t result[sal::crypto::hmac_t<Digest>::digest_size()];
+  uint8_t result[sal::crypto::hmac_t<Algorithm>::digest_size()];
   hmac.finish(sal::make_buf(result));
   return to_string(sal::make_buf(result));
 }

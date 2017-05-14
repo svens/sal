@@ -86,12 +86,12 @@ namespace crypto { namespace __bits {
     }
 
     void update (const void *data, size_t size);
-    void finish (void *result);
+    void finish (void *digest);
 
     static void one_shot (const EVP_MD *evp,
       const void *key, size_t key_size,
       const void *data, size_t data_size,
-      void *result
+      void *digest
     );
   };
 
@@ -127,91 +127,91 @@ namespace crypto { namespace __bits {
 
 #elif __sal_os_windows //{{{1
 
-  struct digest_t
+  struct context_t
   {
     BCRYPT_HASH_HANDLE handle{};
 
-    digest_t () noexcept = default;
-    ~digest_t () noexcept;
+    context_t () noexcept = default;
+    ~context_t () noexcept;
 
-    digest_t (BCRYPT_HASH_HANDLE handle) noexcept
+    context_t (BCRYPT_HASH_HANDLE handle) noexcept
       : handle(handle)
     {}
 
-    digest_t (const digest_t &that);
+    context_t (const context_t &that);
 
-    digest_t (digest_t &&that) noexcept
+    context_t (context_t &&that) noexcept
     {
       swap(*this, that);
     }
 
-    digest_t &operator= (digest_t that) noexcept
+    context_t &operator= (context_t that) noexcept
     {
       swap(*this, that);
       return *this;
     }
 
-    friend void swap (digest_t &a, digest_t &b) noexcept
+    friend void swap (context_t &a, context_t &b) noexcept
     {
       using std::swap;
       swap(a.handle, b.handle);
     }
 
-    template <typename Digest, bool IsHMAC>
+    template <typename Algorithm, bool IsHMAC>
     static BCRYPT_ALG_HANDLE factory ();
 
-    template <typename Digest, bool IsHMAC>
+    template <typename Algorithm, bool IsHMAC>
     static BCRYPT_HASH_HANDLE make (const void *key = nullptr, size_t = 0U);
 
     void update (const void *data, size_t size);
-    void finish (void *result, size_t size);
+    void finish (void *digest, size_t size);
 
     static void hash (BCRYPT_ALG_HANDLE algorithm,
       const void *data, size_t data_size,
-      void *result, size_t result_size
+      void *digest, size_t digest_size
     );
 
     static void hmac (BCRYPT_ALG_HANDLE algorithm,
       const void *key, size_t key_size,
       const void *data, size_t data_size,
-      void *result, size_t result_size
+      void *digest, size_t digest_size
     );
   };
 
   struct md5_t
   {
-    using hash_t = digest_t;
-    using hmac_t = digest_t;
+    using hash_t = context_t;
+    using hmac_t = context_t;
   };
 
   struct sha1_t
   {
-    using hash_t = digest_t;
-    using hmac_t = digest_t;
+    using hash_t = context_t;
+    using hmac_t = context_t;
   };
 
   struct sha256_t
   {
-    using hash_t = digest_t;
-    using hmac_t = digest_t;
+    using hash_t = context_t;
+    using hmac_t = context_t;
   };
 
   struct sha384_t
   {
-    using hash_t = digest_t;
-    using hmac_t = digest_t;
+    using hash_t = context_t;
+    using hmac_t = context_t;
   };
 
   struct sha512_t
   {
-    using hash_t = digest_t;
-    using hmac_t = digest_t;
+    using hash_t = context_t;
+    using hmac_t = context_t;
   };
 
 #endif //}}}1
 
 
-template <typename Digest> constexpr size_t digest_size_v = 0U;
+template <typename Algorithm> constexpr size_t digest_size_v = 0U;
 template <> constexpr size_t digest_size_v<md5_t> = 16U;
 template <> constexpr size_t digest_size_v<sha1_t> = 20U;
 template <> constexpr size_t digest_size_v<sha256_t> = 32U;

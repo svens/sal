@@ -38,6 +38,9 @@ class async_worker_t
 {
 public:
 
+  /**
+   * Construct new asynchronous worker for logging.
+   */
   template <typename... Options>
   async_worker_t (Options &&...options)
     : basic_worker_t(std::forward<Options>(options)...)

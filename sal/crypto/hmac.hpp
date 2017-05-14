@@ -17,34 +17,75 @@ __sal_begin
 namespace crypto {
 
 
-template <typename Digest>
+/**
+ * Keyed-hash message authentication code
+ * (<a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">HMAC</a>)
+ * using \a Algorithm.
+ *
+ * Usage of this class is similar to hash_t.
+ */
+template <typename Algorithm>
 class hmac_t
 {
 public:
 
+  /**
+   * Return number of bytes in HMAC digest.
+   */
   static constexpr size_t digest_size () noexcept
   {
-    return __bits::digest_size_v<Digest>;
+    return __bits::digest_size_v<Algorithm>;
   }
 
 
+  /**
+   * Initialize HMAC object using empty key.
+   */
   hmac_t ()
     : hmac_t(nullptr, 0U)
   {}
 
 
+  /**
+   * Initialize HMAC object using \a key.
+   */
   template <typename Ptr>
   hmac_t (const Ptr &key)
     : hmac_t(key.data(), key.size())
   {}
 
 
-  hmac_t (const hmac_t &) = default;
-  hmac_t &operator= (const hmac_t &) = default;
-  hmac_t (hmac_t &&) = default;
-  hmac_t &operator= (hmac_t &&) = default;
+  /**
+   * Create this as copy of \a that
+   */
+  hmac_t (const hmac_t &that) = default;
 
 
+  /**
+   * Copy state of \a that into this, overriding current state.
+   */
+  hmac_t &operator= (const hmac_t &that) = default;
+
+
+  /**
+   * Create this from \a that by moving it's state into this.
+   * It is undefined behaviour to use \a that without re-initializing it
+   * after move.
+   */
+  hmac_t (hmac_t &&that) = default;
+
+
+  /**
+   * Drop current state of this and move state of \a that into this.
+   * It is undefined behaviour to use \a that without re-initializing it
+   * after move.
+   */
+  hmac_t &operator= (hmac_t &&that) = default;
+
+
+  /**
+   * Add more \a data into hasher.
+   */
   template <typename Ptr>
   void update (const Ptr &data)
   {
@@ -52,51 +93,63 @@ public:
   }
 
 
+  /**
+   * Calculate HMAC of previously added data and store it into \a digest.
+   * \throws std::logic_error if digest.size() < digest_size()
+   */
   template <typename Ptr>
-  void finish (const Ptr &result)
+  void finish (const Ptr &digest)
   {
-    sal_throw_if(result.size() < digest_size());
-    finish(result.data(), result.size());
+    sal_throw_if(digest.size() < digest_size());
+    finish(digest.data(), digest.size());
   }
 
 
-  template <typename KeyPtr, typename DataPtr, typename ResultPtr>
+  /**
+   * Calculate HMAC of \a data using \a key and store result into \a digest.
+   * \throws std::logic_error if digest.size() < digest_size()
+   */
+  template <typename KeyPtr, typename DataPtr, typename DigestPtr>
   static void one_shot (const KeyPtr &key,
     const DataPtr &data,
-    const ResultPtr &result)
+    const DigestPtr &digest)
   {
-    sal_throw_if(result.size() < digest_size());
+    sal_throw_if(digest.size() < digest_size());
     one_shot(key.data(), key.size(),
       data.data(), data.size(),
-      result.data(), result.size()
+      digest.data(), digest.size()
     );
   }
 
 
-  template <typename DataPtr, typename ResultPtr>
-  static void one_shot (const DataPtr &data, const ResultPtr &result)
+  /**
+   * Calculate HMAC of \a data without key and store result into \a digest.
+   * \throws std::logic_error if digest.size() < digest_size()
+   */
+  template <typename DataPtr, typename DigestPtr>
+  static void one_shot (const DataPtr &data, const DigestPtr &digest)
   {
-    sal_throw_if(result.size() < digest_size());
+    sal_throw_if(digest.size() < digest_size());
     one_shot(nullptr, 0U,
       data.data(), data.size(),
-      result.data(), result.size()
+      digest.data(), digest.size()
     );
   }
 
 
 private:
 
-  typename Digest::hmac_t ctx_;
+  typename Algorithm::hmac_t ctx_;
 
   hmac_t (const void *key, size_t size);
 
   void update (const void *data, size_t size);
-  void finish (void *result, size_t size);
+  void finish (void *digest, size_t size);
 
   static void one_shot (
     const void *key, size_t key_size,
     const void *data, size_t data_size,
-    void *result, size_t result_size
+    void *digest, size_t digest_length
   );
 };
 

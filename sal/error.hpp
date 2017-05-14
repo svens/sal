@@ -98,7 +98,7 @@ private:
 
 
 /**
- * \def sal_fail_if(condition)
+ * \def sal_throw_if(condition)
  *
  * If \a condition is true, throw logic_error with \a condition as message
  * prepended with source location (file:line)
