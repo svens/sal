@@ -7,7 +7,7 @@ linux-gcc: &linux-gcc
     apt:
       sources:
         - ubuntu-toolchain-r-test
-        - kubuntu-backports
+        - kalakris-cmake
       packages:
         - g++-6
         - cmake
