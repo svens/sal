@@ -16,20 +16,20 @@ namespace crypto {
 template <>
 hash_t<md5>::hash_t ()
 {
-  ::CC_MD5_Init(&ctx_);
+  sal_verify(::CC_MD5_Init(&ctx_));
 }
 
 template <>
 void hash_t<md5>::update (const void *data, size_t size)
 {
-  ::CC_MD5_Update(&ctx_, data, size);
+  sal_verify(::CC_MD5_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<md5>::finish (void *digest, size_t)
 {
-  ::CC_MD5_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::CC_MD5_Init(&ctx_);
+  sal_verify(::CC_MD5_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::CC_MD5_Init(&ctx_));
 }
 
 template <>
@@ -44,20 +44,20 @@ void hash_t<md5>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<sha1>::hash_t ()
 {
-  ::CC_SHA1_Init(&ctx_);
+  sal_verify(::CC_SHA1_Init(&ctx_));
 }
 
 template <>
 void hash_t<sha1>::update (const void *data, size_t size)
 {
-  ::CC_SHA1_Update(&ctx_, data, size);
+  sal_verify(::CC_SHA1_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<sha1>::finish (void *digest, size_t)
 {
-  ::CC_SHA1_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::CC_SHA1_Init(&ctx_);
+  sal_verify(::CC_SHA1_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::CC_SHA1_Init(&ctx_));
 }
 
 template <>
@@ -72,20 +72,20 @@ void hash_t<sha1>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<sha256>::hash_t ()
 {
-  ::CC_SHA256_Init(&ctx_);
+  sal_verify(::CC_SHA256_Init(&ctx_));
 }
 
 template <>
 void hash_t<sha256>::update (const void *data, size_t size)
 {
-  ::CC_SHA256_Update(&ctx_, data, size);
+  sal_verify(::CC_SHA256_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<sha256>::finish (void *digest, size_t)
 {
-  ::CC_SHA256_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::CC_SHA256_Init(&ctx_);
+  sal_verify(::CC_SHA256_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::CC_SHA256_Init(&ctx_));
 }
 
 template <>
@@ -100,20 +100,20 @@ void hash_t<sha256>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<sha384>::hash_t ()
 {
-  ::CC_SHA384_Init(&ctx_);
+  sal_verify(::CC_SHA384_Init(&ctx_));
 }
 
 template <>
 void hash_t<sha384>::update (const void *data, size_t size)
 {
-  ::CC_SHA384_Update(&ctx_, data, size);
+  sal_verify(::CC_SHA384_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<sha384>::finish (void *digest, size_t)
 {
-  ::CC_SHA384_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::CC_SHA384_Init(&ctx_);
+  sal_verify(::CC_SHA384_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::CC_SHA384_Init(&ctx_));
 }
 
 template <>
@@ -128,20 +128,20 @@ void hash_t<sha384>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<sha512>::hash_t ()
 {
-  ::CC_SHA512_Init(&ctx_);
+  sal_verify(::CC_SHA512_Init(&ctx_));
 }
 
 template <>
 void hash_t<sha512>::update (const void *data, size_t size)
 {
-  ::CC_SHA512_Update(&ctx_, data, size);
+  sal_verify(::CC_SHA512_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<sha512>::finish (void *digest, size_t)
 {
-  ::CC_SHA512_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::CC_SHA512_Init(&ctx_);
+  sal_verify(::CC_SHA512_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::CC_SHA512_Init(&ctx_));
 }
 
 template <>
@@ -160,20 +160,20 @@ void hash_t<sha512>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<md5>::hash_t ()
 {
-  ::MD5_Init(&ctx_);
+  sal_verify(::MD5_Init(&ctx_));
 }
 
 template <>
 void hash_t<md5>::update (const void *data, size_t size)
 {
-  ::MD5_Update(&ctx_, data, size);
+  sal_verify(::MD5_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<md5>::finish (void *digest, size_t)
 {
-  ::MD5_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::MD5_Init(&ctx_);
+  sal_verify(::MD5_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::MD5_Init(&ctx_));
 }
 
 template <>
@@ -190,20 +190,20 @@ void hash_t<md5>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<sha1>::hash_t ()
 {
-  ::SHA1_Init(&ctx_);
+  sal_verify(::SHA1_Init(&ctx_));
 }
 
 template <>
 void hash_t<sha1>::update (const void *data, size_t size)
 {
-  ::SHA1_Update(&ctx_, data, size);
+  sal_verify(::SHA1_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<sha1>::finish (void *digest, size_t)
 {
-  ::SHA1_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::SHA1_Init(&ctx_);
+  sal_verify(::SHA1_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::SHA1_Init(&ctx_));
 }
 
 template <>
@@ -220,20 +220,20 @@ void hash_t<sha1>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<sha256>::hash_t ()
 {
-  ::SHA256_Init(&ctx_);
+  sal_verify(::SHA256_Init(&ctx_));
 }
 
 template <>
 void hash_t<sha256>::update (const void *data, size_t size)
 {
-  ::SHA256_Update(&ctx_, data, size);
+  sal_verify(::SHA256_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<sha256>::finish (void *digest, size_t)
 {
-  ::SHA256_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::SHA256_Init(&ctx_);
+  sal_verify(::SHA256_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::SHA256_Init(&ctx_));
 }
 
 template <>
@@ -250,20 +250,20 @@ void hash_t<sha256>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<sha384>::hash_t ()
 {
-  ::SHA384_Init(&ctx_);
+  sal_verify(::SHA384_Init(&ctx_));
 }
 
 template <>
 void hash_t<sha384>::update (const void *data, size_t size)
 {
-  ::SHA384_Update(&ctx_, data, size);
+  sal_verify(::SHA384_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<sha384>::finish (void *digest, size_t)
 {
-  ::SHA384_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::SHA384_Init(&ctx_);
+  sal_verify(::SHA384_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::SHA384_Init(&ctx_));
 }
 
 template <>
@@ -280,20 +280,20 @@ void hash_t<sha384>::one_shot (const void *data, size_t data_size,
 template <>
 hash_t<sha512>::hash_t ()
 {
-  ::SHA512_Init(&ctx_);
+  sal_verify(::SHA512_Init(&ctx_));
 }
 
 template <>
 void hash_t<sha512>::update (const void *data, size_t size)
 {
-  ::SHA512_Update(&ctx_, data, size);
+  sal_verify(::SHA512_Update(&ctx_, data, size));
 }
 
 template <>
 void hash_t<sha512>::finish (void *digest, size_t)
 {
-  ::SHA512_Final(static_cast<uint8_t *>(digest), &ctx_);
-  ::SHA512_Init(&ctx_);
+  sal_verify(::SHA512_Final(static_cast<uint8_t *>(digest), &ctx_));
+  sal_verify(::SHA512_Init(&ctx_));
 }
 
 template <>

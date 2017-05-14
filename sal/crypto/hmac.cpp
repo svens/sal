@@ -1,4 +1,5 @@
 #include <sal/crypto/hmac.hpp>
+#include <sal/assert.hpp>
 
 
 __sal_begin
@@ -72,7 +73,7 @@ template <> const EVP_MD *algorithm_id_v<sha512> = EVP_sha512();
 namespace __bits {
 
 
-hmac_ctx_t::hmac_ctx_t (const EVP_MD *evp, const void *key, size_t size) noexcept
+hmac_ctx_t::hmac_ctx_t (const EVP_MD *evp, const void *key, size_t size)
   : ctx(std::make_unique<HMAC_CTX>())
 {
   if (!key)
@@ -81,7 +82,7 @@ hmac_ctx_t::hmac_ctx_t (const EVP_MD *evp, const void *key, size_t size) noexcep
     size = 0U;
   }
   ::HMAC_CTX_init(ctx.get());
-  ::HMAC_Init_ex(ctx.get(), key, size, evp, nullptr);
+  sal_verify(::HMAC_Init_ex(ctx.get(), key, size, evp, nullptr));
 }
 
 
@@ -106,14 +107,14 @@ hmac_ctx_t::hmac_ctx_t (const hmac_ctx_t &that)
 
 void hmac_ctx_t::update (const void *data, size_t size)
 {
-  ::HMAC_Update(ctx.get(), static_cast<const uint8_t *>(data), size);
+  sal_verify(::HMAC_Update(ctx.get(), static_cast<const uint8_t *>(data), size));
 }
 
 
 void hmac_ctx_t::finish (void *digest)
 {
-  ::HMAC_Final(ctx.get(), static_cast<uint8_t *>(digest), nullptr);
-  ::HMAC_Init_ex(ctx.get(), nullptr, 0U, nullptr, nullptr);
+  sal_verify(::HMAC_Final(ctx.get(), static_cast<uint8_t *>(digest), nullptr));
+  sal_verify(::HMAC_Init_ex(ctx.get(), nullptr, 0U, nullptr, nullptr));
 }
 
 
