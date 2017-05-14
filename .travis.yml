@@ -20,7 +20,7 @@ linux-clang: &linux-clang
       sources:
         - ubuntu-toolchain-r-test
         - llvm-toolchain-precise-3.8
-        - kubuntu-backports
+        - kalakris-cmake
       packages:
         - clang-3.8
         - cmake
