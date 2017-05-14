@@ -405,4 +405,28 @@ TYPED_TEST(buf_ptr, from_string_overflow) //{{{1
 }
 
 
+TYPED_TEST(buf_ptr, range_loop_string) //{{{1
+{
+  auto &d = string(TypeParam());
+  std::string result;
+  for (auto b: d)
+  {
+    result += b;
+  }
+  EXPECT_EQ(d, result);
+}
+
+
+TYPED_TEST(buf_ptr, range_loop_std_int_vector) //{{{1
+{
+  auto &d = std_vector<int>(TypeParam());
+  std::vector<int> result;
+  for (auto b: d)
+  {
+    result.emplace_back(b);
+  }
+  EXPECT_EQ(d, result);
+}
+
+
 } // namespace

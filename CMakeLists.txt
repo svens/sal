@@ -58,7 +58,18 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 elseif(MSVC)
   include(cmake/msvc.cmake)
 else()
-  message(WARNING "Unknown compiler, not setting flags")
+  message(WARNING "Unknown compiler")
+endif()
+
+# set platform flags
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+  include(cmake/darwin.cmake)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  include(cmake/linux.cmake)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+  include(cmake/windows.cmake)
+else()
+  message(WARNING "Unknown system")
 endif()
 
 # create static library

@@ -7,7 +7,7 @@ linux-gcc: &linux-gcc
     apt:
       sources:
         - ubuntu-toolchain-r-test
-        - kubuntu-backports
+        - kalakris-cmake
       packages:
         - g++-6
         - cmake
@@ -20,7 +20,7 @@ linux-clang: &linux-clang
       sources:
         - ubuntu-toolchain-r-test
         - llvm-toolchain-precise-3.8
-        - kubuntu-backports
+        - kalakris-cmake
       packages:
         - clang-3.8
         - cmake
@@ -47,9 +47,9 @@ matrix:
     - <<: *linux-clang
       env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=clang-3.8 CMAKE_CXX_COMPILER=clang++-3.8
     - <<: *osx-gcc
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
+      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=gcc-7 CMAKE_CXX_COMPILER=g++-7
     - <<: *osx-gcc
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
+      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=gcc-7 CMAKE_CXX_COMPILER=g++-7
     - <<: *osx-clang
       env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=clang CMAKE_CXX_COMPILER=clang++
     - <<: *osx-clang

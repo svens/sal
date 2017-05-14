@@ -1,5 +1,6 @@
 # sources
 list(APPEND sal_sources
+  sal/__bits/platform_sdk.hpp
   sal/__bits/member_assign.hpp
   sal/assert.hpp
   sal/buf_ptr.hpp
@@ -47,6 +48,7 @@ list(APPEND sal_unittests
 
 
 # submodules
+include(sal/crypto/list.cmake)
 include(sal/logger/list.cmake)
 include(sal/net/list.cmake)
 include(sal/program_options/list.cmake)

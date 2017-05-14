@@ -1,12 +1,4 @@
-#if defined(_WIN32) || defined(_WIN64)
-  #define WIN32_NO_STATUS
-  #include <windows.h>
-  #undef WIN32_NO_STATUS
-  #include <winternl.h>
-  #include <ntstatus.h>
-  #pragma comment(lib, "ntdll")
-#endif
-
+#include <sal/__bits/platform_sdk.hpp>
 #include <sal/net/__bits/async_socket.hpp>
 #include <sal/net/error.hpp>
 #include <sal/net/fwd.hpp>
