@@ -61,6 +61,8 @@ var hierarchy =
       ] ]
     ] ],
     [ "sal::file_t", "classsal_1_1file__t.html", null ],
+    [ "sal::crypto::hash_t< Algorithm >", "classsal_1_1crypto_1_1hash__t.html", null ],
+    [ "sal::crypto::hmac_t< Algorithm >", "classsal_1_1crypto_1_1hmac__t.html", null ],
     [ "sal::spsc_sync_t::intrusive_queue_hook_t", "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html", null ],
     [ "sal::intrusive_queue_t< T, SyncPolicy, Hook >", "classsal_1_1intrusive__queue__t.html", null ],
     [ "sal::intrusive_queue_t< io_buf_t, mpsc_sync_t, &io_buf_t::free_ >", "classsal_1_1intrusive__queue__t.html", null ],

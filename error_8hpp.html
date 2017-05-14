@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.10.0</span>
+   &#160;<span id="projectnumber">0.11.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -91,6 +91,7 @@ $(document).ready(function(){initNavTree('error_8hpp.html','');});
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">error.hpp File Reference</div>  </div>
@@ -100,6 +101,7 @@ $(document).ready(function(){initNavTree('error_8hpp.html','');});
 <p>SAL errors.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="builtins_8hpp_source.html">sal/builtins.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="char__array_8hpp_source.html">sal/char_array.hpp</a>&gt;</code><br />
 <code>#include &lt;stdexcept&gt;</code><br />
 <code>#include &lt;system_error&gt;</code><br />
@@ -112,6 +114,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1throw__on__error.html">sal::throw_on_error</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper class to catch std::error_code and throw std::system_error if there was an error.  <a href="classsal_1_1throw__on__error.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a19d68787c7c27b131c249b2b7cfbf281"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="error_8hpp.html#a19d68787c7c27b131c249b2b7cfbf281">sal_throw_if</a>(condition)</td></tr>
+<tr class="memdesc:a19d68787c7c27b131c249b2b7cfbf281"><td class="mdescLeft">&#160;</td><td class="mdescRight">If <em>condition</em> is true, throw logic_error with <em>condition</em> as message prepended with source location (<a href="file:line">file:line</a>)  <a href="#a19d68787c7c27b131c249b2b7cfbf281">More...</a><br /></td></tr>
+<tr class="separator:a19d68787c7c27b131c249b2b7cfbf281"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -138,7 +146,28 @@ template&lt;typename... Args&gt; </td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>SAL errors. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a19d68787c7c27b131c249b2b7cfbf281"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19d68787c7c27b131c249b2b7cfbf281">&#9670;&nbsp;</a></span>sal_throw_if</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define sal_throw_if</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">condition</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">sal::__bits::throw_if(condition, \</div><div class="line">    __sal_at <span class="stringliteral">&quot;: Failed because &#39;&quot;</span> #condition <span class="stringliteral">&quot;&#39;&quot;</span> \</div><div class="line">  )</div></div><!-- fragment -->
+<p>If <em>condition</em> is true, throw logic_error with <em>condition</em> as message prepended with source location (<a href="file:line">file:line</a>) </p>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

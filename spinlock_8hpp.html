@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.10.0</span>
+   &#160;<span id="projectnumber">0.11.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -114,18 +114,18 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aa459b804c32cb6bd0ee5f80a353861d6"><td class="memItemLeft" align="right" valign="top"><a id="aa459b804c32cb6bd0ee5f80a353861d6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="spinlock_8hpp.html#aa459b804c32cb6bd0ee5f80a353861d6">sal::busy_spin</a> (size_t iter_count) noexcept</td></tr>
-<tr class="memdesc:aa459b804c32cb6bd0ee5f80a353861d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Busy spinning policy for <a class="el" href="classsal_1_1spinlock__t.html#adee91d2ef5c73d01576465e883472279" title="Lock spinlock. ">spinlock_t::lock(SpinYield)</a> <br /></td></tr>
-<tr class="separator:aa459b804c32cb6bd0ee5f80a353861d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77cd9b13830c38254ba915032e8b019c"><td class="memItemLeft" align="right" valign="top"><a id="a77cd9b13830c38254ba915032e8b019c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="spinlock_8hpp.html#a77cd9b13830c38254ba915032e8b019c">sal::yield_spin</a> (size_t iter_count) noexcept</td></tr>
-<tr class="memdesc:a77cd9b13830c38254ba915032e8b019c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remaining timeslice yielding policy for <a class="el" href="classsal_1_1spinlock__t.html#adee91d2ef5c73d01576465e883472279" title="Lock spinlock. ">spinlock_t::lock(SpinYield)</a> <br /></td></tr>
-<tr class="separator:a77cd9b13830c38254ba915032e8b019c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00197965c8cceb5fec9e0c4bf6486957"><td class="memTemplParams" colspan="2">template&lt;size_t BusySpinCount&gt; </td></tr>
-<tr class="memitem:a00197965c8cceb5fec9e0c4bf6486957"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="spinlock_8hpp.html#a00197965c8cceb5fec9e0c4bf6486957">sal::adaptive_spin</a> (size_t iter_count) noexcept</td></tr>
-<tr class="memdesc:a00197965c8cceb5fec9e0c4bf6486957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adaptive remaining timeslice yielding policy for <a class="el" href="classsal_1_1spinlock__t.html#adee91d2ef5c73d01576465e883472279" title="Lock spinlock. ">spinlock_t::lock(SpinYield)</a>.  <a href="spinlock_8hpp.html#a00197965c8cceb5fec9e0c4bf6486957">More...</a><br /></td></tr>
-<tr class="separator:a00197965c8cceb5fec9e0c4bf6486957"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d01b2592aa12667779996dee9661497"><td class="memItemLeft" align="right" valign="top"><a id="a3d01b2592aa12667779996dee9661497"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="spinlock_8hpp.html#a3d01b2592aa12667779996dee9661497">sal::busy_spin</a> (size_t iter_count)</td></tr>
+<tr class="memdesc:a3d01b2592aa12667779996dee9661497"><td class="mdescLeft">&#160;</td><td class="mdescRight">Busy spinning policy for <a class="el" href="classsal_1_1spinlock__t.html#af3d37a84762c88cda271b0f868e07970" title="Lock spinlock. ">spinlock_t::lock(SpinYield)</a> <br /></td></tr>
+<tr class="separator:a3d01b2592aa12667779996dee9661497"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51f3a957be07190697a57f29a5a1692f"><td class="memItemLeft" align="right" valign="top"><a id="a51f3a957be07190697a57f29a5a1692f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="spinlock_8hpp.html#a51f3a957be07190697a57f29a5a1692f">sal::yield_spin</a> (size_t iter_count)</td></tr>
+<tr class="memdesc:a51f3a957be07190697a57f29a5a1692f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remaining timeslice yielding policy for <a class="el" href="classsal_1_1spinlock__t.html#af3d37a84762c88cda271b0f868e07970" title="Lock spinlock. ">spinlock_t::lock(SpinYield)</a> <br /></td></tr>
+<tr class="separator:a51f3a957be07190697a57f29a5a1692f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76513f438b3796d31b3a25bdd407fc9d"><td class="memTemplParams" colspan="2">template&lt;size_t BusySpinCount&gt; </td></tr>
+<tr class="memitem:a76513f438b3796d31b3a25bdd407fc9d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="spinlock_8hpp.html#a76513f438b3796d31b3a25bdd407fc9d">sal::adaptive_spin</a> (size_t iter_count)</td></tr>
+<tr class="memdesc:a76513f438b3796d31b3a25bdd407fc9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adaptive remaining timeslice yielding policy for <a class="el" href="classsal_1_1spinlock__t.html#af3d37a84762c88cda271b0f868e07970" title="Lock spinlock. ">spinlock_t::lock(SpinYield)</a>.  <a href="spinlock_8hpp.html#a76513f438b3796d31b3a25bdd407fc9d">More...</a><br /></td></tr>
+<tr class="separator:a76513f438b3796d31b3a25bdd407fc9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Spinlock implementation using std::atomic_flag. </p>
@@ -133,8 +133,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="spin
 <p>If for specific situation spinlock still makes sense, this implementation allows to customize loop while waiting by using callable yielding policy as parameter for spinlock_t::lock(SpinYield). There are some pre-implemented policies (busy_spin, yield_spin, adaptive_spin).</p>
 <dl class="section note"><dt>Note</dt><dd>Before deciding whether to use spinlock_t or std::mutex do profiling. </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_a00197965c8cceb5fec9e0c4bf6486957"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a00197965c8cceb5fec9e0c4bf6486957">&#9670;&nbsp;</a></span>adaptive_spin()</h2>
+<a id="file_a76513f438b3796d31b3a25bdd407fc9d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a76513f438b3796d31b3a25bdd407fc9d">&#9670;&nbsp;</a></span>adaptive_spin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -154,7 +154,7 @@ template&lt;size_t BusySpinCount&gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">

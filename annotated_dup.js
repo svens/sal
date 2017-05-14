@@ -1,6 +1,10 @@
 var annotated_dup =
 [
     [ "sal", null, [
+      [ "crypto", null, [
+        [ "hash_t", "classsal_1_1crypto_1_1hash__t.html", "classsal_1_1crypto_1_1hash__t" ],
+        [ "hmac_t", "classsal_1_1crypto_1_1hmac__t.html", "classsal_1_1crypto_1_1hmac__t" ]
+      ] ],
       [ "logger", null, [
         [ "async_worker_t", "classsal_1_1logger_1_1async__worker__t.html", "classsal_1_1logger_1_1async__worker__t" ],
         [ "basic_worker_t", "classsal_1_1logger_1_1basic__worker__t.html", "classsal_1_1logger_1_1basic__worker__t" ],

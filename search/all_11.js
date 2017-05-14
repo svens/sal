@@ -10,6 +10,7 @@ var searchData=
   ['sal_5flog_5fif',['sal_log_if',['../logger_8hpp.html#ad56df19b31b4e6e04c3180019c6f410c',1,'logger.hpp']]],
   ['sal_5fprint',['sal_print',['../logger_8hpp.html#aa5dc180393a0dff2c74685e8330a416f',1,'logger.hpp']]],
   ['sal_5fprint_5fif',['sal_print_if',['../logger_8hpp.html#a037731286d357d2577d715f2845ecf0a',1,'logger.hpp']]],
+  ['sal_5fthrow_5fif',['sal_throw_if',['../error_8hpp.html#a19d68787c7c27b131c249b2b7cfbf281',1,'error.hpp']]],
   ['sal_5funlikely',['sal_unlikely',['../builtins_8hpp.html#aa573ba3b651c218bfd9927c7a7e38a35',1,'builtins.hpp']]],
   ['sal_5fverify',['sal_verify',['../assert_8hpp.html#a9118f25b5530980e43404cc485d3c817',1,'assert.hpp']]],
   ['scope_5fid_5ft',['scope_id_t',['../net_2fwd_8hpp.html#aa8778518625e4390c87a8bb3ae20227f',1,'sal::net::ip']]],

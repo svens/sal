@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.10.0</span>
+   &#160;<span id="projectnumber">0.11.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -114,14 +114,14 @@ Public Member Functions</h2></td></tr>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1spinlock__t.html#a77e6c62136204f2e856f513dabd72f98">try_lock</a> () noexcept</td></tr>
 <tr class="memdesc:a77e6c62136204f2e856f513dabd72f98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Try to lock. Returns true if succeeds immediately, false otherwise. <br /></td></tr>
 <tr class="separator:a77e6c62136204f2e856f513dabd72f98"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adee91d2ef5c73d01576465e883472279"><td class="memTemplParams" colspan="2">template&lt;typename SpinYield &gt; </td></tr>
-<tr class="memitem:adee91d2ef5c73d01576465e883472279"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1spinlock__t.html#adee91d2ef5c73d01576465e883472279">lock</a> (SpinYield yield) noexcept(noexcept(yield(1)))</td></tr>
-<tr class="memdesc:adee91d2ef5c73d01576465e883472279"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lock spinlock.  <a href="#adee91d2ef5c73d01576465e883472279">More...</a><br /></td></tr>
-<tr class="separator:adee91d2ef5c73d01576465e883472279"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af648edca81c9afeac15b90f97b20954e"><td class="memItemLeft" align="right" valign="top"><a id="af648edca81c9afeac15b90f97b20954e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1spinlock__t.html#af648edca81c9afeac15b90f97b20954e">lock</a> () noexcept</td></tr>
-<tr class="memdesc:af648edca81c9afeac15b90f97b20954e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lock spinlock using adaptive_spin&lt;100&gt; as yielding policy. <br /></td></tr>
-<tr class="separator:af648edca81c9afeac15b90f97b20954e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3d37a84762c88cda271b0f868e07970"><td class="memTemplParams" colspan="2">template&lt;typename SpinYield &gt; </td></tr>
+<tr class="memitem:af3d37a84762c88cda271b0f868e07970"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1spinlock__t.html#af3d37a84762c88cda271b0f868e07970">lock</a> (SpinYield yield)</td></tr>
+<tr class="memdesc:af3d37a84762c88cda271b0f868e07970"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lock spinlock.  <a href="#af3d37a84762c88cda271b0f868e07970">More...</a><br /></td></tr>
+<tr class="separator:af3d37a84762c88cda271b0f868e07970"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8bb3b3775004517518ac2dab4daace4"><td class="memItemLeft" align="right" valign="top"><a id="ac8bb3b3775004517518ac2dab4daace4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1spinlock__t.html#ac8bb3b3775004517518ac2dab4daace4">lock</a> ()</td></tr>
+<tr class="memdesc:ac8bb3b3775004517518ac2dab4daace4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lock spinlock using adaptive_spin&lt;100&gt; as yielding policy. <br /></td></tr>
+<tr class="separator:ac8bb3b3775004517518ac2dab4daace4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a95149c09cca745af8179fab0728d4687"><td class="memItemLeft" align="right" valign="top"><a id="a95149c09cca745af8179fab0728d4687"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1spinlock__t.html#a95149c09cca745af8179fab0728d4687">unlock</a> () noexcept</td></tr>
 <tr class="memdesc:a95149c09cca745af8179fab0728d4687"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unlock spinlock. <br /></td></tr>
@@ -131,8 +131,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <div class="textblock"><p>Non-recursive spinlock using std::atomic_flag. </p>
 <p>This API satisfies C++ Lockable concept i.e. it can be used with std::lock_guard and std::unique_lock. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="adee91d2ef5c73d01576465e883472279"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adee91d2ef5c73d01576465e883472279">&#9670;&nbsp;</a></span>lock()</h2>
+<a id="af3d37a84762c88cda271b0f868e07970"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3d37a84762c88cda271b0f868e07970">&#9670;&nbsp;</a></span>lock()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -152,7 +152,7 @@ template&lt;typename SpinYield &gt; </div>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
