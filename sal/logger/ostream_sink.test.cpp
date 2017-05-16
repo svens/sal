@@ -10,7 +10,7 @@ namespace {
 
 
 template <typename Worker>
-struct ostream_sink
+struct logger_ostream_sink
   : public sal_test::with_type<Worker>
 {
   void test_ostream (std::ostream &stream)
@@ -57,48 +57,36 @@ struct ostream_sink
   }
 };
 
-TYPED_TEST_CASE_P(ostream_sink);
-
-
-TYPED_TEST_P(ostream_sink, cout)
-{
-  this->test_ostream(std::cout);
-}
-
-
-TYPED_TEST_P(ostream_sink, cerr)
-{
-  this->test_ostream(std::cerr);
-}
-
-
-TYPED_TEST_P(ostream_sink, cout_overflow)
-{
-  this->test_ostream_overflow(std::cout);
-}
-
-
-TYPED_TEST_P(ostream_sink, cerr_overflow)
-{
-  this->test_ostream_overflow(std::cerr);
-}
-
-
-REGISTER_TYPED_TEST_CASE_P(ostream_sink,
-  cout,
-  cerr,
-  cout_overflow,
-  cerr_overflow
-);
-
-
 using worker_types = testing::Types<
   sal::logger::worker_t,
   sal::logger::async_worker_t
 >;
 
+TYPED_TEST_CASE(logger_ostream_sink, worker_types);
 
-INSTANTIATE_TYPED_TEST_CASE_P(logger, ostream_sink, worker_types);
+
+TYPED_TEST(logger_ostream_sink, cout)
+{
+  this->test_ostream(std::cout);
+}
+
+
+TYPED_TEST(logger_ostream_sink, cerr)
+{
+  this->test_ostream(std::cerr);
+}
+
+
+TYPED_TEST(logger_ostream_sink, cout_overflow)
+{
+  this->test_ostream_overflow(std::cout);
+}
+
+
+TYPED_TEST(logger_ostream_sink, cerr_overflow)
+{
+  this->test_ostream_overflow(std::cerr);
+}
 
 
 } // namespace

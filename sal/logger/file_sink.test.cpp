@@ -106,7 +106,7 @@ inline bool file_contains (const std::string &needle, const std::string &file)
 
 
 template <typename Worker>
-struct file_sink
+struct logger_file_sink
   : public sal_test::with_type<Worker>
 {
   const std::string test_logs = "test_logs";
@@ -159,11 +159,15 @@ struct file_sink
 
 };
 
+using worker_types = testing::Types<
+  sal::logger::worker_t,
+  sal::logger::async_worker_t
+>;
 
-TYPED_TEST_CASE_P(file_sink);
+TYPED_TEST_CASE(logger_file_sink, worker_types);
 
 
-TYPED_TEST_P(file_sink, log)
+TYPED_TEST(logger_file_sink, log)
 {
   auto channel = this->make_channel();
   sal_log(channel) << this->case_name;
@@ -175,7 +179,7 @@ TYPED_TEST_P(file_sink, log)
 }
 
 
-TYPED_TEST_P(file_sink, log_buffered)
+TYPED_TEST(logger_file_sink, log_buffered)
 {
   auto channel = this->make_channel(sal::logger::set_file_buffer_size_kb(1));
   sal_log(channel) << this->case_name;
@@ -192,7 +196,7 @@ TYPED_TEST_P(file_sink, log_buffered)
 }
 
 
-TYPED_TEST_P(file_sink, log_overflow)
+TYPED_TEST(logger_file_sink, log_overflow)
 {
   auto channel = this->make_channel();
   std::string overflowed_message(sal::logger::event_t::max_message_size, 'x');
@@ -209,7 +213,7 @@ TYPED_TEST_P(file_sink, log_overflow)
 }
 
 
-TYPED_TEST_P(file_sink, local_time)
+TYPED_TEST(logger_file_sink, local_time)
 {
   auto channel = this->make_channel(sal::logger::set_file_utc_time(false));
   sal_log(channel) << this->case_name;
@@ -251,7 +255,7 @@ TYPED_TEST_P(file_sink, local_time)
 }
 
 
-TYPED_TEST_P(file_sink, utc_time)
+TYPED_TEST(logger_file_sink, utc_time)
 {
   auto channel = this->make_channel(sal::logger::set_file_utc_time(true));
   sal_log(channel) << this->case_name;
@@ -293,7 +297,7 @@ TYPED_TEST_P(file_sink, utc_time)
 }
 
 
-TYPED_TEST_P(file_sink, max_size)
+TYPED_TEST(logger_file_sink, max_size)
 {
   // here we use internal knowledge how to configure max log file size
   // (don't want to use public API with 1MB precision)
@@ -314,33 +318,32 @@ TYPED_TEST_P(file_sink, max_size)
 }
 
 
-TYPED_TEST_P(file_sink, unprivileged_dir)
+TYPED_TEST(logger_file_sink, new_day)
+{
+  auto channel = this->make_channel();
+  sal_log(channel) << "old day";
+  {
+    using namespace std::chrono_literals;
+    auto event = channel.make_event();
+    event->time += 24h;
+    event->message << "new day";
+  }
+  this->stop_and_close_logs();
+
+  auto log_files = this->log_files();
+  EXPECT_LE(1U, log_files.size());
+  EXPECT_TRUE(file_contains("old day", log_files[0]));
+  EXPECT_TRUE(file_contains("new day", log_files.back()));
+}
+
+
+TYPED_TEST(logger_file_sink, unprivileged_dir)
 {
   EXPECT_THROW(
     this->make_channel(sal::logger::set_file_dir(permission_denied_dir)),
     std::system_error
   );
 }
-
-
-REGISTER_TYPED_TEST_CASE_P(file_sink,
-  log,
-  log_buffered,
-  log_overflow,
-  local_time,
-  utc_time,
-  max_size,
-  unprivileged_dir
-);
-
-
-using worker_types = testing::Types<
-  sal::logger::worker_t,
-  sal::logger::async_worker_t
->;
-
-
-INSTANTIATE_TYPED_TEST_CASE_P(logger, file_sink, worker_types);
 
 
 } // namespace

@@ -10,18 +10,18 @@ namespace {
 
 using namespace sal::logger;
 
-
 template <typename Worker>
-struct worker
-  : public sal_test::with_type<Worker>
-{
-};
+using logger_worker = sal_test::with_type<Worker>;
+
+using worker_types = testing::Types<
+  sal::logger::worker_t,
+  sal::logger::async_worker_t
+>;
+
+TYPED_TEST_CASE(logger_worker, worker_types);
 
 
-TYPED_TEST_CASE_P(worker);
-
-
-TYPED_TEST_P(worker, default_channel_name)
+TYPED_TEST(logger_worker, default_channel_name)
 {
   TypeParam worker;
   auto channel = worker.default_channel();
@@ -29,7 +29,7 @@ TYPED_TEST_P(worker, default_channel_name)
 }
 
 
-TYPED_TEST_P(worker, default_channel_is_enabled)
+TYPED_TEST(logger_worker, default_channel_is_enabled)
 {
   TypeParam worker;
 
@@ -44,7 +44,7 @@ TYPED_TEST_P(worker, default_channel_is_enabled)
 }
 
 
-TYPED_TEST_P(worker, default_channel_sink)
+TYPED_TEST(logger_worker, default_channel_sink)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
 
@@ -63,7 +63,7 @@ TYPED_TEST_P(worker, default_channel_sink)
 }
 
 
-TYPED_TEST_P(worker, get_channel_default)
+TYPED_TEST(logger_worker, get_channel_default)
 {
   TypeParam worker;
   auto channel = worker.get_channel(this->case_name);
@@ -71,7 +71,7 @@ TYPED_TEST_P(worker, get_channel_default)
 }
 
 
-TYPED_TEST_P(worker, make_channel)
+TYPED_TEST(logger_worker, make_channel)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_channel_sink(sink)};
@@ -94,7 +94,7 @@ inline bool ends_with (const std::string &name, const std::string &suffix)
 }
 
 
-TYPED_TEST_P(worker, set_enabled_if)
+TYPED_TEST(logger_worker, set_enabled_if)
 {
   TypeParam worker;
 
@@ -115,7 +115,7 @@ TYPED_TEST_P(worker, set_enabled_if)
 }
 
 
-TYPED_TEST_P(worker, sink_throwing_event_init)
+TYPED_TEST(logger_worker, sink_throwing_event_init)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
   TypeParam worker{set_channel_sink(sink)};
@@ -128,7 +128,7 @@ TYPED_TEST_P(worker, sink_throwing_event_init)
 }
 
 
-TYPED_TEST_P(worker, sink_throwing_event_write)
+TYPED_TEST(logger_worker, sink_throwing_event_write)
 {
   auto sink = std::make_shared<sal_test::sink_t>();
 
@@ -145,27 +145,6 @@ TYPED_TEST_P(worker, sink_throwing_event_write)
   EXPECT_TRUE(sink->write_called);
   EXPECT_EQ("", sink->last_message);
 }
-
-
-REGISTER_TYPED_TEST_CASE_P(worker,
-  default_channel_name,
-  default_channel_is_enabled,
-  default_channel_sink,
-  get_channel_default,
-  make_channel,
-  set_enabled_if,
-  sink_throwing_event_init,
-  sink_throwing_event_write
-);
-
-
-using worker_types = testing::Types<
-  sal::logger::worker_t,
-  sal::logger::async_worker_t
->;
-
-
-INSTANTIATE_TYPED_TEST_CASE_P(logger, worker, worker_types);
 
 
 } // namespace
