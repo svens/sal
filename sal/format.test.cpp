@@ -20,14 +20,14 @@ struct format
 constexpr size_t format::size;
 
 
-TEST_F(format, inserter_bool_true)
+TEST_F(format, bool_true)
 {
   EXPECT_TRUE(bool(writer << true));
   EXPECT_EQ("true.", std::string(data, data + 5));
 }
 
 
-TEST_F(format, inserter_bool_true_exact)
+TEST_F(format, bool_true_exact)
 {
   sal::memory_writer_t w{data, data + 4};
   EXPECT_TRUE(bool(w << true));
@@ -36,7 +36,7 @@ TEST_F(format, inserter_bool_true_exact)
 }
 
 
-TEST_F(format, inserter_bool_true_overflow)
+TEST_F(format, bool_true_overflow)
 {
   sal::memory_writer_t w{data, data + 2};
   EXPECT_FALSE(bool(w << true));
@@ -44,14 +44,14 @@ TEST_F(format, inserter_bool_true_overflow)
 }
 
 
-TEST_F(format, inserter_bool_false)
+TEST_F(format, bool_false)
 {
   EXPECT_TRUE(bool(writer << false));
   EXPECT_EQ("false.", std::string(data, data + 6));
 }
 
 
-TEST_F(format, inserter_bool_false_exact)
+TEST_F(format, bool_false_exact)
 {
   sal::memory_writer_t w{data, data + 5};
   EXPECT_TRUE(bool(w << false));
@@ -60,7 +60,7 @@ TEST_F(format, inserter_bool_false_exact)
 }
 
 
-TEST_F(format, inserter_bool_false_overflow)
+TEST_F(format, bool_false_overflow)
 {
   sal::memory_writer_t w{data, data + 2};
   EXPECT_FALSE(bool(w << false));
@@ -68,14 +68,14 @@ TEST_F(format, inserter_bool_false_overflow)
 }
 
 
-TEST_F(format, inserter_nullptr)
+TEST_F(format, nullptr)
 {
   EXPECT_TRUE(bool(writer << nullptr));
   EXPECT_EQ("(null).", std::string(data, data + 7));
 }
 
 
-TEST_F(format, inserter_nullptr_exact)
+TEST_F(format, nullptr_exact)
 {
   sal::memory_writer_t w{data, data + 6};
   EXPECT_TRUE(bool(w << nullptr));
@@ -84,7 +84,7 @@ TEST_F(format, inserter_nullptr_exact)
 }
 
 
-TEST_F(format, inserter_nullptr_overflow)
+TEST_F(format, nullptr_overflow)
 {
   sal::memory_writer_t w{data, data + 2};
   EXPECT_FALSE(bool(w << nullptr));
@@ -93,7 +93,7 @@ TEST_F(format, inserter_nullptr_overflow)
 
 
 template <typename T>
-struct int_inserter
+struct format_number
   : public format
 {
   static constexpr T min () noexcept
@@ -132,10 +132,19 @@ struct int_inserter
     return std::string{"FAIL"};
   }
 };
-TYPED_TEST_CASE_P(int_inserter);
+
+using number_types = testing::Types<
+  short, unsigned short,
+  int, unsigned int,
+  long, unsigned long,
+  long long, unsigned long long,
+  float, double, long double
+>;
+
+TYPED_TEST_CASE(format_number, number_types);
 
 
-TYPED_TEST_P(int_inserter, value_min)
+TYPED_TEST(format_number, value_min)
 {
   EXPECT_EQ(
     this->expected(this->min()),
@@ -144,7 +153,7 @@ TYPED_TEST_P(int_inserter, value_min)
 }
 
 
-TYPED_TEST_P(int_inserter, value_zero)
+TYPED_TEST(format_number, value_zero)
 {
   EXPECT_EQ(
     this->expected(this->zero()),
@@ -153,7 +162,7 @@ TYPED_TEST_P(int_inserter, value_zero)
 }
 
 
-TYPED_TEST_P(int_inserter, value_max)
+TYPED_TEST(format_number, value_max)
 {
   EXPECT_EQ(
     this->expected(this->max()),
@@ -162,21 +171,21 @@ TYPED_TEST_P(int_inserter, value_max)
 }
 
 
-TYPED_TEST_P(int_inserter, value_between_min_and_zero)
+TYPED_TEST(format_number, value_between_min_and_zero)
 {
   TypeParam value = this->between(this->min(), this->zero());
   EXPECT_EQ(this->expected(value), this->fill(value));
 }
 
 
-TYPED_TEST_P(int_inserter, value_between_zero_and_max)
+TYPED_TEST(format_number, value_between_zero_and_max)
 {
   TypeParam value = this->between(this->zero(), this->max());
   EXPECT_EQ(this->expected(value), this->fill(value));
 }
 
 
-TYPED_TEST_P(int_inserter, exact)
+TYPED_TEST(format_number, exact)
 {
   auto value = this->max();
   auto as_string = this->expected(value);
@@ -193,7 +202,7 @@ TYPED_TEST_P(int_inserter, exact)
 }
 
 
-TYPED_TEST_P(int_inserter, one_char_more)
+TYPED_TEST(format_number, one_char_more)
 {
   auto value = this->max();
   auto as_string = this->expected(value);
@@ -210,7 +219,7 @@ TYPED_TEST_P(int_inserter, one_char_more)
 }
 
 
-TYPED_TEST_P(int_inserter, one_char_less)
+TYPED_TEST(format_number, one_char_less)
 {
   auto value = this->max();
   auto as_string = this->expected(value);
@@ -223,7 +232,7 @@ TYPED_TEST_P(int_inserter, one_char_less)
 }
 
 
-TYPED_TEST_P(int_inserter, overflow)
+TYPED_TEST(format_number, overflow)
 {
   auto value = this->between(this->min(), this->zero());
   auto as_string = this->expected(value);
@@ -236,30 +245,9 @@ TYPED_TEST_P(int_inserter, overflow)
 }
 
 
-REGISTER_TYPED_TEST_CASE_P(int_inserter,
-  value_min,
-  value_zero,
-  value_max,
-  value_between_min_and_zero,
-  value_between_zero_and_max,
-  exact,
-  one_char_more,
-  one_char_less,
-  overflow
-);
-using int_types = testing::Types<
-  short, unsigned short,
-  int, unsigned int,
-  long, unsigned long,
-  long long, unsigned long long,
-  float, double, long double
->;
-INSTANTIATE_TYPED_TEST_CASE_P(format, int_inserter, int_types);
-
-
 template <typename T>
-struct base_inserter
-  : public int_inserter<T>
+struct format_int_base
+  : public format_number<T>
 {
   template <typename ManipValue>
   std::string fill (ManipValue value) noexcept
@@ -271,7 +259,15 @@ struct base_inserter
     return std::string{"FAIL"};
   }
 };
-TYPED_TEST_CASE_P(base_inserter);
+
+using int_types = testing::Types<
+  long long, unsigned long long,
+  long, unsigned long,
+  int, unsigned int,
+  short, unsigned short
+>;
+
+TYPED_TEST_CASE(format_int_base, int_types);
 
 
 template <typename T, typename Manip>
@@ -296,7 +292,7 @@ std::string expected_bin (T value)
 }
 
 
-TYPED_TEST_P(base_inserter, hex_min)
+TYPED_TEST(format_int_base, hex_min)
 {
   EXPECT_EQ(
     expected_manip(this->min(), std::hex),
@@ -305,7 +301,7 @@ TYPED_TEST_P(base_inserter, hex_min)
 }
 
 
-TYPED_TEST_P(base_inserter, hex_zero)
+TYPED_TEST(format_int_base, hex_zero)
 {
   EXPECT_EQ(
     expected_manip(this->zero(), std::hex),
@@ -314,7 +310,7 @@ TYPED_TEST_P(base_inserter, hex_zero)
 }
 
 
-TYPED_TEST_P(base_inserter, hex_max)
+TYPED_TEST(format_int_base, hex_max)
 {
   EXPECT_EQ(
     expected_manip(this->max(), std::hex),
@@ -323,7 +319,7 @@ TYPED_TEST_P(base_inserter, hex_max)
 }
 
 
-TYPED_TEST_P(base_inserter, hex_between_min_and_zero)
+TYPED_TEST(format_int_base, hex_between_min_and_zero)
 {
   auto value = this->between(this->min(), this->zero());
   EXPECT_EQ(
@@ -333,7 +329,7 @@ TYPED_TEST_P(base_inserter, hex_between_min_and_zero)
 }
 
 
-TYPED_TEST_P(base_inserter, hex_between_zero_and_max)
+TYPED_TEST(format_int_base, hex_between_zero_and_max)
 {
   auto value = this->between(this->zero(), this->max());
   EXPECT_EQ(
@@ -343,7 +339,7 @@ TYPED_TEST_P(base_inserter, hex_between_zero_and_max)
 }
 
 
-TYPED_TEST_P(base_inserter, hex_overflow)
+TYPED_TEST(format_int_base, hex_overflow)
 {
   auto value = this->between(this->min(), this->zero());
   auto as_string = expected_manip(value, std::hex);
@@ -356,7 +352,7 @@ TYPED_TEST_P(base_inserter, hex_overflow)
 }
 
 
-TYPED_TEST_P(base_inserter, oct_min)
+TYPED_TEST(format_int_base, oct_min)
 {
   EXPECT_EQ(
     expected_manip(this->min(), std::oct),
@@ -365,7 +361,7 @@ TYPED_TEST_P(base_inserter, oct_min)
 }
 
 
-TYPED_TEST_P(base_inserter, oct_zero)
+TYPED_TEST(format_int_base, oct_zero)
 {
   EXPECT_EQ(
     expected_manip(this->zero(), std::oct),
@@ -374,7 +370,7 @@ TYPED_TEST_P(base_inserter, oct_zero)
 }
 
 
-TYPED_TEST_P(base_inserter, oct_max)
+TYPED_TEST(format_int_base, oct_max)
 {
   EXPECT_EQ(
     expected_manip(this->max(), std::oct),
@@ -383,7 +379,7 @@ TYPED_TEST_P(base_inserter, oct_max)
 }
 
 
-TYPED_TEST_P(base_inserter, oct_between_min_and_zero)
+TYPED_TEST(format_int_base, oct_between_min_and_zero)
 {
   auto value = this->between(this->min(), this->zero());
   EXPECT_EQ(
@@ -393,7 +389,7 @@ TYPED_TEST_P(base_inserter, oct_between_min_and_zero)
 }
 
 
-TYPED_TEST_P(base_inserter, oct_between_zero_and_max)
+TYPED_TEST(format_int_base, oct_between_zero_and_max)
 {
   auto value = this->between(this->zero(), this->max());
   EXPECT_EQ(
@@ -403,7 +399,7 @@ TYPED_TEST_P(base_inserter, oct_between_zero_and_max)
 }
 
 
-TYPED_TEST_P(base_inserter, oct_overflow)
+TYPED_TEST(format_int_base, oct_overflow)
 {
   auto value = this->between(this->min(), this->zero());
   auto as_string = expected_manip(value, std::oct);
@@ -416,7 +412,7 @@ TYPED_TEST_P(base_inserter, oct_overflow)
 }
 
 
-TYPED_TEST_P(base_inserter, bin_min)
+TYPED_TEST(format_int_base, bin_min)
 {
   EXPECT_EQ(
     expected_bin(this->min()),
@@ -425,7 +421,7 @@ TYPED_TEST_P(base_inserter, bin_min)
 }
 
 
-TYPED_TEST_P(base_inserter, bin_zero)
+TYPED_TEST(format_int_base, bin_zero)
 {
   EXPECT_EQ(
     expected_bin(this->zero()),
@@ -434,7 +430,7 @@ TYPED_TEST_P(base_inserter, bin_zero)
 }
 
 
-TYPED_TEST_P(base_inserter, bin_max)
+TYPED_TEST(format_int_base, bin_max)
 {
   EXPECT_EQ(
     expected_bin(this->max()),
@@ -443,7 +439,7 @@ TYPED_TEST_P(base_inserter, bin_max)
 }
 
 
-TYPED_TEST_P(base_inserter, bin_between_min_and_zero)
+TYPED_TEST(format_int_base, bin_between_min_and_zero)
 {
   auto value = this->between(this->min(), this->zero());
   EXPECT_EQ(
@@ -453,7 +449,7 @@ TYPED_TEST_P(base_inserter, bin_between_min_and_zero)
 }
 
 
-TYPED_TEST_P(base_inserter, bin_between_zero_and_max)
+TYPED_TEST(format_int_base, bin_between_zero_and_max)
 {
   auto value = this->between(this->zero(), this->max());
   EXPECT_EQ(
@@ -463,7 +459,7 @@ TYPED_TEST_P(base_inserter, bin_between_zero_and_max)
 }
 
 
-TYPED_TEST_P(base_inserter, bin_overflow)
+TYPED_TEST(format_int_base, bin_overflow)
 {
   auto value = this->between(this->min(), this->zero());
   auto as_string = expected_bin(value);
@@ -474,35 +470,6 @@ TYPED_TEST_P(base_inserter, bin_overflow)
   EXPECT_TRUE(w.bad());
   EXPECT_EQ("...", std::string(this->data, this->data + 3));
 }
-
-
-REGISTER_TYPED_TEST_CASE_P(base_inserter,
-  hex_min,
-  hex_zero,
-  hex_max,
-  hex_between_min_and_zero,
-  hex_between_zero_and_max,
-  hex_overflow,
-  oct_min,
-  oct_zero,
-  oct_max,
-  oct_between_min_and_zero,
-  oct_between_zero_and_max,
-  oct_overflow,
-  bin_min,
-  bin_zero,
-  bin_max,
-  bin_between_min_and_zero,
-  bin_between_zero_and_max,
-  bin_overflow
-);
-using base_int_types = testing::Types<
-  long long, unsigned long long,
-  long, unsigned long,
-  int, unsigned int,
-  short, unsigned short
->;
-INSTANTIATE_TYPED_TEST_CASE_P(format, base_inserter, base_int_types);
 
 
 template <typename T>
@@ -614,7 +581,7 @@ TEST_F(format, string_overflow)
 
 
 template <typename T>
-struct fixed_float_inserter
+struct format_float
   : public format
 {
   constexpr T lowest () const
@@ -645,38 +612,41 @@ struct fixed_float_inserter
     return std::string(data, writer.first);
   }
 };
-TYPED_TEST_CASE_P(fixed_float_inserter);
+
+using float_types = testing::Types<float, double, long double>;
+
+TYPED_TEST_CASE(format_float, float_types);
 
 
-TYPED_TEST_P(fixed_float_inserter, nan_minus)
+TYPED_TEST(format_float, nan_minus)
 {
   auto value = -std::numeric_limits<TypeParam>::quiet_NaN();
   EXPECT_EQ("nan", this->fill(value));
 }
 
 
-TYPED_TEST_P(fixed_float_inserter, nan_plus)
+TYPED_TEST(format_float, nan_plus)
 {
   auto value = -std::numeric_limits<TypeParam>::quiet_NaN();
   EXPECT_EQ("nan", this->fill(value));
 }
 
 
-TYPED_TEST_P(fixed_float_inserter, inf_minus)
+TYPED_TEST(format_float, inf_minus)
 {
   auto value = -std::numeric_limits<TypeParam>::infinity();
   EXPECT_EQ("-inf", this->fill(value));
 }
 
 
-TYPED_TEST_P(fixed_float_inserter, inf_plus)
+TYPED_TEST(format_float, inf_plus)
 {
   auto value = std::numeric_limits<TypeParam>::infinity();
   EXPECT_EQ("inf", this->fill(value));
 }
 
 
-TYPED_TEST_P(fixed_float_inserter, value_min)
+TYPED_TEST(format_float, value_min)
 {
   EXPECT_EQ(
     this->expected(this->lowest()),
@@ -685,7 +655,7 @@ TYPED_TEST_P(fixed_float_inserter, value_min)
 }
 
 
-TYPED_TEST_P(fixed_float_inserter, value_max)
+TYPED_TEST(format_float, value_max)
 {
   EXPECT_EQ(
     this->expected(this->highest()),
@@ -694,7 +664,7 @@ TYPED_TEST_P(fixed_float_inserter, value_max)
 }
 
 
-TYPED_TEST_P(fixed_float_inserter, value_zero)
+TYPED_TEST(format_float, value_zero)
 {
   EXPECT_EQ(
     this->expected(this->zero()),
@@ -703,7 +673,7 @@ TYPED_TEST_P(fixed_float_inserter, value_zero)
 }
 
 
-TYPED_TEST_P(fixed_float_inserter, value_between_lowest_and_zero)
+TYPED_TEST(format_float, value_between_lowest_and_zero)
 {
   auto value = (this->lowest() + this->zero()) / 2;
   EXPECT_EQ(
@@ -713,7 +683,7 @@ TYPED_TEST_P(fixed_float_inserter, value_between_lowest_and_zero)
 }
 
 
-TYPED_TEST_P(fixed_float_inserter, value_between_zero_and_highest)
+TYPED_TEST(format_float, value_between_zero_and_highest)
 {
   auto value = (this->zero() + this->highest()) / 2;
   EXPECT_EQ(
@@ -721,21 +691,6 @@ TYPED_TEST_P(fixed_float_inserter, value_between_zero_and_highest)
     this->fill(value)
   );
 }
-
-
-REGISTER_TYPED_TEST_CASE_P(fixed_float_inserter,
-  nan_minus,
-  nan_plus,
-  inf_minus,
-  inf_plus,
-  value_min,
-  value_max,
-  value_zero,
-  value_between_lowest_and_zero,
-  value_between_zero_and_highest
-);
-using float_types = testing::Types<float, double, long double>;
-INSTANTIATE_TYPED_TEST_CASE_P(format, fixed_float_inserter, float_types);
 
 
 } // namespace

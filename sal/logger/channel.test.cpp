@@ -8,7 +8,7 @@ namespace {
 
 
 template <typename Worker>
-struct channel
+struct logger_channel
   : public sal_test::with_type<Worker>
 {
   std::shared_ptr<sal_test::sink_t> sink_{
@@ -24,16 +24,21 @@ struct channel
   };
 };
 
-TYPED_TEST_CASE_P(channel);
+using worker_types = testing::Types<
+  sal::logger::worker_t,
+  sal::logger::async_worker_t
+>;
+
+TYPED_TEST_CASE(logger_channel, worker_types);
 
 
-TYPED_TEST_P(channel, name)
+TYPED_TEST(logger_channel, name)
 {
   EXPECT_EQ(this->case_name, this->channel_.name());
 }
 
 
-TYPED_TEST_P(channel, enabled)
+TYPED_TEST(logger_channel, enabled)
 {
   EXPECT_TRUE(this->channel_.is_enabled());
 
@@ -45,7 +50,7 @@ TYPED_TEST_P(channel, enabled)
 }
 
 
-TYPED_TEST_P(channel, make_event)
+TYPED_TEST(logger_channel, make_event)
 {
   EXPECT_FALSE(this->sink_->init_called);
   EXPECT_FALSE(this->sink_->write_called);
@@ -62,22 +67,6 @@ TYPED_TEST_P(channel, make_event)
   EXPECT_FALSE(this->sink_->init_called);
   EXPECT_TRUE(this->sink_->write_called);
 }
-
-
-REGISTER_TYPED_TEST_CASE_P(channel,
-  name,
-  enabled,
-  make_event
-);
-
-
-using worker_types = testing::Types<
-  sal::logger::worker_t,
-  sal::logger::async_worker_t
->;
-
-
-INSTANTIATE_TYPED_TEST_CASE_P(logger, channel, worker_types);
 
 
 } // namespace
