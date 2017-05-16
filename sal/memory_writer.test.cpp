@@ -386,10 +386,11 @@ TEST_F(memory_writer, inserter_c_str_overflow)
 
 template <typename T>
 using inserter = sal_test::with_type<T>;
-TYPED_TEST_CASE_P(inserter);
+using char_types = testing::Types<char, signed char, unsigned char>;
+TYPED_TEST_CASE(inserter, char_types);
 
 
-TYPED_TEST_P(inserter, character)
+TYPED_TEST(inserter, character)
 {
   char d[2];
   TypeParam expected = 'a';
@@ -399,7 +400,7 @@ TYPED_TEST_P(inserter, character)
 }
 
 
-TYPED_TEST_P(inserter, character_exact)
+TYPED_TEST(inserter, character_exact)
 {
   char d{};
   TypeParam expected = 'a';
@@ -410,7 +411,7 @@ TYPED_TEST_P(inserter, character_exact)
 }
 
 
-TYPED_TEST_P(inserter, character_overflow)
+TYPED_TEST(inserter, character_overflow)
 {
   char d{};
   TypeParam expected = 'a';
@@ -418,14 +419,6 @@ TYPED_TEST_P(inserter, character_overflow)
   EXPECT_FALSE(bool(w << expected));
   EXPECT_EQ('\0', d);
 }
-
-using char_types = testing::Types<char, signed char, unsigned char>;
-REGISTER_TYPED_TEST_CASE_P(inserter,
-  character,
-  character_exact,
-  character_overflow
-);
-INSTANTIATE_TYPED_TEST_CASE_P(memory_writer, inserter, char_types);
 
 
 } // namespace
