@@ -1,3 +1,7 @@
+if test -z "${TEST_TARGET}"; then
+  TEST_TARGET=test
+fi
+
 if test "${BUILD_TYPE}" = "Coverity"; then
   cmake . \
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
