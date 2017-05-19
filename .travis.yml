@@ -3,6 +3,7 @@ language: cpp
 linux-gcc: &linux-gcc
   os: linux
   compiler: gcc
+  env: CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
   addons:
     apt:
       sources:
@@ -15,6 +16,7 @@ linux-gcc: &linux-gcc
 linux-clang: &linux-clang
   os: linux
   compiler: clang
+  env: CMAKE_C_COMPILER=clang-3.8 CMAKE_CXX_COMPILER=clang++-3.8
   addons:
     apt:
       sources:
@@ -30,30 +32,32 @@ osx-gcc: &osx-gcc
   os: osx
   osx_image: xcode7.3
   compiler: gcc
+  env: CMAKE_C_COMPILER=gcc-7 CMAKE_CXX_COMPILER=g++-7
 
 osx-clang: &osx-clang
   os: osx
   osx_image: xcode7.3
   compiler: clang
+  env: CMAKE_C_COMPILER=clang CMAKE_CXX_COMPILER=clang++
 
 matrix:
   include:
     - <<: *linux-gcc
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
+      env: BUILD_TYPE=Debug TEST_TARGET=test
     - <<: *linux-gcc
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6
+      env: BUILD_TYPE=Release TEST_TARGET=test
     - <<: *linux-clang
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=clang-3.8 CMAKE_CXX_COMPILER=clang++-3.8
+      env: BUILD_TYPE=Debug TEST_TARGET=test
     - <<: *linux-clang
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=clang-3.8 CMAKE_CXX_COMPILER=clang++-3.8
+      env: BUILD_TYPE=Release TEST_TARGET=test
     - <<: *osx-gcc
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=gcc-7 CMAKE_CXX_COMPILER=g++-7
+      env: BUILD_TYPE=Debug TEST_TARGET=test
     - <<: *osx-gcc
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=gcc-7 CMAKE_CXX_COMPILER=g++-7
+      env: BUILD_TYPE=Release TEST_TARGET=test
     - <<: *osx-clang
-      env: BUILD_TYPE=Debug TEST_TARGET=test CMAKE_C_COMPILER=clang CMAKE_CXX_COMPILER=clang++
+      env: BUILD_TYPE=Debug TEST_TARGET=test
     - <<: *osx-clang
-      env: BUILD_TYPE=Release TEST_TARGET=test CMAKE_C_COMPILER=clang CMAKE_CXX_COMPILER=clang++
+      env: BUILD_TYPE=Release TEST_TARGET=test
     - <<: *linux-gcc
       env: BUILD_TYPE=Coverage TEST_TARGET=gen-cov CMAKE_C_COMPILER=gcc-6 CMAKE_CXX_COMPILER=g++-6 GCOV=gcov-6
     - <<: *linux-gcc
