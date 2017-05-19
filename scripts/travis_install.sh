@@ -7,6 +7,7 @@ case "${TRAVIS_OS_NAME}-${CC}" in
   linux-gcc)
     CMAKE_C_COMPILER=gcc-6
     CMAKE_CXX_COMPILER=g++-6
+    GCOV=gcov-6
     if test "${BUILD_TYPE}" = "Coverage"; then
       curl -sO http://ftp.debian.org/debian/pool/main/l/lcov/lcov_1.13.orig.tar.gz
       gunzip -c lcov_1.13.orig.tar.gz | tar xvf -
