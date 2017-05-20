@@ -94,8 +94,8 @@ namespace __bits {
 namespace {
 
 
-template <typename Result>
-inline Result handle (Result result, std::error_code &error) noexcept
+template <typename T>
+inline T check_call (T result, std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
@@ -133,6 +133,8 @@ inline Result handle (Result result, std::error_code &error) noexcept
   return result;
 }
 
+#define call(error,func,...) check_call(func(__VA_ARGS__), error)
+
 
 } // namespace
 
@@ -142,9 +144,13 @@ void socket_t::open (int domain, int type, int protocol,
 {
 #if __sal_os_windows
 
-  native_handle = handle(
-    ::WSASocketW(domain, type, protocol, nullptr, 0, WSA_FLAG_OVERLAPPED),
-    error
+  native_handle = call(error, ::WSASocketW,
+    domain,
+    type,
+    protocol,
+    nullptr,
+    0,
+    WSA_FLAG_OVERLAPPED
   );
 
   if (native_handle != SOCKET_ERROR)
@@ -173,13 +179,13 @@ void socket_t::open (int domain, int type, int protocol,
 
 #else
 
-  native_handle = handle(::socket(domain, type, protocol), error);
+  native_handle = call(error, ::socket, domain, type, protocol);
 
 #if __sal_os_darwin
   if (native_handle != -1)
   {
     int optval = 1;
-    ::setsockopt(native_handle, SOL_SOCKET, SO_NOSIGPIPE,
+    (void)::setsockopt(native_handle, SOL_SOCKET, SO_NOSIGPIPE,
       &optval, sizeof(optval)
     );
   }
@@ -193,7 +199,7 @@ void socket_t::close (std::error_code &error) noexcept
 {
 #if __sal_os_windows
 
-  handle(::closesocket(native_handle), error);
+  call(error, ::closesocket, native_handle);
   native_handle = invalid_socket;
 
 #else
@@ -205,7 +211,7 @@ void socket_t::close (std::error_code &error) noexcept
 
   for (;;)
   {
-    if (handle(::close(native_handle), error) == 0 || errno != EINTR)
+    if (call(error, ::close, native_handle) == 0 || errno != EINTR)
     {
       native_handle = invalid_socket;
       return;
@@ -219,19 +225,17 @@ void socket_t::close (std::error_code &error) noexcept
 void socket_t::bind (const void *address, size_t address_size,
   std::error_code &error) noexcept
 {
-  handle(
-    ::bind(native_handle,
-      static_cast<const sockaddr *>(address),
-      static_cast<socklen_t>(address_size)
-    ),
-    error
+  call(error, ::bind,
+    native_handle,
+    static_cast<const sockaddr *>(address),
+    static_cast<socklen_t>(address_size)
   );
 }
 
 
 void socket_t::listen (int backlog, std::error_code &error) noexcept
 {
-  handle(::listen(native_handle, backlog), error);
+  call(error, ::listen, native_handle, backlog);
 }
 
 
@@ -246,9 +250,10 @@ native_socket_t socket_t::accept (void *address, size_t *address_size,
   }
 
 retry:
-  auto new_socket = handle(
-    ::accept(native_handle, static_cast<sockaddr *>(address), size_p),
-    error
+  auto new_socket = call(error, ::accept,
+    native_handle,
+    static_cast<sockaddr *>(address),
+    size_p
   );
 
   if (new_socket != invalid_socket)
@@ -315,12 +320,10 @@ retry:
 void socket_t::connect (const void *address, size_t address_size,
   std::error_code &error) noexcept
 {
-  handle(
-    ::connect(native_handle,
-      static_cast<const sockaddr *>(address),
-      static_cast<socklen_t>(address_size)
-    ),
-    error
+  call(error, ::connect,
+    native_handle,
+    static_cast<const sockaddr *>(address),
+    static_cast<socklen_t>(address_size)
   );
 }
 
@@ -361,7 +364,7 @@ bool socket_t::wait (wait_t what, int timeout_ms, std::error_code &error)
   // can't reach this case by feeding incorrect parameters
   else if (event_count == -1)
   {
-    handle(invalid_socket, error);
+    check_call(invalid_socket, error);
   }
   // LCOV_EXCL_STOP
 
@@ -381,15 +384,13 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   DWORD transferred{};
   DWORD recv_flags = flags;
 
-  auto result = handle(
-    ::WSARecv(native_handle,
-      &buf, 1,
-      &transferred,
-      &recv_flags,
-      nullptr,
-      nullptr
-    ),
-    error
+  auto result = call(error, ::WSARecv,
+    native_handle,
+    &buf, 1,
+    &transferred,
+    &recv_flags,
+    nullptr,
+    nullptr
   );
 
   if (result != SOCKET_ERROR || error.value() == WSAESHUTDOWN)
@@ -417,7 +418,7 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   flags |= MSG_NOSIGNAL;
 #endif
 
-  auto size = handle(::recvmsg(native_handle, &msg, flags), error);
+  auto size = call(error, ::recvmsg, native_handle, &msg, flags);
   if (!size && data_size)
   {
     error = make_error_code(std::errc::broken_pipe);
@@ -453,17 +454,15 @@ size_t socket_t::receive_from (void *data, size_t data_size,
   DWORD transferred{};
   DWORD recv_flags = flags;
 
-  auto result = handle(
-    ::WSARecvFrom(native_handle,
-      &buf, 1,
-      &transferred,
-      &recv_flags,
-      static_cast<sockaddr *>(address),
-      (address ? &tmp_address_size : nullptr),
-      nullptr,
-      nullptr
-    ),
-    error
+  auto result = call(error, ::WSARecvFrom,
+    native_handle,
+    &buf, 1,
+    &transferred,
+    &recv_flags,
+    static_cast<sockaddr *>(address),
+    (address ? &tmp_address_size : nullptr),
+    nullptr,
+    nullptr
   );
 
   if (result != SOCKET_ERROR)
@@ -490,7 +489,7 @@ size_t socket_t::receive_from (void *data, size_t data_size,
   flags |= MSG_NOSIGNAL;
 #endif
 
-  auto size = handle(::recvmsg(native_handle, &msg, flags), error);
+  auto size = call(error, ::recvmsg, native_handle, &msg, flags);
   if (size >= 0)
   {
     if (msg.msg_flags & MSG_TRUNC)
@@ -524,15 +523,13 @@ size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags
 
   DWORD transferred{};
 
-  auto result = handle(
-    ::WSASend(native_handle,
-      &buf, 1,
-      &transferred,
-      flags,
-      nullptr,
-      nullptr
-    ),
-    error
+  auto result = call(error, ::WSASend,
+    native_handle,
+    &buf, 1,
+    &transferred,
+    flags,
+    nullptr,
+    nullptr
   );
 
   if (result != SOCKET_ERROR)
@@ -560,7 +557,7 @@ size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags
   flags |= MSG_NOSIGNAL;
 #endif
 
-  auto size = handle(::sendmsg(native_handle, &msg, flags), error);
+  auto size = call(error, ::sendmsg, native_handle, &msg, flags);
   if (size == -1)
   {
     size = 0;
@@ -584,17 +581,15 @@ size_t socket_t::send_to (const void *data, size_t data_size,
 
   DWORD transferred{};
 
-  auto result = handle(
-    ::WSASendTo(native_handle,
-      &buf, 1,
-      &transferred,
-      flags,
-      static_cast<const sockaddr *>(address),
-      static_cast<int>(address_size),
-      nullptr,
-      nullptr
-    ),
-    error
+  auto result = call(error, ::WSASendTo,
+    native_handle,
+    &buf, 1,
+    &transferred,
+    flags,
+    static_cast<const sockaddr *>(address),
+    static_cast<int>(address_size),
+    nullptr,
+    nullptr
   );
 
   if (result != SOCKET_ERROR)
@@ -620,7 +615,7 @@ size_t socket_t::send_to (const void *data, size_t data_size,
   flags |= MSG_NOSIGNAL;
 #endif
 
-  auto size = handle(::sendmsg(native_handle, &msg, flags), error);
+  auto size = call(error, ::sendmsg, native_handle, &msg, flags);
   if (size == -1)
   {
     size = 0;
@@ -633,7 +628,7 @@ size_t socket_t::send_to (const void *data, size_t data_size,
 
 void socket_t::shutdown (int what, std::error_code &error) noexcept
 {
-  handle(::shutdown(native_handle, what), error);
+  call(error, ::shutdown, native_handle, what);
 }
 
 
@@ -641,9 +636,9 @@ void socket_t::remote_endpoint (void *address, size_t *address_size,
   std::error_code &error) const noexcept
 {
   auto size = static_cast<socklen_t>(*address_size);
-  auto result = handle(
-    ::getpeername(native_handle, static_cast<sockaddr *>(address), &size),
-    error
+  auto result = call(error, ::getpeername,
+    native_handle,
+    static_cast<sockaddr *>(address), &size
   );
   if (result != -1)
   {
@@ -656,9 +651,9 @@ void socket_t::local_endpoint (void *address, size_t *address_size,
   std::error_code &error) const noexcept
 {
   auto size = static_cast<socklen_t>(*address_size);
-  auto result = handle(
-    ::getsockname(native_handle, static_cast<sockaddr *>(address), &size),
-    error
+  auto result = call(error, ::getsockname,
+    native_handle,
+    static_cast<sockaddr *>(address), &size
   );
   if (result != -1)
   {
@@ -671,11 +666,10 @@ void socket_t::get_opt (int level, int name, void *data, size_t *size,
   std::error_code &error) const noexcept
 {
   auto data_size = static_cast<socklen_t>(*size);
-  auto result = handle(
-    ::getsockopt(native_handle, level, name,
-      static_cast<char *>(data), &data_size
-    ),
-    error
+  auto result = call(error, ::getsockopt,
+    native_handle,
+    level, name,
+    static_cast<char *>(data), &data_size
   );
   if (result != -1)
   {
@@ -687,11 +681,10 @@ void socket_t::get_opt (int level, int name, void *data, size_t *size,
 void socket_t::set_opt (int level, int name, const void *data, size_t size,
   std::error_code &error) noexcept
 {
-  handle(
-    ::setsockopt(native_handle, level, name,
-      static_cast<const char *>(data), static_cast<socklen_t>(size)
-    ),
-    error
+  call(error, ::setsockopt,
+    native_handle,
+    level, name,
+    static_cast<const char *>(data), static_cast<socklen_t>(size)
   );
 }
 
@@ -706,7 +699,7 @@ bool socket_t::non_blocking (std::error_code &error) const noexcept
 #else
 
   // on error, returned value is undefined
-  return O_NONBLOCK & handle(::fcntl(native_handle, F_GETFL, 0), error);
+  return O_NONBLOCK & call(error, ::fcntl, native_handle, F_GETFL, 0);
 
 #endif
 }
@@ -717,11 +710,11 @@ void socket_t::non_blocking (bool mode, std::error_code &error) noexcept
 #if __sal_os_windows
 
   unsigned long arg = mode ? 1 : 0;
-  handle(::ioctlsocket(native_handle, FIONBIO, &arg), error);
+  call(error, ::ioctlsocket, native_handle, FIONBIO, &arg);
 
 #else
 
-  int flags = handle(::fcntl(native_handle, F_GETFL, 0), error);
+  int flags = call(error, ::fcntl, native_handle, F_GETFL, 0);
   if (flags >= 0)
   {
     if (mode)
@@ -748,14 +741,14 @@ size_t socket_t::available (std::error_code &error) const noexcept
 
 #if __sal_os_windows
 
-  if (handle(::ioctlsocket(native_handle, FIONBIO, &value), error) == SOCKET_ERROR)
+  if (call(error, ::ioctlsocket, native_handle, FIONBIO, &value) == SOCKET_ERROR)
   {
     value = 0;
   }
 
 #else
 
-  if (handle(::ioctl(native_handle, FIONREAD, &value), error) == -1)
+  if (call(error, ::ioctl, native_handle, FIONREAD, &value) == -1)
   {
     value = 0;
   }
