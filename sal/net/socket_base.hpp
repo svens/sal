@@ -28,35 +28,38 @@ public:
   static constexpr native_handle_t invalid_socket = __bits::invalid_socket;
 
 
+  /// \{
   /// Socket shutdown types
-  using shutdown_t = int;
-
+  using shutdown_t = __bits::shutdown_t;
   /// Disables further receive operations
-  static constexpr shutdown_t shutdown_receive = SHUT_RD;
+  static constexpr shutdown_t shutdown_receive = shutdown_t::receive;
   /// Disables further send operations
-  static constexpr shutdown_t shutdown_send = SHUT_WR;
+  static constexpr shutdown_t shutdown_send = shutdown_t::send;
   /// Disables further send and receive operations
-  static constexpr shutdown_t shutdown_both = SHUT_RDWR;
+  static constexpr shutdown_t shutdown_both = shutdown_t::both;
+  /// \}
 
 
-  /// Socket waiting types
+  /// \{
+  /// Socket state change waiting types
   using wait_t = __bits::wait_t;
-
   /// Wait for socket become readable
-  static constexpr wait_t wait_read = __bits::wait_t::read;
+  static constexpr wait_t wait_read = wait_t::read;
   /// Wait for socket become writable
-  static constexpr wait_t wait_write = __bits::wait_t::write;
+  static constexpr wait_t wait_write = wait_t::write;
+  /// \}
 
 
+  /// \{
   /// Bitmask flags for send/receive functions
   using message_flags_t = __bits::message_flags_t;
-
   /// Leave received data in queue
   static constexpr message_flags_t peek = MSG_PEEK;
   /// Out-of-band data
   static constexpr message_flags_t out_of_band = MSG_OOB;
   /// Send without using routing tables
   static constexpr message_flags_t do_not_route = MSG_DONTROUTE;
+  /// \}
 
 
   /// Limit on length of the queue of pending incoming connections

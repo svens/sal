@@ -58,6 +58,13 @@ void delete_async_worker (async_worker_t *async) noexcept;
 #endif
 
 
+enum class shutdown_t
+{
+  receive = SHUT_RD,
+  send = SHUT_WR,
+  both = SHUT_RDWR,
+};
+
 enum class wait_t { read, write };
 
 

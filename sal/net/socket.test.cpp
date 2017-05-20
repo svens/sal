@@ -1391,7 +1391,7 @@ template <typename Protocol>
 void shutdown (const Protocol &protocol)
 {
   socket_t<Protocol> socket(protocol);
-  auto what = socket.shutdown_receive | socket.shutdown_send;
+  auto what = socket.shutdown_both;
 
   {
     std::error_code error;
@@ -1425,7 +1425,7 @@ TYPED_TEST(net_socket, shutdown_v6)
 TYPED_TEST(net_socket, shutdown_invalid)
 {
   socket_t<TypeParam> socket;
-  auto what = socket.shutdown_receive | socket.shutdown_send;
+  auto what = socket.shutdown_both;
 
   {
     std::error_code error;
