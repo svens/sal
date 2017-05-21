@@ -279,6 +279,28 @@ std::string expected_manip (T value, Manip manip)
 }
 
 
+#if __apple_build_version__
+
+// Bug in xcode8.3 iostreams: negative long formatted as octal is wrong
+// fall back to printf
+
+std::string expected_manip (long value, decltype(std::oct) manip)
+{
+  char buf[64];
+  if (manip == std::oct)
+  {
+    snprintf(buf, sizeof(buf), "%lo", value);
+  }
+  else if (manip == std::hex)
+  {
+    snprintf(buf, sizeof(buf), "%lx", value);
+  }
+  return buf;
+}
+
+#endif
+
+
 template <typename T>
 std::string expected_bin (T value)
 {
