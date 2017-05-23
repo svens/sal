@@ -45,33 +45,8 @@ public:
   /// Acceptable socket
   using socket_t = typename protocol_t::socket_t;
 
+
   basic_socket_acceptor_t () = default;
-
-
-  /**
-   * Construct new basic_socket_acceptor_t using native_handle() from \a that. After
-   * move, that.is_open() == false
-   */
-  basic_socket_acceptor_t (basic_socket_acceptor_t &&that) noexcept
-    : socket_(that.socket_.handle)
-    , family_(that.family_)
-  {
-    that.socket_.handle = invalid;
-  }
-
-
-  /**
-   * If is \a is_open(), close() socket and release socket resources. On
-   * failure, errors are silently ignored.
-   */
-  ~basic_socket_acceptor_t () noexcept
-  {
-    if (is_open())
-    {
-      std::error_code ignored;
-      close(ignored);
-    }
-  }
 
 
   /**
@@ -104,28 +79,10 @@ public:
    * Construct new acceptor for pre-opened \a handle using \a protocol.
    * On failure, throw std::system_error
    */
-  basic_socket_acceptor_t (const protocol_t &protocol, const handle_t &handle)
+  basic_socket_acceptor_t (const protocol_t &protocol, handle_t handle)
   {
     assign(protocol, handle);
   }
-
-
-  /**
-   * If this is_open(), close() it and then move all internal resource from
-   * \a that to \a this.
-   */
-  basic_socket_acceptor_t &operator= (basic_socket_acceptor_t &&that) noexcept
-  {
-    auto tmp{std::move(*this)};
-    socket_.handle = that.socket_.handle;
-    that.socket_.handle = invalid;
-    family_ = that.family_;
-    return *this;
-  }
-
-
-  basic_socket_acceptor_t (const basic_socket_acceptor_t &) = delete;
-  basic_socket_acceptor_t &operator= (const basic_socket_acceptor_t &) = delete;
 
 
   /**
@@ -178,7 +135,7 @@ public:
    * Assign previously opened native socket \a handle (using \a protocol) to
    * this socket object. On failure, set \a error.
    */
-  void assign (const protocol_t &protocol, const handle_t &handle,
+  void assign (const protocol_t &protocol, handle_t handle,
     std::error_code &error) noexcept
   {
     if (handle == invalid)
@@ -201,7 +158,7 @@ public:
    * Assign previously opened native socket \a handle (using \a protocol) to
    * this socket object. On failure, throw std::system_error
    */
-  void assign (const protocol_t &protocol, const handle_t &handle)
+  void assign (const protocol_t &protocol, handle_t handle)
   {
     assign(protocol, handle, throw_on_error("basic_socket_acceptor::assign"));
   }
@@ -581,10 +538,10 @@ public:
 private:
 
   __bits::socket_t socket_;
+  friend class io_service_t;
+
   int family_ = AF_UNSPEC;
   bool enable_connection_aborted_ = false;
-
-  friend class io_service_t;
 };
 
 

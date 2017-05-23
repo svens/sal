@@ -93,7 +93,7 @@ public:
    * Assign previously opened native socket \a handle to this socket object.
    * On failure, set \a error.
    */
-  void assign (const handle_t &handle, std::error_code &error) noexcept
+  void assign (handle_t handle, std::error_code &error) noexcept
   {
     if (handle == invalid)
     {
@@ -114,7 +114,7 @@ public:
    * Assign previously opened native socket \a handle to this socket object.
    * On failure, throw std::system_error
    */
-  void assign (const handle_t &handle)
+  void assign (handle_t handle)
   {
     assign(handle, throw_on_error("basic_socket::assign"));
   }
@@ -415,36 +415,29 @@ protected:
    * \internal
    */
   __bits::socket_t socket_{};
-
   friend class io_service_t;
 
-
-  basic_socket_t () = default;
+  basic_socket_t () noexcept = default;
 
 
   /**
-   * Construct new basic_socket_t using native_handle() from \a that. After
-   * move, that.is_open() == false
+   * Move ownership of \a that handle to \a this and invalidate \a that.
    */
-  basic_socket_t (basic_socket_t &&that) noexcept
-    : socket_(that.socket_.handle)
-  {
-    that.socket_.handle = invalid;
-  }
+  basic_socket_t (basic_socket_t &&that) noexcept = default;
+
+
+  /**
+   * If this is_open(), close() it and then move all internal resource from
+   * \a that to \a this.
+   */
+  basic_socket_t &operator= (basic_socket_t &&that) noexcept = default;
 
 
   /**
    * If is \a is_open(), close() socket and release socket resources. On
    * failure, errors are silently ignored.
    */
-  ~basic_socket_t () noexcept
-  {
-    if (is_open())
-    {
-      std::error_code ignored;
-      close(ignored);
-    }
-  }
+  ~basic_socket_t () noexcept = default;
 
 
   /**
@@ -471,27 +464,10 @@ protected:
   /**
    * Construct new socket, acquiring \a handle
    */
-  basic_socket_t (const handle_t &handle)
+  basic_socket_t (handle_t handle)
   {
     assign(handle);
   }
-
-
-  /**
-   * If this is_open(), close() it and then move all internal resource from
-   * \a that to \a this.
-   */
-  basic_socket_t &operator= (basic_socket_t &&that) noexcept
-  {
-    auto tmp{std::move(*this)};
-    socket_.handle = that.socket_.handle;
-    that.socket_.handle = invalid;
-    return *this;
-  }
-
-
-  basic_socket_t (const basic_socket_t &) = delete;
-  basic_socket_t &operator= (const basic_socket_t &) = delete;
 };
 
 

@@ -22,6 +22,9 @@ namespace net {
 namespace {
 
 
+#if __sal_os_windows
+
+
 struct lib_t
 {
   lib_t () noexcept
@@ -47,19 +50,12 @@ lib_t lib_t::lib;
 
 void internal_setup (std::error_code &result) noexcept
 {
-#if __sal_os_windows
 
   WSADATA wsa;
   result.assign(
     ::WSAStartup(MAKEWORD(2, 2), &wsa),
     std::system_category()
   );
-
-#else
-
-  (void)result;
-
-#endif
 }
 
 
@@ -72,10 +68,11 @@ void lib_t::setup () noexcept
 
 void lib_t::cleanup () noexcept
 {
-#if __sal_os_windows
   ::WSACleanup();
-#endif
 }
+
+
+#endif
 
 
 } // namespace
@@ -83,8 +80,17 @@ void lib_t::cleanup () noexcept
 
 const std::error_code &init () noexcept
 {
+#if __sal_os_windows
+
   lib_t::setup();
   return lib_t::setup_result;
+
+#else
+
+  static const std::error_code no_error{};
+  return no_error;
+
+#endif
 }
 
 
@@ -182,7 +188,7 @@ void socket_t::open (int domain, int type, int protocol,
   handle = call(error, ::socket, domain, type, protocol);
 
 #if __sal_os_darwin
-  if (handle != -1)
+  if (handle != invalid)
   {
     int optval = 1;
     (void)::setsockopt(handle, SOL_SOCKET, SO_NOSIGPIPE,
@@ -725,10 +731,7 @@ void socket_t::non_blocking (bool mode, std::error_code &error) noexcept
     {
       flags &= ~O_NONBLOCK;
     }
-    if (::fcntl(handle, F_SETFL, flags) != -1)
-    {
-      return;
-    }
+    call(error, ::fcntl, handle, F_SETFL, flags);
   }
 
 #endif

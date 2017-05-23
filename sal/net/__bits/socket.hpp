@@ -89,6 +89,37 @@ struct socket_t
     : handle(handle)
   {}
 
+  socket_t (socket_t &&that) noexcept
+    : handle(that.handle)
+  {
+    that.handle = invalid;
+  }
+
+  socket_t &operator= (socket_t &&that) noexcept
+  {
+    auto tmp{std::move(that)};
+    this->swap(tmp);
+    return *this;
+  }
+
+  ~socket_t () noexcept
+  {
+    if (handle != invalid)
+    {
+      std::error_code ignored;
+      close(ignored);
+    }
+  }
+
+  socket_t (const socket_t &) = delete;
+  socket_t &operator= (const socket_t &) = delete;
+
+  void swap (socket_t &that) noexcept
+  {
+    using std::swap;
+    swap(handle, that.handle);
+  }
+
   void open (int domain,
     int type,
     int protocol,

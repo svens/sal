@@ -46,14 +46,6 @@ public:
 
 
   /**
-   * Initialise base class from \a that.
-   */
-  basic_stream_socket_t (basic_stream_socket_t &&that) noexcept
-    : base_t(std::move(that))
-  {}
-
-
-  /**
    * Initialise base class using \a protocol
    */
   basic_stream_socket_t (const protocol_t &protocol)
@@ -72,24 +64,9 @@ public:
   /**
    * Initialise base class using \a handle
    */
-  basic_stream_socket_t (const handle_t &handle)
+  basic_stream_socket_t (handle_t handle)
     : base_t(handle)
   {}
-
-
-  /**
-   * If this is_open(), close() it and then move all internal resource from
-   * \a that to \a this.
-   */
-  basic_stream_socket_t &operator= (basic_stream_socket_t &&that) noexcept
-  {
-    base_t::operator=(std::move(that));
-    return *this;
-  }
-
-
-  basic_stream_socket_t (const basic_stream_socket_t &) = delete;
-  basic_stream_socket_t &operator= (const basic_stream_socket_t &) = delete;
 
 
   //

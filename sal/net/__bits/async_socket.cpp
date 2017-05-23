@@ -263,10 +263,11 @@ void async_accept_t::start (socket_t &socket, int family) noexcept
     context->completed.push(this);
     return;
   }
+  accepted = new_socket.handle;
+  new_socket.handle = socket_t::invalid;
 
   finished = false;
   acceptor = socket.handle;
-  accepted = new_socket.handle;
   auto result = (*AcceptEx)(acceptor,
     accepted,
     begin,
