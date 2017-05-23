@@ -22,10 +22,10 @@ class socket_base_t
 public:
 
   /// Native socket handle type
-  using native_handle_t = __bits::native_socket_t;
+  using handle_t = __bits::socket_t::handle_t;
 
   /// Invalid native socket handle
-  static constexpr native_handle_t invalid_socket = __bits::invalid_socket;
+  static constexpr handle_t invalid = __bits::socket_t::invalid;
 
 
   /// \{

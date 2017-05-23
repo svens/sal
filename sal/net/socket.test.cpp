@@ -35,7 +35,7 @@ struct socket_t
     : Socket(endpoint)
   {}
 
-  socket_t (sal::net::socket_base_t::native_handle_t handle)
+  socket_t (sal::net::socket_base_t::handle_t handle)
     : Socket(handle)
   {}
 };
@@ -98,7 +98,7 @@ TYPED_TEST(net_socket, ctor_protocol_v6)
 template <typename Protocol>
 void ctor_protocol_and_handle (const Protocol &)
 {
-  auto handle = sal::net::socket_base_t::invalid_socket - 1;
+  auto handle = sal::net::socket_base_t::invalid - 1;
   socket_t<Protocol> socket(handle);
   EXPECT_EQ(handle, socket.native_handle());
 
@@ -222,7 +222,7 @@ void assign (const Protocol &)
 {
   socket_t<Protocol> socket;
 
-  auto h = sal::net::socket_base_t::invalid_socket - 1;
+  auto h = sal::net::socket_base_t::invalid - 1;
   socket.assign(h);
   EXPECT_TRUE(socket.is_open());
   EXPECT_EQ(h, socket.native_handle());
@@ -248,7 +248,7 @@ template <typename Protocol>
 void assign_not_closed (const Protocol &protocol)
 {
   socket_t<Protocol> socket(protocol);
-  auto h = sal::net::socket_base_t::invalid_socket - 1;
+  auto h = sal::net::socket_base_t::invalid - 1;
 
   {
     std::error_code error;
@@ -278,7 +278,7 @@ template <typename Protocol>
 void assign_no_handle (const Protocol &)
 {
   socket_t<Protocol> socket;
-  auto h = sal::net::socket_base_t::invalid_socket;
+  auto h = sal::net::socket_base_t::invalid;
 
   {
     std::error_code error;
@@ -348,7 +348,7 @@ TYPED_TEST(net_socket, close_no_handle)
 template <typename Protocol>
 void close_bad_file_descriptor (const Protocol &)
 {
-  socket_t<Protocol> socket(sal::net::socket_base_t::invalid_socket - 1);
+  socket_t<Protocol> socket(sal::net::socket_base_t::invalid - 1);
 
   {
     std::error_code error;

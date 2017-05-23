@@ -123,7 +123,7 @@ void async_receive_t::start (socket_t &socket, message_flags_t flags) noexcept
   DWORD flags_ = flags;
   auto buf = to_buf();
   io_result(
-    ::WSARecv(socket.native_handle,
+    ::WSARecv(socket.handle,
       &buf, 1,
       &transferred,
       &flags_,
@@ -142,7 +142,7 @@ void async_receive_from_t::start (socket_t &socket, message_flags_t flags)
   DWORD flags_ = flags;
   auto buf = to_buf();
   io_result(
-    ::WSARecvFrom(socket.native_handle,
+    ::WSARecvFrom(socket.handle,
       &buf, 1,
       &transferred,
       &flags_,
@@ -161,7 +161,7 @@ void async_send_to_t::start (socket_t &socket,
 {
   auto buf = to_buf();
   io_result(
-    ::WSASendTo(socket.native_handle,
+    ::WSASendTo(socket.handle,
       &buf, 1,
       &transferred,
       flags,
@@ -178,7 +178,7 @@ void async_send_t::start (socket_t &socket, message_flags_t flags) noexcept
 {
   auto buf = to_buf();
   io_result(
-    ::WSASend(socket.native_handle,
+    ::WSASend(socket.handle,
       &buf, 1,
       &transferred,
       flags,
@@ -193,7 +193,7 @@ void async_connect_t::start (socket_t &socket,
   const void *address, size_t address_size) noexcept
 {
   finished = false;
-  handle = socket.native_handle;
+  handle = socket.handle;
   auto result = (*ConnectEx)(handle,
     static_cast<const sockaddr *>(address),
     static_cast<int>(address_size),
@@ -265,8 +265,8 @@ void async_accept_t::start (socket_t &socket, int family) noexcept
   }
 
   finished = false;
-  acceptor = socket.native_handle;
-  accepted = new_socket.native_handle;
+  acceptor = socket.handle;
+  accepted = new_socket.handle;
   auto result = (*AcceptEx)(acceptor,
     accepted,
     begin,
@@ -367,7 +367,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
   }
 
   auto result = ::CreateIoCompletionPort(
-    reinterpret_cast<HANDLE>(socket.native_handle),
+    reinterpret_cast<HANDLE>(socket.handle),
     iocp,
     0,
     0
@@ -521,7 +521,7 @@ void async_worker_t::push_send (io_buf_t *io_buf) noexcept
 
     std::array<struct ::kevent, 1> changes;
     EV_SET(&changes[0],
-      socket.native_handle,
+      socket.handle,
       EVFILT_WRITE,
       EV_ADD,
       0,
@@ -542,7 +542,7 @@ void async_worker_t::push_send (io_buf_t *io_buf) noexcept
 
     (void)::epoll_ctl(io_service.queue,
       EPOLL_CTL_MOD,
-      socket.native_handle,
+      socket.handle,
       &change
     );
 
@@ -576,7 +576,7 @@ void async_worker_t::send (io_context_t &context, uint16_t flags) noexcept
 
     std::array<struct ::kevent, 1> changes;
     EV_SET(&changes[0],
-      socket.native_handle,
+      socket.handle,
       EVFILT_WRITE,
       EV_DELETE,
       0,
@@ -597,7 +597,7 @@ void async_worker_t::send (io_context_t &context, uint16_t flags) noexcept
 
     (void)::epoll_ctl(io_service.queue,
       EPOLL_CTL_MOD,
-      socket.native_handle,
+      socket.handle,
       &change
     );
 
@@ -699,7 +699,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 
   std::array<struct ::kevent, 1> changes;
   EV_SET(&changes[0],
-    socket.native_handle,
+    socket.handle,
     EVFILT_READ,
     EV_ADD | EV_CLEAR,
     0,
@@ -721,7 +721,7 @@ void io_service_t::associate (socket_t &socket, std::error_code &error)
 
   auto result = ::epoll_ctl(queue,
     EPOLL_CTL_ADD,
-    socket.native_handle,
+    socket.handle,
     &change
   );
 
@@ -803,7 +803,7 @@ bool io_buf_t::send (socket_t &socket, uint16_t flags) noexcept
     {
       int data;
       socklen_t size = sizeof(data);
-      auto result = ::getsockopt(socket.native_handle,
+      auto result = ::getsockopt(socket.handle,
         SOL_SOCKET,
         SO_ERROR,
         &data, &size

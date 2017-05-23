@@ -107,7 +107,7 @@ TEST_P(stream_socket, ctor_protocol)
 
 TEST_P(stream_socket, ctor_protocol_and_handle)
 {
-  auto handle = sal::net::socket_base_t::invalid_socket - 1;
+  auto handle = sal::net::socket_base_t::invalid - 1;
   socket_t socket(handle);
   EXPECT_EQ(handle, socket.native_handle());
 

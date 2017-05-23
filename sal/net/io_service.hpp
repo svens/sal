@@ -73,7 +73,7 @@ public:
   void associate (basic_socket_t<Protocol> &socket, std::error_code &error)
     noexcept
   {
-    impl_.associate(socket.impl_, error);
+    impl_.associate(socket.socket_, error);
   }
 
 
@@ -94,7 +94,7 @@ public:
   void associate (basic_socket_acceptor_t<Protocol> &socket,
     std::error_code &error) noexcept
   {
-    impl_.associate(socket.impl_, error);
+    impl_.associate(socket.socket_, error);
   }
 
 

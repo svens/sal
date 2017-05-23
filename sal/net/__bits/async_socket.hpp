@@ -127,7 +127,7 @@ struct async_connect_t
   : public io_buf_t
   , public async_operation_t<async_connect_t>
 {
-  native_socket_t handle;
+  socket_t::handle_t handle;
   bool finished;
 
   void start (socket_t &socket, const void *address, size_t address_size)
@@ -141,7 +141,7 @@ struct async_accept_t
   : public io_buf_t
   , public async_operation_t<async_accept_t>
 {
-  native_socket_t accepted, acceptor;
+  socket_t::handle_t accepted, acceptor;
   sockaddr_storage *local_address, *remote_address;
   bool finished;
 
@@ -280,7 +280,7 @@ struct async_accept_t
   : public io_buf_t
   , public async_operation_t<async_accept_t>
 {
-  native_socket_t accepted;
+  socket_t::handle_t accepted;
   sockaddr_storage *local_address, *remote_address;
 
   void start (socket_t &socket, int family) noexcept;

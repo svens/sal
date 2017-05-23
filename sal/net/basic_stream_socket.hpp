@@ -33,7 +33,7 @@ class basic_stream_socket_t
 public:
 
   /// Socket's low-level handle
-  using native_handle_t = typename base_t::native_handle_t;
+  using handle_t = typename base_t::handle_t;
 
   /// Socket's protocol.
   using protocol_t = typename base_t::protocol_t;
@@ -72,7 +72,7 @@ public:
   /**
    * Initialise base class using \a handle
    */
-  basic_stream_socket_t (const native_handle_t &handle)
+  basic_stream_socket_t (const handle_t &handle)
     : base_t(handle)
   {}
 
@@ -106,7 +106,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::impl_.receive(buf.data(), buf.size(),
+    return base_t::socket_.receive(buf.data(), buf.size(),
       static_cast<int>(flags),
       error
     );
@@ -156,7 +156,7 @@ public:
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::impl_.send(buf.data(), buf.size(),
+    return base_t::socket_.send(buf.data(), buf.size(),
       static_cast<int>(flags),
       error
     );
@@ -218,7 +218,7 @@ public:
    */
   void async_connect (io_buf_ptr &&io_buf, const endpoint_t &endpoint) noexcept
   {
-    io_buf->start<async_connect_t>(base_t::impl_,
+    io_buf->start<async_connect_t>(base_t::socket_,
       endpoint.data(), endpoint.size()
     );
     io_buf.release();
@@ -276,7 +276,7 @@ public:
   void async_receive (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_receive_t>(base_t::impl_, flags);
+    io_buf->start<async_receive_t>(base_t::socket_, flags);
     io_buf.release();
   }
 
@@ -342,7 +342,7 @@ public:
   void async_send (io_buf_ptr &&io_buf,
     socket_base_t::message_flags_t flags) noexcept
   {
-    io_buf->start<async_send_t>(base_t::impl_, flags);
+    io_buf->start<async_send_t>(base_t::socket_, flags);
     io_buf.release();
   }
 

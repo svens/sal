@@ -34,7 +34,7 @@ class basic_socket_acceptor_t
 public:
 
   /// Native acceptor handle type
-  using native_handle_t = socket_base_t::native_handle_t;
+  using handle_t = socket_base_t::handle_t;
 
   /// Acceptable protocol
   using protocol_t = AcceptableProtocol;
@@ -53,10 +53,10 @@ public:
    * move, that.is_open() == false
    */
   basic_socket_acceptor_t (basic_socket_acceptor_t &&that) noexcept
-    : impl_(that.impl_.native_handle)
+    : socket_(that.socket_.handle)
     , family_(that.family_)
   {
-    that.impl_.native_handle = invalid_socket;
+    that.socket_.handle = invalid;
   }
 
 
@@ -104,8 +104,7 @@ public:
    * Construct new acceptor for pre-opened \a handle using \a protocol.
    * On failure, throw std::system_error
    */
-  basic_socket_acceptor_t (const protocol_t &protocol,
-    const native_handle_t &handle)
+  basic_socket_acceptor_t (const protocol_t &protocol, const handle_t &handle)
   {
     assign(protocol, handle);
   }
@@ -118,8 +117,8 @@ public:
   basic_socket_acceptor_t &operator= (basic_socket_acceptor_t &&that) noexcept
   {
     auto tmp{std::move(*this)};
-    impl_.native_handle = that.impl_.native_handle;
-    that.impl_.native_handle = invalid_socket;
+    socket_.handle = that.socket_.handle;
+    that.socket_.handle = invalid;
     family_ = that.family_;
     return *this;
   }
@@ -132,9 +131,9 @@ public:
   /**
    * Return native representation of this socket.
    */
-  native_handle_t native_handle () const noexcept
+  handle_t native_handle () const noexcept
   {
-    return impl_.native_handle;
+    return socket_.handle;
   }
 
 
@@ -144,7 +143,7 @@ public:
    */
   bool is_open () const noexcept
   {
-    return impl_.native_handle != invalid_socket;
+    return socket_.handle != invalid;
   }
 
 
@@ -156,7 +155,7 @@ public:
     if (!is_open())
     {
       family_ = protocol.family();
-      impl_.open(family_, protocol.type(), protocol.protocol(), error);
+      socket_.open(family_, protocol.type(), protocol.protocol(), error);
     }
     else
     {
@@ -179,17 +178,17 @@ public:
    * Assign previously opened native socket \a handle (using \a protocol) to
    * this socket object. On failure, set \a error.
    */
-  void assign (const protocol_t &protocol, const native_handle_t &handle,
+  void assign (const protocol_t &protocol, const handle_t &handle,
     std::error_code &error) noexcept
   {
-    if (handle == invalid_socket)
+    if (handle == invalid)
     {
       error = make_error_code(std::errc::bad_file_descriptor);
     }
     else if (!is_open())
     {
       family_ = protocol.family();
-      impl_.native_handle = handle;
+      socket_.handle = handle;
     }
     else
     {
@@ -202,7 +201,7 @@ public:
    * Assign previously opened native socket \a handle (using \a protocol) to
    * this socket object. On failure, throw std::system_error
    */
-  void assign (const protocol_t &protocol, const native_handle_t &handle)
+  void assign (const protocol_t &protocol, const handle_t &handle)
   {
     assign(protocol, handle, throw_on_error("basic_socket_acceptor::assign"));
   }
@@ -215,7 +214,7 @@ public:
   {
     if (is_open())
     {
-      impl_.close(error);
+      socket_.close(error);
     }
     else
     {
@@ -243,7 +242,7 @@ public:
   {
     typename GettableSocketOption::native_t data;
     auto size = sizeof(data);
-    impl_.get_opt(option.level, option.name, &data, &size, error);
+    socket_.get_opt(option.level, option.name, &data, &size, error);
     if (!error)
     {
       option.load(data, size);
@@ -270,7 +269,7 @@ public:
   {
     typename SettableSocketOption::native_t data;
     option.store(data);
-    impl_.set_opt(option.level, option.name, &data, sizeof(data), error);
+    socket_.set_opt(option.level, option.name, &data, sizeof(data), error);
   }
 
 
@@ -289,7 +288,7 @@ public:
    */
   void non_blocking (bool mode, std::error_code &error) noexcept
   {
-    impl_.non_blocking(mode, error);
+    socket_.non_blocking(mode, error);
   }
 
 
@@ -308,7 +307,7 @@ public:
    */
   bool non_blocking (std::error_code &error) const noexcept
   {
-    return impl_.non_blocking(error);
+    return socket_.non_blocking(error);
   }
 
 
@@ -327,7 +326,7 @@ public:
    */
   void bind (const endpoint_t &endpoint, std::error_code &error) noexcept
   {
-    impl_.bind(endpoint.data(), endpoint.size(), error);
+    socket_.bind(endpoint.data(), endpoint.size(), error);
   }
 
 
@@ -347,7 +346,7 @@ public:
    */
   void listen (int backlog, std::error_code &error) noexcept
   {
-    impl_.listen(backlog, error);
+    socket_.listen(backlog, error);
   }
 
 
@@ -369,7 +368,7 @@ public:
   socket_t accept (endpoint_t &endpoint, std::error_code &error) noexcept
   {
     auto endpoint_size = endpoint.capacity();
-    auto h = impl_.accept(endpoint.data(), &endpoint_size,
+    auto h = socket_.accept(endpoint.data(), &endpoint_size,
       enable_connection_aborted_,
       error
     );
@@ -398,7 +397,7 @@ public:
    */
   socket_t accept (std::error_code &error) noexcept
   {
-    auto h = impl_.accept(nullptr, nullptr, enable_connection_aborted_, error);
+    auto h = socket_.accept(nullptr, nullptr, enable_connection_aborted_, error);
     if (!error)
     {
       return h;
@@ -451,7 +450,7 @@ public:
     std::error_code &error) noexcept
   {
     auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-    return impl_.wait(what, static_cast<int>(d.count()), error);
+    return socket_.wait(what, static_cast<int>(d.count()), error);
   }
 
 
@@ -476,7 +475,7 @@ public:
   {
     endpoint_t endpoint;
     auto endpoint_size = endpoint.capacity();
-    impl_.local_endpoint(endpoint.data(), &endpoint_size, error);
+    socket_.local_endpoint(endpoint.data(), &endpoint_size, error);
     if (!error)
     {
       endpoint.resize(endpoint_size);
@@ -546,7 +545,7 @@ public:
    */
   void async_accept (io_buf_ptr &&io_buf) noexcept
   {
-    io_buf->start<async_accept_t>(impl_, family_);
+    io_buf->start<async_accept_t>(socket_, family_);
     io_buf.release();
   }
 
@@ -581,7 +580,7 @@ public:
 
 private:
 
-  __bits::socket_t impl_;
+  __bits::socket_t socket_;
   int family_ = AF_UNSPEC;
   bool enable_connection_aborted_ = false;
 

@@ -21,11 +21,7 @@ __sal_begin
 namespace net { namespace __bits {
 
 
-#if __sal_os_windows
-
-// socket handle
-using native_socket_t = SOCKET;
-constexpr native_socket_t invalid_socket = INVALID_SOCKET;
+#if __sal_os_windows //{{{1
 
 // shutdown() direction
 #define SHUT_RD SD_RECEIVE
@@ -38,11 +34,7 @@ using sa_family_t = ::ADDRESS_FAMILY;
 // send/recv flags
 using message_flags_t = DWORD;
 
-#else
-
-// socket handle
-using native_socket_t = int;
-constexpr native_socket_t invalid_socket = -1;
+#else //{{{1
 
 // sockaddr family
 using sa_family_t = ::sa_family_t;
@@ -55,7 +47,7 @@ struct async_worker_t;
 using async_worker_ptr = std::unique_ptr<async_worker_t, void(*)(async_worker_t *)>;
 void delete_async_worker (async_worker_t *async) noexcept;
 
-#endif
+#endif // }}}1
 
 
 enum class shutdown_t
@@ -65,12 +57,25 @@ enum class shutdown_t
   both = SHUT_RDWR,
 };
 
-enum class wait_t { read, write };
+
+enum class wait_t
+{
+  read,
+  write,
+};
 
 
 struct socket_t
 {
-  native_socket_t native_handle = invalid_socket;
+#if __sal_os_windows
+  using handle_t = SOCKET;
+  static constexpr handle_t invalid = INVALID_SOCKET;
+#elif __sal_os_darwin || __sal_os_linux
+  using handle_t = int;
+  static constexpr handle_t invalid = -1;
+#endif
+
+  handle_t handle = invalid;
 
 #if __sal_os_windows
   bool associated = false;
@@ -80,8 +85,8 @@ struct socket_t
 
   socket_t () = default;
 
-  socket_t (native_socket_t native_handle) noexcept
-    : native_handle(native_handle)
+  socket_t (handle_t handle) noexcept
+    : handle(handle)
   {}
 
   void open (int domain,
@@ -97,7 +102,7 @@ struct socket_t
 
   void listen (int backlog, std::error_code &error) noexcept;
 
-  native_socket_t accept (void *address, size_t *address_size,
+  handle_t accept (void *address, size_t *address_size,
     bool enable_connection_aborted,
     std::error_code &error
   ) noexcept;
@@ -111,7 +116,7 @@ struct socket_t
     std::error_code &error
   ) noexcept;
 
-  void shutdown (int what, std::error_code &error) noexcept;
+  void shutdown (shutdown_t what, std::error_code &error) noexcept;
 
   void remote_endpoint (void *address, size_t *address_size,
     std::error_code &error
