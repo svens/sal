@@ -6,8 +6,6 @@ list(APPEND sal_docs
 
 # sources
 list(APPEND sal_sources
-  sal/net/__bits/async_socket.hpp
-  sal/net/__bits/async_socket.cpp
   sal/net/__bits/socket.hpp
   sal/net/__bits/socket.cpp
   sal/net/fwd.hpp
@@ -18,10 +16,8 @@ list(APPEND sal_sources
   sal/net/basic_socket_acceptor.hpp
   sal/net/error.hpp
   sal/net/error.cpp
-  sal/net/io_buf.hpp
-  sal/net/io_context.hpp
-  sal/net/io_context.cpp
   sal/net/io_service.hpp
+  sal/net/io_service.cpp
   sal/net/socket.hpp
   sal/net/socket_base.hpp
   sal/net/socket_options.hpp
@@ -48,8 +44,6 @@ list(APPEND sal_unittests
   sal/net/init.test.cpp
 
   sal/net/error.test.cpp
-  sal/net/io_buf.test.cpp
-  sal/net/io_context.test.cpp
   sal/net/io_service.test.cpp
   sal/net/socket.test.cpp
 

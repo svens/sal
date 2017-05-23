@@ -8,8 +8,6 @@
 
 #include <sal/config.hpp>
 #include <sal/net/error.hpp>
-#include <sal/net/io_buf.hpp>
-#include <sal/net/io_context.hpp>
 #include <sal/net/socket_base.hpp>
 #include <sal/net/socket_options.hpp>
 
@@ -448,90 +446,6 @@ public:
   endpoint_t local_endpoint () const
   {
     return local_endpoint(throw_on_error("basic_socket_acceptor::local_endpoint"));
-  }
-
-
-  //
-  // Asynchronous API
-  //
-
-
-  /**
-   * async_accept() result.
-   */
-  struct async_accept_t
-    : public __bits::async_accept_t
-  {
-    /**
-     * Local endpoint of accepted socket.
-     */
-    const endpoint_t &local_endpoint () const noexcept
-    {
-      return *reinterpret_cast<const endpoint_t *>(
-        __bits::async_accept_t::local_address
-      );
-    }
-
-    /**
-     * Remote endpoint of accepted socket.
-     */
-    const endpoint_t &remote_endpoint () const noexcept
-    {
-      return *reinterpret_cast<const endpoint_t *>(
-        __bits::async_accept_t::remote_address
-      );
-    }
-
-    /**
-     * Return accepted socket.
-     *
-     * \note Call it only once, first socket becomes owner of handle.
-     * Following calls will acquire handle also, leading to multiple native
-     * handle closes.
-     */
-    socket_t accepted () const noexcept
-    {
-      return __bits::async_accept_t::accepted;
-    }
-  };
-
-
-  /**
-   * Start async_accept().
-   * \see accept()
-   */
-  void async_accept (io_buf_ptr &&io_buf) noexcept
-  {
-    io_buf->start<async_accept_t>(socket_, family_);
-    io_buf.release();
-  }
-
-
-  /**
-   * Extract and return pointer to async_accept() result from \a io_buf or
-   * nullptr if \a io_buf does not represent async_accept() operation.
-   */
-  static const async_accept_t *async_accept_result (const io_buf_ptr &io_buf,
-    std::error_code &error) noexcept
-  {
-    if (auto result = io_buf->result<async_accept_t>())
-    {
-      result->finish(error);
-      return result;
-    }
-    return nullptr;
-  }
-
-
-  /**
-   * Extract and return pointer to async_accept() result from \a io_buf or
-   * nullptr if \a io_buf does not represent async_accept() operation.
-   */
-  static const async_accept_t *async_accept_result (const io_buf_ptr &io_buf)
-  {
-    return async_accept_result(io_buf,
-      throw_on_error("basic_socket_acceptor::async_accept")
-    );
   }
 
 

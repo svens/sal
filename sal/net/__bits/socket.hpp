@@ -42,12 +42,14 @@ using sa_family_t = ::sa_family_t;
 // send/recv flags
 using message_flags_t = int;
 
-// asynchronous operations info
+#endif // }}}1
+
+
+/*
 struct async_worker_t;
 using async_worker_ptr = std::unique_ptr<async_worker_t, void(*)(async_worker_t *)>;
-void delete_async_worker (async_worker_t *async) noexcept;
-
-#endif // }}}1
+void delete_async_worker (async_worker_t *worker) noexcept;
+*/
 
 
 enum class shutdown_t
@@ -77,11 +79,6 @@ struct socket_t
 
   handle_t handle = invalid;
 
-#if __sal_os_windows
-  bool associated = false;
-#elif __sal_os_darwin || __sal_os_linux
-  async_worker_ptr async{nullptr, &delete_async_worker};
-#endif
 
   socket_t () = default;
 

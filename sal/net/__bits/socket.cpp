@@ -210,11 +210,6 @@ void socket_t::close (std::error_code &error) noexcept
 
 #else
 
-  if (async)
-  {
-    async.reset();
-  }
-
   for (;;)
   {
     if (call(error, ::close, handle) == 0 || errno != EINTR)

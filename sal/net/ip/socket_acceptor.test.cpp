@@ -1,8 +1,5 @@
 #include <sal/net/ip/tcp.hpp>
-#include <sal/net/io_context.hpp>
-#include <sal/net/io_service.hpp>
 #include <sal/common.test.hpp>
-#include <thread>
 
 
 namespace {
@@ -21,22 +18,6 @@ struct socket_acceptor
       ? acceptor_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
       : acceptor_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
     ;
-  }
-
-  sal::net::io_service_t service;
-  sal::net::io_context_t context = service.make_context();
-
-  sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
-  {
-    auto io_buf = context.make_buf();
-    io_buf->resize(content.size());
-    std::memcpy(io_buf->data(), content.data(), content.size());
-    return io_buf;
-  }
-
-  static std::string to_string (const sal::net::io_buf_ptr &io_buf, size_t size)
-  {
-    return std::string(static_cast<const char *>(io_buf->data()), size);
   }
 };
 
@@ -488,150 +469,6 @@ TEST_P(socket_acceptor, local_endpoint_invalid)
   {
     EXPECT_THROW(acceptor.local_endpoint(), std::system_error);
   }
-}
-
-
-TEST_P(socket_acceptor, async_accept)
-{
-  acceptor_t acceptor(loopback(GetParam()), true);
-  acceptor.non_blocking(true);
-  service.associate(acceptor);
-
-  acceptor.async_accept(context.make_buf());
-
-  socket_t a;
-  a.connect(loopback(GetParam()));
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  auto result = acceptor.async_accept_result(io_buf);
-  ASSERT_NE(nullptr, result);
-
-  EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
-
-  auto b = result->accepted();
-  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
-
-  EXPECT_EQ(nullptr, a.async_connect_result(io_buf));
-}
-
-
-TEST_P(socket_acceptor, async_accept_immediate_completion)
-{
-  acceptor_t acceptor(loopback(GetParam()), true);
-  acceptor.non_blocking(true);
-  service.associate(acceptor);
-
-  socket_t a;
-  a.connect(loopback(GetParam()));
-
-  acceptor.async_accept(context.make_buf());
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  auto result = acceptor.async_accept_result(io_buf);
-  ASSERT_NE(nullptr, result);
-
-  EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
-
-  auto b = result->accepted();
-  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
-
-  EXPECT_EQ(nullptr, a.async_connect_result(io_buf));
-}
-
-
-TEST_P(socket_acceptor, async_accept_result_twice)
-{
-  acceptor_t acceptor(loopback(GetParam()), true);
-  acceptor.non_blocking(true);
-  service.associate(acceptor);
-
-  socket_t a;
-  a.connect(loopback(GetParam()));
-  acceptor.async_accept(context.make_buf());
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  auto result1 = acceptor.async_accept_result(io_buf);
-  ASSERT_NE(nullptr, result1);
-
-  auto result2 = acceptor.async_accept_result(io_buf);
-  ASSERT_NE(nullptr, result2);
-
-  EXPECT_EQ(result1, result2);
-
-  EXPECT_EQ(a.local_endpoint(), result1->remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), result1->local_endpoint());
-
-  auto b = result2->accepted();
-  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
-}
-
-
-TEST_P(socket_acceptor, async_accept_invalid)
-{
-  acceptor_t acceptor(loopback(GetParam()), true);
-  acceptor.non_blocking(true);
-  service.associate(acceptor);
-  acceptor.close();
-
-  acceptor.async_accept(context.make_buf());
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  {
-    std::error_code error;
-    auto result = acceptor.async_accept_result(io_buf, error);
-    ASSERT_NE(nullptr, result);
-    EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  }
-
-  {
-    EXPECT_THROW(
-      acceptor.async_accept_result(io_buf),
-      std::system_error
-    );
-  }
-}
-
-
-TEST_P(socket_acceptor, async_accept_close_before_accept)
-{
-  acceptor_t acceptor(loopback(GetParam()), true);
-  acceptor.non_blocking(true);
-  service.associate(acceptor);
-
-  socket_t a;
-  a.connect(loopback(GetParam()));
-  a.close();
-  std::this_thread::yield();
-
-  acceptor.async_accept(context.make_buf());
-
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-
-  // accept succeeds
-  std::error_code error;
-  auto result = acceptor.async_accept_result(io_buf, error);
-  ASSERT_NE(nullptr, result);
-  EXPECT_FALSE(error);
-
-  // but receive should fail
-  auto b = result->accepted();
-  char buf[1024];
-  b.receive(sal::make_buf(buf), error);
-  EXPECT_EQ(std::errc::broken_pipe, error);
 }
 
 
