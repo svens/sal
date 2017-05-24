@@ -55,7 +55,7 @@ struct command_line
 };
 
 
-INSTANTIATE_TEST_CASE_P(program_options, command_line, testing::Values(true));
+INSTANTIATE_TEST_CASE_P(program_options, command_line, testing::Values(true),);
 
 
 TEST_P(command_line, no_options) //{{{1

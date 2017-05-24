@@ -41,7 +41,7 @@ struct config_reader
 };
 
 
-INSTANTIATE_TEST_CASE_P(program_options, config_reader, testing::Values(true));
+INSTANTIATE_TEST_CASE_P(program_options, config_reader, testing::Values(true),);
 
 
 TEST_P(config_reader, empty) //{{{1

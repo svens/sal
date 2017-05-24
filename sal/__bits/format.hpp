@@ -99,7 +99,7 @@ inline memory_writer_t &format_int (memory_writer_t &writer, long long value)
 template <typename T, size_t>
 struct int_base_t
 {
-  static_assert(std::is_integral<T>::value, "expected integral type");
+  static_assert(std::is_integral<T>::value);
   using type = std::make_unsigned_t<
     std::conditional_t<std::is_same<bool, T>::value, uint8_t, T>
   >;
@@ -234,9 +234,7 @@ template <typename T>
 struct fixed_float_t
   : public basic_fixed_float_t
 {
-  static_assert(std::is_floating_point<T>::value,
-    "expected floating point type"
-  );
+  static_assert(std::is_floating_point<T>::value);
 
   T data;
   size_t precision;

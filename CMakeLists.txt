@@ -89,9 +89,9 @@ if(SAL_UNITTESTS)
     # download and build
     include(ExternalProject)
     ExternalProject_Add(gtest
-      URL https://github.com/google/googletest/archive/release-1.7.0.zip
-      URL_HASH SHA1=f89bc9f55477df2fde082481e2d709bfafdb057b
-      PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest-1.7.0
+      URL https://github.com/google/googletest/archive/release-1.8.0.zip
+      URL_HASH SHA256=f3ed3b58511efd272eb074a3a6d6fb79d7c2e6a0e374323d1e6bcbcc1ef141bf
+      PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest-1.8.0
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -104,11 +104,11 @@ if(SAL_UNITTESTS)
 
     # gtest headers
     ExternalProject_Get_Property(gtest source_dir)
-    set(GTEST_INCLUDE_DIRS ${source_dir}/include)
+    set(GTEST_INCLUDE_DIRS ${source_dir}/googletest/include)
 
     # gtest libs
     ExternalProject_Get_Property(gtest binary_dir)
-    link_directories(${binary_dir})
+    link_directories(${binary_dir}/googlemock/gtest)
     set(GTEST_BOTH_LIBRARIES
       ${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
       ${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}

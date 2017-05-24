@@ -28,7 +28,7 @@ INSTANTIATE_TEST_CASE_P(net_ip, socket_acceptor,
   ::testing::Values(
     sal::net::ip::tcp_t::v4(),
     sal::net::ip::tcp_t::v6()
-  )
+  ),
 );
 
 
@@ -146,7 +146,7 @@ TEST_P(socket_acceptor, assign_not_closed)
   {
     std::error_code error;
     acceptor.assign(GetParam(), h, error);
-    EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
+    EXPECT_EQ(sal::net::socket_errc::already_open, error);
   }
 
   {
@@ -187,7 +187,7 @@ TEST_P(socket_acceptor, open_already_open)
   {
     std::error_code error;
     acceptor.open(GetParam(), error);
-    EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
+    EXPECT_EQ(sal::net::socket_errc::already_open, error);
     EXPECT_TRUE(acceptor.is_open());
   }
 

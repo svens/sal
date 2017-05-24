@@ -194,7 +194,7 @@ void open_already_open (const Protocol &protocol)
   {
     std::error_code error;
     socket.open(protocol, error);
-    EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
+    EXPECT_EQ(sal::net::socket_errc::already_open, error);
     EXPECT_TRUE(socket.is_open());
   }
 
@@ -253,7 +253,7 @@ void assign_not_closed (const Protocol &protocol)
   {
     std::error_code error;
     socket.assign(h, error);
-    EXPECT_EQ(sal::net::socket_errc_t::already_open, error);
+    EXPECT_EQ(sal::net::socket_errc::already_open, error);
   }
 
   {

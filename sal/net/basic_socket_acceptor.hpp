@@ -114,7 +114,7 @@ public:
     }
     else
     {
-      error = make_error_code(socket_errc_t::already_open);
+      error = make_error_code(socket_errc::already_open);
     }
   }
 
@@ -147,7 +147,7 @@ public:
     }
     else
     {
-      error = make_error_code(socket_errc_t::already_open);
+      error = make_error_code(socket_errc::already_open);
     }
   }
 

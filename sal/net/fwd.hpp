@@ -34,10 +34,8 @@ template <typename Protocol> class basic_stream_socket_t;
 template <typename Protocol> class basic_socket_acceptor_t;
 
 
-// Asynchronous I/O
-class io_buf_t;
-class io_context_t;
-class io_service_t;
+// Error
+enum class socket_errc;
 
 
 namespace ip {
@@ -55,7 +53,7 @@ class address_v6_t;
 
 // Error
 class bad_address_cast_t;
-enum class resolver_errc_t;
+enum class resolver_errc;
 
 // Protocol
 class tcp_t;

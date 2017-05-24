@@ -51,7 +51,7 @@ private:
 
   static void static_checks () noexcept
   {
-    static_assert(sizeof(event_t) <= 4096, "fit event_t into 4kB");
+    static_assert(sizeof(event_t) <= 4096);
   }
 };
 
