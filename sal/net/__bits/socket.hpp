@@ -1,6 +1,8 @@
 #pragma once
 
 #include <sal/config.hpp>
+#include <sal/intrusive_queue.hpp>
+#include <memory>
 #include <system_error>
 
 #if __sal_os_darwin || __sal_os_linux
@@ -19,6 +21,9 @@ __sal_begin
 
 
 namespace net { namespace __bits {
+
+
+const std::error_code &init_lib () noexcept;
 
 
 #if __sal_os_windows //{{{1
@@ -43,13 +48,6 @@ using sa_family_t = ::sa_family_t;
 using message_flags_t = int;
 
 #endif // }}}1
-
-
-/*
-struct async_worker_t;
-using async_worker_ptr = std::unique_ptr<async_worker_t, void(*)(async_worker_t *)>;
-void delete_async_worker (async_worker_t *worker) noexcept;
-*/
 
 
 enum class shutdown_t
@@ -78,7 +76,6 @@ struct socket_t
 #endif
 
   handle_t handle = invalid;
-
 
   socket_t () = default;
 
@@ -190,6 +187,99 @@ struct socket_t
     message_flags_t flags,
     std::error_code &error
   ) noexcept;
+
+
+  struct async_t;
+  using async_ptr = std::unique_ptr<async_t>;
+  async_ptr async{};
+};
+
+
+struct async_worker_t
+{
+  using shared_ptr = std::shared_ptr<async_worker_t>;
+
+#if __sal_os_windows
+  HANDLE iocp;
+#elif __sal_os_darwin || __sal_os_linux
+#endif
+
+  async_worker_t (std::error_code &error) noexcept;
+  ~async_worker_t () noexcept;
+};
+
+
+struct async_context_t
+{
+  async_worker_t::shared_ptr worker;
+};
+
+
+struct socket_t::async_t
+{
+  socket_t &socket;
+  async_worker_t::shared_ptr worker;
+
+  async_t (socket_t &socket,
+    async_worker_t::shared_ptr worker,
+    std::error_code &error
+  ) noexcept;
+};
+
+
+#if __sal_os_windows // {{{1
+
+struct sys_buf_t
+  : public OVERLAPPED
+{
+  DWORD transferred{};
+
+  union
+  {
+    mpsc_sync_t::intrusive_queue_hook_t free{};
+    no_sync_t::intrusive_queue_hook_t completed;
+  };
+  using free_list = intrusive_queue_t<sys_buf_t, mpsc_sync_t, &sys_buf_t::free>;
+  using completed_list = intrusive_queue_t<sys_buf_t, no_sync_t, &sys_buf_t::completed>;
+
+  sys_buf_t ()
+    : OVERLAPPED{}
+  {}
+};
+
+#else // {{{1
+
+struct sys_buf_t
+{
+  size_t transferred{};
+
+  union
+  {
+    mpsc_sync_t::intrusive_queue_hook_t free{};
+    no_sync_t::intrusive_queue_hook_t completed;
+    mpsc_sync_t::intrusive_queue_hook_t receive;
+    mpsc_sync_t::intrusive_queue_hook_t send;
+  };
+  using free_list = intrusive_queue_t<sys_buf_t, mpsc_sync_t, &sys_buf_t::free>;
+  using completed_list = intrusive_queue_t<sys_buf_t, no_sync_t, &sys_buf_t::completed>;
+  using receive_list = intrusive_queue_t<sys_buf_t, mpsc_sync_t, &sys_buf_t::receive>;
+  using send_list = intrusive_queue_t<sys_buf_t, mpsc_sync_t, &sys_buf_t::send>;
+};
+
+#endif // }}}1
+
+
+struct io_buf_t: public sys_buf_t
+{
+  uintptr_t request_id{}, user_data{};
+  char *begin{}, *end{};
+  std::error_code error{};
+
+  io_buf_t () = default;
+  io_buf_t (const io_buf_t &) = delete;
+  io_buf_t (io_buf_t &&) = delete;
+  io_buf_t &operator= (const io_buf_t &) = delete;
+  io_buf_t &operator= (io_buf_t &&) = delete;
 };
 
 

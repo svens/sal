@@ -44,6 +44,7 @@ list(APPEND sal_unittests
   sal/net/init.test.cpp
 
   sal/net/error.test.cpp
+  sal/net/io_buf.test.cpp
   sal/net/io_service.test.cpp
   sal/net/socket.test.cpp
 

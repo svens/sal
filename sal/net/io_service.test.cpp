@@ -24,10 +24,41 @@ TYPED_TEST_CASE(net_io_service, types);
 
 TYPED_TEST(net_io_service, associate)
 {
-  /*
+  TypeParam socket(TypeParam::protocol_t::v4());
+  this->io_svc.associate(socket);
+}
+
+
+TYPED_TEST(net_io_service, associate_already_associated)
+{
+  TypeParam socket(TypeParam::protocol_t::v4());
+  ASSERT_NO_THROW(this->io_svc.associate(socket));
+
+  {
+    std::error_code error;
+    this->io_svc.associate(socket, error);
+    EXPECT_EQ(sal::net::socket_errc::already_associated, error);
+  }
+
+  {
+    EXPECT_THROW(this->io_svc.associate(socket), std::system_error);
+  }
+}
+
+
+TYPED_TEST(net_io_service, associate_invalid_socket)
+{
   TypeParam socket;
-  EXPECT_FALSE(socket.is_associated());
-  */
+
+  {
+    std::error_code error;
+    this->io_svc.associate(socket, error);
+    EXPECT_EQ(std::errc::invalid_argument, error);
+  }
+
+  {
+    EXPECT_THROW(this->io_svc.associate(socket), std::system_error);
+  }
 }
 
 

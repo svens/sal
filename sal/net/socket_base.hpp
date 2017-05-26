@@ -16,6 +16,19 @@ __sal_begin
 namespace net {
 
 
+/**
+ * On Windows platform, initialize winsock library. There is no need to call
+ * it explicitly as it is also done internally by static initialization. Only
+ * exception is when application layer own static initialization order depends
+ * on winsock library to be already loaded. It can be called multiple times.
+ * \c std::call_once is used to make sure only single call proceeds.
+ */
+inline const std::error_code &init () noexcept
+{
+  return __bits::init_lib();
+}
+
+
 /// Common socket types and values.
 class socket_base_t
 {
