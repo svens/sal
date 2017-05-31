@@ -1,6 +1,5 @@
 # docs
 list(APPEND sal_docs
-  sal/net/Networking.md
 )
 
 
@@ -10,14 +9,13 @@ list(APPEND sal_sources
   sal/net/__bits/socket.cpp
   sal/net/fwd.hpp
 
+  sal/net/async_service.hpp
   sal/net/basic_socket.hpp
   sal/net/basic_datagram_socket.hpp
   sal/net/basic_stream_socket.hpp
   sal/net/basic_socket_acceptor.hpp
   sal/net/error.hpp
   sal/net/error.cpp
-  sal/net/io_service.hpp
-  sal/net/io_service.cpp
   sal/net/socket.hpp
   sal/net/socket_base.hpp
   sal/net/socket_options.hpp
@@ -41,11 +39,11 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests
-  sal/net/init.test.cpp
+  sal/net/common.test.hpp
 
+  sal/net/init.test.cpp
+  sal/net/async_service.test.cpp
   sal/net/error.test.cpp
-  sal/net/io_buf.test.cpp
-  sal/net/io_service.test.cpp
   sal/net/socket.test.cpp
 
   sal/net/ip/address.test.cpp

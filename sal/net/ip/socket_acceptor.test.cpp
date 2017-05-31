@@ -1,5 +1,6 @@
 #include <sal/net/ip/tcp.hpp>
-#include <sal/common.test.hpp>
+#include <sal/net/common.test.hpp>
+#include <thread>
 
 
 namespace {
@@ -29,6 +30,7 @@ INSTANTIATE_TEST_CASE_P(net_ip, socket_acceptor,
     sal::net::ip::tcp_t::v4(),
     sal::net::ip::tcp_t::v6()
   ),
+  sal_test::to_s<sal::net::ip::tcp_t>
 );
 
 
@@ -469,6 +471,171 @@ TEST_P(socket_acceptor, local_endpoint_invalid)
   {
     EXPECT_THROW(acceptor.local_endpoint(), std::system_error);
   }
+}
+
+
+TEST_P(socket_acceptor, async_accept)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
+  acceptor.associate(svc);
+
+  acceptor.async_accept(ctx.make_io());
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+
+  auto result = acceptor.async_accept_result(io);
+  ASSERT_NE(nullptr, result);
+
+  EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
+
+  auto b = result->accepted();
+  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
+
+  EXPECT_EQ(nullptr, a.async_connect_result(io));
+}
+
+
+TEST_P(socket_acceptor, async_accept_immediate_completion)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
+  acceptor.associate(svc);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+
+  acceptor.async_accept(ctx.make_io());
+
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+
+  auto result = acceptor.async_accept_result(io);
+  ASSERT_NE(nullptr, result);
+
+  EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
+
+  auto b = result->accepted();
+  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
+
+  EXPECT_EQ(nullptr, a.async_connect_result(io));
+}
+
+
+TEST_P(socket_acceptor, async_accept_result_twice)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
+  acceptor.associate(svc);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  acceptor.async_accept(ctx.make_io());
+
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+
+  auto r1 = acceptor.async_accept_result(io);
+  auto r2 = acceptor.async_accept_result(io);
+  EXPECT_EQ(r1, r2);
+
+  ASSERT_NE(nullptr, r1);
+  ASSERT_NE(nullptr, r2);
+
+  auto s1 = r1->accepted();
+  auto s2 = r2->accepted();
+  EXPECT_TRUE(s1.is_open());
+  EXPECT_FALSE(s2.is_open());
+
+  EXPECT_EQ(a.local_endpoint(), s1.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), s1.local_endpoint());
+
+  EXPECT_EQ(a.local_endpoint(), r1->remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), r1->local_endpoint());
+
+  EXPECT_EQ(a.local_endpoint(), r2->remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), r2->local_endpoint());
+}
+
+
+TEST_P(socket_acceptor, async_accept_invalid)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
+  acceptor.associate(svc);
+  acceptor.close();
+
+  acceptor.async_accept(ctx.make_io());
+
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+
+  {
+    std::error_code error;
+    auto result = acceptor.async_accept_result(io, error);
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      acceptor.async_accept_result(io),
+      std::system_error
+    );
+  }
+}
+
+
+TEST_P(socket_acceptor, async_accept_close_before_accept)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor.non_blocking(true);
+  acceptor.associate(svc);
+
+  socket_t a;
+  a.connect(loopback(GetParam()));
+  a.close();
+  std::this_thread::yield();
+
+  acceptor.async_accept(ctx.make_io());
+
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+
+  // accept succeeds
+  std::error_code error;
+  auto result = acceptor.async_accept_result(io, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_FALSE(error);
+
+  // but receive should fail
+  auto b = result->accepted();
+  char buf[1024];
+  b.receive(sal::make_buf(buf), error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 }
 
 

@@ -23,7 +23,7 @@ namespace net {
  * incoming socket connections. Socket object that represent incoming
  * connections are dequeued by calling accept().
  *
- * For more information about asynchronous API usage, see io_service_t.
+ * For more information about asynchronous API usage, see async_service_t.
  */
 template <typename AcceptableProtocol>
 class basic_socket_acceptor_t
@@ -449,11 +449,116 @@ public:
   }
 
 
+  //
+  // Asynchronous API
+  //
+
+  /**
+   * Associate this socket with \a service for asynchronous I/O operations.
+   * Using asynchronous API without associating it first with service is
+   * undefined behaviour. Once socket is associated with specific service, it
+   * will remain so until closed.
+   *
+   * On failure, set \a error
+   */
+  void associate (async_service_t &service, std::error_code &error) noexcept
+  {
+    socket_base_t::associate(socket_, service, error);
+  }
+
+
+  /**
+   * \see associate (async_service_t &, std::error_code &)
+   * \throws std::system_error on failure
+   */
+  void associate (async_service_t &service)
+  {
+    associate(service, throw_on_error("basic_socket_acceptor::associate"));
+  }
+
+
+  /**
+   * async_accept() result.
+   */
+  struct async_accept_t
+    : public __bits::async_accept_t
+  {
+    /**
+     * Remote endpoint of accepted socket.
+     */
+    const endpoint_t &remote_endpoint () const noexcept
+    {
+      return *reinterpret_cast<const endpoint_t *>(
+        __bits::async_accept_t::remote_address
+      );
+    }
+
+    /**
+     * Local endpoint of accepted socket.
+     */
+    const endpoint_t &local_endpoint () const noexcept
+    {
+      return *reinterpret_cast<const endpoint_t *>(
+        __bits::async_accept_t::local_address
+      );
+    }
+
+    /**
+     * Return accepted socket.
+     *
+     * \note Only first call returns valid accepted handle. Following calls
+     * return closed socket.
+     */
+    socket_t accepted () noexcept
+    {
+      auto handle = __bits::async_accept_t::load_accepted();
+      return handle != socket_t::invalid ? handle : socket_t{};
+    }
+  };
+
+
+  /**
+   * Start asynchronous async_accept()
+   * \see accept()
+   */
+  void async_accept (io_ptr &&io) noexcept
+  {
+    __bits::async_accept_t::start(io.release(), socket_, family_);
+  }
+
+
+  /**
+   * Extract and return pointer to async_accept() result from \a io
+   * handle or nullptr if \a io does not represent async_accept()
+   * operation.
+   * If asynchronous accept has failed, set \a error.
+   */
+  static async_accept_t *async_accept_result (
+    const io_ptr &io, std::error_code &error) noexcept
+  {
+    return static_cast<async_accept_t *>(
+      __bits::async_accept_t::result(io.get(), error)
+    );
+  }
+
+
+  /**
+   * Extract and return pointer to async_accept() result from \a io
+   * handle or nullptr if \a io does not represent async_accept()
+   * operation.
+   * If asynchronous accept has failed, throw std::system_error
+   */
+  static async_accept_t *async_accept_result (const io_ptr &io)
+  {
+    return async_accept_result(io,
+      throw_on_error("basic_socket_acceptor::async_accept")
+    );
+  }
+
+
 private:
 
   __bits::socket_t socket_;
-  friend class io_service_t;
-
   int family_ = AF_UNSPEC;
   bool enable_connection_aborted_ = false;
 };

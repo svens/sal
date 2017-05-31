@@ -8,6 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/__bits/socket.hpp>
+#include <sal/net/async_service.hpp>
 
 
 __sal_begin
@@ -83,6 +84,14 @@ protected:
 
   ~socket_base_t ()
   {}
+
+  // ugly trickery to let inherited sockets to access service privates
+  static void associate (__bits::socket_t &socket,
+    async_service_t &service,
+    std::error_code &error) noexcept
+  {
+    socket.associate(service.impl_, error);
+  }
 };
 
 

@@ -2,12 +2,14 @@
 
 #include <sal/config.hpp>
 #include <sal/intrusive_queue.hpp>
+#include <chrono>
+#include <deque>
 #include <memory>
+#include <mutex>
 #include <system_error>
 
 #if __sal_os_darwin || __sal_os_linux
   #include <sys/socket.h>
-  #include <memory>
 #elif __sal_os_windows
   #include <winsock2.h>
   #include <ws2tcpip.h>
@@ -65,15 +67,21 @@ enum class wait_t
 };
 
 
+struct async_service_t;
+using async_service_ptr = std::shared_ptr<async_service_t>;
+struct async_context_t;
+struct async_io_t;
+
+
 struct socket_t
 {
-#if __sal_os_windows
+#if __sal_os_windows // {{{1
   using handle_t = SOCKET;
   static constexpr handle_t invalid = INVALID_SOCKET;
-#elif __sal_os_darwin || __sal_os_linux
+#elif __sal_os_darwin || __sal_os_linux // {{{1
   using handle_t = int;
   static constexpr handle_t invalid = -1;
-#endif
+#endif // }}}1
 
   handle_t handle = invalid;
 
@@ -192,36 +200,158 @@ struct socket_t
   struct async_t;
   using async_ptr = std::unique_ptr<async_t>;
   async_ptr async{};
+
+  void associate (async_service_ptr svc, std::error_code &error) noexcept;
 };
 
 
-struct async_worker_t
+struct async_io_t
 {
-  using shared_ptr = std::shared_ptr<async_worker_t>;
+  async_context_t &owner, *context{};
+  uintptr_t op_id{}, user_data{};
+  std::error_code error{};
 
-#if __sal_os_windows
+  char (*data)[4096];
+  char *begin{}, *end{};
+
+  char op_data[152];
+
+  union
+  {
+    // any thread that finishes op pushes to owner's free list
+    mpsc_sync_t::intrusive_queue_hook_t free{};
+
+    // single thread pushes to completed but socket close can happen on any
+    mpsc_sync_t::intrusive_queue_hook_t completed;
+
+    // any thread can start receive
+    // completing consumer side is synchronized externally
+    mpsc_sync_t::intrusive_queue_hook_t pending_receive;
+
+    // any thread can start send and complete
+    // this queue is synchronized externally
+    no_sync_t::intrusive_queue_hook_t pending_send;
+  };
+
+  using free_list = intrusive_queue_t<async_io_t,
+    mpsc_sync_t,
+    &async_io_t::free
+  >;
+  using completed_list = intrusive_queue_t<async_io_t,
+    mpsc_sync_t,
+    &async_io_t::completed
+  >;
+  using pending_receive_list = intrusive_queue_t<async_io_t,
+    mpsc_sync_t,
+    &async_io_t::pending_receive
+  >;
+  using pending_send_list = intrusive_queue_t<async_io_t,
+    no_sync_t,
+    &async_io_t::pending_send
+  >;
+
+
+  async_io_t (async_context_t &owner, char (*data)[4096]) noexcept
+    : owner(owner)
+    , data(data)
+  {}
+
+
+  async_io_t (const async_io_t &) = delete;
+  async_io_t (async_io_t &&) = delete;
+  async_io_t &operator= (const async_io_t &) = delete;
+  async_io_t &operator= (async_io_t &&) = delete;
+};
+
+
+struct async_service_t
+{
+#if __sal_os_windows // {{{1
   HANDLE iocp;
-#elif __sal_os_darwin || __sal_os_linux
-#endif
+#elif __sal_os_darwin || __sal_os_linux // {{{1
+  int queue;
+#endif // }}}1
 
-  async_worker_t (std::error_code &error) noexcept;
-  ~async_worker_t () noexcept;
+  static constexpr size_t max_events_per_poll = 1024;
+
+  async_service_t (std::error_code &error) noexcept;
+  ~async_service_t () noexcept;
+
+  async_service_t (const async_service_t &) = delete;
+  async_service_t &operator= (const async_service_t &) = delete;
+  async_service_t (async_service_t &&) = delete;
+  async_service_t &operator= (async_service_t &&) = delete;
 };
 
 
 struct async_context_t
 {
-  async_worker_t::shared_ptr worker;
-};
+  async_service_ptr service;
+  size_t max_events_per_poll;
+
+  std::deque<async_io_t> pool{};
+  std::deque<std::unique_ptr<char[]>> buffers{};
+
+  async_io_t::free_list free{};
+  async_io_t::completed_list completed{};
 
 
-struct socket_t::async_t
-{
-  socket_t &socket;
-  async_worker_t::shared_ptr worker;
+  async_context_t (async_service_ptr service, size_t max_events_per_poll)
+    : service(service)
+    , max_events_per_poll(max_events_per_poll)
+  {
+    if (max_events_per_poll < 1)
+    {
+      max_events_per_poll = 1;
+    }
+    else if (max_events_per_poll > async_service_t::max_events_per_poll)
+    {
+      max_events_per_poll = async_service_t::max_events_per_poll;
+    }
+  }
 
-  async_t (socket_t &socket,
-    async_worker_t::shared_ptr worker,
+
+  async_context_t (async_context_t &&) = default;
+  async_context_t &operator= (async_context_t &&) = default;
+
+  async_context_t (const async_context_t &) = delete;
+  async_context_t &operator= (const async_context_t &) = delete;
+
+  static void *operator new (size_t) = delete;
+  static void *operator new[] (size_t) = delete;
+
+  void extend_pool ();
+
+
+  async_io_t *new_io ()
+  {
+    auto io = free.try_pop();
+    if (!io)
+    {
+      extend_pool();
+      io = free.try_pop();
+    }
+    io->context = this;
+    io->begin = *io->data;
+    io->end = io->begin + sizeof(*io->data);
+    return io;
+  }
+
+
+  static void release_io (void *p) noexcept
+  {
+    auto io = reinterpret_cast<async_io_t *>(p);
+    io->owner.free.push(io);
+  }
+
+
+  async_io_t *try_get () noexcept
+  {
+    return completed.try_pop();
+  }
+
+
+  async_io_t *poll (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
 };
@@ -229,57 +359,160 @@ struct socket_t::async_t
 
 #if __sal_os_windows // {{{1
 
-struct sys_buf_t
-  : public OVERLAPPED
+
+
+#elif __sal_os_darwin || __sal_os_linux // {{{1
+
+
+template <typename T>
+struct async_op_t
 {
-  DWORD transferred{};
-
-  union
+  static constexpr uintptr_t type_id () noexcept
   {
-    mpsc_sync_t::intrusive_queue_hook_t free{};
-    no_sync_t::intrusive_queue_hook_t completed;
-  };
-  using free_list = intrusive_queue_t<sys_buf_t, mpsc_sync_t, &sys_buf_t::free>;
-  using completed_list = intrusive_queue_t<sys_buf_t, no_sync_t, &sys_buf_t::completed>;
+    return reinterpret_cast<uintptr_t>(&async_op_t::type_id);
+  }
 
-  sys_buf_t ()
-    : OVERLAPPED{}
-  {}
+
+  static T *new_op (async_io_t *io) noexcept
+  {
+    static_assert(sizeof(T) <= sizeof(io->op_data));
+    static_assert(std::is_trivially_destructible<T>());
+    io->op_id = type_id();
+    return reinterpret_cast<T *>(io->op_data);
+  }
+
+
+  static T *get_op (async_io_t *io) noexcept
+  {
+    return io->op_id == type_id()
+      ? reinterpret_cast<T *>(io->op_data)
+      : nullptr;
+  }
+
+
+  static T *result (async_io_t *io, std::error_code &error) noexcept
+  {
+    if (io->op_id == type_id())
+    {
+      error = io->error;
+      return reinterpret_cast<T *>(io->op_data);
+    }
+    return nullptr;
+  }
 };
 
-#else // {{{1
 
-struct sys_buf_t
+struct async_receive_from_t
+  : public async_op_t<async_receive_from_t>
 {
-  size_t transferred{};
+  message_flags_t flags;
+  sockaddr_storage address;
+  size_t address_size;
+  size_t transferred;
 
-  union
-  {
-    mpsc_sync_t::intrusive_queue_hook_t free{};
-    no_sync_t::intrusive_queue_hook_t completed;
-    mpsc_sync_t::intrusive_queue_hook_t receive;
-    mpsc_sync_t::intrusive_queue_hook_t send;
-  };
-  using free_list = intrusive_queue_t<sys_buf_t, mpsc_sync_t, &sys_buf_t::free>;
-  using completed_list = intrusive_queue_t<sys_buf_t, no_sync_t, &sys_buf_t::completed>;
-  using receive_list = intrusive_queue_t<sys_buf_t, mpsc_sync_t, &sys_buf_t::receive>;
-  using send_list = intrusive_queue_t<sys_buf_t, mpsc_sync_t, &sys_buf_t::send>;
+  static void start (async_io_t *io,
+    socket_t &socket,
+    message_flags_t flags
+  ) noexcept;
 };
+
+
+struct async_receive_t
+  : public async_op_t<async_receive_t>
+{
+  message_flags_t flags;
+  size_t transferred;
+
+  static void start (async_io_t *io,
+    socket_t &socket,
+    message_flags_t flags
+  ) noexcept;
+};
+
+
+struct async_send_to_t
+  : public async_op_t<async_send_to_t>
+{
+  sockaddr_storage address;
+  size_t address_size;
+  message_flags_t flags;
+  size_t transferred;
+
+  static void start (async_io_t *io,
+    socket_t &socket,
+    const void *address, size_t address_size,
+    message_flags_t flags
+  ) noexcept;
+};
+
+
+struct async_send_t
+  : public async_op_t<async_send_t>
+{
+  message_flags_t flags;
+  size_t transferred;
+
+  static void start (async_io_t *io, socket_t &socket, message_flags_t flags)
+    noexcept;
+};
+
+
+struct async_connect_t
+  : public async_op_t<async_connect_t>
+{
+  static void start (async_io_t *io,
+    socket_t &socket,
+    const void *address, size_t address_size
+  ) noexcept;
+};
+
+
+struct async_accept_t
+  : public async_op_t<async_accept_t>
+{
+  socket_t::handle_t accepted;
+  sockaddr_storage *local_address, *remote_address;
+
+  static void start (async_io_t *io, socket_t &socket, int family) noexcept;
+
+  socket_t::handle_t load_accepted () noexcept
+  {
+    auto result = accepted;
+    accepted = socket_t::invalid;
+    return result;
+  }
+
+  void load_local_address (std::error_code &error) noexcept;
+};
+
 
 #endif // }}}1
 
 
-struct io_buf_t: public sys_buf_t
+struct socket_t::async_t
 {
-  uintptr_t request_id{}, user_data{};
-  char *begin{}, *end{};
-  std::error_code error{};
+  socket_t &socket;
+  async_service_ptr service;
 
-  io_buf_t () = default;
-  io_buf_t (const io_buf_t &) = delete;
-  io_buf_t (io_buf_t &&) = delete;
-  io_buf_t &operator= (const io_buf_t &) = delete;
-  io_buf_t &operator= (io_buf_t &&) = delete;
+  using mutex_t = std::mutex;
+  using lock_t = std::lock_guard<mutex_t>;
+
+  mutex_t receive_mutex{};
+  async_io_t::pending_receive_list pending_receive{};
+
+  mutex_t send_mutex{};
+  async_io_t::pending_send_list pending_send{};
+  bool listen_writable = false;
+
+  async_t (socket_t &socket, async_service_ptr service, std::error_code &error)
+    noexcept;
+
+  ~async_t () noexcept;
+
+  void push_send (async_io_t *io) noexcept;
+
+  void on_readable (async_context_t &context, uint16_t flags) noexcept;
+  void on_writable (async_context_t &context, uint16_t flags) noexcept;
 };
 
 

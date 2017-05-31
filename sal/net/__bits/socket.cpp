@@ -1,15 +1,22 @@
 #include <sal/net/__bits/socket.hpp>
+#include <sal/assert.hpp>
 #include <sal/net/error.hpp>
 
-#if __sal_os_windows
-  #include <mswsock.h>
-  #include <mutex>
-#elif __sal_os_darwin || __sal_os_linux
+#if __sal_os_darwin || __sal_os_linux
   #include <fcntl.h>
   #include <poll.h>
   #include <signal.h>
   #include <sys/ioctl.h>
   #include <unistd.h>
+#elif __sal_os_windows
+  #include <mswsock.h>
+#endif
+
+#if __sal_os_darwin
+  #include <sys/types.h>
+  #include <sys/event.h>
+#elif __sal_os_linux
+  #include <sys/epoll.h>
 #endif
 
 
@@ -17,6 +24,9 @@ __sal_begin
 
 
 namespace net { namespace __bits {
+
+
+using namespace std::chrono;
 
 
 //
@@ -36,11 +46,18 @@ struct winsock_t
   {
     init_lib();
   }
+
+  ~winsock_t () noexcept
+  {
+    (void)::WSACleanup();
+  }
 } sys{};
 
 LPFN_CONNECTEX ConnectEx{};
 LPFN_ACCEPTEX AcceptEx{};
 LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs{};
+LPFN_RIOREGISTERBUFFER RIORegisterBuffer;
+LPFN_RIODEREGISTERBUFFER RIODeregisterBuffer;
 
 
 template <typename T>
@@ -122,7 +139,8 @@ void init_winsock (std::error_code &init_result) noexcept
     load(&rio, s, init_result);
     if (!init_result)
     {
-      // TODO assign rio functions
+      RIORegisterBuffer = rio.RIORegisterBuffer;
+      RIODeregisterBuffer = rio.RIODeregisterBuffer;
     }
 
     (void)::closesocket(s);
@@ -544,6 +562,8 @@ void socket_t::open (int domain, int type, int protocol,
 
 void socket_t::close (std::error_code &error) noexcept
 {
+  async.reset();
+
   for (;;)
   {
     if (call(error, ::close, handle) == 0 || errno != EINTR)
@@ -646,7 +666,7 @@ retry:
 
   // LCOV_EXCL_STOP
 
-  return 0;
+  return invalid;
 }
 
 
@@ -932,18 +952,19 @@ size_t socket_t::available (std::error_code &error) const noexcept
 // Asynchronous API
 //
 
+
 #if __sal_os_windows // {{{1
 
 
 socket_t::async_t::async_t (socket_t &socket,
-    async_worker_t::shared_ptr worker,
+    async_service_ptr service,
     std::error_code &error) noexcept
   : socket(socket)
-  , worker(worker)
+  , service(service)
 {
   auto result = ::CreateIoCompletionPort(
     reinterpret_cast<HANDLE>(socket.handle),
-    worker->iocp,
+    service->iocp,
     0,
     0
   );
@@ -962,7 +983,7 @@ socket_t::async_t::async_t (socket_t &socket,
 }
 
 
-async_worker_t::async_worker_t (std::error_code &error) noexcept
+async_service_t::async_service_t (std::error_code &error) noexcept
   : iocp(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0))
 {
   if (iocp)
@@ -976,7 +997,7 @@ async_worker_t::async_worker_t (std::error_code &error) noexcept
 }
 
 
-async_worker_t::~async_worker_t () noexcept
+async_service_t::~async_service_t () noexcept
 {
   if (iocp)
   {
@@ -985,34 +1006,662 @@ async_worker_t::~async_worker_t () noexcept
 }
 
 
-#elif __sal_os_darwin || sal_os_linux // {{{1
+namespace {
 
-
-socket_t::async_t::async_t (socket_t &socket,
-    async_worker_t::shared_ptr worker,
-    std::error_code &error) noexcept
-  : socket(socket)
-  , worker(worker)
+char *new_block (size_t items)
 {
-  if (socket.handle == invalid)
+}
+
+void delete_block (char *block)
+{
+}
+
+} // namespace
+
+
+void async_context_t::extend_pool ()
+{
+}
+
+
+#elif __sal_os_darwin || __sal_os_linux // {{{1
+
+
+namespace {
+
+#if __sal_os_darwin // {{{2
+
+inline auto make_queue () noexcept
+{
+  return ::kqueue();
+}
+
+inline ::timespec *to_timespec (::timespec *ts, const milliseconds &timeout)
+  noexcept
+{
+  if (timeout != (milliseconds::max)())
   {
-    error = std::make_error_code(std::errc::invalid_argument);
+    auto s = duration_cast<seconds>(timeout);
+    ts->tv_nsec = duration_cast<nanoseconds>(timeout - s).count();
+    ts->tv_sec = s.count();
+    return ts;
+  }
+  return nullptr;
+}
+
+#elif __sal_os_linux // {{{2
+
+inline auto make_queue () noexcept
+{
+  return ::epoll_create1(0);
+}
+
+#endif // }}}2
+
+} // namespace
+
+
+async_service_t::async_service_t (std::error_code &error) noexcept
+  : queue(make_queue())
+{
+  if (queue > -1)
+  {
+    error.clear();
+  }
+  else
+  {
+    error.assign(errno, std::generic_category());
   }
 }
 
 
-async_worker_t::async_worker_t (std::error_code &error) noexcept
+async_service_t::~async_service_t () noexcept
 {
-  (void)error;
+  ::close(queue);
 }
 
 
-async_worker_t::~async_worker_t () noexcept
+socket_t::async_t::async_t (socket_t &socket,
+    async_service_ptr service,
+    std::error_code &error) noexcept
+  : socket(socket)
+  , service(service)
 {
+  if (socket.handle == invalid)
+  {
+    error = std::make_error_code(std::errc::invalid_argument);
+    return;
+  }
+
+#if __sal_os_darwin // {{{2
+
+  struct ::kevent change;
+  EV_SET(&change,
+    socket.handle,
+    EVFILT_READ,
+    EV_ADD | EV_CLEAR,
+    0,
+    0,
+    this
+  );
+
+  auto result = ::kevent(service->queue,
+    &change, 1,
+    nullptr, 0,
+    nullptr
+  );
+
+#elif __sal_os_linux // {{{2
+
+  struct ::epoll_event change;
+  change.events = EPOLLIN | EPOLLET;
+  change.data.ptr = this;
+
+  auto result = ::epoll_ctl(service->queue,
+    EPOLL_CTL_ADD,
+    socket.handle,
+    &change
+  );
+
+#endif // }}}2
+
+  if (result > -1)
+  {
+    error.clear();
+  }
+  else
+  {
+    error.assign(errno, std::generic_category());
+  }
+}
+
+
+socket_t::async_t::~async_t () noexcept
+{
+  while (auto io = pending_receive.try_pop())
+  {
+    io->error = std::make_error_code(std::errc::operation_canceled);
+    io->context->completed.push(io);
+  }
+  while (auto io = pending_send.try_pop())
+  {
+    io->error = std::make_error_code(std::errc::operation_canceled);
+    io->context->completed.push(io);
+  }
+}
+
+
+void socket_t::async_t::on_readable (async_context_t &context, uint16_t /*flags*/)
+  noexcept
+{
+  lock_t lock(receive_mutex);
+
+  while (auto *io = pending_receive.try_pop())
+  {
+    if (auto *op = async_receive_from_t::get_op(io))
+    {
+      op->transferred = socket.receive_from(
+        io->begin, io->end - io->begin,
+        &op->address, &op->address_size,
+        op->flags,
+        io->error
+      );
+    }
+    else if (auto op = async_receive_t::get_op(io))
+    {
+      op->transferred = socket.receive(
+        io->begin, io->end - io->begin,
+        op->flags,
+        io->error
+      );
+    }
+    else if (auto *op = async_accept_t::get_op(io))
+    {
+      auto remote_address_size = sizeof(*op->remote_address);
+      op->accepted = socket.accept(op->remote_address, &remote_address_size,
+        false,
+        io->error
+      );
+      if (!io->error)
+      {
+        op->load_local_address(io->error);
+      }
+    }
+    else
+    {
+      sal_assert(!"Unhandled asynchronous I/O operation");
+    }
+
+    if (io->error != std::errc::operation_would_block)
+    {
+      io->context = &context;
+      context.completed.push(io);
+    }
+    else
+    {
+      pending_receive.push(io);
+      return;
+    }
+  }
+}
+
+
+void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
+  noexcept
+{
+  lock_t lock(send_mutex);
+
+  while (auto *io = pending_send.try_pop())
+  {
+    if (auto *op = async_send_to_t::get_op(io))
+    {
+      op->transferred = socket.send_to(
+        io->begin, io->end - io->begin,
+        &op->address, op->address_size,
+        op->flags,
+        io->error
+      );
+    }
+    else if (auto *op = async_send_t::get_op(io))
+    {
+      op->transferred = socket.send(
+        io->begin, io->end - io->begin,
+        op->flags,
+        io->error
+      );
+    }
+    else if (auto *op = async_connect_t::get_op(io))
+    {
+#if __sal_os_darwin // {{{2
+
+      (void)op;
+      if (flags & EV_EOF)
+      {
+        io->error = std::make_error_code(std::errc::connection_refused);
+      }
+      else
+      {
+        io->error.clear();
+      }
+
+#elif __sal_os_linux // {{{2
+
+      (void)op;
+      if (flags & EPOLLERR)
+      {
+        int data;
+        socklen_t size = sizeof(data);
+        auto result = ::getsockopt(socket.handle,
+          SOL_SOCKET,
+          SO_ERROR,
+          &data, &size
+        );
+        if (result == 0)
+        {
+          io->error.assign(data, std::generic_category());
+        }
+        else
+        {
+          io->error.assign(errno, std::generic_category());
+        }
+      }
+      else
+      {
+        io->error.clear();
+      }
+
+#endif // }}}2
+    }
+    else
+    {
+      sal_assert(!"Unhandled asynchronous I/O operation");
+    }
+
+    if (io->error != std::errc::operation_would_block)
+    {
+      io->context = &context;
+      context.completed.push(io);
+    }
+    else
+    {
+      pending_send.push(io);
+      return;
+    }
+  }
+
+  if (listen_writable)
+  {
+    listen_writable = false;
+
+#if __sal_os_darwin // {{{2
+
+    struct ::kevent change;
+    EV_SET(&change,
+      socket.handle,
+      EVFILT_WRITE,
+      EV_DELETE,
+      0,
+      0,
+      this
+    );
+    (void)::kevent(service->queue,
+      &change, 1,
+      nullptr, 0,
+      nullptr
+    );
+
+#elif __sal_os_linux // {{{2
+
+    struct ::epoll_event change;
+    change.events = EPOLLIN | EPOLLET;
+    change.data.ptr = this;
+    (void)::epoll_ctl(service->queue,
+      EPOLL_CTL_MOD,
+      socket.handle,
+      &change
+    );
+
+#endif // }}}2
+  }
+}
+
+
+void socket_t::async_t::push_send (async_io_t *io) noexcept
+{
+  lock_t lock(send_mutex);
+
+  pending_send.push(io);
+
+  if (!listen_writable)
+  {
+    listen_writable = true;
+
+#if __sal_os_darwin // {{{2
+
+    struct ::kevent change;
+    EV_SET(&change,
+      socket.handle,
+      EVFILT_WRITE,
+      EV_ADD,
+      0,
+      0,
+      this
+    );
+    (void)::kevent(service->queue,
+      &change, 1,
+      nullptr, 0,
+      nullptr
+    );
+
+#elif __sal_os_linux // {{{2
+
+    struct ::epoll_event change;
+    change.events = EPOLLIN | EPOLLOUT | EPOLLET;
+    change.data.ptr = this;
+    (void)::epoll_ctl(service->queue,
+      EPOLL_CTL_MOD,
+      socket.handle,
+      &change
+    );
+
+#endif // }}}2
+  }
+}
+
+
+void async_context_t::extend_pool ()
+{
+  constexpr auto buffer_size = sizeof(*async_io_t::data);
+  constexpr auto batch_size = 1024;
+  buffers.emplace_back(std::make_unique<char[]>(batch_size * buffer_size));
+
+  auto it = reinterpret_cast<char(*)[buffer_size]>(buffers.back().get());
+  auto e = it + batch_size;
+  for (/**/;  it != e;  ++it)
+  {
+    pool.emplace_back(*this, it);
+    free.push(&pool.back());
+  }
+}
+
+
+async_io_t *async_context_t::poll (const milliseconds &timeout_ms,
+  std::error_code &error) noexcept
+{
+  if (auto io = try_get())
+  {
+    error.clear();
+    return io;
+  }
+
+#if __sal_os_darwin // {{{2
+
+  ::timespec ts, *timeout = to_timespec(&ts, timeout_ms);
+  struct ::kevent events[async_service_t::max_events_per_poll];
+
+  do
+  {
+    auto event_count = ::kevent(service->queue,
+      nullptr, 0,
+      &events[0], max_events_per_poll,
+      timeout
+    );
+
+    if (event_count == -1)
+    {
+      error.assign(errno, std::generic_category());
+      return nullptr;
+    }
+
+    for (auto ev = &events[0], end = ev + event_count;  ev != end;  ++ev)
+    {
+      auto &async = *static_cast<socket_t::async_t *>(ev->udata);
+      if (ev->filter == EVFILT_READ)
+      {
+        async.on_readable(*this, ev->flags);
+      }
+      else if (ev->filter == EVFILT_WRITE)
+      {
+        async.on_writable(*this, ev->flags);
+      }
+    }
+
+    if (auto io = try_get())
+    {
+      return io;
+    }
+  } while (!timeout);
+
+#elif __sal_os_linux // {{{2
+
+  int timeout = timeout_ms == timeout_ms.max() ? -1 : timeout_ms.count();
+  struct ::epoll_event events[async_service_t::max_events_per_poll];
+
+  do
+  {
+    auto event_count = ::epoll_wait(service->queue,
+      &events[0], max_events_per_poll,
+      timeout
+    );
+
+    if (event_count == -1)
+    {
+      error.assign(errno, std::generic_category());
+      return nullptr;
+    }
+
+    for (auto ev = &events[0], end = ev + event_count;  ev != end;  ++ev)
+    {
+      auto &async = *static_cast<socket_t::async_t *>(ev->data.ptr);
+      if (ev->events & EPOLLIN)
+      {
+        async.on_readable(*this, ev->events);
+      }
+      if (ev->events & EPOLLOUT)
+      {
+        async.on_writable(*this, ev->events);
+      }
+    }
+
+    if (auto io = try_get())
+    {
+      return io;
+    }
+  } while (timeout == -1);
+
+#endif // }}}2
+
+  return nullptr;
+}
+
+
+void async_receive_from_t::start (async_io_t *io,
+  socket_t &socket,
+  message_flags_t flags) noexcept
+{
+  auto op = new_op(io);
+  op->flags = flags | MSG_DONTWAIT;
+  op->address_size = sizeof(op->address);
+
+  op->transferred = socket.receive_from(
+    io->begin, io->end - io->begin,
+    &op->address, &op->address_size,
+    op->flags,
+    io->error
+  );
+
+  if (io->error != std::errc::operation_would_block)
+  {
+    io->context->completed.push(io);
+  }
+  else
+  {
+    socket.async->pending_receive.push(io);
+  }
+}
+
+
+void async_receive_t::start (async_io_t *io,
+  socket_t &socket,
+  message_flags_t flags) noexcept
+{
+  auto op = new_op(io);
+  op->flags = flags | MSG_DONTWAIT;
+
+  op->transferred = socket.receive(
+    io->begin, io->end - io->begin,
+    op->flags,
+    io->error
+  );
+
+  if (io->error != std::errc::operation_would_block)
+  {
+    io->context->completed.push(io);
+  }
+  else
+  {
+    socket.async->pending_receive.push(io);
+  }
+}
+
+
+void async_send_to_t::start (async_io_t *io,
+  socket_t &socket,
+  const void *address, size_t address_size,
+  message_flags_t flags) noexcept
+{
+  auto op = new_op(io);
+
+  flags |= MSG_DONTWAIT;
+  op->transferred = socket.send_to(
+    io->begin, io->end - io->begin,
+    address, address_size,
+    flags,
+    io->error
+  );
+
+  if (io->error != std::errc::operation_would_block)
+  {
+    io->context->completed.push(io);
+  }
+  else
+  {
+    std::memcpy(&op->address, address, address_size);
+    op->address_size = address_size;
+    op->flags = flags;
+    socket.async->push_send(io);
+  }
+}
+
+
+void async_send_t::start (async_io_t *io,
+  socket_t &socket,
+  message_flags_t flags) noexcept
+{
+  auto op = new_op(io);
+  op->flags = flags | MSG_DONTWAIT;
+
+  op->transferred = socket.send(
+    io->begin, io->end - io->begin,
+    op->flags,
+    io->error
+  );
+
+  if (io->error != std::errc::operation_would_block)
+  {
+    io->context->completed.push(io);
+  }
+  else
+  {
+    socket.async->push_send(io);
+  }
+}
+
+
+void async_connect_t::start (async_io_t *io,
+  socket_t &socket,
+  const void *address, size_t address_size) noexcept
+{
+  (void)new_op(io);
+
+  socket.connect(address, address_size, io->error);
+  if (io->error != std::errc::operation_in_progress)
+  {
+    io->context->completed.push(io);
+  }
+  else
+  {
+    socket.async->push_send(io);
+  }
+}
+
+
+void async_accept_t::start (async_io_t *io, socket_t &socket, int /*family*/)
+  noexcept
+{
+  auto op = new_op(io);
+
+  op->local_address = nullptr;
+  op->remote_address = reinterpret_cast<sockaddr_storage *>(io->data);
+  auto remote_address_size = sizeof(*remote_address);
+
+  op->accepted = socket.accept(op->remote_address, &remote_address_size,
+    false,
+    io->error
+  );
+
+  if (io->error != std::errc::operation_would_block)
+  {
+    op->load_local_address(io->error);
+    io->context->completed.push(io);
+  }
+  else
+  {
+    socket.async->pending_receive.push(io);
+  }
+}
+
+
+void async_accept_t::load_local_address (std::error_code &error) noexcept
+{
+  if (accepted != socket_t::invalid)
+  {
+    local_address = remote_address + 1;
+    socklen_t local_address_size = sizeof(*local_address);
+    auto result = ::getsockname(accepted,
+      reinterpret_cast<sockaddr *>(local_address),
+      &local_address_size
+    );
+    if (result == -1)
+    {
+      error.assign(errno, std::generic_category());
+    }
+  }
 }
 
 
 #endif // }}}1
+
+
+void socket_t::associate (async_service_ptr svc, std::error_code &error)
+  noexcept
+{
+  if (async)
+  {
+    error = make_error_code(socket_errc::already_associated);
+    return;
+  }
+
+  async.reset(new(std::nothrow) async_t(*this, svc, error));
+  if (!async)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  else if (error)
+  {
+    async.reset();
+  }
+}
 
 
 }} // namespace net::__bits

@@ -1,5 +1,5 @@
 #include <sal/net/error.hpp>
-#include <sal/common.test.hpp>
+#include <sal/net/common.test.hpp>
 
 
 namespace {

@@ -415,7 +415,7 @@ protected:
    * \internal
    */
   __bits::socket_t socket_{};
-  friend class io_service_t;
+
 
   basic_socket_t () noexcept = default;
 
