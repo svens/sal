@@ -85,7 +85,8 @@ protected:
   ~socket_base_t ()
   {}
 
-  // ugly trickery to let inherited sockets to access service privates
+  /// Setup asynchronous operations helpers for \a socket
+  /// \internal
   static void associate (__bits::socket_t &socket,
     async_service_t &service,
     std::error_code &error) noexcept

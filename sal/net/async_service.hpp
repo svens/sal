@@ -57,16 +57,14 @@ private:
 
 
 /**
- * Asynchronous socket I/O operation handle and associated data buffer.
- * Internally it holds continuous 4kB memory area that is divided by
- * OS-specific asynchronous call related data and I/O data for send/receive.
+ * Asynchronous socket I/O operation handle and associated data for I/O (4kB).
  *
  * This class is not meant to be instantiated directly but through
  * async_service_t::context_t::make_io(). It's lifecycle follows strict
  * ownership:
  *   - initial owner is async_service_t::context_t free-list (per-thread pool)
  *   - after allocation and before asynchronous I/O starts, application
- *     is owner and can setup send/receive data storage
+ *     is owner and can setup I/O data storage
  *   - after asynchronous I/O starts, it is owned by OS and/or
  *     async_service_t::context_t (which one is undefined from application
  *     perspective)
@@ -91,7 +89,10 @@ private:
  * ~~~
  *
  * This allows application to build packet header into [head,begin) and/or
- * trailer into [end,tail)
+ * trailer into [end,tail).
+ *
+ * \todo Add vectored I/O (scatter/gather). Currently Windows' RIO does not
+ * support it yet.
  */
 class async_service_t::io_t
   : public __bits::async_io_t
