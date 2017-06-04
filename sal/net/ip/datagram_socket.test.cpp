@@ -1441,7 +1441,7 @@ TEST_P(datagram_socket, async_send_to_overflow)
   socket_t socket(endpoint);
   socket.associate(svc);
 
-  int send_buffer_size = 4*1024;
+  int send_buffer_size = 8*1024;
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
@@ -1505,12 +1505,49 @@ TEST_P(datagram_socket, async_send_to_overflow)
     thread.join();
   }
 
-  // must send everything
+  // must send everything (but can drop any number of receives)
   ASSERT_EQ(total_sends, sends);
+}
 
-  // but may drop some
-  // (randomly checking for at least 75%)
-  EXPECT_GT(total_sends, receives * 3 / 4);
+
+TEST_P(datagram_socket, async_send_to_overflow_and_socket_close)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  socket.associate(svc);
+
+  int send_buffer_size = 8*1024;
+  socket.set_option(sal::net::send_buffer_size(send_buffer_size));
+  socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
+
+  auto total_sends = send_buffer_size / sal::net::async_service_t::io_t::max_size() * 16;
+  for (auto i = 0U;  i != total_sends;  ++i)
+  {
+    socket.async_send_to(ctx.make_io(), endpoint);
+  }
+
+  socket.close();
+
+  auto sends = 0U, error_sends = 0U;
+  for (auto i = 0U;  i != total_sends;  ++i)
+  {
+    auto io = ctx.try_poll();
+
+    std::error_code error;
+    EXPECT_NE(nullptr, socket.async_send_to_result(io, error));
+    if (error)
+    {
+      error_sends++;
+    }
+    else
+    {
+      sends++;
+    }
+  }
+  EXPECT_EQ(total_sends, sends + error_sends);
 }
 
 
@@ -1727,7 +1764,7 @@ TEST_P(datagram_socket, async_send_overflow)
   socket.connect(socket.local_endpoint());
   socket.associate(svc);
 
-  int send_buffer_size = 4*1024;
+  int send_buffer_size = 8*1024;
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
@@ -1791,12 +1828,49 @@ TEST_P(datagram_socket, async_send_overflow)
     thread.join();
   }
 
-  // must send everything
+  // must send everything (but can drop any number of receives)
   ASSERT_EQ(total_sends, sends);
+}
 
-  // but may drop some
-  // (randomly checking for at least 75%)
-  EXPECT_GT(total_sends, receives * 3 / 4);
+
+TEST_P(datagram_socket, async_send_overflow_and_socket_close)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  socket_t socket(loopback(GetParam()));
+  socket.connect(socket.local_endpoint());
+  socket.associate(svc);
+
+  int send_buffer_size = 8*1024;
+  socket.set_option(sal::net::send_buffer_size(send_buffer_size));
+  socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
+
+  auto total_sends = send_buffer_size / sal::net::async_service_t::io_t::max_size() * 16;
+  for (auto i = 0U;  i != total_sends;  ++i)
+  {
+    socket.async_send(ctx.make_io());
+  }
+
+  socket.close();
+
+  size_t sends = 0U, error_sends = 0U;
+  for (auto i = 0U;  i != total_sends;  ++i)
+  {
+    auto io = ctx.try_poll();
+
+    std::error_code error;
+    EXPECT_NE(nullptr, socket.async_send_result(io, error));
+    if (error)
+    {
+      error_sends++;
+    }
+    else
+    {
+      sends++;
+    }
+  }
+  EXPECT_EQ(total_sends, sends + error_sends);
 }
 
 

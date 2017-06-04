@@ -1187,10 +1187,12 @@ void socket_t::async_t::on_readable (async_context_t &context, uint16_t /*flags*
         op->load_local_address(io->error);
       }
     }
+    // LCOV_EXCL_START
     else
     {
       sal_assert(!"Unhandled asynchronous I/O operation");
     }
+    // LCOV_EXCL_STOP
 
     if (io->error != std::errc::operation_would_block)
     {
@@ -1272,10 +1274,12 @@ void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
 
 #endif // }}}2
     }
+    // LCOV_EXCL_START
     else
     {
       sal_assert(!"Unhandled asynchronous I/O operation");
     }
+    // LCOV_EXCL_STOP
 
     if (io->error != std::errc::operation_would_block)
     {
@@ -1610,9 +1614,13 @@ void async_accept_t::start (async_io_t *io, socket_t &socket, int /*family*/)
     io->error
   );
 
-  if (io->error != std::errc::operation_would_block)
+  if (!io->error)
   {
     op->load_local_address(io->error);
+  }
+
+  if (io->error != std::errc::operation_would_block)
+  {
     io->context->completed.push(io);
   }
   else
