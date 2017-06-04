@@ -1536,11 +1536,11 @@ void async_send_to_t::start (async_io_t *io,
 {
   auto op = new_op(io);
 
-  flags |= MSG_DONTWAIT;
+  op->flags = flags | MSG_DONTWAIT;
   op->transferred = socket.send_to(
     io->begin, io->end - io->begin,
     address, address_size,
-    flags,
+    op->flags,
     io->error
   );
 
@@ -1552,7 +1552,6 @@ void async_send_to_t::start (async_io_t *io,
   {
     std::memcpy(&op->address, address, address_size);
     op->address_size = address_size;
-    op->flags = flags;
     socket.async->push_send(io);
   }
 }
@@ -1563,8 +1562,8 @@ void async_send_t::start (async_io_t *io,
   message_flags_t flags) noexcept
 {
   auto op = new_op(io);
-  op->flags = flags | MSG_DONTWAIT;
 
+  op->flags = flags | MSG_DONTWAIT;
   op->transferred = socket.send(
     io->begin, io->end - io->begin,
     op->flags,
