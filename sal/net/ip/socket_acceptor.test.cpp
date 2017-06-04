@@ -1,5 +1,5 @@
 #include <sal/net/ip/tcp.hpp>
-#include <sal/net/common.test.hpp>
+#include <sal/common.test.hpp>
 #include <thread>
 
 
@@ -29,8 +29,7 @@ INSTANTIATE_TEST_CASE_P(net_ip, socket_acceptor,
   ::testing::Values(
     sal::net::ip::tcp_t::v4(),
     sal::net::ip::tcp_t::v6()
-  ),
-  sal_test::to_s<sal::net::ip::tcp_t>
+  )
 );
 
 

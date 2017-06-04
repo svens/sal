@@ -1,5 +1,5 @@
 #include <sal/net/ip/udp.hpp>
-#include <sal/net/common.test.hpp>
+#include <sal/common.test.hpp>
 #include <thread>
 
 
@@ -31,8 +31,7 @@ INSTANTIATE_TEST_CASE_P(net_ip, datagram_socket,
   ::testing::Values(
     sal::net::ip::udp_t::v4(),
     sal::net::ip::udp_t::v6()
-  ),
-  sal_test::to_s<sal::net::ip::udp_t>
+  )
 );
 
 

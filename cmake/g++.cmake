@@ -29,7 +29,7 @@ if(SAL_COVERAGE)
   set(LCOV_ARGS
     --quiet
     --directory ${PROJECT_SOURCE_DIR}
-    --rc lcov_branch_coverage=0
+    --rc lcov_branch_coverage=1
   )
 
   if(DEFINED ENV{GCOV})

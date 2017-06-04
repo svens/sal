@@ -1,5 +1,5 @@
 #include <sal/net/error.hpp>
-#include <sal/net/common.test.hpp>
+#include <sal/common.test.hpp>
 
 
 namespace {
@@ -39,7 +39,7 @@ INSTANTIATE_TEST_CASE_P(net, resolver_error,
     sal::net::ip::resolver_errc::host_not_found,
     sal::net::ip::resolver_errc::host_not_found_try_again,
     sal::net::ip::resolver_errc::service_not_found
-  ),
+  )
 );
 
 
@@ -76,7 +76,7 @@ INSTANTIATE_TEST_CASE_P(net, socket_error,
   ::testing::Values(
     sal::net::socket_errc::already_open,
     sal::net::socket_errc::already_associated
-  ),
+  )
 );
 
 

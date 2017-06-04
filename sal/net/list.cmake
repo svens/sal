@@ -40,8 +40,6 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests
-  sal/net/common.test.hpp
-
   sal/net/init.test.cpp
   sal/net/async_service.test.cpp
   sal/net/error.test.cpp
