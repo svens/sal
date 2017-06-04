@@ -1,7 +1,6 @@
 #include <bench/bench.hpp>
 #include <sal/net/internet.hpp>
-#include <sal/net/io_context.hpp>
-#include <sal/net/io_service.hpp>
+#include <sal/net/async_service.hpp>
 #include <chrono>
 #include <iomanip>
 #include <iostream>
@@ -150,9 +149,9 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   );
 
   packet_size = std::stoul(options.back_or_default("size", { arguments }));
-  if (packet_size > sal::net::io_buf_t::max_size())
+  if (packet_size > sal::net::async_service_t::io_t::max_size())
   {
-    packet_size = sal::net::io_buf_t::max_size();
+    packet_size = sal::net::async_service_t::io_t::max_size();
     std::cout << "enforcing maximum packet size " << packet_size << "B\n";
   }
   else if (packet_size < sizeof(packet_info_t))
@@ -178,40 +177,40 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     std::cout << " -> " << size << "bytes\n";
   }
 
-  sal::net::io_service_t io_svc;
-  io_svc.associate(socket);
+  sal::net::async_service_t svc;
+  socket.associate(svc);
 
   // reader thread
-  auto reader = std::thread([&io_svc, &socket]
+  auto reader = std::thread([&svc, &socket]
   {
-    auto io_ctx = io_svc.make_context(64);
-    while (auto io_buf = io_ctx.get())
+    auto ctx = svc.make_context(64);
+    while (auto io = ctx.poll())
     {
-      if (auto recv = socket_t::async_receive_from_result(io_buf))
+      if (auto recv = socket_t::async_receive_from_result(io))
       {
-        auto &packet = *reinterpret_cast<packet_info_t *>(io_buf->data());
+        auto &packet = *reinterpret_cast<packet_info_t *>(io->data());
         if (recv->transferred() == packet_size && packet.cookie == cookie)
         {
           received(packet);
         }
-        io_buf->reset();
-        socket.async_receive_from(std::move(io_buf));
+        io->reset();
+        socket.async_receive_from(std::move(io));
       }
     }
   });
 
   // generate packets
-  auto io_ctx = io_svc.make_context();
+  auto ctx = svc.make_context();
   bool receive_started = false;
   while (true)
   {
-    auto io_buf = io_ctx.make_buf();
-    io_buf->resize(packet_size);
+    auto io = ctx.make_io();
+    io->resize(packet_size);
 
-    auto &packet = *reinterpret_cast<packet_info_t *>(io_buf->data());
+    auto &packet = *reinterpret_cast<packet_info_t *>(io->data());
     packet.cookie = cookie;
     packet.send_time = sys_clock_t::now();
-    socket.async_send_to(std::move(io_buf), server_endpoint);
+    socket.async_send_to(std::move(io), server_endpoint);
 
     if (!receive_started)
     {
@@ -220,12 +219,12 @@ int run (const option_set_t &options, const argument_map_t &arguments)
         server_endpoint.address(),
         server_endpoint.port() + 1
       );
-      socket.async_send_to(io_ctx.make_buf(), endpoint);
+      socket.async_send_to(ctx.make_io(), endpoint);
 
       // now that we have bound to ephemeral port, start receives as well
       for (auto i = 0U;  i < receives;  ++i)
       {
-        socket.async_receive_from(io_ctx.make_buf());
+        socket.async_receive_from(ctx.make_io());
       }
       receive_started = true;
     }
@@ -235,7 +234,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
       std::this_thread::sleep_for(interval);
     }
 
-    io_ctx.reclaim();
+    ctx.reclaim();
   }
 
   return EXIT_SUCCESS;
