@@ -46,7 +46,6 @@ set_source_files_properties(${CMAKE_BINARY_DIR}/sal/config.hpp
 # collect sources from sal/
 set(sal_sources "")
 set(sal_unittests "")
-set(sal_docs "")
 include(sal/list.cmake)
 
 # set compiler flags

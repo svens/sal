@@ -1,8 +1,3 @@
-# docs
-list(APPEND sal_docs
-)
-
-
 # sources
 list(APPEND sal_sources
   sal/crypto/__bits/digest.hpp

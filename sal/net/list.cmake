@@ -1,9 +1,3 @@
-# docs
-list(APPEND sal_docs
-  sal/net/Networking.md
-)
-
-
 # sources
 list(APPEND sal_sources
   sal/net/__bits/socket.hpp

@@ -1,9 +1,3 @@
-# docs
-list(APPEND sal_docs
-  sal/program_options/Options.md
-)
-
-
 # sources
 list(APPEND sal_sources
   sal/program_options/argument_map.hpp
