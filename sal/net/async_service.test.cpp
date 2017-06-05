@@ -106,7 +106,9 @@ TEST_F(net_async_io, ctor)
   EXPECT_EQ(io->tail(), io->end());
 
   EXPECT_NE(0U, io->size());
-  EXPECT_EQ(io->size(), io->max_size());
+  EXPECT_EQ(io->size(), io->max_size())
+    << "size=" << io->size()
+    << "; max_size=" << io->max_size();
 
   EXPECT_EQ(0U, io->head_gap());
   EXPECT_EQ(0U, io->tail_gap());

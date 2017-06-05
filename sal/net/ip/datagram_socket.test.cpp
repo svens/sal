@@ -632,7 +632,6 @@ TEST_P(datagram_socket, async_receive_from_invalid_immediate_completion)
   auto result = socket.async_receive_from_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(
     socket.async_receive_from_result(io),
@@ -1063,7 +1062,6 @@ TEST_P(datagram_socket, async_receive_invalid_immediate_completion)
   auto result = socket.async_receive_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(socket.async_receive_result(io), std::system_error);
 }
@@ -1363,7 +1361,6 @@ TEST_P(datagram_socket, async_send_to_invalid)
   auto result = socket.async_send_to_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
@@ -1429,6 +1426,9 @@ TEST_P(datagram_socket, async_send_to_do_not_route)
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 }
+
+
+#if !__sal_os_windows
 
 
 TEST_P(datagram_socket, async_send_to_overflow)
@@ -1550,6 +1550,9 @@ TEST_P(datagram_socket, async_send_to_overflow_and_socket_close)
 }
 
 
+#endif // !__sal_os_windows
+
+
 TEST_P(datagram_socket, async_send)
 {
   sal::net::async_service_t svc;
@@ -1601,7 +1604,6 @@ TEST_P(datagram_socket, async_send_not_connected)
   auto result = socket.async_send_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::not_connected, error);
-  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
@@ -1689,7 +1691,6 @@ TEST_P(datagram_socket, async_send_invalid)
   auto result = socket.async_send_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
@@ -1752,6 +1753,9 @@ TEST_P(datagram_socket, async_send_do_not_route)
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 }
+
+
+#if !__sal_os_windows
 
 
 TEST_P(datagram_socket, async_send_overflow)
@@ -1871,6 +1875,9 @@ TEST_P(datagram_socket, async_send_overflow_and_socket_close)
   }
   EXPECT_EQ(total_sends, sends + error_sends);
 }
+
+
+#endif // !__sal_os_windows
 
 
 } // namespace

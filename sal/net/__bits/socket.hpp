@@ -8,15 +8,15 @@
 #include <mutex>
 #include <system_error>
 
-#if __sal_os_darwin || __sal_os_linux
+#if __sal_os_darwin || __sal_os_linux // {{{1
   #include <sys/socket.h>
-#elif __sal_os_windows
+#elif __sal_os_windows // {{{1
   #include <winsock2.h>
   #include <ws2tcpip.h>
   #pragma comment(lib, "ws2_32")
-#else
+#else // {{{1
   #error Unsupported platform
-#endif
+#endif // }}}1
 
 
 __sal_begin
@@ -28,26 +28,30 @@ namespace net { namespace __bits {
 const std::error_code &init_lib () noexcept;
 
 
-#if __sal_os_windows //{{{1
+#if __sal_os_windows // {{{1
 
-// shutdown() direction
 #define SHUT_RD SD_RECEIVE
 #define SHUT_WR SD_SEND
 #define SHUT_RDWR SD_BOTH
 
-// sockaddr family
 using sa_family_t = ::ADDRESS_FAMILY;
-
-// send/recv flags
 using message_flags_t = DWORD;
 
-#else //{{{1
+struct async_io_base_t:
+  public ::OVERLAPPED
+{
+  async_io_base_t ()
+    : OVERLAPPED{0}
+  {}
+};
 
-// sockaddr family
+#elif __sal_os_darwin || __sal_os_linux // {{{1
+
 using sa_family_t = ::sa_family_t;
-
-// send/recv flags
 using message_flags_t = int;
+
+struct async_io_base_t
+{};
 
 #endif // }}}1
 
@@ -206,12 +210,14 @@ struct socket_t
 
 
 struct async_io_t
+  : public async_io_base_t
 {
   async_context_t &owner, *context{};
   uintptr_t op_id{}, user_data{};
   std::error_code error{};
 
-  char (*data)[4096];
+  static constexpr size_t data_size = 4096;
+  char (*data)[data_size];
   char *begin{}, *end{};
 
   char op_data[152];
@@ -257,6 +263,11 @@ struct async_io_t
   {}
 
 
+#if __sal_os_windows // {{{1
+  void handle (int result) noexcept;
+#endif // }}}1
+
+
   async_io_t (const async_io_t &) = delete;
   async_io_t (async_io_t &&) = delete;
   async_io_t &operator= (const async_io_t &) = delete;
@@ -272,7 +283,7 @@ struct async_service_t
   int queue;
 #endif // }}}1
 
-  static constexpr size_t max_events_per_poll = 1024;
+  static constexpr size_t max_events_per_poll = 256;
 
   async_service_t (std::error_code &error) noexcept;
   ~async_service_t () noexcept;
@@ -354,23 +365,41 @@ struct async_context_t
   async_io_t *poll (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
-};
 
 
 #if __sal_os_windows // {{{1
+  void enqueue_completions (OVERLAPPED_ENTRY *first, OVERLAPPED_ENTRY *last)
+    noexcept;
+#endif // }}}1
+};
 
 
-
+struct async_op_base_t
+{
+#if __sal_os_windows // {{{1
+  DWORD transferred;
 #elif __sal_os_darwin || __sal_os_linux // {{{1
+  size_t transferred;
+#endif // }}}1
+};
 
 
 template <typename T>
 struct async_op_t
+  : public async_op_base_t
 {
+#if _MSC_VER
+  static uintptr_t type_id () noexcept
+  {
+    static const T *p{};
+    return reinterpret_cast<uintptr_t>(&p);
+  }
+#else
   static constexpr uintptr_t type_id () noexcept
   {
     return reinterpret_cast<uintptr_t>(&async_op_t::type_id);
   }
+#endif
 
 
   static T *new_op (async_io_t *io) noexcept
@@ -402,13 +431,127 @@ struct async_op_t
 };
 
 
+#if __sal_os_windows // {{{1
+
+
+struct socket_t::async_t
+{
+  async_t (socket_t &socket, async_service_ptr service, std::error_code &error)
+    noexcept;
+};
+
+
+struct async_receive_from_t
+  : public async_op_t<async_receive_from_t>
+{
+  sockaddr_storage address;
+  INT address_size;
+
+  static void start (async_io_t *io,
+    socket_t &socket,
+    message_flags_t flags
+  ) noexcept;
+};
+
+
+struct async_receive_t
+  : public async_op_t<async_receive_t>
+{
+  static void start (async_io_t *io,
+    socket_t &socket,
+    message_flags_t flags
+  ) noexcept;
+};
+
+
+struct async_send_to_t
+  : public async_op_t<async_send_to_t>
+{
+  static void start (async_io_t *io,
+    socket_t &socket,
+    const void *address, size_t address_size,
+    message_flags_t flags
+  ) noexcept;
+};
+
+
+struct async_send_t
+  : public async_op_t<async_send_t>
+{
+  static void start (async_io_t *io, socket_t &socket, message_flags_t flags)
+    noexcept;
+};
+
+
+struct async_connect_t
+  : public async_op_t<async_connect_t>
+{
+  socket_t::handle_t handle;
+
+  static void start (async_io_t *io,
+    socket_t &socket,
+    const void *address, size_t address_size
+  ) noexcept;
+
+  static async_connect_t *result (async_io_t *io, std::error_code &error)
+    noexcept;
+};
+
+
+struct async_accept_t
+  : public async_op_t<async_accept_t>
+{
+  socket_t::handle_t accepted, acceptor;
+  sockaddr_storage *remote_address;
+
+  static void start (async_io_t *io, socket_t &socket, int family) noexcept;
+  static async_accept_t *result (async_io_t *io, std::error_code &error) noexcept;
+
+  socket_t::handle_t load_accepted () noexcept
+  {
+    auto result = accepted;
+    accepted = socket_t::invalid;
+    return result;
+  }
+};
+
+
+#elif __sal_os_darwin || __sal_os_linux // {{{1
+
+
+struct socket_t::async_t
+{
+  socket_t &socket;
+  async_service_ptr service;
+
+  using mutex_t = std::mutex;
+  using lock_t = std::lock_guard<mutex_t>;
+
+  mutex_t receive_mutex{};
+  async_io_t::pending_receive_list pending_receive{};
+
+  mutex_t send_mutex{};
+  async_io_t::pending_send_list pending_send{};
+  bool listen_writable = false;
+
+  async_t (socket_t &socket, async_service_ptr service, std::error_code &error)
+    noexcept;
+
+  ~async_t () noexcept;
+
+  void push_send (async_io_t *io) noexcept;
+
+  void on_readable (async_context_t &context, uint16_t flags) noexcept;
+  void on_writable (async_context_t &context, uint16_t flags) noexcept;
+};
+
+
 struct async_receive_from_t
   : public async_op_t<async_receive_from_t>
 {
   message_flags_t flags;
   sockaddr_storage address;
   size_t address_size;
-  size_t transferred;
 
   static void start (async_io_t *io,
     socket_t &socket,
@@ -421,7 +564,6 @@ struct async_receive_t
   : public async_op_t<async_receive_t>
 {
   message_flags_t flags;
-  size_t transferred;
 
   static void start (async_io_t *io,
     socket_t &socket,
@@ -436,7 +578,6 @@ struct async_send_to_t
   sockaddr_storage address;
   size_t address_size;
   message_flags_t flags;
-  size_t transferred;
 
   static void start (async_io_t *io,
     socket_t &socket,
@@ -450,7 +591,6 @@ struct async_send_t
   : public async_op_t<async_send_t>
 {
   message_flags_t flags;
-  size_t transferred;
 
   static void start (async_io_t *io, socket_t &socket, message_flags_t flags)
     noexcept;
@@ -487,33 +627,6 @@ struct async_accept_t
 
 
 #endif // }}}1
-
-
-struct socket_t::async_t
-{
-  socket_t &socket;
-  async_service_ptr service;
-
-  using mutex_t = std::mutex;
-  using lock_t = std::lock_guard<mutex_t>;
-
-  mutex_t receive_mutex{};
-  async_io_t::pending_receive_list pending_receive{};
-
-  mutex_t send_mutex{};
-  async_io_t::pending_send_list pending_send{};
-  bool listen_writable = false;
-
-  async_t (socket_t &socket, async_service_ptr service, std::error_code &error)
-    noexcept;
-
-  ~async_t () noexcept;
-
-  void push_send (async_io_t *io) noexcept;
-
-  void on_readable (async_context_t &context, uint16_t flags) noexcept;
-  void on_writable (async_context_t &context, uint16_t flags) noexcept;
-};
 
 
 }} // namespace net::__bits

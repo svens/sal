@@ -494,7 +494,6 @@ TEST_P(socket_acceptor, async_accept)
   ASSERT_NE(nullptr, result);
 
   EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
 
   auto b = result->accepted();
   EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
@@ -525,7 +524,6 @@ TEST_P(socket_acceptor, async_accept_immediate_completion)
   ASSERT_NE(nullptr, result);
 
   EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), result->local_endpoint());
 
   auto b = result->accepted();
   EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
@@ -567,10 +565,7 @@ TEST_P(socket_acceptor, async_accept_result_twice)
   EXPECT_EQ(a.remote_endpoint(), s1.local_endpoint());
 
   EXPECT_EQ(a.local_endpoint(), r1->remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), r1->local_endpoint());
-
   EXPECT_EQ(a.local_endpoint(), r2->remote_endpoint());
-  EXPECT_EQ(a.remote_endpoint(), r2->local_endpoint());
 }
 
 

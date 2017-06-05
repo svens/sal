@@ -494,16 +494,6 @@ public:
     }
 
     /**
-     * Local endpoint of accepted socket.
-     */
-    const endpoint_t &local_endpoint () const noexcept
-    {
-      return *reinterpret_cast<const endpoint_t *>(
-        __bits::async_accept_t::local_address
-      );
-    }
-
-    /**
      * Return accepted socket.
      *
      * \note Only first call returns valid accepted handle. Following calls

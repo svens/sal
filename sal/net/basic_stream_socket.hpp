@@ -178,29 +178,6 @@ public:
   // Asynchronous API
   //
 
-  /**
-   * Associate this socket with \a service for asynchronous I/O operations.
-   * Using asynchronous API without associating it first with service is
-   * undefined behaviour. Once socket is associated with specific service, it
-   * will remain so until closed.
-   *
-   * On failure, set \a error
-   */
-  void associate (async_service_t &service, std::error_code &error) noexcept
-  {
-    socket_base_t::associate(base_t::socket_, service, error);
-  }
-
-
-  /**
-   * \see associate (async_service_t &, std::error_code &)
-   * \throws std::system_error on failure
-   */
-  void associate (async_service_t &service)
-  {
-    associate(service, throw_on_error("basic_stream_socket::associate"));
-  }
-
 
   /**
    * async_connect() result.

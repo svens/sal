@@ -1,3 +1,4 @@
+#include <sal/__bits/platform_sdk.hpp>
 #include <sal/net/__bits/socket.hpp>
 #include <sal/assert.hpp>
 #include <sal/net/error.hpp>
@@ -59,6 +60,8 @@ LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs{};
 LPFN_RIOREGISTERBUFFER RIORegisterBuffer;
 LPFN_RIODEREGISTERBUFFER RIODeregisterBuffer;
 
+constexpr DWORD acceptex_address_size = sizeof(sockaddr_storage) + 16;
+
 
 template <typename T>
 inline T check_call (T result, std::error_code &error) noexcept
@@ -79,7 +82,7 @@ inline T check_call (T result, std::error_code &error) noexcept
   return result;
 }
 
-#define call(error,func,...) check_call(func(__VA_ARGS__), error)
+#define call(func,error,...) check_call(func(__VA_ARGS__), error)
 
 
 template <typename F>
@@ -88,10 +91,10 @@ void load (F *fn, GUID id, SOCKET socket, std::error_code &error) noexcept
   if (!error)
   {
     DWORD bytes;
-    call(error, ::WSAIoctl, socket,
+    call(::WSAIoctl, error, socket,
       SIO_GET_EXTENSION_FUNCTION_POINTER,
       &id, sizeof(id),
-      &fn, sizeof(fn),
+      fn, sizeof(fn),
       &bytes,
       nullptr,
       nullptr
@@ -107,7 +110,7 @@ void load (RIO_EXTENSION_FUNCTION_TABLE *rio, SOCKET socket,
   {
     DWORD bytes;
     GUID id = WSAID_MULTIPLE_RIO;
-    call(error, ::WSAIoctl, socket,
+    call(::WSAIoctl, error, socket,
       SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER,
       &id, sizeof(id),
       rio, sizeof(*rio),
@@ -163,7 +166,8 @@ const std::error_code &init_lib () noexcept
 void socket_t::open (int domain, int type, int protocol,
   std::error_code &error) noexcept
 {
-  handle = call(error, ::WSASocketW,
+  handle = call(::WSASocketW,
+    error,
     domain,
     type,
     protocol,
@@ -200,7 +204,8 @@ void socket_t::open (int domain, int type, int protocol,
 
 void socket_t::close (std::error_code &error) noexcept
 {
-  call(error, ::closesocket, handle);
+  async.reset();
+  call(::closesocket, error, handle);
   handle = invalid;
 }
 
@@ -208,7 +213,8 @@ void socket_t::close (std::error_code &error) noexcept
 void socket_t::bind (const void *address, size_t address_size,
   std::error_code &error) noexcept
 {
-  call(error, ::bind,
+  call(::bind,
+    error,
     handle,
     static_cast<const sockaddr *>(address),
     static_cast<socklen_t>(address_size)
@@ -218,7 +224,7 @@ void socket_t::bind (const void *address, size_t address_size,
 
 void socket_t::listen (int backlog, std::error_code &error) noexcept
 {
-  call(error, ::listen, handle, backlog);
+  call(::listen, error, handle, backlog);
 }
 
 
@@ -233,7 +239,8 @@ socket_t::handle_t socket_t::accept (void *address, size_t *address_size,
   }
 
 retry:
-  auto new_socket = call(error, ::accept,
+  auto new_socket = call(::accept,
+    error,
     handle,
     static_cast<sockaddr *>(address),
     size_p
@@ -260,7 +267,8 @@ retry:
 void socket_t::connect (const void *address, size_t address_size,
   std::error_code &error) noexcept
 {
-  call(error, ::connect,
+  call(::connect,
+    error,
     handle,
     static_cast<const sockaddr *>(address),
     static_cast<socklen_t>(address_size)
@@ -299,7 +307,8 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   DWORD transferred{};
   DWORD recv_flags = flags;
 
-  auto result = call(error, ::WSARecv,
+  auto result = call(::WSARecv,
+    error,
     handle,
     &buf, 1,
     &transferred,
@@ -335,7 +344,8 @@ size_t socket_t::receive_from (void *data, size_t data_size,
   DWORD transferred{};
   DWORD recv_flags = flags;
 
-  auto result = call(error, ::WSARecvFrom,
+  auto result = call(::WSARecvFrom,
+    error,
     handle,
     &buf, 1,
     &transferred,
@@ -365,7 +375,8 @@ size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags
 
   DWORD transferred{};
 
-  auto result = call(error, ::WSASend,
+  auto result = call(::WSASend,
+    error,
     handle,
     &buf, 1,
     &transferred,
@@ -398,7 +409,8 @@ size_t socket_t::send_to (const void *data, size_t data_size,
 
   DWORD transferred{};
 
-  auto result = call(error, ::WSASendTo,
+  auto result = call(::WSASendTo,
+    error,
     handle,
     &buf, 1,
     &transferred,
@@ -420,7 +432,7 @@ size_t socket_t::send_to (const void *data, size_t data_size,
 
 void socket_t::shutdown (shutdown_t what, std::error_code &error) noexcept
 {
-  call(error, ::shutdown, handle, static_cast<int>(what));
+  call(::shutdown, error, handle, static_cast<int>(what));
 }
 
 
@@ -428,7 +440,8 @@ void socket_t::remote_endpoint (void *address, size_t *address_size,
   std::error_code &error) const noexcept
 {
   auto size = static_cast<socklen_t>(*address_size);
-  auto result = call(error, ::getpeername,
+  auto result = call(::getpeername,
+    error,
     handle,
     static_cast<sockaddr *>(address), &size
   );
@@ -443,7 +456,8 @@ void socket_t::local_endpoint (void *address, size_t *address_size,
   std::error_code &error) const noexcept
 {
   auto size = static_cast<socklen_t>(*address_size);
-  auto result = call(error, ::getsockname,
+  auto result = call(::getsockname,
+    error,
     handle,
     static_cast<sockaddr *>(address), &size
   );
@@ -458,7 +472,8 @@ void socket_t::get_opt (int level, int name, void *data, size_t *size,
   std::error_code &error) const noexcept
 {
   auto data_size = static_cast<socklen_t>(*size);
-  auto result = call(error, ::getsockopt,
+  auto result = call(::getsockopt,
+    error,
     handle,
     level, name,
     static_cast<char *>(data), &data_size
@@ -473,7 +488,8 @@ void socket_t::get_opt (int level, int name, void *data, size_t *size,
 void socket_t::set_opt (int level, int name, const void *data, size_t size,
   std::error_code &error) noexcept
 {
-  call(error, ::setsockopt,
+  call(::setsockopt,
+    error,
     handle,
     level, name,
     static_cast<const char *>(data), static_cast<socklen_t>(size)
@@ -491,14 +507,14 @@ bool socket_t::non_blocking (std::error_code &error) const noexcept
 void socket_t::non_blocking (bool mode, std::error_code &error) noexcept
 {
   unsigned long arg = mode ? 1 : 0;
-  call(error, ::ioctlsocket, handle, FIONBIO, &arg);
+  call(::ioctlsocket, error, handle, FIONBIO, &arg);
 }
 
 
 size_t socket_t::available (std::error_code &error) const noexcept
 {
   unsigned long value{};
-  if (call(error, ::ioctlsocket, handle, FIONBIO, &value) == SOCKET_ERROR)
+  if (call(::ioctlsocket, error, handle, FIONBIO, &value) == SOCKET_ERROR)
   {
     value = 0;
   }
@@ -530,7 +546,7 @@ inline T check_call (T result, std::error_code &error) noexcept
   return result;
 }
 
-#define call(error,func,...) check_call(func(__VA_ARGS__), error)
+#define call(func,error,...) check_call(func(__VA_ARGS__), error)
 
 
 } // namspace
@@ -546,7 +562,7 @@ const std::error_code &init_lib () noexcept
 void socket_t::open (int domain, int type, int protocol,
   std::error_code &error) noexcept
 {
-  handle = call(error, ::socket, domain, type, protocol);
+  handle = call(::socket, error, domain, type, protocol);
 
 #if __sal_os_darwin
   if (handle != invalid)
@@ -566,7 +582,7 @@ void socket_t::close (std::error_code &error) noexcept
 
   for (;;)
   {
-    if (call(error, ::close, handle) == 0 || errno != EINTR)
+    if (call(::close, error, handle) == 0 || errno != EINTR)
     {
       handle = invalid;
       return;
@@ -578,7 +594,8 @@ void socket_t::close (std::error_code &error) noexcept
 void socket_t::bind (const void *address, size_t address_size,
   std::error_code &error) noexcept
 {
-  call(error, ::bind,
+  call(::bind,
+    error,
     handle,
     static_cast<const sockaddr *>(address),
     static_cast<socklen_t>(address_size)
@@ -588,7 +605,7 @@ void socket_t::bind (const void *address, size_t address_size,
 
 void socket_t::listen (int backlog, std::error_code &error) noexcept
 {
-  call(error, ::listen, handle, backlog);
+  call(::listen, error, handle, backlog);
 }
 
 
@@ -603,7 +620,8 @@ socket_t::handle_t socket_t::accept (void *address, size_t *address_size,
   }
 
 retry:
-  auto new_socket = call(error, ::accept,
+  auto new_socket = call(::accept,
+    error,
     handle,
     static_cast<sockaddr *>(address),
     size_p
@@ -673,7 +691,8 @@ retry:
 void socket_t::connect (const void *address, size_t address_size,
   std::error_code &error) noexcept
 {
-  call(error, ::connect,
+  call(::connect,
+    error,
     handle,
     static_cast<const sockaddr *>(address),
     static_cast<socklen_t>(address_size)
@@ -736,7 +755,7 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   flags |= MSG_NOSIGNAL;
 #endif
 
-  auto size = call(error, ::recvmsg, handle, &msg, flags);
+  auto size = call(::recvmsg, error, handle, &msg, flags);
   if (!size && data_size)
   {
     error = make_error_code(std::errc::broken_pipe);
@@ -773,7 +792,7 @@ size_t socket_t::receive_from (void *data, size_t data_size,
   flags |= MSG_NOSIGNAL;
 #endif
 
-  auto size = call(error, ::recvmsg, handle, &msg, flags);
+  auto size = call(::recvmsg, error, handle, &msg, flags);
   if (size >= 0)
   {
     if (msg.msg_flags & MSG_TRUNC)
@@ -809,7 +828,7 @@ size_t socket_t::send (const void *data, size_t data_size, message_flags_t flags
   flags |= MSG_NOSIGNAL;
 #endif
 
-  auto size = call(error, ::sendmsg, handle, &msg, flags);
+  auto size = call(::sendmsg, error, handle, &msg, flags);
   if (size == -1)
   {
     size = 0;
@@ -837,7 +856,7 @@ size_t socket_t::send_to (const void *data, size_t data_size,
   flags |= MSG_NOSIGNAL;
 #endif
 
-  auto size = call(error, ::sendmsg, handle, &msg, flags);
+  auto size = call(::sendmsg, error, handle, &msg, flags);
   if (size == -1)
   {
     size = 0;
@@ -848,7 +867,7 @@ size_t socket_t::send_to (const void *data, size_t data_size,
 
 void socket_t::shutdown (shutdown_t what, std::error_code &error) noexcept
 {
-  call(error, ::shutdown, handle, static_cast<int>(what));
+  call(::shutdown, error, handle, static_cast<int>(what));
 }
 
 
@@ -856,7 +875,8 @@ void socket_t::remote_endpoint (void *address, size_t *address_size,
   std::error_code &error) const noexcept
 {
   auto size = static_cast<socklen_t>(*address_size);
-  auto result = call(error, ::getpeername,
+  auto result = call(::getpeername,
+    error,
     handle,
     static_cast<sockaddr *>(address), &size
   );
@@ -871,7 +891,8 @@ void socket_t::local_endpoint (void *address, size_t *address_size,
   std::error_code &error) const noexcept
 {
   auto size = static_cast<socklen_t>(*address_size);
-  auto result = call(error, ::getsockname,
+  auto result = call(::getsockname,
+    error,
     handle,
     static_cast<sockaddr *>(address), &size
   );
@@ -886,7 +907,8 @@ void socket_t::get_opt (int level, int name, void *data, size_t *size,
   std::error_code &error) const noexcept
 {
   auto data_size = static_cast<socklen_t>(*size);
-  auto result = call(error, ::getsockopt,
+  auto result = call(::getsockopt,
+    error,
     handle,
     level, name,
     static_cast<char *>(data), &data_size
@@ -901,7 +923,8 @@ void socket_t::get_opt (int level, int name, void *data, size_t *size,
 void socket_t::set_opt (int level, int name, const void *data, size_t size,
   std::error_code &error) noexcept
 {
-  call(error, ::setsockopt,
+  call(::setsockopt,
+    error,
     handle,
     level, name,
     static_cast<const char *>(data), static_cast<socklen_t>(size)
@@ -912,13 +935,13 @@ void socket_t::set_opt (int level, int name, const void *data, size_t size,
 bool socket_t::non_blocking (std::error_code &error) const noexcept
 {
   // on error, returned value is undefined
-  return O_NONBLOCK & call(error, ::fcntl, handle, F_GETFL, 0);
+  return O_NONBLOCK & call(::fcntl, error, handle, F_GETFL, 0);
 }
 
 
 void socket_t::non_blocking (bool mode, std::error_code &error) noexcept
 {
-  int flags = call(error, ::fcntl, handle, F_GETFL, 0);
+  int flags = call(::fcntl, error, handle, F_GETFL, 0);
   if (flags >= 0)
   {
     if (mode)
@@ -929,7 +952,7 @@ void socket_t::non_blocking (bool mode, std::error_code &error) noexcept
     {
       flags &= ~O_NONBLOCK;
     }
-    call(error, ::fcntl, handle, F_SETFL, flags);
+    call(::fcntl, error, handle, F_SETFL, flags);
   }
 }
 
@@ -937,7 +960,7 @@ void socket_t::non_blocking (bool mode, std::error_code &error) noexcept
 size_t socket_t::available (std::error_code &error) const noexcept
 {
   unsigned long value{};
-  if (call(error, ::ioctl, handle, FIONREAD, &value) == -1)
+  if (call(::ioctl, error, handle, FIONREAD, &value) == -1)
   {
     value = 0;
   }
@@ -954,33 +977,6 @@ size_t socket_t::available (std::error_code &error) const noexcept
 
 
 #if __sal_os_windows // {{{1
-
-
-socket_t::async_t::async_t (socket_t &socket,
-    async_service_ptr service,
-    std::error_code &error) noexcept
-  : socket(socket)
-  , service(service)
-{
-  auto result = ::CreateIoCompletionPort(
-    reinterpret_cast<HANDLE>(socket.handle),
-    service->iocp,
-    0,
-    0
-  );
-  if (!result)
-  {
-    auto e = ::GetLastError();
-    if (e == ERROR_INVALID_PARAMETER)
-    {
-      error = std::make_error_code(std::errc::invalid_argument);
-    }
-    else
-    {
-      error.assign(e, std::system_category());
-    }
-  }
-}
 
 
 async_service_t::async_service_t (std::error_code &error) noexcept
@@ -1006,21 +1002,410 @@ async_service_t::~async_service_t () noexcept
 }
 
 
+socket_t::async_t::async_t (socket_t &socket,
+  async_service_ptr service,
+  std::error_code &error) noexcept
+{
+  auto result = ::CreateIoCompletionPort(
+    reinterpret_cast<HANDLE>(socket.handle),
+    service->iocp,
+    0,
+    0
+  );
+  if (!result)
+  {
+    auto e = ::GetLastError();
+    if (e == ERROR_INVALID_PARAMETER)
+    {
+      error = std::make_error_code(std::errc::invalid_argument);
+    }
+    else
+    {
+      error.assign(e, std::system_category());
+    }
+  }
+}
+
+
+void async_context_t::enqueue_completions (OVERLAPPED_ENTRY *first,
+  OVERLAPPED_ENTRY *last) noexcept
+{
+  while (first != last)
+  {
+    auto &entry = *first++;
+    auto *io = static_cast<async_io_t *>(entry.lpOverlapped);
+    auto *op = reinterpret_cast<async_op_base_t *>(io->op_data);
+
+    auto status = static_cast<NTSTATUS>(io->Internal);
+    if (NT_SUCCESS(status))
+    {
+      op->transferred = entry.dwNumberOfBytesTransferred;
+      if (op->transferred == 0
+        && io->op_id == async_receive_t::type_id())
+      {
+        io->error = make_error_code(std::errc::broken_pipe);
+      }
+    }
+    else
+    {
+      op->transferred = 0;
+      if (status == STATUS_BUFFER_OVERFLOW)
+      {
+        io->error.assign(WSAEMSGSIZE, std::system_category());
+      }
+      else
+      {
+        io->error.assign(
+          ::RtlNtStatusToDosError(status),
+          std::system_category()
+        );
+      }
+    }
+
+    io->context = this;
+    completed.push(io);
+  }
+}
+
+
+async_io_t *async_context_t::poll (const std::chrono::milliseconds &timeout,
+  std::error_code &error) noexcept
+{
+  if (auto io = try_get())
+  {
+    error.clear();
+    return io;
+  }
+
+  OVERLAPPED_ENTRY events[async_service_t::max_events_per_poll];
+  ULONG event_count;
+  auto succeeded = ::GetQueuedCompletionStatusEx(service->iocp,
+    &events[0], static_cast<ULONG>(max_events_per_poll), &event_count,
+    static_cast<DWORD>(timeout.count()),
+    false
+  );
+  if (succeeded)
+  {
+    enqueue_completions(&events[0], &events[0] + event_count);
+    return try_get();
+  }
+
+  auto e = ::GetLastError();
+  if (e == WAIT_TIMEOUT)
+  {
+    error.clear();
+  }
+  else
+  {
+    error.assign(e, std::system_category());
+  }
+
+  return nullptr;
+}
+
+
 namespace {
 
-char *new_block (size_t items)
-{
-}
 
-void delete_block (char *block)
+struct buf_t
+  : public WSABUF
 {
-}
+  buf_t (async_io_t *io) noexcept
+  {
+    len = static_cast<ULONG>(io->end - io->begin);
+    buf = io->begin;
+  }
+};
+
 
 } // namespace
 
 
-void async_context_t::extend_pool ()
+void async_io_t::handle (int result) noexcept
 {
+  if (result == 0)
+  {
+    // completed immediately, caller still owns data, move ownership to library
+    error.clear();
+    context->completed.push(this);
+    return;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e == WSA_IO_PENDING)
+  {
+    // pending, OS now owns data
+    return;
+  }
+
+  // failed, caller still owns data, move ownership to library
+  else if (e == WSAESHUTDOWN)
+  {
+    error = make_error_code(std::errc::broken_pipe);
+  }
+  else if (e == WSAENOTSOCK)
+  {
+    error.assign(WSAEBADF, std::system_category());
+  }
+  else
+  {
+    error.assign(e, std::system_category());
+  }
+  context->completed.push(this);
+}
+
+
+void async_receive_from_t::start (async_io_t *io,
+  socket_t &socket,
+  message_flags_t flags) noexcept
+{
+  auto op = new_op(io);
+  op->address_size = sizeof(op->address);
+
+  DWORD flags_ = flags;
+  buf_t buf(io);
+  io->handle(
+    ::WSARecvFrom(socket.handle,
+      &buf, 1,
+      &op->transferred,
+      &flags_,
+      reinterpret_cast<sockaddr *>(&op->address),
+      &op->address_size,
+      io,
+      nullptr
+    )
+  );
+}
+
+
+void async_receive_t::start (async_io_t *io,
+  socket_t &socket,
+  message_flags_t flags) noexcept
+{
+  auto op = new_op(io);
+
+  DWORD flags_ = flags;
+  buf_t buf(io);
+  auto result = ::WSARecv(socket.handle,
+    &buf, 1,
+    &op->transferred,
+    &flags_,
+    io,
+    nullptr
+  );
+  if (result == 0)
+  {
+    if (op->transferred > 0)
+    {
+      io->error.clear();
+    }
+    else
+    {
+      io->error = make_error_code(std::errc::broken_pipe);
+    }
+    io->context->completed.push(io);
+  }
+  else
+  {
+    io->handle(result);
+  }
+}
+
+
+void async_send_to_t::start (async_io_t *io,
+  socket_t &socket,
+  const void *address, size_t address_size,
+  message_flags_t flags) noexcept
+{
+  auto op = new_op(io);
+
+  buf_t buf(io);
+  io->handle(
+    ::WSASendTo(socket.handle,
+      &buf, 1,
+      &op->transferred,
+      flags,
+      static_cast<const sockaddr *>(address),
+      static_cast<int>(address_size),
+      io,
+      nullptr
+    )
+  );
+}
+
+
+void async_send_t::start (async_io_t *io,
+  socket_t &socket,
+  message_flags_t flags) noexcept
+{
+  auto op = new_op(io);
+
+  buf_t buf(io);
+  io->handle(
+    ::WSASend(socket.handle,
+      &buf, 1,
+      &op->transferred,
+      flags,
+      io,
+      nullptr
+    )
+  );
+}
+
+
+void async_connect_t::start (async_io_t *io,
+  socket_t &socket,
+  const void *address, size_t address_size) noexcept
+{
+  auto op = new_op(io);
+  op->handle = socket.handle;
+
+  #pragma warning(suppress: 6387)
+  auto result = (*ConnectEx)(op->handle,
+    static_cast<const sockaddr *>(address),
+    static_cast<int>(address_size),
+    nullptr, 0,
+    nullptr,
+    io
+  );
+
+  if (result == TRUE)
+  {
+    io->error.clear();
+    io->context->completed.push(io);
+    return;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e == WSA_IO_PENDING)
+  {
+    return;
+  }
+
+  io->error.assign(e, std::system_category());
+  io->context->completed.push(io);
+}
+
+
+async_connect_t *async_connect_t::result (async_io_t *io,
+  std::error_code &error) noexcept
+{
+  if (auto *op = get_op(io))
+  {
+    if (!io->error)
+    {
+      (void)::setsockopt(op->handle,
+        SOL_SOCKET,
+        SO_UPDATE_CONNECT_CONTEXT,
+        nullptr,
+        0
+      );
+      error.clear();
+    }
+    else if (io->error.value() == ERROR_INVALID_NETNAME)
+    {
+      error = std::make_error_code(std::errc::address_not_available);
+    }
+    else if (io->error.value() == ERROR_CONNECTION_REFUSED)
+    {
+      error = std::make_error_code(std::errc::connection_refused);
+    }
+    else
+    {
+      error = io->error;
+    }
+    return op;
+  }
+  return nullptr;
+}
+
+
+void async_accept_t::start (async_io_t *io, socket_t &socket, int family)
+  noexcept
+{
+  socket_t new_socket;
+  new_socket.open(family, SOCK_STREAM, IPPROTO_TCP, io->error);
+  if (io->error)
+  {
+    io->context->completed.push(io);
+    return;
+  }
+
+  auto op = new_op(io);
+  op->acceptor = socket.handle;
+  op->accepted = new_socket.handle;
+  new_socket.handle = socket_t::invalid;
+
+  auto result = (*AcceptEx)(op->acceptor,
+    op->accepted,
+    io->begin,
+    0,
+    0,
+    acceptex_address_size,
+    &op->transferred,
+    io
+  );
+  if (result == TRUE)
+  {
+    io->error.clear();
+    io->context->completed.push(io);
+    return;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e == WSA_IO_PENDING)
+  {
+    return;
+  }
+
+  io->error.assign(e, std::system_category());
+  io->context->completed.push(io);
+}
+
+
+async_accept_t *async_accept_t::result (async_io_t *io,
+  std::error_code &error) noexcept
+{
+  if (auto op = get_op(io))
+  {
+    if (!io->error)
+    {
+      int remote_address_size;
+
+      #pragma warning(suppress: 6387)
+      (*GetAcceptExSockaddrs)(io->begin,
+        0,
+        0,
+        acceptex_address_size,
+        nullptr,
+        nullptr,
+        reinterpret_cast<sockaddr **>(&op->remote_address),
+        &remote_address_size
+      );
+
+      (void)::setsockopt(op->accepted,
+        SOL_SOCKET,
+        SO_UPDATE_ACCEPT_CONTEXT,
+        reinterpret_cast<char *>(&op->acceptor),
+        sizeof(op->acceptor)
+      );
+      error.clear();
+      return op;
+    }
+    else if (io->error.value() == WSAENOTSOCK)
+    {
+      error = std::make_error_code(std::errc::bad_file_descriptor);
+    }
+    else
+    {
+      error = io->error;
+    }
+
+    (void)::closesocket(op->accepted);
+    op->accepted = socket_t::invalid;
+    return op;
+  }
+  return nullptr;
 }
 
 
@@ -1182,10 +1567,6 @@ void socket_t::async_t::on_readable (async_context_t &context, uint16_t /*flags*
         false,
         io->error
       );
-      if (!io->error)
-      {
-        op->load_local_address(io->error);
-      }
     }
     // LCOV_EXCL_START
     else
@@ -1369,22 +1750,6 @@ void socket_t::async_t::push_send (async_io_t *io) noexcept
     );
 
 #endif // }}}2
-  }
-}
-
-
-void async_context_t::extend_pool ()
-{
-  constexpr auto buffer_size = sizeof(*async_io_t::data);
-  constexpr auto batch_size = 1024;
-  buffers.emplace_back(std::make_unique<char[]>(batch_size * buffer_size));
-
-  auto it = reinterpret_cast<char(*)[buffer_size]>(buffers.back().get());
-  auto e = it + batch_size;
-  for (/**/;  it != e;  ++it)
-  {
-    pool.emplace_back(*this, it);
-    free.push(&pool.back());
   }
 }
 
@@ -1604,7 +1969,6 @@ void async_accept_t::start (async_io_t *io, socket_t &socket, int /*family*/)
 {
   auto op = new_op(io);
 
-  op->local_address = nullptr;
   op->remote_address = reinterpret_cast<sockaddr_storage *>(io->data);
   auto remote_address_size = sizeof(*remote_address);
 
@@ -1613,11 +1977,6 @@ void async_accept_t::start (async_io_t *io, socket_t &socket, int /*family*/)
     io->error
   );
 
-  if (!io->error)
-  {
-    op->load_local_address(io->error);
-  }
-
   if (io->error != std::errc::operation_would_block)
   {
     io->context->completed.push(io);
@@ -1625,24 +1984,6 @@ void async_accept_t::start (async_io_t *io, socket_t &socket, int /*family*/)
   else
   {
     socket.async->pending_receive.push(io);
-  }
-}
-
-
-void async_accept_t::load_local_address (std::error_code &error) noexcept
-{
-  if (accepted != socket_t::invalid)
-  {
-    local_address = remote_address + 1;
-    socklen_t local_address_size = sizeof(*local_address);
-    auto result = ::getsockname(accepted,
-      reinterpret_cast<sockaddr *>(local_address),
-      &local_address_size
-    );
-    if (result == -1)
-    {
-      error.assign(errno, std::generic_category());
-    }
   }
 }
 
@@ -1667,6 +2008,21 @@ void socket_t::associate (async_service_ptr svc, std::error_code &error)
   else if (error)
   {
     async.reset();
+  }
+}
+
+
+void async_context_t::extend_pool ()
+{
+  constexpr auto batch_size = 1024;
+  buffers.emplace_back(std::make_unique<char[]>(batch_size * async_io_t::data_size));
+
+  auto it = reinterpret_cast<char(*)[async_io_t::data_size]>(buffers.back().get());
+  auto e = it + batch_size;
+  for (/**/;  it != e;  ++it)
+  {
+    pool.emplace_back(*this, it);
+    free.push(&pool.back());
   }
 }
 

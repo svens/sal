@@ -224,11 +224,11 @@ public:
 
 
   /**
-   * Return compile time reserved data area size (in bytes).
+   * Return data area size (in bytes).
    */
   static constexpr size_t max_size () noexcept
   {
-    return sizeof(*async_io_t::data);
+    return async_io_t::data_size;
   }
 
 
