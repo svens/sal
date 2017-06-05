@@ -1445,7 +1445,7 @@ TEST_P(datagram_socket, async_send_to_overflow)
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
   std::array<std::thread, 4> threads;
-  auto per_thread_sends = (send_buffer_size / sal::net::async_service_t::io_t::max_size()) * 16;
+  auto per_thread_sends = (send_buffer_size / sal::net::async_service_t::io_t::max_size()) * 128;
   auto total_sends = per_thread_sends * threads.max_size();
 
   // receives
@@ -1522,7 +1522,7 @@ TEST_P(datagram_socket, async_send_to_overflow_and_socket_close)
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
-  auto total_sends = send_buffer_size / sal::net::async_service_t::io_t::max_size() * 16;
+  auto total_sends = send_buffer_size / sal::net::async_service_t::io_t::max_size() * 128;
   for (auto i = 0U;  i != total_sends;  ++i)
   {
     socket.async_send_to(ctx.make_io(), endpoint);
@@ -1768,7 +1768,7 @@ TEST_P(datagram_socket, async_send_overflow)
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
   std::array<std::thread, 4> threads;
-  size_t per_thread_sends = (send_buffer_size / sal::net::async_service_t::io_t::max_size()) * 16;
+  size_t per_thread_sends = (send_buffer_size / sal::net::async_service_t::io_t::max_size()) * 128;
   size_t total_sends = per_thread_sends * threads.max_size();
 
   // receives
@@ -1845,7 +1845,7 @@ TEST_P(datagram_socket, async_send_overflow_and_socket_close)
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
-  auto total_sends = send_buffer_size / sal::net::async_service_t::io_t::max_size() * 16;
+  auto total_sends = send_buffer_size / sal::net::async_service_t::io_t::max_size() * 128;
   for (auto i = 0U;  i != total_sends;  ++i)
   {
     socket.async_send(ctx.make_io());
