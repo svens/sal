@@ -1568,12 +1568,6 @@ void socket_t::async_t::on_readable (async_context_t &context, uint16_t /*flags*
         io->error
       );
     }
-    // LCOV_EXCL_START
-    else
-    {
-      sal_assert(!"Unhandled asynchronous I/O operation");
-    }
-    // LCOV_EXCL_STOP
 
     if (io->error != std::errc::operation_would_block)
     {
@@ -1655,12 +1649,6 @@ void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
 
 #endif // }}}2
     }
-    // LCOV_EXCL_START
-    else
-    {
-      sal_assert(!"Unhandled asynchronous I/O operation");
-    }
-    // LCOV_EXCL_STOP
 
     if (io->error != std::errc::operation_would_block)
     {
