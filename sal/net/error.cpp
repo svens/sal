@@ -21,11 +21,11 @@ public:
 
   std::string message (int value) const final override
   {
-    switch (static_cast<socket_errc_t>(value))
+    switch (static_cast<socket_errc>(value))
     {
-      case socket_errc_t::already_open:
+      case socket_errc::already_open:
         return "Already open";
-      case socket_errc_t::already_associated:
+      case socket_errc::already_associated:
         return "Already associated";
     }
     return "Unknown error";

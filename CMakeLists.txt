@@ -46,7 +46,6 @@ set_source_files_properties(${CMAKE_BINARY_DIR}/sal/config.hpp
 # collect sources from sal/
 set(sal_sources "")
 set(sal_unittests "")
-set(sal_docs "")
 include(sal/list.cmake)
 
 # set compiler flags
@@ -90,7 +89,7 @@ if(SAL_UNITTESTS)
     include(ExternalProject)
     ExternalProject_Add(gtest
       URL https://github.com/google/googletest/archive/release-1.7.0.zip
-      URL_HASH SHA1=f89bc9f55477df2fde082481e2d709bfafdb057b
+      URL_HASH SHA256=b58cb7547a28b2c718d1e38aee18a3659c9e3ff52440297e965f5edffe34b6d0
       PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest-1.7.0
       CMAKE_ARGS
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

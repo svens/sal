@@ -43,9 +43,9 @@ public:
   /**
    * Return native representation of this socket.
    */
-  native_handle_t native_handle () const noexcept
+  handle_t native_handle () const noexcept
   {
-    return impl_.native_handle;
+    return socket_.handle;
   }
 
 
@@ -55,7 +55,7 @@ public:
    */
   bool is_open () const noexcept
   {
-    return impl_.native_handle != invalid_socket;
+    return socket_.handle != invalid;
   }
 
 
@@ -66,7 +66,7 @@ public:
   {
     if (!is_open())
     {
-      impl_.open(protocol.family(),
+      socket_.open(protocol.family(),
         protocol.type(),
         protocol.protocol(),
         error
@@ -74,7 +74,7 @@ public:
     }
     else
     {
-      error = make_error_code(socket_errc_t::already_open);
+      error = make_error_code(socket_errc::already_open);
     }
   }
 
@@ -93,19 +93,19 @@ public:
    * Assign previously opened native socket \a handle to this socket object.
    * On failure, set \a error.
    */
-  void assign (const native_handle_t &handle, std::error_code &error) noexcept
+  void assign (handle_t handle, std::error_code &error) noexcept
   {
-    if (handle == invalid_socket)
+    if (handle == invalid)
     {
       error = make_error_code(std::errc::bad_file_descriptor);
     }
     else if (!is_open())
     {
-      impl_.native_handle = handle;
+      socket_.handle = handle;
     }
     else
     {
-      error = make_error_code(socket_errc_t::already_open);
+      error = make_error_code(socket_errc::already_open);
     }
   }
 
@@ -114,7 +114,7 @@ public:
    * Assign previously opened native socket \a handle to this socket object.
    * On failure, throw std::system_error
    */
-  void assign (const native_handle_t &handle)
+  void assign (handle_t handle)
   {
     assign(handle, throw_on_error("basic_socket::assign"));
   }
@@ -127,7 +127,7 @@ public:
   {
     if (is_open())
     {
-      impl_.close(error);
+      socket_.close(error);
     }
     else
     {
@@ -155,7 +155,7 @@ public:
   {
     typename GettableSocketOption::native_t data{};
     auto size = sizeof(data);
-    impl_.get_opt(option.level, option.name, &data, &size, error);
+    socket_.get_opt(option.level, option.name, &data, &size, error);
     if (!error)
     {
       option.load(data, size);
@@ -182,7 +182,7 @@ public:
   {
     typename SettableSocketOption::native_t data;
     option.store(data);
-    impl_.set_opt(option.level, option.name, &data, sizeof(data), error);
+    socket_.set_opt(option.level, option.name, &data, sizeof(data), error);
   }
 
 
@@ -201,7 +201,7 @@ public:
    */
   void non_blocking (bool mode, std::error_code &error) noexcept
   {
-    impl_.non_blocking(mode, error);
+    socket_.non_blocking(mode, error);
   }
 
 
@@ -220,7 +220,7 @@ public:
    */
   bool non_blocking (std::error_code &error) const noexcept
   {
-    return impl_.non_blocking(error);
+    return socket_.non_blocking(error);
   }
 
 
@@ -240,7 +240,7 @@ public:
    */
   size_t available (std::error_code &error) const noexcept
   {
-    return impl_.available(error);
+    return socket_.available(error);
   }
 
 
@@ -259,7 +259,7 @@ public:
    */
   void bind (const endpoint_t &endpoint, std::error_code &error) noexcept
   {
-    impl_.bind(endpoint.data(), endpoint.size(), error);
+    socket_.bind(endpoint.data(), endpoint.size(), error);
   }
 
 
@@ -290,7 +290,7 @@ public:
       }
       // LCOV_EXCL_STOP
     }
-    impl_.connect(endpoint.data(), endpoint.size(), error);
+    socket_.connect(endpoint.data(), endpoint.size(), error);
   }
 
 
@@ -310,7 +310,7 @@ public:
    */
   void shutdown (shutdown_t what, std::error_code &error) noexcept
   {
-    impl_.shutdown(static_cast<int>(what), error);
+    socket_.shutdown(what, error);
   }
 
 
@@ -337,7 +337,7 @@ public:
     std::error_code &error) noexcept
   {
     auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-    return impl_.wait(what, static_cast<int>(d.count()), error);
+    return socket_.wait(what, static_cast<int>(d.count()), error);
   }
 
 
@@ -362,7 +362,7 @@ public:
   {
     endpoint_t endpoint;
     size_t endpoint_size = endpoint.capacity();
-    impl_.local_endpoint(endpoint.data(), &endpoint_size, error);
+    socket_.local_endpoint(endpoint.data(), &endpoint_size, error);
     if (!error)
     {
       endpoint.resize(endpoint_size);
@@ -389,7 +389,7 @@ public:
   {
     endpoint_t endpoint;
     size_t endpoint_size = endpoint.capacity();
-    impl_.remote_endpoint(endpoint.data(), &endpoint_size, error);
+    socket_.remote_endpoint(endpoint.data(), &endpoint_size, error);
     if (!error)
     {
       endpoint.resize(endpoint_size);
@@ -408,43 +408,60 @@ public:
   }
 
 
+  /**
+   * Associate this socket with \a service for asynchronous I/O operations.
+   * Using asynchronous API without associating it first with service is
+   * undefined behaviour. Once socket is associated with specific service, it
+   * will remain so until closed.
+   *
+   * On failure, set \a error
+   */
+  void associate (async_service_t &service, std::error_code &error) noexcept
+  {
+    socket_base_t::associate(socket_, service, error);
+  }
+
+
+  /**
+   * \see associate (async_service_t &, std::error_code &)
+   * \throws std::system_error on failure
+   */
+  void associate (async_service_t &service)
+  {
+    associate(service, throw_on_error("basic_socket::associate"));
+  }
+
+
 protected:
 
   /**
    * Low-level OS socket
    * \internal
    */
-  __bits::socket_t impl_{};
-
-  friend class io_service_t;
+  __bits::socket_t socket_{};
 
 
-  basic_socket_t () = default;
+  basic_socket_t () noexcept = default;
 
 
   /**
-   * Construct new basic_socket_t using native_handle() from \a that. After
-   * move, that.is_open() == false
+   * Move ownership of \a that handle to \a this and invalidate \a that.
    */
-  basic_socket_t (basic_socket_t &&that) noexcept
-    : impl_(that.impl_.native_handle)
-  {
-    that.impl_.native_handle = invalid_socket;
-  }
+  basic_socket_t (basic_socket_t &&that) noexcept = default;
+
+
+  /**
+   * If this is_open(), close() it and then move all internal resource from
+   * \a that to \a this.
+   */
+  basic_socket_t &operator= (basic_socket_t &&that) noexcept = default;
 
 
   /**
    * If is \a is_open(), close() socket and release socket resources. On
    * failure, errors are silently ignored.
    */
-  ~basic_socket_t () noexcept
-  {
-    if (is_open())
-    {
-      std::error_code ignored;
-      close(ignored);
-    }
-  }
+  ~basic_socket_t () noexcept = default;
 
 
   /**
@@ -471,27 +488,10 @@ protected:
   /**
    * Construct new socket, acquiring \a handle
    */
-  basic_socket_t (const native_handle_t &handle)
+  basic_socket_t (handle_t handle)
   {
     assign(handle);
   }
-
-
-  /**
-   * If this is_open(), close() it and then move all internal resource from
-   * \a that to \a this.
-   */
-  basic_socket_t &operator= (basic_socket_t &&that) noexcept
-  {
-    auto tmp{std::move(*this)};
-    impl_.native_handle = that.impl_.native_handle;
-    that.impl_.native_handle = invalid_socket;
-    return *this;
-  }
-
-
-  basic_socket_t (const basic_socket_t &) = delete;
-  basic_socket_t &operator= (const basic_socket_t &) = delete;
 };
 
 

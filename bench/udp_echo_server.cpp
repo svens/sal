@@ -1,7 +1,6 @@
 #include <bench/bench.hpp>
 #include <sal/net/internet.hpp>
-#include <sal/net/io_context.hpp>
-#include <sal/net/io_service.hpp>
+#include <sal/net/async_service.hpp>
 #include <csignal>
 #include <thread>
 #include <iostream>
@@ -138,7 +137,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
   thread_count = std::stoul(options.back_or_default("threads", { arguments }));
   buf_mul = std::stoul(options.back_or_default("buffer", { arguments }));
 
-  sal::net::io_service_t io_svc;
+  sal::net::async_service_t svc;
 
   // receive socket
   socket_t recv_sock(server_endpoint);
@@ -151,7 +150,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     recv_sock.get_option(sal::net::receive_buffer_size(&size));
     std::cout << " -> " << size << "bytes\n";
   }
-  io_svc.associate(recv_sock);
+  recv_sock.associate(svc);
 
   // send socket
   server_endpoint.port(server_endpoint.port() + 1);
@@ -165,7 +164,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     send_sock.get_option(sal::net::send_buffer_size(&size));
     std::cout << " -> " << size << "bytes\n";
   }
-  io_svc.associate(send_sock);
+  send_sock.associate(svc);
 
   std::vector<std::thread> threads;
   std::vector<std::pair<size_t, size_t>> thread_transferred;
@@ -174,40 +173,40 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     size_t index = threads.size();
     thread_transferred.emplace_back();
 
-    threads.emplace_back([index, &io_svc, &recv_sock, &send_sock, &thread_transferred]
+    threads.emplace_back([index, &svc, &recv_sock, &send_sock, &thread_transferred]
     {
-      auto io_ctx = io_svc.make_context(receives);
+      auto ctx = svc.make_context(receives);
       std::error_code ignore_error;
 
       // start initial reads
       for (auto i = receives;  i;  --i)
       {
-        recv_sock.async_receive_from(io_ctx.make_buf());
+        recv_sock.async_receive_from(ctx.make_io());
       }
 
       auto &transferred = thread_transferred[index];
       for (;;)
       {
-        auto io_buf = io_ctx.get(1s);
+        auto io = ctx.poll(1s);
 
         if (done)
         {
           break;
         }
 
-        if (io_buf)
+        if (io)
         {
-          if (auto recv = socket_t::async_receive_from_result(io_buf, ignore_error))
+          if (auto recv = socket_t::async_receive_from_result(io, ignore_error))
           {
             transferred.first++;
             transferred.second += recv->transferred();
-            io_buf->resize(recv->transferred());
-            send_sock.async_send_to(std::move(io_buf), recv->endpoint());
+            io->resize(recv->transferred());
+            send_sock.async_send_to(std::move(io), recv->endpoint());
           }
           else
           {
-            io_buf->reset();
-            recv_sock.async_receive_from(std::move(io_buf));
+            io->reset();
+            recv_sock.async_receive_from(std::move(io));
           }
         }
       }

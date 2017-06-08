@@ -40,7 +40,7 @@ class char_array_t
 {
 public:
 
-  static_assert(Size > 0, "zero-sized char_array_t not allowed");
+  static_assert(Size > 0);
 
 
   /// Construct new empty char_array_t

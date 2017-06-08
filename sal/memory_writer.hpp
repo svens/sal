@@ -316,14 +316,14 @@ private:
   template <typename T>
   constexpr char *char_p (T *p) const noexcept
   {
-    static_assert(std::is_pod<T>::value, "expected POD type");
+    static_assert(std::is_pod<T>::value);
     return reinterpret_cast<char *>(p);
   }
 
   template <typename T>
   constexpr const char *char_p (const T *p) const noexcept
   {
-    static_assert(std::is_pod<T>::value, "expected POD type");
+    static_assert(std::is_pod<T>::value);
     return reinterpret_cast<const char *>(p);
   }
 };

@@ -1,9 +1,3 @@
-# docs
-list(APPEND sal_docs
-  sal/logger/Logger.md
-)
-
-
 # sources
 list(APPEND sal_sources
   sal/logger/__bits/channel.hpp

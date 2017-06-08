@@ -19,7 +19,7 @@ namespace net {
 /**
  * Socket error codes
  */
-enum class socket_errc_t
+enum class socket_errc
 {
   already_open = 1,
   already_associated,
@@ -34,18 +34,18 @@ const std::error_category &socket_category () noexcept;
 
 
 /**
- * Make std::error_code from socket_errc_t \a e
+ * Make std::error_code from socket_errc \a e
  */
-inline std::error_code make_error_code (socket_errc_t e) noexcept
+inline std::error_code make_error_code (socket_errc e) noexcept
 {
   return std::error_code(static_cast<int>(e), socket_category());
 }
 
 
 /**
- * Make std::error_condition from socket_errc_t \a e
+ * Make std::error_condition from socket_errc \a e
  */
-inline std::error_condition make_error_condition (socket_errc_t e) noexcept
+inline std::error_condition make_error_condition (socket_errc e) noexcept
 {
   return std::error_condition(static_cast<int>(e), socket_category());
 }
@@ -76,7 +76,7 @@ inline void bad_address_cast [[noreturn]] ()
 /**
  * Resolver error codes
  */
-enum class resolver_errc_t
+enum class resolver_errc
 {
   host_not_found = EAI_NONAME,
   host_not_found_try_again = EAI_AGAIN,
@@ -91,18 +91,18 @@ const std::error_category &resolver_category () noexcept;
 
 
 /**
- * Make std::error_code from resolver_errc_t \a e
+ * Make std::error_code from resolver_errc \a e
  */
-inline std::error_code make_error_code (resolver_errc_t e) noexcept
+inline std::error_code make_error_code (resolver_errc e) noexcept
 {
   return std::error_code(static_cast<int>(e), resolver_category());
 }
 
 
 /**
- * Make std::error_condition from resolver_errc_t \a e
+ * Make std::error_condition from resolver_errc \a e
  */
-inline std::error_condition make_error_condition (resolver_errc_t e) noexcept
+inline std::error_condition make_error_condition (resolver_errc e) noexcept
 {
   return std::error_condition(static_cast<int>(e), resolver_category());
 }
@@ -118,12 +118,12 @@ __sal_end
 namespace std {
 
 template <>
-struct is_error_condition_enum<sal::net::socket_errc_t>
+struct is_error_condition_enum<sal::net::socket_errc>
   : public true_type
 {};
 
 template <>
-struct is_error_condition_enum<sal::net::ip::resolver_errc_t>
+struct is_error_condition_enum<sal::net::ip::resolver_errc>
   : public true_type
 {};
 
