@@ -1440,7 +1440,7 @@ TEST_P(datagram_socket, async_send_to_overflow)
   socket_t socket(endpoint);
   socket.associate(svc);
 
-  int send_buffer_size = 8*1024;
+  int send_buffer_size = sal::net::async_service_t::io_t::max_size();
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
@@ -1518,7 +1518,7 @@ TEST_P(datagram_socket, async_send_to_overflow_and_socket_close)
   socket_t socket(endpoint);
   socket.associate(svc);
 
-  int send_buffer_size = 8*1024;
+  int send_buffer_size = sal::net::async_service_t::io_t::max_size();
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
@@ -1767,7 +1767,7 @@ TEST_P(datagram_socket, async_send_overflow)
   socket.connect(socket.local_endpoint());
   socket.associate(svc);
 
-  int send_buffer_size = 8*1024;
+  int send_buffer_size = sal::net::async_service_t::io_t::max_size();
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
@@ -1845,7 +1845,7 @@ TEST_P(datagram_socket, async_send_overflow_and_socket_close)
   socket.connect(socket.local_endpoint());
   socket.associate(svc);
 
-  int send_buffer_size = 8*1024;
+  int send_buffer_size = sal::net::async_service_t::io_t::max_size();
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
