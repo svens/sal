@@ -51,57 +51,59 @@ Asynchronous operations {#async-mode}
 -----------------------
 
 For asynchronous API, there are multiple parts working together:
-  - ```sal::net::io_service_t``` provides internal OS-specific underlying
+  - sal::net::async_service_t provides internal OS-specific underlying
     functionality (IOCP/epoll/kqueue handle, used by
-    ```sal::net::io_context_t```, not application directly).
-  - ```sal::net::io_context_t``` maintains thread-specific resources and
-    forwards asynchronous calls completions to application domain
-  - ```sal::net::io_buf_t``` represents single asynchronous operations and
-    related resources.
+    sal::net::async_service_t::context_t, not application directly).
+  - sal::net::async_service_t::context_t maintains thread-specific
+    resources and forwards asynchronous calls completions to application
+    domain
+  - sal::net::async_service_t::io_t represents single asynchronous
+    operations and related resources.
 
-There is usually one ```sal::net::io_service_t``` per application. Each thread
-that invokes callbacks from OS to application, does it by invoking repeatedly
-method ```sal::net::io_context_t::get``` that returns one completed operation
-or ```nullptr``` if there is none. Returned ```sal::net::io_buf_ptr``` is
-generic completed asynchronous operation. To detect which exactly, call
-```{socket_type}::async_{operation}_result```. If buffer represents given
+There is usually one sal::net::async_service_t per application. Each
+thread that invokes callbacks from OS to application, does it by invoking
+repeatedly method sal::net::async_service_t::context_t::poll that
+returns one completed operation or ```nullptr``` if there is none. Returned
+sal::net::io_ptr (std::unique_ptr to sal::net::async_service_t::io_t) is
+generic completed asynchronous operation. To detect which exactly,
+call ```SOCKET_TYPE::async_OPERATION_result```. If buffer represents given
 operation, pointer to result data is returned or ```nullptr``` otherwise.
 
 Sample usage (pseudocode):
 ```{.cpp}
 // global I/O service
-sal::net::io_service_t io_service;
+sal::net::async_service_t svc;
 
 // for each thread
-sal::net::io_context_t io_context = io_service.make_context();
+sal::net::async_service_t::context_t ctx = svc.make_context();
 
-// create channel associated with io_service
+// create channel associated with async service
 using socket_t = sal::net::ip::udp_t::socket_t;
 socket_t channel;
-io_service.associate(channel);
+channel.associate(svc);
 
-// allocate asynchronous operation handle (application owns io_buf)
-sal::net::io_buf_ptr io_buf = io_context.make_buf();
+// allocate asynchronous operation handle (application owns io)
+sal::net::io_ptr io = ctx.make_io();
 
-// start asynchronous receive_from (networking library owns io_buf)
-channel.async_receive_from(std::move(io_buf));
+// start asynchronous receive_from (networking library owns io)
+channel.async_receive_from(std::move(io));
 
 // handle completions while not stopped
 while (!stopped)
 {
   // block and wait until there are completions to handle
   // (if some operation has already completed, returns immediately)
-  if (auto io_buf = io_context.get())
+  if (auto io = ctx.poll())
   {
-    if (auto *result = socket_t::async_receive_from_result(io_buf))
+    if (auto *result = socket_t::async_receive_from_result(io))
     {
       // handle completed receive from, result provides information about it
     }
     // else: list other operations' result handlers
   }
 
-  // application owns io_buf: it can be reused or simply dropped, in which
-  // case io_context will automatically returns it to internal free list
+  // application owns io: it can be reused or simply dropped, in which
+  // case ctx will automatically return it to internal free list
 }
 ```
 

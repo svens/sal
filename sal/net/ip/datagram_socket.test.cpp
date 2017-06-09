@@ -1,6 +1,4 @@
 #include <sal/net/ip/udp.hpp>
-#include <sal/net/io_context.hpp>
-#include <sal/net/io_service.hpp>
 #include <sal/common.test.hpp>
 #include <thread>
 
@@ -23,22 +21,6 @@ struct datagram_socket
       ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
       : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
     ;
-  }
-
-  sal::net::io_service_t service;
-  sal::net::io_context_t context = service.make_context();
-
-  sal::net::io_buf_ptr make_buf (const std::string &content) noexcept
-  {
-    auto io_buf = context.make_buf();
-    io_buf->resize(content.size());
-    std::memcpy(io_buf->data(), content.data(), content.size());
-    return io_buf;
-  }
-
-  static std::string to_string (const sal::net::io_buf_ptr &io_buf, size_t size)
-  {
-    return std::string(static_cast<const char *>(io_buf->data()), size);
   }
 };
 
@@ -89,7 +71,7 @@ TEST_P(datagram_socket, ctor_protocol)
 
 TEST_P(datagram_socket, ctor_protocol_and_handle)
 {
-  auto handle = sal::net::socket_base_t::invalid_socket - 1;
+  auto handle = sal::net::socket_base_t::invalid - 1;
   socket_t socket(handle);
   EXPECT_EQ(handle, socket.native_handle());
 
@@ -464,111 +446,140 @@ TEST_P(datagram_socket, send_do_not_route)
 }
 
 
+template <typename Op>
+inline auto to_s (const sal::net::io_ptr &io, const Op *op)
+{
+  return std::string{
+    static_cast<const char *>(io->data()),
+    op->transferred()
+  };
+}
+
+
+inline auto from_s (sal::net::async_service_t::context_t &ctx,
+  const std::string &content) noexcept
+{
+  auto io = ctx.make_io();
+  io->resize(content.size());
+  std::memcpy(io->begin(), content.data(), content.size());
+  return io;
+}
+
+
 TEST_P(datagram_socket, async_receive_from)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-  auto io_buf = context.make_buf();
-  io_buf->user_data(1);
-  socket.async_receive_from(std::move(io_buf));
+  auto endpoint = loopback(GetParam());
+  socket_t socket(endpoint);
+  socket.associate(svc);
+
+  auto io = ctx.make_io();
+  io->user_data(1);
+  socket.async_receive_from(std::move(io));
 
   socket.send_to(sal::make_buf(case_name), endpoint);
 
-  io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  EXPECT_EQ(1U, io_buf->user_data());
+  io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  EXPECT_EQ(1U, io->user_data());
 
-  auto result = socket.async_receive_from_result(io_buf);
+  auto result = socket.async_receive_from_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(endpoint, result->endpoint());
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+  EXPECT_EQ(case_name, to_s(io, result));
 
-  EXPECT_EQ(nullptr, socket.async_send_to_result(io_buf));
+  EXPECT_EQ(nullptr, socket.async_receive_result(io));
 }
 
 
 TEST_P(datagram_socket, async_receive_from_immediate_completion)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint = loopback(GetParam());
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
 
-  auto io_buf = context.make_buf();
-  io_buf->user_data(2);
-  socket.async_receive_from(std::move(io_buf));
+  auto io = ctx.make_io();
+  io->user_data(2);
+  socket.async_receive_from(std::move(io));
 
-  io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  EXPECT_EQ(2U, io_buf->user_data());
+  io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  EXPECT_EQ(2U, io->user_data());
 
-  auto result = socket.async_receive_from_result(io_buf);
+  auto result = socket.async_receive_from_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(endpoint, result->endpoint());
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+  EXPECT_EQ(case_name, to_s(io, result));
 }
 
 
 TEST_P(datagram_socket, async_receive_from_partially_immediate_completion)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   // start three writes and one read
-  socket.async_receive_from(context.make_buf());
+  socket.async_receive_from(ctx.make_io());
   socket.send_to(sal::make_buf(case_name + "_one"), endpoint);
   socket.send_to(sal::make_buf(case_name + "_two"), endpoint);
   socket.send_to(sal::make_buf(case_name + "_three"), endpoint);
 
   // first read must succeed
   // (and in case of Reactor, fetch poller event)
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_receive_from_result(io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  auto result = socket.async_receive_from_result(io);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name + "_one", to_string(io_buf, result->transferred()));
+  EXPECT_EQ(case_name + "_one", to_s(io, result));
 
   // launch thread that will "steal" packet 'two'
   auto t = std::thread([&]
   {
-    auto context1 = service.make_context();
-    socket.async_receive_from(context1.make_buf());
-    auto io_buf = context1.get();
-    ASSERT_NE(nullptr, io_buf);
-    auto result = socket.async_receive_from_result(io_buf);
+    auto ctx1 = svc.make_context();
+    socket.async_receive_from(ctx1.make_io());
+    auto io = ctx1.poll();
+    ASSERT_NE(nullptr, io);
+    auto result = socket.async_receive_from_result(io);
     ASSERT_NE(nullptr, result);
-    EXPECT_EQ(case_name + "_two", to_string(io_buf, result->transferred()));
-    EXPECT_EQ(&context1, &io_buf->this_context());
+    EXPECT_EQ(case_name + "_two", to_s(io, result));
+    EXPECT_EQ(&ctx1, &io->this_context());
   });
   t.join();
 
   // start remaining of reads (one will fail because of "stolen" packet)
-  socket.async_receive_from(context.make_buf());
-  socket.async_receive_from(context.make_buf());
+  socket.async_receive_from(ctx.make_io());
+  socket.async_receive_from(ctx.make_io());
 
-  // second this thread's reads third and final packet
-  io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  result = socket.async_receive_from_result(io_buf);
+  // second this thread's reads third (final) packet
+  io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  result = socket.async_receive_from_result(io);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name + "_three", to_string(io_buf, result->transferred()));
+  EXPECT_EQ(case_name + "_three", to_s(io, result));
 
   // there is pending read but no data anymore
-  io_buf = context.get(1ms);
-  EXPECT_EQ(nullptr, io_buf);
+  io = ctx.poll(1ms);
+  EXPECT_EQ(nullptr, io);
 
   // close socket
   socket.close();
-  io_buf = context.get(1ms);
-  ASSERT_NE(nullptr, io_buf);
+  io = ctx.poll(1ms);
+  ASSERT_NE(nullptr, io);
 
   // closing will cancel read
   std::error_code error;
-  result = socket.async_receive_from_result(io_buf, error);
+  result = socket.async_receive_from_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
   EXPECT_EQ(std::errc::operation_canceled, error);
@@ -577,24 +588,27 @@ TEST_P(datagram_socket, async_receive_from_partially_immediate_completion)
 
 TEST_P(datagram_socket, async_receive_from_invalid)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-  socket.async_receive_from(context.make_buf());
+  auto endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  socket.associate(svc);
+
+  socket.async_receive_from(ctx.make_io());
   socket.close();
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
   std::error_code error;
-  auto result = socket.async_receive_from_result(io_buf, error);
+  auto result = socket.async_receive_from_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
   EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(
-    socket.async_receive_from_result(io_buf),
+    socket.async_receive_from_result(io),
     std::system_error
   );
 }
@@ -602,23 +616,25 @@ TEST_P(datagram_socket, async_receive_from_invalid)
 
 TEST_P(datagram_socket, async_receive_from_invalid_immediate_completion)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   socket_t socket(loopback(GetParam()));
-  service.associate(socket);
+  socket.associate(svc);
 
   socket.close();
-  socket.async_receive_from(context.make_buf());
+  socket.async_receive_from(ctx.make_io());
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
   std::error_code error;
-  auto result = socket.async_receive_from_result(io_buf, error);
+  auto result = socket.async_receive_from_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0U, result->transferred());
 
   EXPECT_THROW(
-    socket.async_receive_from_result(io_buf),
+    socket.async_receive_from_result(io),
     std::system_error
   );
 }
@@ -626,19 +642,22 @@ TEST_P(datagram_socket, async_receive_from_invalid_immediate_completion)
 
 TEST_P(datagram_socket, async_receive_from_no_sender)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   {
     socket_t socket(loopback(GetParam()));
-    service.associate(socket);
+    socket.associate(svc);
 
-    socket.async_receive_from(context.make_buf());
+    socket.async_receive_from(ctx.make_io());
 
-    EXPECT_EQ(nullptr, context.get(0s));
-    EXPECT_EQ(nullptr, context.try_get());
+    EXPECT_EQ(nullptr, ctx.try_poll());
+    EXPECT_EQ(nullptr, ctx.try_get());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_from_result(context.get()),
+    socket_t::async_receive_from_result(ctx.poll()),
     std::system_error
   );
 }
@@ -646,67 +665,74 @@ TEST_P(datagram_socket, async_receive_from_no_sender)
 
 TEST_P(datagram_socket, async_receive_from_peek)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
-  socket.async_receive_from(context.make_buf(), socket.peek);
-
+  socket.async_receive_from(ctx.make_io(), socket.peek);
   socket.send_to(sal::make_buf(case_name), endpoint);
 
   // regardless of peek, completion should be removed from queue
-  ASSERT_NE(nullptr, context.get());
-  EXPECT_EQ(nullptr, context.get(0s));
+  ASSERT_NE(nullptr, ctx.poll());
+  EXPECT_EQ(nullptr, ctx.try_poll());
 }
 
 
 TEST_P(datagram_socket, async_receive_from_peek_immediate_completion)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
-
-  socket.async_receive_from(context.make_buf(), socket.peek);
+  socket.async_receive_from(ctx.make_io(), socket.peek);
 
   // regardless of peek, completion should be removed from queue
-  ASSERT_NE(nullptr, context.get());
-  EXPECT_EQ(nullptr, context.get(0s));
+  ASSERT_NE(nullptr, ctx.poll());
+  EXPECT_EQ(nullptr, ctx.try_poll());
 }
 
 
 TEST_P(datagram_socket, async_receive_from_less_than_send)
 {
-  {
-    socket_t::endpoint_t endpoint(loopback(GetParam()));
-    socket_t socket(endpoint);
-    service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-    auto io_buf = context.make_buf();
-    io_buf->resize(case_name.size() / 2);
-    socket.async_receive_from(std::move(io_buf));
+  {
+    auto endpoint(loopback(GetParam()));
+    socket_t socket(endpoint);
+    socket.associate(svc);
+
+    auto io = ctx.make_io();
+    io->resize(case_name.size() / 2);
+    socket.async_receive_from(std::move(io));
 
     socket.send_to(sal::make_buf(case_name), endpoint);
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
 
     std::error_code error;
-    auto result = socket_t::async_receive_from_result(io_buf, error);
+    auto result = socket_t::async_receive_from_result(io, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
-    io_buf->reset();
-    socket.async_receive_from(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
+    io->reset();
+    socket.async_receive_from(std::move(io));
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_from_result(context.get()),
+    socket_t::async_receive_from_result(ctx.poll()),
     std::system_error
   );
 }
@@ -714,35 +740,38 @@ TEST_P(datagram_socket, async_receive_from_less_than_send)
 
 TEST_P(datagram_socket, async_receive_from_less_than_send_immediate_completion)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   {
-    socket_t::endpoint_t endpoint(loopback(GetParam()));
+    auto endpoint(loopback(GetParam()));
     socket_t socket(endpoint);
-    service.associate(socket);
+    socket.associate(svc);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
 
-    auto io_buf = context.make_buf();
-    io_buf->resize(case_name.size() / 2);
-    socket.async_receive_from(std::move(io_buf));
+    auto io = ctx.make_io();
+    io->resize(case_name.size() / 2);
+    socket.async_receive_from(std::move(io));
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
 
     std::error_code error;
-    auto result = socket_t::async_receive_from_result(io_buf, error);
+    auto result = socket_t::async_receive_from_result(io, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
-    io_buf->reset();
-    socket.async_receive_from(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
+    io->reset();
+    socket.async_receive_from(std::move(io));
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_from_result(context.get()),
+    socket_t::async_receive_from_result(ctx.poll()),
     std::system_error
   );
 }
@@ -753,22 +782,25 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
   // couldn't unify IOCP/epoll/kqueue behaviour without additional syscall
   // but this is weird case anyway, prefer performance over unification
 
-  {
-    socket_t::endpoint_t endpoint(loopback(GetParam()));
-    socket_t socket(endpoint);
-    service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-    auto io_buf = context.make_buf();
-    io_buf->resize(0);
-    socket.async_receive_from(std::move(io_buf));
+  {
+    auto endpoint(loopback(GetParam()));
+    socket_t socket(endpoint);
+    socket.associate(svc);
+
+    auto io = ctx.make_io();
+    io->resize(0);
+    socket.async_receive_from(std::move(io));
 
     socket.send_to(sal::make_buf(case_name), endpoint);
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
 
     std::error_code error;
-    auto result = socket_t::async_receive_from_result(io_buf, error);
+    auto result = socket_t::async_receive_from_result(io, error);
     ASSERT_NE(nullptr, result);
 
 #if __sal_os_darwin
@@ -777,16 +809,16 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     EXPECT_TRUE(!error);
     EXPECT_EQ(0U, result->transferred());
 
-    io_buf->reset();
-    socket.async_receive_from(std::move(io_buf));
+    io->reset();
+    socket.async_receive_from(std::move(io));
 
     // 2nd succeeds with originally sent packet
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
-    result = socket_t::async_receive_from_result(io_buf, error);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
+    result = socket_t::async_receive_from_result(io, error);
     ASSERT_NE(nullptr, result);
     EXPECT_TRUE(!error);
-    EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+    EXPECT_EQ(case_name, to_s(io, result));
 
 #else
 
@@ -795,9 +827,9 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     EXPECT_EQ(0U, result->transferred());
 
     // buf 2nd receive still have nothing
-    io_buf->reset();
-    socket.async_receive_from(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
+    io->reset();
+    socket.async_receive_from(std::move(io));
+    EXPECT_EQ(nullptr, ctx.try_poll());
 
 #endif
   }
@@ -805,7 +837,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
 #if !__sal_os_darwin
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_from_result(context.get()),
+    socket_t::async_receive_from_result(ctx.poll()),
     std::system_error
   );
 #endif
@@ -814,36 +846,39 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
 
 TEST_P(datagram_socket, async_receive_from_empty_buf_immediate_completion)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   {
-    socket_t::endpoint_t endpoint(loopback(GetParam()));
+    auto endpoint(loopback(GetParam()));
     socket_t socket(endpoint);
-    service.associate(socket);
+    socket.associate(svc);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
     std::this_thread::sleep_for(1ms);
 
-    auto io_buf = context.make_buf();
-    io_buf->resize(0);
-    socket.async_receive_from(std::move(io_buf));
+    auto io = ctx.make_io();
+    io->resize(0);
+    socket.async_receive_from(std::move(io));
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
 
     std::error_code error;
-    auto result = socket_t::async_receive_from_result(io_buf, error);
+    auto result = socket_t::async_receive_from_result(io, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
     // even with empty 1st read, 2nd should have nothing
-    io_buf->reset();
-    socket.async_receive_from(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
+    io->reset();
+    socket.async_receive_from(std::move(io));
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_from_result(context.get()),
+    socket_t::async_receive_from_result(ctx.poll()),
     std::system_error
   );
 }
@@ -851,95 +886,110 @@ TEST_P(datagram_socket, async_receive_from_empty_buf_immediate_completion)
 
 TEST_P(datagram_socket, async_receive)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-  socket.async_receive(context.make_buf());
+  auto endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  socket.associate(svc);
+
+  socket.async_receive(ctx.make_io());
   socket.send_to(sal::make_buf(case_name), endpoint);
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
-  auto result = socket.async_receive_result(io_buf);
+  auto result = socket.async_receive_result(io);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+  EXPECT_EQ(case_name, to_s(io, result));
 
-  EXPECT_EQ(nullptr, socket.async_send_result(io_buf));
+  EXPECT_EQ(nullptr, socket.async_receive_from_result(io));
 }
 
 
 TEST_P(datagram_socket, async_receive_immediate_completion)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
-  socket.async_receive(context.make_buf());
+  socket.async_receive(ctx.make_io());
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
-  auto result = socket.async_receive_result(io_buf);
+  auto result = socket.async_receive_result(io);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+  EXPECT_EQ(case_name, to_s(io, result));
 }
 
 
 TEST_P(datagram_socket, async_receive_connected)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   socket_t socket(loopback(GetParam()));
   socket.connect(socket.local_endpoint());
-  service.associate(socket);
+  socket.associate(svc);
 
-  socket.async_receive(context.make_buf());
+  socket.async_receive(ctx.make_io());
   socket.send(sal::make_buf(case_name));
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
-  auto result = socket.async_receive_result(io_buf);
+  auto result = socket.async_receive_result(io);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+  EXPECT_EQ(case_name, to_s(io, result));
 }
 
 
 TEST_P(datagram_socket, async_receive_connected_immediate_completion)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   socket_t socket(loopback(GetParam()));
   socket.connect(socket.local_endpoint());
-  service.associate(socket);
+  socket.associate(svc);
 
   socket.send(sal::make_buf(case_name));
-  socket.async_receive(context.make_buf());
+  socket.async_receive(ctx.make_io());
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
-  auto result = socket.async_receive_result(io_buf);
+  auto result = socket.async_receive_result(io);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+  EXPECT_EQ(case_name, to_s(io, result));
 }
 
 
 TEST_P(datagram_socket, async_receive_connected_elsewhere)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   {
     socket_t receiver(GetParam()), sender(GetParam());
-    service.associate(receiver);
+    receiver.associate(svc);
 
     receiver.connect(loopback(GetParam()));
-    receiver.async_receive(context.make_buf());
+    receiver.async_receive(ctx.make_io());
     sender.send_to(sal::make_buf(case_name), receiver.local_endpoint());
 
     // must be ignored if from elsewehere than connected
-    EXPECT_EQ(nullptr, context.get(0s));
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_result(context.get()),
+    socket_t::async_receive_result(ctx.poll()),
     std::system_error
   );
 }
@@ -947,21 +997,24 @@ TEST_P(datagram_socket, async_receive_connected_elsewhere)
 
 TEST_P(datagram_socket, async_receive_connected_elsewhere_immediate_completion)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   {
     socket_t receiver(GetParam()), sender(GetParam());
-    service.associate(receiver);
+    receiver.associate(svc);
 
     receiver.connect(loopback(GetParam()));
     sender.send_to(sal::make_buf(case_name), receiver.local_endpoint());
-    receiver.async_receive(context.make_buf());
+    receiver.async_receive(ctx.make_io());
 
     // must be ignored if from elsewehere than connected
-    EXPECT_EQ(nullptr, context.get(0s));
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_result(context.get()),
+    socket_t::async_receive_result(ctx.poll()),
     std::system_error
   );
 }
@@ -969,61 +1022,69 @@ TEST_P(datagram_socket, async_receive_connected_elsewhere_immediate_completion)
 
 TEST_P(datagram_socket, async_receive_invalid)
 {
-  socket_t socket(loopback(GetParam()));
-  service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-  socket.async_receive(context.make_buf());
+  socket_t socket(loopback(GetParam()));
+  socket.associate(svc);
+
+  socket.async_receive(ctx.make_io());
   socket.close();
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
   std::error_code error;
-  auto result = socket.async_receive_result(io_buf, error);
+  auto result = socket.async_receive_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
   EXPECT_EQ(0U, result->transferred());
 
-  EXPECT_THROW(socket.async_receive_result(io_buf), std::system_error);
+  EXPECT_THROW(socket.async_receive_result(io), std::system_error);
 }
 
 
 TEST_P(datagram_socket, async_receive_invalid_immediate_completion)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   socket_t socket(loopback(GetParam()));
-  service.associate(socket);
+  socket.associate(svc);
 
   socket.close();
-  socket.async_receive(context.make_buf());
+  socket.async_receive(ctx.make_io());
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
   std::error_code error;
-  auto result = socket.async_receive_result(io_buf, error);
+  auto result = socket.async_receive_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0U, result->transferred());
 
-  EXPECT_THROW(socket.async_receive_result(io_buf), std::system_error);
+  EXPECT_THROW(socket.async_receive_result(io), std::system_error);
 }
 
 
 TEST_P(datagram_socket, async_receive_no_sender)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   {
     socket_t socket(loopback(GetParam()));
-    service.associate(socket);
+    socket.associate(svc);
 
-    socket.async_receive(context.make_buf());
+    socket.async_receive(ctx.make_io());
 
-    EXPECT_EQ(nullptr, context.get(0s));
-    EXPECT_EQ(nullptr, context.try_get());
+    EXPECT_EQ(nullptr, ctx.try_get());
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_result(context.get()),
+    socket_t::async_receive_result(ctx.poll()),
     std::system_error
   );
 }
@@ -1031,65 +1092,74 @@ TEST_P(datagram_socket, async_receive_no_sender)
 
 TEST_P(datagram_socket, async_receive_peek)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-  socket.async_receive(context.make_buf(), socket.peek);
+  auto endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  socket.associate(svc);
+
+  socket.async_receive(ctx.make_io(), socket.peek);
   socket.send_to(sal::make_buf(case_name), endpoint);
 
   // regardless of peek, completion should be removed from queue
-  ASSERT_NE(nullptr, context.get());
-  EXPECT_EQ(nullptr, context.get(0s));
+  ASSERT_NE(nullptr, ctx.poll());
+  EXPECT_EQ(nullptr, ctx.try_poll());
 }
 
 
 TEST_P(datagram_socket, async_receive_peek_immediate_completion)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   socket.send_to(sal::make_buf(case_name), endpoint);
-  socket.async_receive(context.make_buf(), socket.peek);
+  socket.async_receive(ctx.make_io(), socket.peek);
 
   // regardless of peek, completion should be removed from queue
-  ASSERT_NE(nullptr, context.get());
-  EXPECT_EQ(nullptr, context.get(0s));
+  ASSERT_NE(nullptr, ctx.poll());
+  EXPECT_EQ(nullptr, ctx.try_poll());
 }
 
 
 TEST_P(datagram_socket, async_receive_less_than_send)
 {
-  {
-    socket_t::endpoint_t endpoint(loopback(GetParam()));
-    socket_t socket(endpoint);
-    service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-    auto io_buf = context.make_buf();
-    io_buf->resize(case_name.size() / 2);
-    socket.async_receive(std::move(io_buf));
+  {
+    auto endpoint(loopback(GetParam()));
+    socket_t socket(endpoint);
+    socket.associate(svc);
+
+    auto io = ctx.make_io();
+    io->resize(case_name.size() / 2);
+    socket.async_receive(std::move(io));
 
     socket.send_to(sal::make_buf(case_name), endpoint);
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
 
     std::error_code error;
-    auto result = socket_t::async_receive_result(io_buf, error);
+    auto result = socket_t::async_receive_result(io, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
-    io_buf->reset();
-    socket.async_receive(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
+    io->reset();
+    socket.async_receive(std::move(io));
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_result(context.get()),
+    socket_t::async_receive_result(ctx.poll()),
     std::system_error
   );
 }
@@ -1097,35 +1167,38 @@ TEST_P(datagram_socket, async_receive_less_than_send)
 
 TEST_P(datagram_socket, async_receive_less_than_send_immediate_completion)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   {
-    socket_t::endpoint_t endpoint(loopback(GetParam()));
+    auto endpoint(loopback(GetParam()));
     socket_t socket(endpoint);
-    service.associate(socket);
+    socket.associate(svc);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
 
-    auto io_buf = context.make_buf();
-    io_buf->resize(case_name.size() / 2);
-    socket.async_receive(std::move(io_buf));
+    auto io = ctx.make_io();
+    io->resize(case_name.size() / 2);
+    socket.async_receive(std::move(io));
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
 
     std::error_code error;
-    auto result = socket_t::async_receive_result(io_buf, error);
+    auto result = socket_t::async_receive_result(io, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
     // even with partial 1st read, 2nd should have nothing
-    io_buf->reset();
-    socket.async_receive(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
+    io->reset();
+    socket.async_receive(std::move(io));
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_result(context.get()),
+    socket_t::async_receive_result(ctx.poll()),
     std::system_error
   );
 }
@@ -1136,22 +1209,25 @@ TEST_P(datagram_socket, async_receive_empty_buf)
   // couldn't unify IOCP/kqueue behaviour without additional syscall
   // but this is weird case anyway, prefer performance over unification
 
-  {
-    socket_t::endpoint_t endpoint(loopback(GetParam()));
-    socket_t socket(endpoint);
-    service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-    auto io_buf = context.make_buf();
-    io_buf->resize(0);
-    socket.async_receive(std::move(io_buf));
+  {
+    auto endpoint(loopback(GetParam()));
+    socket_t socket(endpoint);
+    socket.associate(svc);
+
+    auto io = ctx.make_io();
+    io->resize(0);
+    socket.async_receive(std::move(io));
 
     socket.send_to(sal::make_buf(case_name), endpoint);
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
 
     std::error_code error;
-    auto result = socket_t::async_receive_result(io_buf, error);
+    auto result = socket_t::async_receive_result(io, error);
     ASSERT_NE(nullptr, result);
 
 #if __sal_os_darwin
@@ -1159,15 +1235,15 @@ TEST_P(datagram_socket, async_receive_empty_buf)
     EXPECT_TRUE(!error);
     EXPECT_EQ(0U, result->transferred());
 
-    io_buf->reset();
-    socket.async_receive(std::move(io_buf));
+    io->reset();
+    socket.async_receive(std::move(io));
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
-    result = socket_t::async_receive_result(io_buf, error);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
+    result = socket_t::async_receive_result(io, error);
     ASSERT_NE(nullptr, result);
     EXPECT_TRUE(!error);
-    EXPECT_EQ(case_name, to_string(io_buf, result->transferred()));
+    EXPECT_EQ(case_name, to_s(io, result));
 
 #else
 
@@ -1175,9 +1251,9 @@ TEST_P(datagram_socket, async_receive_empty_buf)
     EXPECT_EQ(0U, result->transferred());
 
     // even with empty 1st read, 2nd should have nothing
-    io_buf->reset();
-    socket.async_receive(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
+    io->reset();
+    socket.async_receive(std::move(io));
+    EXPECT_EQ(nullptr, ctx.try_poll());
 
 #endif
   }
@@ -1185,7 +1261,7 @@ TEST_P(datagram_socket, async_receive_empty_buf)
 #if !__sal_os_darwin
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_result(context.get()),
+    socket_t::async_receive_result(ctx.poll()),
     std::system_error
   );
 #endif
@@ -1194,36 +1270,39 @@ TEST_P(datagram_socket, async_receive_empty_buf)
 
 TEST_P(datagram_socket, async_receive_empty_buf_immediate_completion)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   {
-    socket_t::endpoint_t endpoint(loopback(GetParam()));
+    auto endpoint(loopback(GetParam()));
     socket_t socket(endpoint);
-    service.associate(socket);
+    socket.associate(svc);
 
     socket.send_to(sal::make_buf(case_name), endpoint);
     std::this_thread::sleep_for(1ms);
 
-    auto io_buf = context.make_buf();
-    io_buf->resize(0);
-    socket.async_receive(std::move(io_buf));
+    auto io = ctx.make_io();
+    io->resize(0);
+    socket.async_receive(std::move(io));
 
-    io_buf = context.get();
-    ASSERT_NE(nullptr, io_buf);
+    io = ctx.poll();
+    ASSERT_NE(nullptr, io);
 
     std::error_code error;
-    auto result = socket_t::async_receive_result(io_buf, error);
+    auto result = socket_t::async_receive_result(io, error);
     ASSERT_NE(nullptr, result);
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_EQ(0U, result->transferred());
 
     // even with empty 1st read, 2nd should have nothing
-    io_buf->reset();
-    socket.async_receive(std::move(io_buf));
-    EXPECT_EQ(nullptr, context.get(0s));
+    io->reset();
+    socket.async_receive(std::move(io));
+    EXPECT_EQ(nullptr, ctx.try_poll());
   }
 
   // error from closed socket still in context
   EXPECT_THROW(
-    socket_t::async_receive_result(context.get()),
+    socket_t::async_receive_result(ctx.poll()),
     std::system_error
   );
 }
@@ -1231,14 +1310,17 @@ TEST_P(datagram_socket, async_receive_empty_buf_immediate_completion)
 
 TEST_P(datagram_socket, async_send_to)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   // send
-  auto io_buf = make_buf(case_name);
-  io_buf->user_data(1);
-  socket.async_send_to(std::move(io_buf), endpoint);
+  auto io = from_s(ctx, case_name);
+  io->user_data(1);
+  socket.async_send_to(std::move(io), endpoint);
 
   // receive
   char buf[1024];
@@ -1248,39 +1330,41 @@ TEST_P(datagram_socket, async_send_to)
   EXPECT_EQ(socket.local_endpoint(), endpoint);
 
   // async send result
-  io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  EXPECT_EQ(1U, io_buf->user_data());
-  auto result = socket.async_send_to_result(io_buf);
+  io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  EXPECT_EQ(1U, io->user_data());
+  auto result = socket.async_send_to_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 
-  EXPECT_EQ(nullptr, socket.async_receive_from_result(io_buf));
+  EXPECT_EQ(nullptr, socket.async_receive_from_result(io));
 }
 
 
 TEST_P(datagram_socket, async_send_to_invalid)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
   socket.close();
 
   // send
-  socket.async_send_to(make_buf(case_name), endpoint);
+  socket.async_send_to(from_s(ctx, case_name), endpoint);
 
   // async send result with error
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
   std::error_code error;
-  auto result = socket.async_send_to_result(io_buf, error);
+  auto result = socket.async_send_to_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
-    socket.async_send_to_result(io_buf),
+    socket.async_send_to_result(io),
     std::system_error
   );
 }
@@ -1288,14 +1372,17 @@ TEST_P(datagram_socket, async_send_to_invalid)
 
 TEST_P(datagram_socket, async_send_to_empty)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   // send
-  auto io_buf = context.make_buf();
-  io_buf->resize(0);
-  socket.async_send_to(std::move(io_buf), endpoint);
+  auto io = ctx.make_io();
+  io->resize(0);
+  socket.async_send_to(std::move(io), endpoint);
 
   // receive
   char buf[1024];
@@ -1304,9 +1391,9 @@ TEST_P(datagram_socket, async_send_to_empty)
   EXPECT_EQ(socket.local_endpoint(), endpoint);
 
   // async send result
-  io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_send_to_result(io_buf);
+  io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  auto result = socket.async_send_to_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
 }
@@ -1314,13 +1401,16 @@ TEST_P(datagram_socket, async_send_to_empty)
 
 TEST_P(datagram_socket, async_send_to_do_not_route)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   // send
-  auto io_buf = make_buf(case_name);
-  socket.async_send_to(std::move(io_buf), endpoint, socket.do_not_route);
+  auto io = from_s(ctx, case_name);
+  socket.async_send_to(std::move(io), endpoint, socket.do_not_route);
 
   // receive
   char buf[1024];
@@ -1330,32 +1420,38 @@ TEST_P(datagram_socket, async_send_to_do_not_route)
   EXPECT_EQ(socket.local_endpoint(), endpoint);
 
   // async send result
-  io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_send_to_result(io_buf);
+  io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  auto result = socket.async_send_to_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 }
 
 
+#if !__sal_os_windows
+
+
 TEST_P(datagram_socket, async_send_to_overflow)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
-  socket_t socket(endpoint);
-  service.associate(socket);
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
 
-  int send_buffer_size = 4*1024;
+  auto endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  socket.associate(svc);
+
+  int send_buffer_size = sal::net::async_service_t::io_t::max_size();
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
   std::array<std::thread, 4> threads;
-  auto per_thread_sends = (send_buffer_size / sal::net::io_buf_t::max_size()) * 16;
+  auto per_thread_sends = (send_buffer_size / sal::net::async_service_t::io_t::max_size()) * 128;
   auto total_sends = per_thread_sends * threads.max_size();
 
   // receives
   for (auto i = 0U;  i != total_sends;  ++i)
   {
-    socket.async_receive_from(context.make_buf());
+    socket.async_receive_from(ctx.make_io());
   }
 
   std::atomic<size_t> sends{}, receives{};
@@ -1363,12 +1459,12 @@ TEST_P(datagram_socket, async_send_to_overflow)
   {
     thread = std::thread([&]
     {
-      auto ctx = service.make_context();
+      auto ctx = svc.make_context();
 
       // sends
       for (auto i = 0U;  i != per_thread_sends;  ++i)
       {
-        socket.async_send_to(ctx.make_buf(), endpoint);
+        socket.async_send_to(ctx.make_io(), endpoint);
       }
 
       // completions
@@ -1376,15 +1472,15 @@ TEST_P(datagram_socket, async_send_to_overflow)
       while (std::chrono::steady_clock::now() < stop_time)
       {
         std::error_code error;
-        if (auto io_buf = ctx.get(10ms, error))
+        if (auto io = ctx.poll(10ms, error))
         {
           EXPECT_TRUE(!error) << "context error: " << error.message();
 
-          if (socket.async_send_to_result(io_buf, error))
+          if (socket.async_send_to_result(io, error))
           {
             sends++;
           }
-          else if (socket.async_receive_from_result(io_buf, error))
+          else if (socket.async_receive_from_result(io, error))
           {
             receives++;
           }
@@ -1408,24 +1504,67 @@ TEST_P(datagram_socket, async_send_to_overflow)
     thread.join();
   }
 
-  // must send everything
+  // must send everything (but can drop any number of receives)
   ASSERT_EQ(total_sends, sends);
-
-  // but may drop some
-  // (randomly checking for at least 75%)
-  EXPECT_GT(total_sends, receives * 3 / 4);
 }
+
+
+TEST_P(datagram_socket, async_send_to_overflow_and_socket_close)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
+  socket_t socket(endpoint);
+  socket.associate(svc);
+
+  int send_buffer_size = sal::net::async_service_t::io_t::max_size();
+  socket.set_option(sal::net::send_buffer_size(send_buffer_size));
+  socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
+
+  auto total_sends = send_buffer_size / sal::net::async_service_t::io_t::max_size() * 128;
+  for (auto i = 0U;  i != total_sends;  ++i)
+  {
+    socket.async_send_to(ctx.make_io(), endpoint);
+  }
+
+  socket.close();
+
+  auto sends = 0U, error_sends = 0U;
+  for (auto i = 0U;  i != total_sends;  ++i)
+  {
+    auto io = ctx.try_poll();
+
+    std::error_code error;
+    EXPECT_NE(nullptr, socket.async_send_to_result(io, error));
+    if (error)
+    {
+      error_sends++;
+    }
+    else
+    {
+      sends++;
+    }
+  }
+  EXPECT_EQ(total_sends, sends + error_sends);
+}
+
+
+#endif // !__sal_os_windows
 
 
 TEST_P(datagram_socket, async_send)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   // send
   socket.connect(endpoint);
-  socket.async_send(make_buf(case_name));
+  socket.async_send(from_s(ctx, case_name));
 
   // receive
   char buf[1024];
@@ -1435,38 +1574,40 @@ TEST_P(datagram_socket, async_send)
   EXPECT_EQ(socket.local_endpoint(), endpoint);
 
   // async send result
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_send_result(io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  auto result = socket.async_send_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 
-  EXPECT_EQ(nullptr, socket.async_receive_result(io_buf));
+  EXPECT_EQ(nullptr, socket.async_receive_result(io));
 }
 
 
 TEST_P(datagram_socket, async_send_not_connected)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   // send
-  socket.async_send(make_buf(case_name));
+  socket.async_send(from_s(ctx, case_name));
 
   // async send result
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
   std::error_code error;
-  auto result = socket.async_send_result(io_buf, error);
+  auto result = socket.async_send_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::not_connected, error);
-  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
-    socket.async_send_result(io_buf),
+    socket.async_send_result(io),
     std::system_error
   );
 }
@@ -1474,13 +1615,16 @@ TEST_P(datagram_socket, async_send_not_connected)
 
 TEST_P(datagram_socket, async_send_before_shutdown)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   // send
   socket.connect(endpoint);
-  socket.async_send(make_buf(case_name));
+  socket.async_send(from_s(ctx, case_name));
   socket.shutdown(socket.shutdown_send);
 
   // receive
@@ -1491,9 +1635,9 @@ TEST_P(datagram_socket, async_send_before_shutdown)
   EXPECT_EQ(socket.local_endpoint(), endpoint);
 
   // async send result
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_send_result(io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  auto result = socket.async_send_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 }
@@ -1501,24 +1645,27 @@ TEST_P(datagram_socket, async_send_before_shutdown)
 
 TEST_P(datagram_socket, async_send_after_shutdown)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
 
   socket.connect(endpoint);
   socket.shutdown(socket.shutdown_send);
-  socket.async_send(make_buf(case_name));
+  socket.async_send(from_s(ctx, case_name));
 
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
 
   std::error_code error;
-  auto result = socket.async_send_result(io_buf, error);
+  auto result = socket.async_send_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::broken_pipe, error);
 
   EXPECT_THROW(
-    socket.async_send_result(io_buf),
+    socket.async_send_result(io),
     std::system_error
   );
 }
@@ -1526,26 +1673,28 @@ TEST_P(datagram_socket, async_send_after_shutdown)
 
 TEST_P(datagram_socket, async_send_invalid)
 {
-  socket_t::endpoint_t endpoint(loopback(GetParam()));
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  auto endpoint(loopback(GetParam()));
   socket_t socket(endpoint);
-  service.associate(socket);
+  socket.associate(svc);
   socket.close();
 
   // send
-  socket.async_send(make_buf(case_name));
+  socket.async_send(from_s(ctx, case_name));
 
   // async send result with error
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
   std::error_code error;
-  auto result = socket.async_send_result(io_buf, error);
+  auto result = socket.async_send_result(io, error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::bad_file_descriptor, error);
-  EXPECT_EQ(0U, result->transferred());
 
   // with exception
   EXPECT_THROW(
-    socket.async_send_result(io_buf),
+    socket.async_send_result(io),
     std::system_error
   );
 }
@@ -1553,14 +1702,17 @@ TEST_P(datagram_socket, async_send_invalid)
 
 TEST_P(datagram_socket, async_send_empty)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   socket_t socket(loopback(GetParam()));
   socket.connect(socket.local_endpoint());
-  service.associate(socket);
+  socket.associate(svc);
 
   // send
-  auto io_buf = context.make_buf();
-  io_buf->resize(0);
-  socket.async_send(std::move(io_buf));
+  auto io = ctx.make_io();
+  io->resize(0);
+  socket.async_send(std::move(io));
 
   // receive
   char buf[1024];
@@ -1568,9 +1720,9 @@ TEST_P(datagram_socket, async_send_empty)
   EXPECT_EQ(0U, socket.receive(sal::make_buf(buf)));
 
   // async send result
-  io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_send_result(io_buf);
+  io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  auto result = socket.async_send_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred());
 }
@@ -1578,12 +1730,15 @@ TEST_P(datagram_socket, async_send_empty)
 
 TEST_P(datagram_socket, async_send_do_not_route)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   socket_t socket(loopback(GetParam()));
   socket.connect(socket.local_endpoint());
-  service.associate(socket);
+  socket.associate(svc);
 
   // send
-  socket.async_send(make_buf(case_name), socket.do_not_route);
+  socket.async_send(from_s(ctx, case_name), socket.do_not_route);
 
   // receive
   char buf[1024];
@@ -1592,32 +1747,38 @@ TEST_P(datagram_socket, async_send_do_not_route)
   EXPECT_EQ(buf, case_name);
 
   // async send result
-  auto io_buf = context.get();
-  ASSERT_NE(nullptr, io_buf);
-  auto result = socket.async_send_result(io_buf);
+  auto io = ctx.poll();
+  ASSERT_NE(nullptr, io);
+  auto result = socket.async_send_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(case_name.size(), result->transferred());
 }
 
 
+#if !__sal_os_windows
+
+
 TEST_P(datagram_socket, async_send_overflow)
 {
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
   socket_t socket(loopback(GetParam()));
   socket.connect(socket.local_endpoint());
-  service.associate(socket);
+  socket.associate(svc);
 
-  int send_buffer_size = 4*1024;
+  int send_buffer_size = sal::net::async_service_t::io_t::max_size();
   socket.set_option(sal::net::send_buffer_size(send_buffer_size));
   socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
 
   std::array<std::thread, 4> threads;
-  size_t per_thread_sends = (send_buffer_size / sal::net::io_buf_t::max_size()) * 16;
+  size_t per_thread_sends = (send_buffer_size / sal::net::async_service_t::io_t::max_size()) * 128;
   size_t total_sends = per_thread_sends * threads.max_size();
 
   // receives
   for (auto i = 0U;  i != total_sends;  ++i)
   {
-    socket.async_receive(context.make_buf());
+    socket.async_receive(ctx.make_io());
   }
 
   std::atomic<size_t> sends{}, receives{};
@@ -1625,12 +1786,12 @@ TEST_P(datagram_socket, async_send_overflow)
   {
     thread = std::thread([&]
     {
-      auto ctx = service.make_context();
+      auto ctx = svc.make_context();
 
       // sends
       for (auto i = 0U;  i != per_thread_sends;  ++i)
       {
-        socket.async_send(ctx.make_buf());
+        socket.async_send(ctx.make_io());
       }
 
       // completions
@@ -1638,15 +1799,15 @@ TEST_P(datagram_socket, async_send_overflow)
       while (std::chrono::steady_clock::now() < stop_time)
       {
         std::error_code error;
-        if (auto io_buf = ctx.get(10ms, error))
+        if (auto io = ctx.poll(10ms, error))
         {
           EXPECT_TRUE(!error) << "context error: " << error.message();
 
-          if (socket.async_send_result(io_buf, error))
+          if (socket.async_send_result(io, error))
           {
             sends++;
           }
-          else if (socket.async_receive_result(io_buf, error))
+          else if (socket.async_receive_result(io, error))
           {
             receives++;
           }
@@ -1670,13 +1831,53 @@ TEST_P(datagram_socket, async_send_overflow)
     thread.join();
   }
 
-  // must send everything
+  // must send everything (but can drop any number of receives)
   ASSERT_EQ(total_sends, sends);
-
-  // but may drop some
-  // (randomly checking for at least 75%)
-  EXPECT_GT(total_sends, receives * 3 / 4);
 }
+
+
+TEST_P(datagram_socket, async_send_overflow_and_socket_close)
+{
+  sal::net::async_service_t svc;
+  auto ctx = svc.make_context();
+
+  socket_t socket(loopback(GetParam()));
+  socket.connect(socket.local_endpoint());
+  socket.associate(svc);
+
+  int send_buffer_size = sal::net::async_service_t::io_t::max_size();
+  socket.set_option(sal::net::send_buffer_size(send_buffer_size));
+  socket.get_option(sal::net::send_buffer_size(&send_buffer_size));
+
+  auto total_sends = send_buffer_size / sal::net::async_service_t::io_t::max_size() * 128;
+  for (auto i = 0U;  i != total_sends;  ++i)
+  {
+    socket.async_send(ctx.make_io());
+  }
+
+  socket.close();
+
+  size_t sends = 0U, error_sends = 0U;
+  for (auto i = 0U;  i != total_sends;  ++i)
+  {
+    auto io = ctx.try_poll();
+
+    std::error_code error;
+    EXPECT_NE(nullptr, socket.async_send_result(io, error));
+    if (error)
+    {
+      error_sends++;
+    }
+    else
+    {
+      sends++;
+    }
+  }
+  EXPECT_EQ(total_sends, sends + error_sends);
+}
+
+
+#endif // !__sal_os_windows
 
 
 } // namespace
