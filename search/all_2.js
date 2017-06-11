@@ -23,5 +23,6 @@ var searchData=
   ['const_5fiterator',['const_iterator',['../classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#aa6087f46c4413f194393d79c959c7e79',1,'sal::net::ip::basic_resolver_results_t']]],
   ['const_5fptr',['const_ptr',['../classsal_1_1lockable__t.html#aeb068d737b856ed5c91f8062f75280f7',1,'sal::lockable_t']]],
   ['const_5freference',['const_reference',['../classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#aeb856316f0cbd1f6efa6337f2e4ff8cc',1,'sal::net::ip::basic_resolver_results_t']]],
+  ['context_5ft',['context_t',['../classsal_1_1net_1_1async__service__t_1_1context__t.html',1,'sal::net::async_service_t::context_t'],['../classsal_1_1net_1_1async__service__t_1_1context__t.html#a21a1e14716990c97d939106126dcd7f6',1,'sal::net::async_service_t::context_t::context_t()']]],
   ['create',['create',['../classsal_1_1file__t.html#a56c67f59794862c8b0e0a1042711d770',1,'sal::file_t::create(const std::string &amp;name, open_mode mode, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#ad1591e107ab799d68ba8d26bc3651bbb',1,'sal::file_t::create(const std::string &amp;name, open_mode mode)']]]
 ];

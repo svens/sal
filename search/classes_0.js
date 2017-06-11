@@ -10,5 +10,6 @@ var searchData=
   ['async_5freceive_5ft',['async_receive_t',['../structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html',1,'sal::net::basic_datagram_socket_t&lt; Protocol &gt;::async_receive_t'],['../structsal_1_1net_1_1basic__stream__socket__t_1_1async__receive__t.html',1,'sal::net::basic_stream_socket_t&lt; Protocol &gt;::async_receive_t']]],
   ['async_5fsend_5ft',['async_send_t',['../structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html',1,'sal::net::basic_datagram_socket_t&lt; Protocol &gt;::async_send_t'],['../structsal_1_1net_1_1basic__stream__socket__t_1_1async__send__t.html',1,'sal::net::basic_stream_socket_t&lt; Protocol &gt;::async_send_t']]],
   ['async_5fsend_5fto_5ft',['async_send_to_t',['../structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html',1,'sal::net::basic_datagram_socket_t']]],
+  ['async_5fservice_5ft',['async_service_t',['../classsal_1_1net_1_1async__service__t.html',1,'sal::net']]],
   ['async_5fworker_5ft',['async_worker_t',['../classsal_1_1logger_1_1async__worker__t.html',1,'sal::logger']]]
 ];

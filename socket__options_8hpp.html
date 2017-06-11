@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.11.0</span>
+   &#160;<span id="projectnumber">0.12.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -90,6 +90,7 @@ $(document).ready(function(){initNavTree('socket__options_8hpp.html','');});
 
 <div class="header">
   <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">socket_options.hpp File Reference</div>  </div>
@@ -104,385 +105,88 @@ $(document).ready(function(){initNavTree('socket__options_8hpp.html','');});
 </div>
 <p><a href="socket__options_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacesal_1_1net"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html">sal::net</a></td></tr>
+<tr class="memdesc:namespacesal_1_1net"><td class="mdescLeft">&#160;</td><td class="mdescRight">Networking primitives (sockets, resolver, etc) <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae0ce50aba8c1a8fd2ec0019aaef1ceae"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#ae0ce50aba8c1a8fd2ec0019aaef1ceae">sal::net::broadcast</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_BROADCAST, bool &gt;</td></tr>
-<tr class="memdesc:ae0ce50aba8c1a8fd2ec0019aaef1ceae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether a socket permits sending of broadcast messages (if supported by protocol).  <a href="socket__options_8hpp.html#ae0ce50aba8c1a8fd2ec0019aaef1ceae">More...</a><br /></td></tr>
+<tr class="memitem:ae0ce50aba8c1a8fd2ec0019aaef1ceae"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#ae0ce50aba8c1a8fd2ec0019aaef1ceae">sal::net::broadcast</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_BROADCAST, bool &gt;</td></tr>
+<tr class="memdesc:ae0ce50aba8c1a8fd2ec0019aaef1ceae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether a socket permits sending of broadcast messages (if supported by protocol).  <a href="namespacesal_1_1net.html#ae0ce50aba8c1a8fd2ec0019aaef1ceae">More...</a><br /></td></tr>
 <tr class="separator:ae0ce50aba8c1a8fd2ec0019aaef1ceae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adcd672acee25553230447d976a8a50a5"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#adcd672acee25553230447d976a8a50a5">sal::net::broadcast</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_BROADCAST, bool &gt;</td></tr>
-<tr class="memdesc:adcd672acee25553230447d976a8a50a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether a socket permits sending of broadcast messages, (if supported by protocol).  <a href="socket__options_8hpp.html#adcd672acee25553230447d976a8a50a5">More...</a><br /></td></tr>
+<tr class="memitem:adcd672acee25553230447d976a8a50a5"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#adcd672acee25553230447d976a8a50a5">sal::net::broadcast</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_BROADCAST, bool &gt;</td></tr>
+<tr class="memdesc:adcd672acee25553230447d976a8a50a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether a socket permits sending of broadcast messages, (if supported by protocol).  <a href="namespacesal_1_1net.html#adcd672acee25553230447d976a8a50a5">More...</a><br /></td></tr>
 <tr class="separator:adcd672acee25553230447d976a8a50a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aadc5f4818c9d0602a2de1ff5bec8516e"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#aadc5f4818c9d0602a2de1ff5bec8516e">sal::net::debug</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_DEBUG, bool &gt;</td></tr>
-<tr class="memdesc:aadc5f4818c9d0602a2de1ff5bec8516e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether debugging information is recorded by the underlying protocol.  <a href="socket__options_8hpp.html#aadc5f4818c9d0602a2de1ff5bec8516e">More...</a><br /></td></tr>
+<tr class="memitem:aadc5f4818c9d0602a2de1ff5bec8516e"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#aadc5f4818c9d0602a2de1ff5bec8516e">sal::net::debug</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_DEBUG, bool &gt;</td></tr>
+<tr class="memdesc:aadc5f4818c9d0602a2de1ff5bec8516e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether debugging information is recorded by the underlying protocol.  <a href="namespacesal_1_1net.html#aadc5f4818c9d0602a2de1ff5bec8516e">More...</a><br /></td></tr>
 <tr class="separator:aadc5f4818c9d0602a2de1ff5bec8516e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8bdca4034a8116b477eb5f82a5f147c2"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a8bdca4034a8116b477eb5f82a5f147c2">sal::net::debug</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_DEBUG, bool &gt;</td></tr>
-<tr class="memdesc:a8bdca4034a8116b477eb5f82a5f147c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether debugging information is recorded by the underlying protocol.  <a href="socket__options_8hpp.html#a8bdca4034a8116b477eb5f82a5f147c2">More...</a><br /></td></tr>
+<tr class="memitem:a8bdca4034a8116b477eb5f82a5f147c2"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a8bdca4034a8116b477eb5f82a5f147c2">sal::net::debug</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_DEBUG, bool &gt;</td></tr>
+<tr class="memdesc:a8bdca4034a8116b477eb5f82a5f147c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether debugging information is recorded by the underlying protocol.  <a href="namespacesal_1_1net.html#a8bdca4034a8116b477eb5f82a5f147c2">More...</a><br /></td></tr>
 <tr class="separator:a8bdca4034a8116b477eb5f82a5f147c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06c2f5eaa662d5823e5e90b833efe4a1"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a06c2f5eaa662d5823e5e90b833efe4a1">sal::net::do_not_route</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_DONTROUTE, bool &gt;</td></tr>
-<tr class="memdesc:a06c2f5eaa662d5823e5e90b833efe4a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether outgoing messages bypass standard routing facilities.  <a href="socket__options_8hpp.html#a06c2f5eaa662d5823e5e90b833efe4a1">More...</a><br /></td></tr>
+<tr class="memitem:a06c2f5eaa662d5823e5e90b833efe4a1"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a06c2f5eaa662d5823e5e90b833efe4a1">sal::net::do_not_route</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_DONTROUTE, bool &gt;</td></tr>
+<tr class="memdesc:a06c2f5eaa662d5823e5e90b833efe4a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether outgoing messages bypass standard routing facilities.  <a href="namespacesal_1_1net.html#a06c2f5eaa662d5823e5e90b833efe4a1">More...</a><br /></td></tr>
 <tr class="separator:a06c2f5eaa662d5823e5e90b833efe4a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a240dce30dc978322a6212d98715cd500"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a240dce30dc978322a6212d98715cd500">sal::net::do_not_route</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_DONTROUTE, bool &gt;</td></tr>
-<tr class="memdesc:a240dce30dc978322a6212d98715cd500"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether outgoing messages bypass standard routing facilities.  <a href="socket__options_8hpp.html#a240dce30dc978322a6212d98715cd500">More...</a><br /></td></tr>
+<tr class="memitem:a240dce30dc978322a6212d98715cd500"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a240dce30dc978322a6212d98715cd500">sal::net::do_not_route</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_DONTROUTE, bool &gt;</td></tr>
+<tr class="memdesc:a240dce30dc978322a6212d98715cd500"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether outgoing messages bypass standard routing facilities.  <a href="namespacesal_1_1net.html#a240dce30dc978322a6212d98715cd500">More...</a><br /></td></tr>
 <tr class="separator:a240dce30dc978322a6212d98715cd500"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aafe66c2dba2c75193688615becf859bc"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#aafe66c2dba2c75193688615becf859bc">sal::net::keep_alive</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_KEEPALIVE, bool &gt;</td></tr>
-<tr class="memdesc:aafe66c2dba2c75193688615becf859bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether a socket permits sending of keep-alive messages (if supported by the protocol)  <a href="socket__options_8hpp.html#aafe66c2dba2c75193688615becf859bc">More...</a><br /></td></tr>
+<tr class="memitem:aafe66c2dba2c75193688615becf859bc"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#aafe66c2dba2c75193688615becf859bc">sal::net::keep_alive</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_KEEPALIVE, bool &gt;</td></tr>
+<tr class="memdesc:aafe66c2dba2c75193688615becf859bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether a socket permits sending of keep-alive messages (if supported by the protocol)  <a href="namespacesal_1_1net.html#aafe66c2dba2c75193688615becf859bc">More...</a><br /></td></tr>
 <tr class="separator:aafe66c2dba2c75193688615becf859bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12ac005442f3805f38883c3e0912f10e"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a12ac005442f3805f38883c3e0912f10e">sal::net::keep_alive</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_KEEPALIVE, bool &gt;</td></tr>
-<tr class="memdesc:a12ac005442f3805f38883c3e0912f10e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether a socket permits sending of keep-alive messages (if supported by the protocol)  <a href="socket__options_8hpp.html#a12ac005442f3805f38883c3e0912f10e">More...</a><br /></td></tr>
+<tr class="memitem:a12ac005442f3805f38883c3e0912f10e"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a12ac005442f3805f38883c3e0912f10e">sal::net::keep_alive</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_KEEPALIVE, bool &gt;</td></tr>
+<tr class="memdesc:a12ac005442f3805f38883c3e0912f10e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether a socket permits sending of keep-alive messages (if supported by the protocol)  <a href="namespacesal_1_1net.html#a12ac005442f3805f38883c3e0912f10e">More...</a><br /></td></tr>
 <tr class="separator:a12ac005442f3805f38883c3e0912f10e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a6c7d565ff4c43701c34408a53cae55"><td class="memItemLeft" align="right" valign="top"><a id="a2a6c7d565ff4c43701c34408a53cae55"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a2a6c7d565ff4c43701c34408a53cae55">sal::net::reuse_address</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_REUSEADDR, bool &gt;</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a2a6c7d565ff4c43701c34408a53cae55">sal::net::reuse_address</a> (bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_REUSEADDR, bool &gt;</td></tr>
 <tr class="memdesc:a2a6c7d565ff4c43701c34408a53cae55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether the validation of endpoint used for binding socket should allow the reuse of local endpoints (if supported by protocol). <br /></td></tr>
 <tr class="separator:a2a6c7d565ff4c43701c34408a53cae55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94ff6564170c8b534f8270b66d2100b5"><td class="memItemLeft" align="right" valign="top"><a id="a94ff6564170c8b534f8270b66d2100b5"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a94ff6564170c8b534f8270b66d2100b5">sal::net::reuse_address</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_REUSEADDR, bool &gt;</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a94ff6564170c8b534f8270b66d2100b5">sal::net::reuse_address</a> (bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_REUSEADDR, bool &gt;</td></tr>
 <tr class="memdesc:a94ff6564170c8b534f8270b66d2100b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether the validation of endpoint used for binding socket should allow the reuse of local endpoints (if supported by protocol). <br /></td></tr>
 <tr class="separator:a94ff6564170c8b534f8270b66d2100b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add172facef3587d3f456ace471e1deb2"><td class="memItemLeft" align="right" valign="top"><a id="add172facef3587d3f456ace471e1deb2"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#add172facef3587d3f456ace471e1deb2">sal::net::receive_buffer_size</a> (int value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_RCVBUF, int &gt;</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#add172facef3587d3f456ace471e1deb2">sal::net::receive_buffer_size</a> (int value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_RCVBUF, int &gt;</td></tr>
 <tr class="memdesc:add172facef3587d3f456ace471e1deb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the size of receive buffer associated with socket. <br /></td></tr>
 <tr class="separator:add172facef3587d3f456ace471e1deb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c2ff07a8a7663b4367a4345c33d830b"><td class="memItemLeft" align="right" valign="top"><a id="a0c2ff07a8a7663b4367a4345c33d830b"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a0c2ff07a8a7663b4367a4345c33d830b">sal::net::receive_buffer_size</a> (int *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_RCVBUF, int &gt;</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a0c2ff07a8a7663b4367a4345c33d830b">sal::net::receive_buffer_size</a> (int *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_RCVBUF, int &gt;</td></tr>
 <tr class="memdesc:a0c2ff07a8a7663b4367a4345c33d830b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query the size of receive buffer associated with socket. <br /></td></tr>
 <tr class="separator:a0c2ff07a8a7663b4367a4345c33d830b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a953fd2bfe0512b59b7d90fba509afd4a"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a953fd2bfe0512b59b7d90fba509afd4a">sal::net::receive_low_watermark</a> (int value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_RCVLOWAT, int &gt;</td></tr>
-<tr class="memdesc:a953fd2bfe0512b59b7d90fba509afd4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify the minimum number of bytes to process for socket input operations.  <a href="socket__options_8hpp.html#a953fd2bfe0512b59b7d90fba509afd4a">More...</a><br /></td></tr>
+<tr class="memitem:a953fd2bfe0512b59b7d90fba509afd4a"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a953fd2bfe0512b59b7d90fba509afd4a">sal::net::receive_low_watermark</a> (int value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_RCVLOWAT, int &gt;</td></tr>
+<tr class="memdesc:a953fd2bfe0512b59b7d90fba509afd4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify the minimum number of bytes to process for socket input operations.  <a href="namespacesal_1_1net.html#a953fd2bfe0512b59b7d90fba509afd4a">More...</a><br /></td></tr>
 <tr class="separator:a953fd2bfe0512b59b7d90fba509afd4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6dbabef6d7237377284754667faf12c"><td class="memItemLeft" align="right" valign="top"><a id="af6dbabef6d7237377284754667faf12c"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#af6dbabef6d7237377284754667faf12c">sal::net::receive_low_watermark</a> (int *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_RCVLOWAT, int &gt;</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#af6dbabef6d7237377284754667faf12c">sal::net::receive_low_watermark</a> (int *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_RCVLOWAT, int &gt;</td></tr>
 <tr class="memdesc:af6dbabef6d7237377284754667faf12c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query the minimum number of bytes to process for socket input operations. <br /></td></tr>
 <tr class="separator:af6dbabef6d7237377284754667faf12c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a073470566612c00400e1fa66fce5d851"><td class="memItemLeft" align="right" valign="top"><a id="a073470566612c00400e1fa66fce5d851"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a073470566612c00400e1fa66fce5d851">sal::net::send_buffer_size</a> (int value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_SNDBUF, int &gt;</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a073470566612c00400e1fa66fce5d851">sal::net::send_buffer_size</a> (int value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_SNDBUF, int &gt;</td></tr>
 <tr class="memdesc:a073470566612c00400e1fa66fce5d851"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the size of send buffer associated with socket. <br /></td></tr>
 <tr class="separator:a073470566612c00400e1fa66fce5d851"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ce398beaa65104f1a1b05f23d484198"><td class="memItemLeft" align="right" valign="top"><a id="a3ce398beaa65104f1a1b05f23d484198"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a3ce398beaa65104f1a1b05f23d484198">sal::net::send_buffer_size</a> (int *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_SNDBUF, int &gt;</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a3ce398beaa65104f1a1b05f23d484198">sal::net::send_buffer_size</a> (int *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_SNDBUF, int &gt;</td></tr>
 <tr class="memdesc:a3ce398beaa65104f1a1b05f23d484198"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query the size of send buffer associated with socket. <br /></td></tr>
 <tr class="separator:a3ce398beaa65104f1a1b05f23d484198"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0848a8f1821b0d541e3961043f1c33bc"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a0848a8f1821b0d541e3961043f1c33bc">sal::net::send_low_watermark</a> (int value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_SNDLOWAT, int &gt;</td></tr>
-<tr class="memdesc:a0848a8f1821b0d541e3961043f1c33bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify the minimum number of bytes to process for socket output operations.  <a href="socket__options_8hpp.html#a0848a8f1821b0d541e3961043f1c33bc">More...</a><br /></td></tr>
+<tr class="memitem:a0848a8f1821b0d541e3961043f1c33bc"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a0848a8f1821b0d541e3961043f1c33bc">sal::net::send_low_watermark</a> (int value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_SNDLOWAT, int &gt;</td></tr>
+<tr class="memdesc:a0848a8f1821b0d541e3961043f1c33bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify the minimum number of bytes to process for socket output operations.  <a href="namespacesal_1_1net.html#a0848a8f1821b0d541e3961043f1c33bc">More...</a><br /></td></tr>
 <tr class="separator:a0848a8f1821b0d541e3961043f1c33bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade501a1a09d051f6ce95f72b1f4c3e7a"><td class="memItemLeft" align="right" valign="top"><a id="ade501a1a09d051f6ce95f72b1f4c3e7a"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#ade501a1a09d051f6ce95f72b1f4c3e7a">sal::net::send_low_watermark</a> (int *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_SNDLOWAT, int &gt;</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#ade501a1a09d051f6ce95f72b1f4c3e7a">sal::net::send_low_watermark</a> (int *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_SNDLOWAT, int &gt;</td></tr>
 <tr class="memdesc:ade501a1a09d051f6ce95f72b1f4c3e7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query the minimum number of bytes to process for socket output operations. <br /></td></tr>
 <tr class="separator:ade501a1a09d051f6ce95f72b1f4c3e7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a19d10202ca208279b47d871cdd617dd7"><td class="memItemLeft" align="right" valign="top"><a id="a19d10202ca208279b47d871cdd617dd7"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#a19d10202ca208279b47d871cdd617dd7">sal::net::linger</a> (bool on, std::chrono::seconds timeout) noexcept -&gt; __bits::socket_option_linger_setter_t</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a19d10202ca208279b47d871cdd617dd7">sal::net::linger</a> (bool on, std::chrono::seconds timeout) noexcept -&gt; __bits::socket_option_linger_setter_t</td></tr>
 <tr class="memdesc:a19d10202ca208279b47d871cdd617dd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the behaviour when socket is closed and unsent data is present. <br /></td></tr>
 <tr class="separator:a19d10202ca208279b47d871cdd617dd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8c91fbed608c697a59592bd3a9c710a"><td class="memItemLeft" align="right" valign="top"><a id="ad8c91fbed608c697a59592bd3a9c710a"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket__options_8hpp.html#ad8c91fbed608c697a59592bd3a9c710a">sal::net::linger</a> (bool *on, std::chrono::seconds *timeout) noexcept -&gt; __bits::socket_option_linger_getter_t</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#ad8c91fbed608c697a59592bd3a9c710a">sal::net::linger</a> (bool *on, std::chrono::seconds *timeout) noexcept -&gt; __bits::socket_option_linger_getter_t</td></tr>
 <tr class="memdesc:ad8c91fbed608c697a59592bd3a9c710a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query the behaviour when socket is closed and unsent data is present. <br /></td></tr>
 <tr class="separator:ad8c91fbed608c697a59592bd3a9c710a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Socket option getters and setters. </p>
-<p>Usage: </p><div class="fragment"><div class="line">some_socket_t socket;</div><div class="line"></div><div class="line"><span class="comment">// getting SO_KEEPALIVE flag</span></div><div class="line"><span class="keywordtype">bool</span> keepalive;</div><div class="line">socket.get_option(sal::net::keep_alive(&amp;keepalive));</div><div class="line"><span class="keywordflow">if</span> (keep_alive) ...</div><div class="line"></div><div class="line"><span class="comment">// set SO_KEEPALIVE off</span></div><div class="line">socket.set_option(<a class="code" href="namespacesal.html">sal</a>:net::keep_alive(<span class="keyword">false</span>));</div></div><!-- fragment --> </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_ae0ce50aba8c1a8fd2ec0019aaef1ceae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_ae0ce50aba8c1a8fd2ec0019aaef1ceae">&#9670;&nbsp;</a></span>broadcast() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::broadcast </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_setter_t&lt;SOL_SOCKET, SO_BROADCAST, bool&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Set whether a socket permits sending of broadcast messages (if supported by protocol). </p>
-<dl class="section note"><dt>Note</dt><dd>Valid only for datagram sockets. </dd></dl>
-
-</div>
-</div>
-<a id="file_adcd672acee25553230447d976a8a50a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_adcd672acee25553230447d976a8a50a5">&#9670;&nbsp;</a></span>broadcast() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::broadcast </td>
-          <td>(</td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_getter_t&lt;SOL_SOCKET, SO_BROADCAST, bool&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Query whether a socket permits sending of broadcast messages, (if supported by protocol). </p>
-<dl class="section note"><dt>Note</dt><dd>Valid only for datagram sockets. </dd></dl>
-
-</div>
-</div>
-<a id="file_aadc5f4818c9d0602a2de1ff5bec8516e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_aadc5f4818c9d0602a2de1ff5bec8516e">&#9670;&nbsp;</a></span>debug() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::debug </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_setter_t&lt;SOL_SOCKET, SO_DEBUG, bool&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Set whether debugging information is recorded by the underlying protocol. </p>
-<dl class="section note"><dt>Note</dt><dd>On Linux, it is allowed only for processes with CAP_NET_ADMIN capability or an effective user with ID of 0. </dd></dl>
-
-</div>
-</div>
-<a id="file_a8bdca4034a8116b477eb5f82a5f147c2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a8bdca4034a8116b477eb5f82a5f147c2">&#9670;&nbsp;</a></span>debug() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::debug </td>
-          <td>(</td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_getter_t&lt;SOL_SOCKET, SO_DEBUG, bool&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Query whether debugging information is recorded by the underlying protocol. </p>
-<dl class="section note"><dt>Note</dt><dd>On Linux, it is allowed only for processes with CAP_NET_ADMIN capability or an effective user with ID of 0. </dd></dl>
-
-</div>
-</div>
-<a id="file_a06c2f5eaa662d5823e5e90b833efe4a1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a06c2f5eaa662d5823e5e90b833efe4a1">&#9670;&nbsp;</a></span>do_not_route() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::do_not_route </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_setter_t&lt;SOL_SOCKET, SO_DONTROUTE, bool&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Set whether outgoing messages bypass standard routing facilities. </p>
-<dl class="section note"><dt>Note</dt><dd>Not supported on Windows platforms. </dd></dl>
-
-</div>
-</div>
-<a id="file_a240dce30dc978322a6212d98715cd500"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a240dce30dc978322a6212d98715cd500">&#9670;&nbsp;</a></span>do_not_route() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::do_not_route </td>
-          <td>(</td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_getter_t&lt;SOL_SOCKET, SO_DONTROUTE, bool&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Query whether outgoing messages bypass standard routing facilities. </p>
-<dl class="section note"><dt>Note</dt><dd>Not supported on Windows platforms. </dd></dl>
-
-</div>
-</div>
-<a id="file_aafe66c2dba2c75193688615becf859bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_aafe66c2dba2c75193688615becf859bc">&#9670;&nbsp;</a></span>keep_alive() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::keep_alive </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_setter_t&lt;SOL_SOCKET, SO_KEEPALIVE, bool&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Set whether a socket permits sending of keep-alive messages (if supported by the protocol) </p>
-<dl class="section note"><dt>Note</dt><dd>Valid only for connection-oriented sockets </dd>
-<dd>
-Can't change on Windows platforms </dd></dl>
-
-</div>
-</div>
-<a id="file_a12ac005442f3805f38883c3e0912f10e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a12ac005442f3805f38883c3e0912f10e">&#9670;&nbsp;</a></span>keep_alive() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::keep_alive </td>
-          <td>(</td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_getter_t&lt;SOL_SOCKET, SO_KEEPALIVE, bool&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Query whether a socket permits sending of keep-alive messages (if supported by the protocol) </p>
-<dl class="section note"><dt>Note</dt><dd>Valid only for connection-oriented sockets </dd></dl>
-
-</div>
-</div>
-<a id="file_a953fd2bfe0512b59b7d90fba509afd4a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a953fd2bfe0512b59b7d90fba509afd4a">&#9670;&nbsp;</a></span>receive_low_watermark()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::receive_low_watermark </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_setter_t&lt;SOL_SOCKET, SO_RCVLOWAT, int&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Specify the minimum number of bytes to process for socket input operations. </p>
-<dl class="section note"><dt>Note</dt><dd>Not changeable on Linux and Windows platforms </dd></dl>
-
-</div>
-</div>
-<a id="file_a0848a8f1821b0d541e3961043f1c33bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a0848a8f1821b0d541e3961043f1c33bc">&#9670;&nbsp;</a></span>send_low_watermark()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto sal::net::send_low_watermark </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>value</em></td><td>)</td>
-          <td> -&gt; __bits::socket_option_setter_t&lt;SOL_SOCKET, SO_SNDLOWAT, int&gt;
-</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Specify the minimum number of bytes to process for socket output operations. </p>
-<dl class="section note"><dt>Note</dt><dd>Not changeable on Linux and Windows platforms </dd></dl>
-
-</div>
-</div>
-</div><!-- contents -->
+<p>Usage: </p><div class="fragment"><div class="line">some_socket_t socket;</div><div class="line"></div><div class="line"><span class="comment">// getting SO_KEEPALIVE flag</span></div><div class="line"><span class="keywordtype">bool</span> keepalive;</div><div class="line">socket.get_option(<a class="code" href="namespacesal_1_1net.html#aafe66c2dba2c75193688615becf859bc">sal::net::keep_alive</a>(&amp;keepalive));</div><div class="line"><span class="keywordflow">if</span> (<a class="code" href="namespacesal_1_1net.html#aafe66c2dba2c75193688615becf859bc">keep_alive</a>) ...</div><div class="line"></div><div class="line"><span class="comment">// set SO_KEEPALIVE off</span></div><div class="line">socket.set_option(<a class="code" href="namespacesal.html">sal</a>:<a class="code" href="namespacesal_1_1net.html#aafe66c2dba2c75193688615becf859bc">net::keep_alive</a>(<span class="keyword">false</span>));</div></div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

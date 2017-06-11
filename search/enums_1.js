@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['resolver_5ferrc_5ft',['resolver_errc_t',['../net_2error_8hpp.html#a2eaa40bb1f08dbdc3e0ecb4eca4e69f4',1,'sal::net::ip']]]
+  ['resolver_5ferrc',['resolver_errc',['../namespacesal_1_1net_1_1ip.html#aa50af7695b7cdb78578570fff7c5c6f2',1,'sal::net::ip']]]
 ];

@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.11.0</span>
+   &#160;<span id="projectnumber">0.12.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -97,7 +97,7 @@ $(document).ready(function(){initNavTree('structsal_1_1net_1_1basic__socket__acc
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a> result.  
+<p><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> result.  
  <a href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="basic__socket__acceptor_8hpp_source.html">basic_socket_acceptor.hpp</a>&gt;</code></p>
@@ -112,31 +112,27 @@ Inheritance diagram for sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:afca0c8c6f430c0b7d43c216dba683799"><td class="memItemLeft" align="right" valign="top"><a id="afca0c8c6f430c0b7d43c216dba683799"></a>
-const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0">endpoint_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#afca0c8c6f430c0b7d43c216dba683799">local_endpoint</a> () const noexcept</td></tr>
-<tr class="memdesc:afca0c8c6f430c0b7d43c216dba683799"><td class="mdescLeft">&#160;</td><td class="mdescRight">Local endpoint of accepted socket. <br /></td></tr>
-<tr class="separator:afca0c8c6f430c0b7d43c216dba683799"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1134ac8403ae116756a071a220c8330"><td class="memItemLeft" align="right" valign="top"><a id="af1134ac8403ae116756a071a220c8330"></a>
 const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0">endpoint_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#af1134ac8403ae116756a071a220c8330">remote_endpoint</a> () const noexcept</td></tr>
 <tr class="memdesc:af1134ac8403ae116756a071a220c8330"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remote endpoint of accepted socket. <br /></td></tr>
 <tr class="separator:af1134ac8403ae116756a071a220c8330"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54c6cdeb45e6184b0498e21cb5211b22"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad7fae10be2d7ed8a2184cd3e97919240">socket_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#a54c6cdeb45e6184b0498e21cb5211b22">accepted</a> () const noexcept</td></tr>
-<tr class="memdesc:a54c6cdeb45e6184b0498e21cb5211b22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return accepted socket.  <a href="#a54c6cdeb45e6184b0498e21cb5211b22">More...</a><br /></td></tr>
-<tr class="separator:a54c6cdeb45e6184b0498e21cb5211b22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b669d31440abaec615ff9dce9af3008"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad7fae10be2d7ed8a2184cd3e97919240">socket_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#a3b669d31440abaec615ff9dce9af3008">accepted</a> () noexcept</td></tr>
+<tr class="memdesc:a3b669d31440abaec615ff9dce9af3008"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return accepted socket.  <a href="#a3b669d31440abaec615ff9dce9af3008">More...</a><br /></td></tr>
+<tr class="separator:a3b669d31440abaec615ff9dce9af3008"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename AcceptableProtocol&gt;<br />
 struct sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;::async_accept_t</h3>
 
-<p><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab84453ec2cc9dc5a440b9e659ae4b85a" title="Start async_accept(). ">async_accept()</a> result. </p>
+<p><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> result. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a54c6cdeb45e6184b0498e21cb5211b22"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54c6cdeb45e6184b0498e21cb5211b22">&#9670;&nbsp;</a></span>accepted()</h2>
+<a id="a3b669d31440abaec615ff9dce9af3008"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b669d31440abaec615ff9dce9af3008">&#9670;&nbsp;</a></span>accepted()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AcceptableProtocol&gt; </div>
+template&lt;typename AcceptableProtocol &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -145,7 +141,7 @@ template&lt;typename AcceptableProtocol&gt; </div>
           <td class="memname"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad7fae10be2d7ed8a2184cd3e97919240">socket_t</a> <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::async_accept_t::accepted </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td> const</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -156,7 +152,7 @@ template&lt;typename AcceptableProtocol&gt; </div>
 </div><div class="memdoc">
 
 <p>Return accepted socket. </p>
-<dl class="section note"><dt>Note</dt><dd>Call it only once, first socket becomes owner of handle. Following calls will acquire handle also, leading to multiple native handle closes. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Only first call returns valid accepted handle. Following calls return closed socket. </dd></dl>
 
 </div>
 </div>
@@ -165,7 +161,7 @@ template&lt;typename AcceptableProtocol&gt; </div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><b>sal</b></li><li class="navelem"><b>net</b></li><li class="navelem"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a></li><li class="navelem"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a></li>
+    <li class="navelem"><b>sal</b></li><li class="navelem"><a class="el" href="namespacesal_1_1net.html">net</a></li><li class="navelem"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a></li><li class="navelem"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

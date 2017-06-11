@@ -1,7 +1,7 @@
 var searchData=
 [
   ['family',['family',['../classsal_1_1net_1_1ip_1_1tcp__t.html#af3b1a84e81f8f642341e9ec3c846f176',1,'sal::net::ip::tcp_t::family()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#a04c332882998e80606fc00837f598f8b',1,'sal::net::ip::udp_t::family()']]],
-  ['file',['file',['../file__sink_8hpp.html#a65e70bb595b86a2ebaa666afa413342b',1,'sal::logger']]],
+  ['file',['file',['../namespacesal_1_1logger.html#a65e70bb595b86a2ebaa666afa413342b',1,'sal::logger']]],
   ['file_2ehpp',['file.hpp',['../file_8hpp.html',1,'']]],
   ['file_5fsink_2ehpp',['file_sink.hpp',['../file__sink_8hpp.html',1,'']]],
   ['file_5ft',['file_t',['../classsal_1_1file__t.html',1,'sal::file_t'],['../classsal_1_1file__t.html#aecd5c4e561220d0ce493c9916b54d486',1,'sal::file_t::file_t()']]],

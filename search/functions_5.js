@@ -1,7 +1,7 @@
 var searchData=
 [
   ['family',['family',['../classsal_1_1net_1_1ip_1_1tcp__t.html#af3b1a84e81f8f642341e9ec3c846f176',1,'sal::net::ip::tcp_t::family()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#a04c332882998e80606fc00837f598f8b',1,'sal::net::ip::udp_t::family()']]],
-  ['file',['file',['../file__sink_8hpp.html#a65e70bb595b86a2ebaa666afa413342b',1,'sal::logger']]],
+  ['file',['file',['../namespacesal_1_1logger.html#a65e70bb595b86a2ebaa666afa413342b',1,'sal::logger']]],
   ['file_5ft',['file_t',['../classsal_1_1file__t.html#aecd5c4e561220d0ce493c9916b54d486',1,'sal::file_t']]],
   ['find',['find',['../classsal_1_1program__options_1_1option__set__t.html#a0939ac3e7568c7920aa84f018534dae4',1,'sal::program_options::option_set_t']]],
   ['finish',['finish',['../classsal_1_1crypto_1_1hash__t.html#ad3cef5109666f697be6db84e64ae5c14',1,'sal::crypto::hash_t::finish()'],['../classsal_1_1crypto_1_1hmac__t.html#acf75907f35c14e244e5de25b256de593',1,'sal::crypto::hmac_t::finish()']]],

@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.11.0</span>
+   &#160;<span id="projectnumber">0.12.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -91,6 +91,7 @@ $(document).ready(function(){initNavTree('basic__endpoint_8hpp.html','');});
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">basic_endpoint.hpp File Reference</div>  </div>
@@ -115,41 +116,50 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Endpoint represents a protocol-specific endpoint.  <a href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacesal_1_1net"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html">sal::net</a></td></tr>
+<tr class="memdesc:namespacesal_1_1net"><td class="mdescLeft">&#160;</td><td class="mdescRight">Networking primitives (sockets, resolver, etc) <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacesal_1_1net_1_1ip"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html">sal::net::ip</a></td></tr>
+<tr class="memdesc:namespacesal_1_1net_1_1ip"><td class="mdescLeft">&#160;</td><td class="mdescRight">Networking IP layer functionality. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:af80fb98f69d51f75234f9aa1165b5e24"><td class="memTemplParams" colspan="2"><a id="af80fb98f69d51f75234f9aa1165b5e24"></a>
 template&lt;typename Protocol &gt; </td></tr>
-<tr class="memitem:af80fb98f69d51f75234f9aa1165b5e24"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="basic__endpoint_8hpp.html#af80fb98f69d51f75234f9aa1165b5e24">sal::net::ip::operator==</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
+<tr class="memitem:af80fb98f69d51f75234f9aa1165b5e24"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#af80fb98f69d51f75234f9aa1165b5e24">sal::net::ip::operator==</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
 <tr class="memdesc:af80fb98f69d51f75234f9aa1165b5e24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>a</em> == <em>b</em>. <br /></td></tr>
 <tr class="separator:af80fb98f69d51f75234f9aa1165b5e24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad5f052764a39dbf045cd491791efb5e2"><td class="memTemplParams" colspan="2"><a id="ad5f052764a39dbf045cd491791efb5e2"></a>
 template&lt;typename Protocol &gt; </td></tr>
-<tr class="memitem:ad5f052764a39dbf045cd491791efb5e2"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="basic__endpoint_8hpp.html#ad5f052764a39dbf045cd491791efb5e2">sal::net::ip::operator&lt;</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
+<tr class="memitem:ad5f052764a39dbf045cd491791efb5e2"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#ad5f052764a39dbf045cd491791efb5e2">sal::net::ip::operator&lt;</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
 <tr class="memdesc:ad5f052764a39dbf045cd491791efb5e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>a</em> &lt; <em>b</em>. <br /></td></tr>
 <tr class="separator:ad5f052764a39dbf045cd491791efb5e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff28cbd54e9e478159d201524ed108fd"><td class="memTemplParams" colspan="2"><a id="aff28cbd54e9e478159d201524ed108fd"></a>
 template&lt;typename Protocol &gt; </td></tr>
-<tr class="memitem:aff28cbd54e9e478159d201524ed108fd"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="basic__endpoint_8hpp.html#aff28cbd54e9e478159d201524ed108fd">sal::net::ip::operator!=</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
+<tr class="memitem:aff28cbd54e9e478159d201524ed108fd"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#aff28cbd54e9e478159d201524ed108fd">sal::net::ip::operator!=</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
 <tr class="memdesc:aff28cbd54e9e478159d201524ed108fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>a</em> != <em>b</em>. <br /></td></tr>
 <tr class="separator:aff28cbd54e9e478159d201524ed108fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a480a90e75d063795aaec1d47ae156e3a"><td class="memTemplParams" colspan="2"><a id="a480a90e75d063795aaec1d47ae156e3a"></a>
 template&lt;typename Protocol &gt; </td></tr>
-<tr class="memitem:a480a90e75d063795aaec1d47ae156e3a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="basic__endpoint_8hpp.html#a480a90e75d063795aaec1d47ae156e3a">sal::net::ip::operator&gt;</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
+<tr class="memitem:a480a90e75d063795aaec1d47ae156e3a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#a480a90e75d063795aaec1d47ae156e3a">sal::net::ip::operator&gt;</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
 <tr class="memdesc:a480a90e75d063795aaec1d47ae156e3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>a</em> &gt; <em>b</em>. <br /></td></tr>
 <tr class="separator:a480a90e75d063795aaec1d47ae156e3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae5cd7aea3a7cf2efc9c8436dc16ad299"><td class="memTemplParams" colspan="2"><a id="ae5cd7aea3a7cf2efc9c8436dc16ad299"></a>
 template&lt;typename Protocol &gt; </td></tr>
-<tr class="memitem:ae5cd7aea3a7cf2efc9c8436dc16ad299"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="basic__endpoint_8hpp.html#ae5cd7aea3a7cf2efc9c8436dc16ad299">sal::net::ip::operator&lt;=</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
+<tr class="memitem:ae5cd7aea3a7cf2efc9c8436dc16ad299"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#ae5cd7aea3a7cf2efc9c8436dc16ad299">sal::net::ip::operator&lt;=</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
 <tr class="memdesc:ae5cd7aea3a7cf2efc9c8436dc16ad299"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>a</em> &lt;= <em>b</em>. <br /></td></tr>
 <tr class="separator:ae5cd7aea3a7cf2efc9c8436dc16ad299"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a627a038401937753ba6fdcbf354ac2a7"><td class="memTemplParams" colspan="2"><a id="a627a038401937753ba6fdcbf354ac2a7"></a>
 template&lt;typename Protocol &gt; </td></tr>
-<tr class="memitem:a627a038401937753ba6fdcbf354ac2a7"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="basic__endpoint_8hpp.html#a627a038401937753ba6fdcbf354ac2a7">sal::net::ip::operator&gt;=</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
+<tr class="memitem:a627a038401937753ba6fdcbf354ac2a7"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#a627a038401937753ba6fdcbf354ac2a7">sal::net::ip::operator&gt;=</a> (const basic_endpoint_t&lt; Protocol &gt; &amp;a, const basic_endpoint_t&lt; Protocol &gt; &amp;b) noexcept</td></tr>
 <tr class="memdesc:a627a038401937753ba6fdcbf354ac2a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>a</em> &gt;= <em>b</em>. <br /></td></tr>
 <tr class="separator:a627a038401937753ba6fdcbf354ac2a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaeea308bef49a14b8ab0a46dbaed5331"><td class="memTemplParams" colspan="2"><a id="aaeea308bef49a14b8ab0a46dbaed5331"></a>
 template&lt;typename Protocol &gt; </td></tr>
-<tr class="memitem:aaeea308bef49a14b8ab0a46dbaed5331"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="basic__endpoint_8hpp.html#aaeea308bef49a14b8ab0a46dbaed5331">sal::net::ip::operator&lt;&lt;</a> (std::ostream &amp;os, const basic_endpoint_t&lt; Protocol &gt; &amp;endpoint)</td></tr>
+<tr class="memitem:aaeea308bef49a14b8ab0a46dbaed5331"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#aaeea308bef49a14b8ab0a46dbaed5331">sal::net::ip::operator&lt;&lt;</a> (std::ostream &amp;os, const basic_endpoint_t&lt; Protocol &gt; &amp;endpoint)</td></tr>
 <tr class="memdesc:aaeea308bef49a14b8ab0a46dbaed5331"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert human readable <em>endpoint</em> into std::ostream <em>os</em>. <br /></td></tr>
 <tr class="separator:aaeea308bef49a14b8ab0a46dbaed5331"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

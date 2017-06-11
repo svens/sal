@@ -5,5 +5,6 @@ var searchData=
   ['shutdown_5freceive',['shutdown_receive',['../classsal_1_1net_1_1socket__base__t.html#a4b723c63f58e7afd4d61820788d605c7',1,'sal::net::socket_base_t']]],
   ['shutdown_5fsend',['shutdown_send',['../classsal_1_1net_1_1socket__base__t.html#a631184822684671f192b1cf8b558862c',1,'sal::net::socket_base_t']]],
   ['sink',['sink',['../structsal_1_1logger_1_1event__t.html#abc5951e0a8936decf2e7c3d4760a04c1',1,'sal::logger::event_t']]],
-  ['sink_5fdata',['sink_data',['../structsal_1_1logger_1_1event__t.html#a7229563687571ae6cf7854f23af9a399',1,'sal::logger::event_t']]]
+  ['sink_5fdata',['sink_data',['../structsal_1_1logger_1_1event__t.html#a7229563687571ae6cf7854f23af9a399',1,'sal::logger::event_t']]],
+  ['socket_5f',['socket_',['../classsal_1_1net_1_1basic__socket__t.html#a20cd73d24ad08b369f6ea34a8d10e2e2',1,'sal::net::basic_socket_t']]]
 ];

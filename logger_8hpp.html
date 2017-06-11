@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.11.0</span>
+   &#160;<span id="projectnumber">0.12.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -90,6 +90,7 @@ $(document).ready(function(){initNavTree('logger_8hpp.html','');});
 
 <div class="header">
   <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
 <a href="#define-members">Macros</a>  </div>
   <div class="headertitle">
 <div class="title">logger.hpp File Reference</div>  </div>
@@ -104,6 +105,12 @@ $(document).ready(function(){initNavTree('logger_8hpp.html','');});
 </div>
 <p><a href="logger_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacesal_1_1logger"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1logger.html">sal::logger</a></td></tr>
+<tr class="memdesc:namespacesal_1_1logger"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logging. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a300467a2502e838452165db4ccac9c3a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8hpp.html#a300467a2502e838452165db4ccac9c3a">sal_log</a>(channel)</td></tr>
@@ -113,12 +120,12 @@ Macros</h2></td></tr>
 <tr class="memdesc:ad56df19b31b4e6e04c3180019c6f410c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Log message only if <em>expr</em> is true.  <a href="#ad56df19b31b4e6e04c3180019c6f410c">More...</a><br /></td></tr>
 <tr class="separator:ad56df19b31b4e6e04c3180019c6f410c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5dc180393a0dff2c74685e8330a416f"><td class="memItemLeft" align="right" valign="top"><a id="aa5dc180393a0dff2c74685e8330a416f"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8hpp.html#aa5dc180393a0dff2c74685e8330a416f">sal_print</a>&#160;&#160;&#160;<a class="el" href="logger_8hpp.html#a300467a2502e838452165db4ccac9c3a">sal_log</a>(sal::logger::default_channel())</td></tr>
-<tr class="memdesc:aa5dc180393a0dff2c74685e8330a416f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for <a class="el" href="logger_8hpp.html#a300467a2502e838452165db4ccac9c3a" title="Function-like macro to ease logging. ">sal_log(channel)</a> using <a class="el" href="worker_8hpp.html#a67457aa6ad4d8ff43272f36376b203e2" title="Return global default channel for worker_t::get_default() worker. ">sal::logger::default_channel()</a> as channel. <br /></td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8hpp.html#aa5dc180393a0dff2c74685e8330a416f">sal_print</a>&#160;&#160;&#160;<a class="el" href="logger_8hpp.html#a300467a2502e838452165db4ccac9c3a">sal_log</a>(<a class="el" href="namespacesal_1_1logger.html#a67457aa6ad4d8ff43272f36376b203e2">sal::logger::default_channel</a>())</td></tr>
+<tr class="memdesc:aa5dc180393a0dff2c74685e8330a416f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for <a class="el" href="logger_8hpp.html#a300467a2502e838452165db4ccac9c3a" title="Function-like macro to ease logging. ">sal_log(channel)</a> using <a class="el" href="namespacesal_1_1logger.html#a67457aa6ad4d8ff43272f36376b203e2" title="Return global default channel for worker_t::get_default() worker. ">sal::logger::default_channel()</a> as channel. <br /></td></tr>
 <tr class="separator:aa5dc180393a0dff2c74685e8330a416f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a037731286d357d2577d715f2845ecf0a"><td class="memItemLeft" align="right" valign="top"><a id="a037731286d357d2577d715f2845ecf0a"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8hpp.html#a037731286d357d2577d715f2845ecf0a">sal_print_if</a>(expr)&#160;&#160;&#160;<a class="el" href="logger_8hpp.html#ad56df19b31b4e6e04c3180019c6f410c">sal_log_if</a>(sal::logger::default_channel(), (expr))</td></tr>
-<tr class="memdesc:a037731286d357d2577d715f2845ecf0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for <a class="el" href="logger_8hpp.html#ad56df19b31b4e6e04c3180019c6f410c" title="Log message only if expr is true. ">sal_log_if(channel,expr)</a> using <a class="el" href="worker_8hpp.html#a67457aa6ad4d8ff43272f36376b203e2" title="Return global default channel for worker_t::get_default() worker. ">sal::logger::default_channel()</a> as channel. <br /></td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logger_8hpp.html#a037731286d357d2577d715f2845ecf0a">sal_print_if</a>(expr)&#160;&#160;&#160;<a class="el" href="logger_8hpp.html#ad56df19b31b4e6e04c3180019c6f410c">sal_log_if</a>(<a class="el" href="namespacesal_1_1logger.html#a67457aa6ad4d8ff43272f36376b203e2">sal::logger::default_channel</a>(), (expr))</td></tr>
+<tr class="memdesc:a037731286d357d2577d715f2845ecf0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for <a class="el" href="logger_8hpp.html#ad56df19b31b4e6e04c3180019c6f410c" title="Log message only if expr is true. ">sal_log_if(channel,expr)</a> using <a class="el" href="namespacesal_1_1logger.html#a67457aa6ad4d8ff43272f36376b203e2" title="Return global default channel for worker_t::get_default() worker. ">sal::logger::default_channel()</a> as channel. <br /></td></tr>
 <tr class="separator:a037731286d357d2577d715f2845ecf0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>

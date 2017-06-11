@@ -11,5 +11,6 @@ var searchData=
   ['config_5freader_5ft',['config_reader_t',['../classsal_1_1program__options_1_1config__reader__t.html#a0e952b164a7e09ff2d4f426927b1a713',1,'sal::program_options::config_reader_t']]],
   ['connect',['connect',['../classsal_1_1net_1_1basic__socket__t.html#a77a646475c8df4b3adca40985a285e86',1,'sal::net::basic_socket_t::connect(const endpoint_t &amp;endpoint, std::error_code &amp;error) noexcept'],['../classsal_1_1net_1_1basic__socket__t.html#a5d771fd586701f393fb4084cf1bf284a',1,'sal::net::basic_socket_t::connect(const endpoint_t &amp;endpoint)']]],
   ['const_5fbuf_5fptr',['const_buf_ptr',['../classsal_1_1const__buf__ptr.html#a5826cfa865e333faba508ee52f7cfc6b',1,'sal::const_buf_ptr']]],
+  ['context_5ft',['context_t',['../classsal_1_1net_1_1async__service__t_1_1context__t.html#a21a1e14716990c97d939106126dcd7f6',1,'sal::net::async_service_t::context_t']]],
   ['create',['create',['../classsal_1_1file__t.html#a56c67f59794862c8b0e0a1042711d770',1,'sal::file_t::create(const std::string &amp;name, open_mode mode, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#ad1591e107ab799d68ba8d26bc3651bbb',1,'sal::file_t::create(const std::string &amp;name, open_mode mode)']]]
 ];

@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.11.0</span>
+   &#160;<span id="projectnumber">0.12.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -90,7 +90,9 @@ $(document).ready(function(){initNavTree('socket__base_8hpp.html','');});
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">socket_base.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -100,6 +102,7 @@ $(document).ready(function(){initNavTree('socket__base_8hpp.html','');});
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
 <code>#include &lt;sal/net/__bits/socket.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="async__service_8hpp_source.html">sal/net/async_service.hpp</a>&gt;</code><br />
 </div>
 <p><a href="socket__base_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -108,6 +111,18 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html">sal::net::socket_base_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Common socket types and values.  <a href="classsal_1_1net_1_1socket__base__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacesal_1_1net"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html">sal::net</a></td></tr>
+<tr class="memdesc:namespacesal_1_1net"><td class="mdescLeft">&#160;</td><td class="mdescRight">Networking primitives (sockets, resolver, etc) <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a6095d302896d2660c18ea302ca3b3988"><td class="memItemLeft" align="right" valign="top">const std::error_code &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a6095d302896d2660c18ea302ca3b3988">sal::net::init</a> () noexcept</td></tr>
+<tr class="memdesc:a6095d302896d2660c18ea302ca3b3988"><td class="mdescLeft">&#160;</td><td class="mdescRight">On Windows platform, initialize winsock library.  <a href="namespacesal_1_1net.html#a6095d302896d2660c18ea302ca3b3988">More...</a><br /></td></tr>
+<tr class="separator:a6095d302896d2660c18ea302ca3b3988"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Common socket base types and values. </p>

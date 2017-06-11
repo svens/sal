@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.11.0</span>
+   &#160;<span id="projectnumber">0.12.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -91,6 +91,7 @@ $(document).ready(function(){initNavTree('tcp_8hpp.html','');});
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">tcp.hpp File Reference</div>  </div>
@@ -116,22 +117,31 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class encapsulates types and flags necessary for TCP sockets.  <a href="classsal_1_1net_1_1ip_1_1tcp__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacesal_1_1net"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html">sal::net</a></td></tr>
+<tr class="memdesc:namespacesal_1_1net"><td class="mdescLeft">&#160;</td><td class="mdescRight">Networking primitives (sockets, resolver, etc) <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacesal_1_1net_1_1ip"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html">sal::net::ip</a></td></tr>
+<tr class="memdesc:namespacesal_1_1net_1_1ip"><td class="mdescLeft">&#160;</td><td class="mdescRight">Networking IP layer functionality. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a3036b10f454f81a7fef81930e7b82477"><td class="memItemLeft" align="right" valign="top"><a id="a3036b10f454f81a7fef81930e7b82477"></a>
-constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcp_8hpp.html#a3036b10f454f81a7fef81930e7b82477">sal::net::ip::operator==</a> (const tcp_t &amp;a, const tcp_t &amp;b) noexcept</td></tr>
+constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#a3036b10f454f81a7fef81930e7b82477">sal::net::ip::operator==</a> (const tcp_t &amp;a, const tcp_t &amp;b) noexcept</td></tr>
 <tr class="memdesc:a3036b10f454f81a7fef81930e7b82477"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>a</em> and <em>b</em> families are same. <br /></td></tr>
 <tr class="separator:a3036b10f454f81a7fef81930e7b82477"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af21b49ced4af3ed56bd280c3a5b1d5ee"><td class="memItemLeft" align="right" valign="top"><a id="af21b49ced4af3ed56bd280c3a5b1d5ee"></a>
-constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcp_8hpp.html#af21b49ced4af3ed56bd280c3a5b1d5ee">sal::net::ip::operator!=</a> (const tcp_t &amp;a, const tcp_t &amp;b) noexcept</td></tr>
+constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#af21b49ced4af3ed56bd280c3a5b1d5ee">sal::net::ip::operator!=</a> (const tcp_t &amp;a, const tcp_t &amp;b) noexcept</td></tr>
 <tr class="memdesc:af21b49ced4af3ed56bd280c3a5b1d5ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>a</em> and <em>b</em> families are different. <br /></td></tr>
 <tr class="separator:af21b49ced4af3ed56bd280c3a5b1d5ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83ca3f9f29591a20adcc564b6a04674c"><td class="memItemLeft" align="right" valign="top"><a id="a83ca3f9f29591a20adcc564b6a04674c"></a>
-memory_writer_t &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcp_8hpp.html#a83ca3f9f29591a20adcc564b6a04674c">sal::net::ip::operator&lt;&lt;</a> (memory_writer_t &amp;writer, const tcp_t &amp;protocol) noexcept</td></tr>
+memory_writer_t &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#a83ca3f9f29591a20adcc564b6a04674c">sal::net::ip::operator&lt;&lt;</a> (memory_writer_t &amp;writer, const tcp_t &amp;protocol) noexcept</td></tr>
 <tr class="memdesc:a83ca3f9f29591a20adcc564b6a04674c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert human readable <em>protocol</em> representation into <em>writer</em>. <br /></td></tr>
 <tr class="separator:a83ca3f9f29591a20adcc564b6a04674c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9682dacaedf6f55896412917710378e0"><td class="memItemLeft" align="right" valign="top"><a id="a9682dacaedf6f55896412917710378e0"></a>
-std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcp_8hpp.html#a9682dacaedf6f55896412917710378e0">sal::net::ip::operator&lt;&lt;</a> (std::ostream &amp;os, const tcp_t &amp;protocol)</td></tr>
+std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net_1_1ip.html#a9682dacaedf6f55896412917710378e0">sal::net::ip::operator&lt;&lt;</a> (std::ostream &amp;os, const tcp_t &amp;protocol)</td></tr>
 <tr class="memdesc:a9682dacaedf6f55896412917710378e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert human readable <em>protocol</em> into std::ostream <em>os</em>. <br /></td></tr>
 <tr class="separator:a9682dacaedf6f55896412917710378e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

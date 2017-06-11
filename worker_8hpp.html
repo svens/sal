@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.11.0</span>
+   &#160;<span id="projectnumber">0.12.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -91,6 +91,7 @@ $(document).ready(function(){initNavTree('worker_8hpp.html','');});
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">worker.hpp File Reference</div>  </div>
@@ -116,91 +117,37 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simple synchronous logger.  <a href="classsal_1_1logger_1_1worker__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacesal_1_1logger"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1logger.html">sal::logger</a></td></tr>
+<tr class="memdesc:namespacesal_1_1logger"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logging. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a8c3d6b518790f7cda8b5935d7504a083"><td class="memItemLeft" align="right" valign="top"><a id="a8c3d6b518790f7cda8b5935d7504a083"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="worker_8hpp.html#a8c3d6b518790f7cda8b5935d7504a083">sal::logger::set_channel_sink</a> (const sink_ptr &amp;sink) noexcept</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1logger.html#a8c3d6b518790f7cda8b5935d7504a083">sal::logger::set_channel_sink</a> (const sink_ptr &amp;sink) noexcept</td></tr>
 <tr class="memdesc:a8c3d6b518790f7cda8b5935d7504a083"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return option to configure channel's sink. <br /></td></tr>
 <tr class="separator:a8c3d6b518790f7cda8b5935d7504a083"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63e0aaa2d12f10f919635c6e21522b3a"><td class="memItemLeft" align="right" valign="top"><a id="a63e0aaa2d12f10f919635c6e21522b3a"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="worker_8hpp.html#a63e0aaa2d12f10f919635c6e21522b3a">sal::logger::set_channel_sink</a> (std::ostream &amp;os) noexcept</td></tr>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1logger.html#a63e0aaa2d12f10f919635c6e21522b3a">sal::logger::set_channel_sink</a> (std::ostream &amp;os) noexcept</td></tr>
 <tr class="memdesc:a63e0aaa2d12f10f919635c6e21522b3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return option to configure channel's sink with <em>os</em> of type std::ostream. <br /></td></tr>
 <tr class="separator:a63e0aaa2d12f10f919635c6e21522b3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c01829d09303514c312238ffa7ef55b"><td class="memTemplParams" colspan="2">template&lt;typename... Options&gt; </td></tr>
-<tr class="memitem:a1c01829d09303514c312238ffa7ef55b"><td class="memTemplItemLeft" align="right" valign="top">worker_t &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="worker_8hpp.html#a1c01829d09303514c312238ffa7ef55b">sal::logger::make_default_worker</a> (Options &amp;&amp;...options)</td></tr>
-<tr class="memdesc:a1c01829d09303514c312238ffa7ef55b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create global default logging worker with <em>options</em>.  <a href="worker_8hpp.html#a1c01829d09303514c312238ffa7ef55b">More...</a><br /></td></tr>
+<tr class="memitem:a1c01829d09303514c312238ffa7ef55b"><td class="memTemplItemLeft" align="right" valign="top">worker_t &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1logger.html#a1c01829d09303514c312238ffa7ef55b">sal::logger::make_default_worker</a> (Options &amp;&amp;...options)</td></tr>
+<tr class="memdesc:a1c01829d09303514c312238ffa7ef55b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create global default logging worker with <em>options</em>.  <a href="namespacesal_1_1logger.html#a1c01829d09303514c312238ffa7ef55b">More...</a><br /></td></tr>
 <tr class="separator:a1c01829d09303514c312238ffa7ef55b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af8298926df56e358cfdf6353e93b0d7d"><td class="memItemLeft" align="right" valign="top">worker_t &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="worker_8hpp.html#af8298926df56e358cfdf6353e93b0d7d">sal::logger::default_worker</a> ()</td></tr>
-<tr class="memdesc:af8298926df56e358cfdf6353e93b0d7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return global default logger worker.  <a href="worker_8hpp.html#af8298926df56e358cfdf6353e93b0d7d">More...</a><br /></td></tr>
+<tr class="memitem:af8298926df56e358cfdf6353e93b0d7d"><td class="memItemLeft" align="right" valign="top">worker_t &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1logger.html#af8298926df56e358cfdf6353e93b0d7d">sal::logger::default_worker</a> ()</td></tr>
+<tr class="memdesc:af8298926df56e358cfdf6353e93b0d7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return global default logger worker.  <a href="namespacesal_1_1logger.html#af8298926df56e358cfdf6353e93b0d7d">More...</a><br /></td></tr>
 <tr class="separator:af8298926df56e358cfdf6353e93b0d7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67457aa6ad4d8ff43272f36376b203e2"><td class="memItemLeft" align="right" valign="top"><a id="a67457aa6ad4d8ff43272f36376b203e2"></a>
-channel_t&lt; worker_t &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="worker_8hpp.html#a67457aa6ad4d8ff43272f36376b203e2">sal::logger::default_channel</a> ()</td></tr>
+channel_t&lt; worker_t &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1logger.html#a67457aa6ad4d8ff43272f36376b203e2">sal::logger::default_channel</a> ()</td></tr>
 <tr class="memdesc:a67457aa6ad4d8ff43272f36376b203e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return global default channel for <a class="el" href="classsal_1_1logger_1_1worker__t.html#a6bcbe90674a58bc18ccc22e19e823c69" title="Return global default logger worker. ">worker_t::get_default()</a> worker. <br /></td></tr>
 <tr class="separator:a67457aa6ad4d8ff43272f36376b203e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Logging channels' worker, marshalling event records from channels to sinks. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_af8298926df56e358cfdf6353e93b0d7d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_af8298926df56e358cfdf6353e93b0d7d">&#9670;&nbsp;</a></span>default_worker()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">worker_t&amp; sal::logger::default_worker </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Return global default logger worker. </p>
-<dl class="section see"><dt>See also</dt><dd>worker_t::get_default() </dd></dl>
-
-</div>
-</div>
-<a id="file_a1c01829d09303514c312238ffa7ef55b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a1c01829d09303514c312238ffa7ef55b">&#9670;&nbsp;</a></span>make_default_worker()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename... Options&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">worker_t&amp; sal::logger::make_default_worker </td>
-          <td>(</td>
-          <td class="paramtype">Options &amp;&amp;...&#160;</td>
-          <td class="paramname"><em>options</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Create global default logging worker with <em>options</em>. </p>
-<dl class="section see"><dt>See also</dt><dd>worker_t::make_default() </dd></dl>
-
-</div>
-</div>
-</div><!-- contents -->
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
