@@ -13,6 +13,7 @@
 __sal_begin
 
 
+/// Networking primitives (sockets, resolver, etc)
 namespace net {
 
 

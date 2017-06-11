@@ -14,6 +14,7 @@
 __sal_begin
 
 
+/// Cryptography primitives
 namespace crypto {
 
 

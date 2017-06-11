@@ -16,7 +16,10 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net {
+
+/// Networking IP layer functionality
+namespace ip {
 
 
 /**

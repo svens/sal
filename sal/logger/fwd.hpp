@@ -14,6 +14,7 @@
 __sal_begin
 
 
+/// Logging
 namespace logger {
 
 

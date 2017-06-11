@@ -18,6 +18,7 @@
 __sal_begin
 
 
+/// Program options (command line, config file)
 namespace program_options {
 
 
