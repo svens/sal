@@ -1469,8 +1469,7 @@ async_service_t::~async_service_t () noexcept
 socket_t::async_t::async_t (socket_t &socket,
     async_service_ptr service,
     std::error_code &error) noexcept
-  : socket(socket)
-  , service(service)
+  : service(service)
 {
   if (socket.handle == invalid)
   {
@@ -1487,7 +1486,7 @@ socket_t::async_t::async_t (socket_t &socket,
     EV_ADD | EV_CLEAR,
     0,
     0,
-    this
+    &socket
   );
 
   auto result = ::kevent(service->queue,
@@ -1500,7 +1499,7 @@ socket_t::async_t::async_t (socket_t &socket,
 
   struct ::epoll_event change;
   change.events = EPOLLIN | EPOLLET;
-  change.data.ptr = this;
+  change.data.ptr = &socket;
 
   auto result = ::epoll_ctl(service->queue,
     EPOLL_CTL_ADD,
@@ -1536,8 +1535,9 @@ socket_t::async_t::~async_t () noexcept
 }
 
 
-void socket_t::async_t::on_readable (async_context_t &context, uint16_t /*flags*/)
-  noexcept
+void socket_t::async_t::on_readable (socket_t &socket,
+  async_context_t &context,
+  uint16_t /*flags*/) noexcept
 {
   lock_t lock(receive_mutex);
 
@@ -1583,8 +1583,9 @@ void socket_t::async_t::on_readable (async_context_t &context, uint16_t /*flags*
 }
 
 
-void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
-  noexcept
+void socket_t::async_t::on_writable (socket_t &socket,
+  async_context_t &context,
+  uint16_t flags) noexcept
 {
   lock_t lock(send_mutex);
 
@@ -1675,7 +1676,7 @@ void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
       EV_DELETE,
       0,
       0,
-      this
+      &socket
     );
     (void)::kevent(service->queue,
       &change, 1,
@@ -1687,7 +1688,7 @@ void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
 
     struct ::epoll_event change;
     change.events = EPOLLIN | EPOLLET;
-    change.data.ptr = this;
+    change.data.ptr = &socket;
     (void)::epoll_ctl(service->queue,
       EPOLL_CTL_MOD,
       socket.handle,
@@ -1699,7 +1700,7 @@ void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
 }
 
 
-void socket_t::async_t::push_send (async_io_t *io) noexcept
+void socket_t::async_t::push_send (socket_t &socket, async_io_t *io) noexcept
 {
   lock_t lock(send_mutex);
 
@@ -1718,7 +1719,7 @@ void socket_t::async_t::push_send (async_io_t *io) noexcept
       EV_ADD,
       0,
       0,
-      this
+      &socket
     );
     (void)::kevent(service->queue,
       &change, 1,
@@ -1730,7 +1731,7 @@ void socket_t::async_t::push_send (async_io_t *io) noexcept
 
     struct ::epoll_event change;
     change.events = EPOLLIN | EPOLLOUT | EPOLLET;
-    change.data.ptr = this;
+    change.data.ptr = &socket;
     (void)::epoll_ctl(service->queue,
       EPOLL_CTL_MOD,
       socket.handle,
@@ -1772,14 +1773,14 @@ async_io_t *async_context_t::poll (const milliseconds &timeout_ms,
 
     for (auto ev = &events[0], end = ev + event_count;  ev != end;  ++ev)
     {
-      auto &async = *static_cast<socket_t::async_t *>(ev->udata);
+      auto &socket = *static_cast<socket_t *>(ev->udata);
       if (ev->filter == EVFILT_READ)
       {
-        async.on_readable(*this, ev->flags);
+        socket.async->on_readable(socket, *this, ev->flags);
       }
       else if (ev->filter == EVFILT_WRITE)
       {
-        async.on_writable(*this, ev->flags);
+        socket.async->on_writable(socket, *this, ev->flags);
       }
     }
 
@@ -1809,14 +1810,14 @@ async_io_t *async_context_t::poll (const milliseconds &timeout_ms,
 
     for (auto ev = &events[0], end = ev + event_count;  ev != end;  ++ev)
     {
-      auto &async = *static_cast<socket_t::async_t *>(ev->data.ptr);
+      auto &socket = *static_cast<socket_t *>(ev->data.ptr);
       if (ev->events & EPOLLIN)
       {
-        async.on_readable(*this, ev->events);
+        socket.async->on_readable(socket, *this, ev->events);
       }
       if (ev->events & EPOLLOUT)
       {
-        async.on_writable(*this, ev->events);
+        socket.async->on_writable(socket, *this, ev->events);
       }
     }
 
@@ -1905,7 +1906,7 @@ void async_send_to_t::start (async_io_t *io,
   {
     std::memcpy(&op->address, address, address_size);
     op->address_size = address_size;
-    socket.async->push_send(io);
+    socket.async->push_send(socket, io);
   }
 }
 
@@ -1929,7 +1930,7 @@ void async_send_t::start (async_io_t *io,
   }
   else
   {
-    socket.async->push_send(io);
+    socket.async->push_send(socket, io);
   }
 }
 
@@ -1947,7 +1948,7 @@ void async_connect_t::start (async_io_t *io,
   }
   else
   {
-    socket.async->push_send(io);
+    socket.async->push_send(socket, io);
   }
 }
 

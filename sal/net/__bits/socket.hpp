@@ -521,7 +521,6 @@ struct async_accept_t
 
 struct socket_t::async_t
 {
-  socket_t &socket;
   async_service_ptr service;
 
   using mutex_t = std::mutex;
@@ -539,10 +538,17 @@ struct socket_t::async_t
 
   ~async_t () noexcept;
 
-  void push_send (async_io_t *io) noexcept;
+  void push_send (socket_t &socket, async_io_t *io) noexcept;
 
-  void on_readable (async_context_t &context, uint16_t flags) noexcept;
-  void on_writable (async_context_t &context, uint16_t flags) noexcept;
+  void on_readable (socket_t &socket,
+    async_context_t &context,
+    uint16_t flags
+  ) noexcept;
+
+  void on_writable (socket_t &socket,
+    async_context_t &context,
+    uint16_t flags
+  ) noexcept;
 };
 
 
