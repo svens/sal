@@ -13,7 +13,6 @@
 #elif __sal_os_windows // {{{1
   #include <winsock2.h>
   #include <ws2tcpip.h>
-  #include <mswsock.h>
   #pragma comment(lib, "ws2_32")
 #else // {{{1
   #error Unsupported platform
@@ -203,7 +202,6 @@ struct async_io_base_t
 {
 #if __sal_os_windows // {{{1
   OVERLAPPED overlapped{0};
-  RIO_BUF rio_buf;
 #endif // }}}1
 
   async_context_t * const owner, *context{};

@@ -42,7 +42,6 @@ namespace {
 
 
 struct winsock_t
-  : public RIO_EXTENSION_FUNCTION_TABLE
 {
   LPFN_CONNECTEX ConnectEx{};
   LPFN_ACCEPTEX AcceptEx{};
@@ -102,25 +101,6 @@ void load (F *fn, GUID id, SOCKET socket, std::error_code &error) noexcept
 }
 
 
-void load (RIO_EXTENSION_FUNCTION_TABLE *rio, SOCKET socket,
-  std::error_code &error) noexcept
-{
-  if (!error)
-  {
-    DWORD bytes;
-    GUID id = WSAID_MULTIPLE_RIO;
-    call(::WSAIoctl, error, socket,
-      SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER,
-      &id, sizeof(id),
-      rio, sizeof(*rio),
-      &bytes,
-      nullptr,
-      nullptr
-    );
-  }
-}
-
-
 void init_winsock (std::error_code &init_result) noexcept
 {
   WSADATA wsa;
@@ -135,7 +115,6 @@ void init_winsock (std::error_code &init_result) noexcept
     load(&winsock.ConnectEx, WSAID_CONNECTEX, s, init_result);
     load(&winsock.AcceptEx, WSAID_ACCEPTEX, s, init_result);
     load(&winsock.GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, s, init_result);
-    load(&winsock, s, init_result);
     (void)::closesocket(s);
   }
 }
@@ -1118,8 +1097,6 @@ char *alloc_buf (size_t alignment, size_t size)
 
 void free_buf (void *p) noexcept
 {
-  auto &io_block = *static_cast<async_io_t *>(p);
-  winsock.RIODeregisterBuffer(io_block.rio_buf.BufferId);
   (void)::VirtualFreeEx(::GetCurrentProcess(), p, 0, MEM_RELEASE);
 }
 
@@ -1133,29 +1110,12 @@ void async_context_t::extend_pool ()
     io_size = sizeof(async_io_t),
     block_size = io_block_size * io_size;
 
-  std::unique_ptr<char[], void(*)(void*)> guard(
-    alloc_buf(io_size, block_size),
-    &free_buf
-  );
-  auto buf = guard.get();
+  pool.emplace_back(alloc_buf(io_size, block_size), &free_buf);
 
-  auto rio_buf_id = winsock.RIORegisterBuffer(buf, block_size);
-  if (rio_buf_id == RIO_INVALID_BUFFERID)
+  auto it = reinterpret_cast<async_io_t *>(pool.back().get());
+  for (auto end = it + io_block_size;  it != end;  ++it)
   {
-    std::error_code error;
-    error.assign(::WSAGetLastError(), std::system_category());
-    throw_system_error(error, "RIORegisterBuffer(", block_size, "B)");
-  }
-
-  pool.emplace_back(std::move(guard));
-
-  for (auto offset = 0U;  offset != block_size;  offset += io_size)
-  {
-    auto io = new(buf + offset) async_io_t(this);
-    io->rio_buf.BufferId = rio_buf_id;
-    io->rio_buf.Offset = offset;
-    io->rio_buf.Length = io_size;
-    free.push(io);
+    free.push(new(it) async_io_t(this));
   }
 }
 
