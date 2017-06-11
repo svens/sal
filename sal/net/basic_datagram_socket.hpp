@@ -323,9 +323,9 @@ public:
     /**
      * Packet sender endpoint.
      */
-    const endpoint_t &endpoint () const noexcept
+    const endpoint_t &remote_endpoint () const noexcept
     {
-      return *reinterpret_cast<const endpoint_t *>(&address);
+      return *reinterpret_cast<const endpoint_t *>(&remote_address);
     }
 
     /**

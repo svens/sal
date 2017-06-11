@@ -445,8 +445,8 @@ struct socket_t::async_t
 struct async_receive_from_t
   : public async_op_t<async_receive_from_t>
 {
-  sockaddr_storage address;
-  INT address_size;
+  sockaddr_storage remote_address;
+  INT remote_address_size;
 
   static void start (async_io_t *io,
     socket_t &socket,
@@ -557,8 +557,8 @@ struct async_receive_from_t
   : public async_op_t<async_receive_from_t>
 {
   message_flags_t flags;
-  sockaddr_storage address;
-  size_t address_size;
+  sockaddr_storage remote_address;
+  size_t remote_address_size;
 
   static void start (async_io_t *io,
     socket_t &socket,

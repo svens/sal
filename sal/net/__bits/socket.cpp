@@ -1216,7 +1216,7 @@ void async_receive_from_t::start (async_io_t *io,
   message_flags_t flags) noexcept
 {
   auto op = new_op(io);
-  op->address_size = sizeof(op->address);
+  op->remote_address_size = sizeof(op->remote_address);
 
   DWORD flags_ = flags;
   buf_t buf(io);
@@ -1225,8 +1225,8 @@ void async_receive_from_t::start (async_io_t *io,
       &buf, 1,
       &op->transferred,
       &flags_,
-      reinterpret_cast<sockaddr *>(&op->address),
-      &op->address_size,
+      reinterpret_cast<sockaddr *>(&op->remote_address),
+      &op->remote_address_size,
       &io->overlapped,
       nullptr
     )
@@ -1603,7 +1603,7 @@ void socket_t::async_t::on_readable (socket_t &socket,
     {
       op->transferred = socket.receive_from(
         io->begin, io->end - io->begin,
-        &op->address, &op->address_size,
+        &op->remote_address, &op->remote_address_size,
         op->flags,
         io->error
       );
@@ -1925,11 +1925,11 @@ void async_receive_from_t::start (async_io_t *io,
 {
   auto op = new_op(io);
   op->flags = flags | MSG_DONTWAIT;
-  op->address_size = sizeof(op->address);
+  op->remote_address_size = sizeof(op->remote_address);
 
   op->transferred = socket.receive_from(
     io->begin, io->end - io->begin,
-    &op->address, &op->address_size,
+    &op->remote_address, &op->remote_address_size,
     op->flags,
     io->error
   );
