@@ -42,7 +42,12 @@ namespace {
 
 
 struct winsock_t
+  : public RIO_EXTENSION_FUNCTION_TABLE
 {
+  LPFN_CONNECTEX ConnectEx{};
+  LPFN_ACCEPTEX AcceptEx{};
+  LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs{};
+
   winsock_t () noexcept
   {
     init_lib();
@@ -52,13 +57,7 @@ struct winsock_t
   {
     (void)::WSACleanup();
   }
-} sys{};
-
-LPFN_CONNECTEX ConnectEx{};
-LPFN_ACCEPTEX AcceptEx{};
-LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs{};
-LPFN_RIOREGISTERBUFFER RIORegisterBuffer;
-LPFN_RIODEREGISTERBUFFER RIODeregisterBuffer;
+} winsock{};
 
 constexpr DWORD acceptex_address_size = sizeof(sockaddr_storage) + 16;
 
@@ -133,19 +132,10 @@ void init_winsock (std::error_code &init_result) noexcept
   if (!init_result)
   {
     auto s = ::socket(AF_INET, SOCK_STREAM, 0);
-
-    load(&ConnectEx, WSAID_CONNECTEX, s, init_result);
-    load(&AcceptEx, WSAID_ACCEPTEX, s, init_result);
-    load(&GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, s, init_result);
-
-    RIO_EXTENSION_FUNCTION_TABLE rio;
-    load(&rio, s, init_result);
-    if (!init_result)
-    {
-      RIORegisterBuffer = rio.RIORegisterBuffer;
-      RIODeregisterBuffer = rio.RIODeregisterBuffer;
-    }
-
+    load(&winsock.ConnectEx, WSAID_CONNECTEX, s, init_result);
+    load(&winsock.AcceptEx, WSAID_ACCEPTEX, s, init_result);
+    load(&winsock.GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, s, init_result);
+    load(&winsock, s, init_result);
     (void)::closesocket(s);
   }
 }
@@ -1106,6 +1096,72 @@ async_io_t *async_context_t::poll (const std::chrono::milliseconds &timeout,
 
 namespace {
 
+char *alloc_buf (size_t alignment, size_t size)
+{
+  // C++17: std::aligned_alloc(alignment, size);
+  (void)alignment;
+
+  auto result = ::VirtualAllocEx(::GetCurrentProcess(),
+    nullptr,
+    size,
+    MEM_COMMIT | MEM_RESERVE,
+    PAGE_READWRITE
+  );
+
+  if (!result)
+  {
+    throw std::bad_alloc();
+  }
+
+  return static_cast<char *>(result);
+}
+
+void free_buf (void *p) noexcept
+{
+  auto &io_block = *static_cast<async_io_t *>(p);
+  winsock.RIODeregisterBuffer(io_block.rio_buf.BufferId);
+  (void)::VirtualFreeEx(::GetCurrentProcess(), p, 0, MEM_RELEASE);
+}
+
+} // namespace
+
+
+void async_context_t::extend_pool ()
+{
+  constexpr size_t
+    io_block_size = 1024U,
+    io_size = sizeof(async_io_t),
+    block_size = io_block_size * io_size;
+
+  std::unique_ptr<char[], void(*)(void*)> guard(
+    alloc_buf(io_size, block_size),
+    &free_buf
+  );
+  auto buf = guard.get();
+
+  auto rio_buf_id = winsock.RIORegisterBuffer(buf, block_size);
+  if (rio_buf_id == RIO_INVALID_BUFFERID)
+  {
+    std::error_code error;
+    error.assign(::WSAGetLastError(), std::system_category());
+    throw_system_error(error, "RIORegisterBuffer(", block_size, "B)");
+  }
+
+  pool.emplace_back(std::move(guard));
+
+  for (auto offset = 0U;  offset != block_size;  offset += io_size)
+  {
+    auto io = new(buf + offset) async_io_t(this);
+    io->rio_buf.BufferId = rio_buf_id;
+    io->rio_buf.Offset = offset;
+    io->rio_buf.Length = io_size;
+    free.push(io);
+  }
+}
+
+
+namespace {
+
 
 struct buf_t
   : public WSABUF
@@ -1261,7 +1317,7 @@ void async_connect_t::start (async_io_t *io,
   op->handle = socket.handle;
 
   #pragma warning(suppress: 6387)
-  auto result = (*ConnectEx)(op->handle,
+  auto result = winsock.ConnectEx(op->handle,
     static_cast<const sockaddr *>(address),
     static_cast<int>(address_size),
     nullptr, 0,
@@ -1336,7 +1392,7 @@ void async_accept_t::start (async_io_t *io, socket_t &socket, int family)
   op->accepted = new_socket.handle;
   new_socket.handle = socket_t::invalid;
 
-  auto result = (*AcceptEx)(op->acceptor,
+  auto result = winsock.AcceptEx(op->acceptor,
     op->accepted,
     io->begin,
     0,
@@ -1373,7 +1429,7 @@ async_accept_t *async_accept_t::result (async_io_t *io,
       int remote_address_size;
 
       #pragma warning(suppress: 6387)
-      (*GetAcceptExSockaddrs)(io->begin,
+      winsock.GetAcceptExSockaddrs(io->begin,
         0,
         0,
         acceptex_address_size,
@@ -1833,6 +1889,36 @@ async_io_t *async_context_t::poll (const milliseconds &timeout_ms,
 }
 
 
+namespace {
+
+void free_buf (void *p) noexcept
+{
+  delete[] static_cast<char *>(p);
+}
+
+} // namespace
+
+
+void async_context_t::extend_pool ()
+{
+  constexpr size_t
+    io_block_size = 1024U,
+    io_size = sizeof(async_io_t);
+
+  std::unique_ptr<char[], void(*)(void*)> buf(
+    new char[io_block_size * io_size],
+    &free_buf
+  );
+  pool.emplace_back(std::move(buf));
+
+  auto it = reinterpret_cast<async_io_t *>(pool.back().get());
+  for (const auto * const end = it + io_block_size;  it != end;  ++it)
+  {
+    free.push(new(it) async_io_t(this));
+  }
+}
+
+
 void async_receive_from_t::start (async_io_t *io,
   socket_t &socket,
   message_flags_t flags) noexcept
@@ -1997,19 +2083,6 @@ void socket_t::associate (async_service_ptr svc, std::error_code &error)
   else if (error)
   {
     async.reset();
-  }
-}
-
-
-void async_context_t::extend_pool ()
-{
-  constexpr size_t batch_size = 1024;
-  pool.emplace_back(std::make_unique<char[]>(batch_size * sizeof(async_io_t)));
-
-  auto it = reinterpret_cast<async_io_t *>(pool.back().get());
-  for (const auto * const end = it + batch_size;  it != end;  ++it)
-  {
-    free.push(new(it) async_io_t(this));
   }
 }
 
