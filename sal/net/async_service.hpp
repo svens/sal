@@ -131,7 +131,7 @@ public:
    */
   const void *head () const noexcept
   {
-    return *async_io_t::data;
+    return async_io_t::data;
   }
 
 
@@ -140,7 +140,7 @@ public:
    */
   const void *tail () const noexcept
   {
-    return *async_io_t::data + sizeof(*async_io_t::data);
+    return async_io_t::data + sizeof(async_io_t::data);
   }
 
 
@@ -170,7 +170,7 @@ public:
   void begin (size_t offset_from_head)
   {
     sal_throw_if(offset_from_head > max_size());
-    async_io_t::begin = *async_io_t::data + offset_from_head;
+    async_io_t::begin = async_io_t::data + offset_from_head;
   }
 
 
@@ -189,7 +189,7 @@ public:
    */
   size_t head_gap () const noexcept
   {
-    return async_io_t::begin - *async_io_t::data;
+    return async_io_t::begin - async_io_t::data;
   }
 
 
@@ -198,7 +198,7 @@ public:
    */
   size_t tail_gap () const noexcept
   {
-    return *async_io_t::data + sizeof(*async_io_t::data) - async_io_t::end;
+    return async_io_t::data + sizeof(async_io_t::data) - async_io_t::end;
   }
 
 
@@ -237,8 +237,8 @@ public:
    */
   void reset () noexcept
   {
-    async_io_t::begin = *async_io_t::data;
-    async_io_t::end = *async_io_t::data + sizeof(*async_io_t::data);
+    async_io_t::begin = async_io_t::data;
+    async_io_t::end = async_io_t::data + sizeof(async_io_t::data);
   }
 };
 

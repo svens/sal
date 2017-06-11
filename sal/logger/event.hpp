@@ -49,7 +49,7 @@ struct event_t
 
 private:
 
-  static void static_checks () noexcept
+  static constexpr void static_checks () noexcept
   {
     static_assert(sizeof(event_t) <= 4096);
   }

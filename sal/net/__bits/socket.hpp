@@ -37,21 +37,10 @@ const std::error_code &init_lib () noexcept;
 using sa_family_t = ::ADDRESS_FAMILY;
 using message_flags_t = DWORD;
 
-struct async_io_base_t:
-  public ::OVERLAPPED
-{
-  async_io_base_t ()
-    : OVERLAPPED{0}
-  {}
-};
-
 #elif __sal_os_darwin || __sal_os_linux // {{{1
 
 using sa_family_t = ::sa_family_t;
 using message_flags_t = int;
-
-struct async_io_base_t
-{};
 
 #endif // }}}1
 
@@ -209,18 +198,21 @@ struct socket_t
 };
 
 
-struct async_io_t
-  : public async_io_base_t
+struct async_io_base_t
 {
-  async_context_t &owner, *context{};
-  uintptr_t op_id{}, user_data{};
+#if __sal_os_windows // {{{1
+  // must be 1st member for IOCP
+  OVERLAPPED overlapped{0};
+#endif // }}}1
+
+  async_context_t * const owner, *context{};
+  uintptr_t user_data{};
+
+  uintptr_t op_id{};
+  char op_data[160];
   std::error_code error{};
 
-  static constexpr size_t data_size = 4096;
-  char (*data)[data_size];
   char *begin{}, *end{};
-
-  char op_data[152];
 
   union
   {
@@ -239,39 +231,49 @@ struct async_io_t
     no_sync_t::intrusive_queue_hook_t pending_send;
   };
 
-  using free_list = intrusive_queue_t<async_io_t,
+  using free_list = intrusive_queue_t<async_io_base_t,
     mpsc_sync_t,
-    &async_io_t::free
+    &async_io_base_t::free
   >;
-  using completed_list = intrusive_queue_t<async_io_t,
+  using completed_list = intrusive_queue_t<async_io_base_t,
     mpsc_sync_t,
-    &async_io_t::completed
+    &async_io_base_t::completed
   >;
-  using pending_receive_list = intrusive_queue_t<async_io_t,
+  using pending_receive_list = intrusive_queue_t<async_io_base_t,
     mpsc_sync_t,
-    &async_io_t::pending_receive
+    &async_io_base_t::pending_receive
   >;
-  using pending_send_list = intrusive_queue_t<async_io_t,
+  using pending_send_list = intrusive_queue_t<async_io_base_t,
     no_sync_t,
-    &async_io_t::pending_send
+    &async_io_base_t::pending_send
   >;
 
-
-  async_io_t (async_context_t &owner, char (*data)[4096]) noexcept
+  async_io_base_t (async_context_t *owner) noexcept
     : owner(owner)
-    , data(data)
   {}
 
+  async_io_base_t (const async_io_base_t &) = delete;
+  async_io_base_t (async_io_base_t &&) = delete;
+  async_io_base_t &operator= (const async_io_base_t &) = delete;
+  async_io_base_t &operator= (async_io_base_t &&) = delete;
+};
 
-#if __sal_os_windows // {{{1
-  void handle (int result) noexcept;
-#endif // }}}1
 
+struct async_io_t
+  : public async_io_base_t
+{
+  static constexpr size_t data_size = 4096 - sizeof(async_io_base_t);
+  char data[data_size];
 
-  async_io_t (const async_io_t &) = delete;
-  async_io_t (async_io_t &&) = delete;
-  async_io_t &operator= (const async_io_t &) = delete;
-  async_io_t &operator= (async_io_t &&) = delete;
+  async_io_t (async_context_t *owner) noexcept
+    : async_io_base_t(owner)
+  {}
+
+  static constexpr void static_checks () noexcept
+  {
+    static_assert(sizeof(async_io_t) == 4096);
+    static_assert(data_size > 1500, "data_size less than MTU size");
+  }
 };
 
 
@@ -300,9 +302,7 @@ struct async_context_t
   async_service_ptr service;
   size_t max_events_per_poll;
 
-  std::deque<async_io_t> pool{};
-  std::deque<std::unique_ptr<char[]>> buffers{};
-
+  std::deque<std::unique_ptr<char[]>> pool{};
   async_io_t::free_list free{};
   async_io_t::completed_list completed{};
 
@@ -336,15 +336,15 @@ struct async_context_t
 
   async_io_t *new_io ()
   {
-    auto io = free.try_pop();
+    auto io = static_cast<async_io_t *>(free.try_pop());
     if (!io)
     {
       extend_pool();
-      io = free.try_pop();
+      io = static_cast<async_io_t *>(free.try_pop());
     }
     io->context = this;
-    io->begin = *io->data;
-    io->end = io->begin + sizeof(*io->data);
+    io->begin = io->data;
+    io->end = io->data + sizeof(io->data);
     return io;
   }
 
@@ -352,13 +352,13 @@ struct async_context_t
   static void release_io (void *p) noexcept
   {
     auto io = reinterpret_cast<async_io_t *>(p);
-    io->owner.free.push(io);
+    io->owner->free.push(io);
   }
 
 
   async_io_t *try_get () noexcept
   {
-    return completed.try_pop();
+    return static_cast<async_io_t *>(completed.try_pop());
   }
 
 
