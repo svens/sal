@@ -201,7 +201,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
             transferred.first++;
             transferred.second += recv->transferred();
             io->resize(recv->transferred());
-            send_sock.async_send_to(std::move(io), recv->endpoint());
+            send_sock.async_send_to(std::move(io), recv->remote_endpoint());
           }
           else
           {

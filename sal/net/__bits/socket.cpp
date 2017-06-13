@@ -43,6 +43,10 @@ namespace {
 
 struct winsock_t
 {
+  LPFN_CONNECTEX ConnectEx{};
+  LPFN_ACCEPTEX AcceptEx{};
+  LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs{};
+
   winsock_t () noexcept
   {
     init_lib();
@@ -52,13 +56,7 @@ struct winsock_t
   {
     (void)::WSACleanup();
   }
-} sys{};
-
-LPFN_CONNECTEX ConnectEx{};
-LPFN_ACCEPTEX AcceptEx{};
-LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs{};
-LPFN_RIOREGISTERBUFFER RIORegisterBuffer;
-LPFN_RIODEREGISTERBUFFER RIODeregisterBuffer;
+} winsock{};
 
 constexpr DWORD acceptex_address_size = sizeof(sockaddr_storage) + 16;
 
@@ -103,25 +101,6 @@ void load (F *fn, GUID id, SOCKET socket, std::error_code &error) noexcept
 }
 
 
-void load (RIO_EXTENSION_FUNCTION_TABLE *rio, SOCKET socket,
-  std::error_code &error) noexcept
-{
-  if (!error)
-  {
-    DWORD bytes;
-    GUID id = WSAID_MULTIPLE_RIO;
-    call(::WSAIoctl, error, socket,
-      SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER,
-      &id, sizeof(id),
-      rio, sizeof(*rio),
-      &bytes,
-      nullptr,
-      nullptr
-    );
-  }
-}
-
-
 void init_winsock (std::error_code &init_result) noexcept
 {
   WSADATA wsa;
@@ -133,19 +112,9 @@ void init_winsock (std::error_code &init_result) noexcept
   if (!init_result)
   {
     auto s = ::socket(AF_INET, SOCK_STREAM, 0);
-
-    load(&ConnectEx, WSAID_CONNECTEX, s, init_result);
-    load(&AcceptEx, WSAID_ACCEPTEX, s, init_result);
-    load(&GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, s, init_result);
-
-    RIO_EXTENSION_FUNCTION_TABLE rio;
-    load(&rio, s, init_result);
-    if (!init_result)
-    {
-      RIORegisterBuffer = rio.RIORegisterBuffer;
-      RIODeregisterBuffer = rio.RIODeregisterBuffer;
-    }
-
+    load(&winsock.ConnectEx, WSAID_CONNECTEX, s, init_result);
+    load(&winsock.AcceptEx, WSAID_ACCEPTEX, s, init_result);
+    load(&winsock.GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, s, init_result);
     (void)::closesocket(s);
   }
 }
@@ -1033,10 +1002,10 @@ void async_context_t::enqueue_completions (OVERLAPPED_ENTRY *first,
   while (first != last)
   {
     auto &entry = *first++;
-    auto *io = static_cast<async_io_t *>(entry.lpOverlapped);
+    auto *io = reinterpret_cast<async_io_t *>(entry.lpOverlapped);
     auto *op = reinterpret_cast<async_op_base_t *>(io->op_data);
 
-    auto status = static_cast<NTSTATUS>(io->Internal);
+    auto status = static_cast<NTSTATUS>(io->overlapped.Internal);
     if (NT_SUCCESS(status))
     {
       op->transferred = entry.dwNumberOfBytesTransferred;
@@ -1106,6 +1075,53 @@ async_io_t *async_context_t::poll (const std::chrono::milliseconds &timeout,
 
 namespace {
 
+char *alloc_buf (size_t alignment, size_t size)
+{
+  // C++17: std::aligned_alloc(alignment, size);
+  (void)alignment;
+
+  auto result = ::VirtualAllocEx(::GetCurrentProcess(),
+    nullptr,
+    size,
+    MEM_COMMIT | MEM_RESERVE,
+    PAGE_READWRITE
+  );
+
+  if (!result)
+  {
+    throw std::bad_alloc();
+  }
+
+  return static_cast<char *>(result);
+}
+
+void free_buf (void *p) noexcept
+{
+  (void)::VirtualFreeEx(::GetCurrentProcess(), p, 0, MEM_RELEASE);
+}
+
+} // namespace
+
+
+void async_context_t::extend_pool ()
+{
+  constexpr size_t
+    io_block_size = 1024U,
+    io_size = sizeof(async_io_t),
+    block_size = io_block_size * io_size;
+
+  pool.emplace_back(alloc_buf(io_size, block_size), &free_buf);
+
+  auto it = reinterpret_cast<async_io_t *>(pool.back().get());
+  for (auto end = it + io_block_size;  it != end;  ++it)
+  {
+    free.push(new(it) async_io_t(this));
+  }
+}
+
+
+namespace {
+
 
 struct buf_t
   : public WSABUF
@@ -1118,16 +1134,13 @@ struct buf_t
 };
 
 
-} // namespace
-
-
-void async_io_t::handle (int result) noexcept
+void io_result_check (async_io_t *io, int result) noexcept
 {
   if (result == 0)
   {
     // completed immediately, caller still owns data, move ownership to library
-    error.clear();
-    context->completed.push(this);
+    io->error.clear();
+    io->context->completed.push(io);
     return;
   }
 
@@ -1141,18 +1154,21 @@ void async_io_t::handle (int result) noexcept
   // failed, caller still owns data, move ownership to library
   else if (e == WSAESHUTDOWN)
   {
-    error = make_error_code(std::errc::broken_pipe);
+    io->error = make_error_code(std::errc::broken_pipe);
   }
   else if (e == WSAENOTSOCK)
   {
-    error.assign(WSAEBADF, std::system_category());
+    io->error.assign(WSAEBADF, std::system_category());
   }
   else
   {
-    error.assign(e, std::system_category());
+    io->error.assign(e, std::system_category());
   }
-  context->completed.push(this);
+  io->context->completed.push(io);
 }
+
+
+} // namespace
 
 
 void async_receive_from_t::start (async_io_t *io,
@@ -1160,18 +1176,18 @@ void async_receive_from_t::start (async_io_t *io,
   message_flags_t flags) noexcept
 {
   auto op = new_op(io);
-  op->address_size = sizeof(op->address);
+  op->remote_address_size = sizeof(op->remote_address);
 
   DWORD flags_ = flags;
   buf_t buf(io);
-  io->handle(
+  io_result_check(io,
     ::WSARecvFrom(socket.handle,
       &buf, 1,
       &op->transferred,
       &flags_,
-      reinterpret_cast<sockaddr *>(&op->address),
-      &op->address_size,
-      io,
+      reinterpret_cast<sockaddr *>(&op->remote_address),
+      &op->remote_address_size,
+      &io->overlapped,
       nullptr
     )
   );
@@ -1190,7 +1206,7 @@ void async_receive_t::start (async_io_t *io,
     &buf, 1,
     &op->transferred,
     &flags_,
-    io,
+    &io->overlapped,
     nullptr
   );
   if (result == 0)
@@ -1207,7 +1223,7 @@ void async_receive_t::start (async_io_t *io,
   }
   else
   {
-    io->handle(result);
+    io_result_check(io, result);
   }
 }
 
@@ -1220,14 +1236,14 @@ void async_send_to_t::start (async_io_t *io,
   auto op = new_op(io);
 
   buf_t buf(io);
-  io->handle(
+  io_result_check(io,
     ::WSASendTo(socket.handle,
       &buf, 1,
       &op->transferred,
       flags,
       static_cast<const sockaddr *>(address),
       static_cast<int>(address_size),
-      io,
+      &io->overlapped,
       nullptr
     )
   );
@@ -1241,12 +1257,12 @@ void async_send_t::start (async_io_t *io,
   auto op = new_op(io);
 
   buf_t buf(io);
-  io->handle(
+  io_result_check(io,
     ::WSASend(socket.handle,
       &buf, 1,
       &op->transferred,
       flags,
-      io,
+      &io->overlapped,
       nullptr
     )
   );
@@ -1261,12 +1277,12 @@ void async_connect_t::start (async_io_t *io,
   op->handle = socket.handle;
 
   #pragma warning(suppress: 6387)
-  auto result = (*ConnectEx)(op->handle,
+  auto result = winsock.ConnectEx(op->handle,
     static_cast<const sockaddr *>(address),
     static_cast<int>(address_size),
     nullptr, 0,
     nullptr,
-    io
+    &io->overlapped
   );
 
   if (result == TRUE)
@@ -1336,14 +1352,14 @@ void async_accept_t::start (async_io_t *io, socket_t &socket, int family)
   op->accepted = new_socket.handle;
   new_socket.handle = socket_t::invalid;
 
-  auto result = (*AcceptEx)(op->acceptor,
+  auto result = winsock.AcceptEx(op->acceptor,
     op->accepted,
     io->begin,
     0,
     0,
     acceptex_address_size,
     &op->transferred,
-    io
+    &io->overlapped
   );
   if (result == TRUE)
   {
@@ -1373,7 +1389,7 @@ async_accept_t *async_accept_t::result (async_io_t *io,
       int remote_address_size;
 
       #pragma warning(suppress: 6387)
-      (*GetAcceptExSockaddrs)(io->begin,
+      winsock.GetAcceptExSockaddrs(io->begin,
         0,
         0,
         acceptex_address_size,
@@ -1469,8 +1485,7 @@ async_service_t::~async_service_t () noexcept
 socket_t::async_t::async_t (socket_t &socket,
     async_service_ptr service,
     std::error_code &error) noexcept
-  : socket(socket)
-  , service(service)
+  : service(service)
 {
   if (socket.handle == invalid)
   {
@@ -1487,7 +1502,7 @@ socket_t::async_t::async_t (socket_t &socket,
     EV_ADD | EV_CLEAR,
     0,
     0,
-    this
+    &socket
   );
 
   auto result = ::kevent(service->queue,
@@ -1500,7 +1515,7 @@ socket_t::async_t::async_t (socket_t &socket,
 
   struct ::epoll_event change;
   change.events = EPOLLIN | EPOLLET;
-  change.data.ptr = this;
+  change.data.ptr = &socket;
 
   auto result = ::epoll_ctl(service->queue,
     EPOLL_CTL_ADD,
@@ -1536,18 +1551,19 @@ socket_t::async_t::~async_t () noexcept
 }
 
 
-void socket_t::async_t::on_readable (async_context_t &context, uint16_t /*flags*/)
-  noexcept
+void socket_t::async_t::on_readable (socket_t &socket,
+  async_context_t &context,
+  uint16_t /*flags*/) noexcept
 {
   lock_t lock(receive_mutex);
 
-  while (auto *io = pending_receive.try_pop())
+  while (auto *io = static_cast<async_io_t *>(pending_receive.try_pop()))
   {
     if (auto *op = async_receive_from_t::get_op(io))
     {
       op->transferred = socket.receive_from(
         io->begin, io->end - io->begin,
-        &op->address, &op->address_size,
+        &op->remote_address, &op->remote_address_size,
         op->flags,
         io->error
       );
@@ -1583,12 +1599,13 @@ void socket_t::async_t::on_readable (async_context_t &context, uint16_t /*flags*
 }
 
 
-void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
-  noexcept
+void socket_t::async_t::on_writable (socket_t &socket,
+  async_context_t &context,
+  uint16_t flags) noexcept
 {
   lock_t lock(send_mutex);
 
-  while (auto *io = pending_send.try_pop())
+  while (auto *io = static_cast<async_io_t *>(pending_send.try_pop()))
   {
     if (auto *op = async_send_to_t::get_op(io))
     {
@@ -1675,7 +1692,7 @@ void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
       EV_DELETE,
       0,
       0,
-      this
+      &socket
     );
     (void)::kevent(service->queue,
       &change, 1,
@@ -1687,7 +1704,7 @@ void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
 
     struct ::epoll_event change;
     change.events = EPOLLIN | EPOLLET;
-    change.data.ptr = this;
+    change.data.ptr = &socket;
     (void)::epoll_ctl(service->queue,
       EPOLL_CTL_MOD,
       socket.handle,
@@ -1699,7 +1716,7 @@ void socket_t::async_t::on_writable (async_context_t &context, uint16_t flags)
 }
 
 
-void socket_t::async_t::push_send (async_io_t *io) noexcept
+void socket_t::async_t::push_send (socket_t &socket, async_io_t *io) noexcept
 {
   lock_t lock(send_mutex);
 
@@ -1718,7 +1735,7 @@ void socket_t::async_t::push_send (async_io_t *io) noexcept
       EV_ADD,
       0,
       0,
-      this
+      &socket
     );
     (void)::kevent(service->queue,
       &change, 1,
@@ -1730,7 +1747,7 @@ void socket_t::async_t::push_send (async_io_t *io) noexcept
 
     struct ::epoll_event change;
     change.events = EPOLLIN | EPOLLOUT | EPOLLET;
-    change.data.ptr = this;
+    change.data.ptr = &socket;
     (void)::epoll_ctl(service->queue,
       EPOLL_CTL_MOD,
       socket.handle,
@@ -1772,14 +1789,14 @@ async_io_t *async_context_t::poll (const milliseconds &timeout_ms,
 
     for (auto ev = &events[0], end = ev + event_count;  ev != end;  ++ev)
     {
-      auto &async = *static_cast<socket_t::async_t *>(ev->udata);
+      auto &socket = *static_cast<socket_t *>(ev->udata);
       if (ev->filter == EVFILT_READ)
       {
-        async.on_readable(*this, ev->flags);
+        socket.async->on_readable(socket, *this, ev->flags);
       }
       else if (ev->filter == EVFILT_WRITE)
       {
-        async.on_writable(*this, ev->flags);
+        socket.async->on_writable(socket, *this, ev->flags);
       }
     }
 
@@ -1809,14 +1826,14 @@ async_io_t *async_context_t::poll (const milliseconds &timeout_ms,
 
     for (auto ev = &events[0], end = ev + event_count;  ev != end;  ++ev)
     {
-      auto &async = *static_cast<socket_t::async_t *>(ev->data.ptr);
+      auto &socket = *static_cast<socket_t *>(ev->data.ptr);
       if (ev->events & EPOLLIN)
       {
-        async.on_readable(*this, ev->events);
+        socket.async->on_readable(socket, *this, ev->events);
       }
       if (ev->events & EPOLLOUT)
       {
-        async.on_writable(*this, ev->events);
+        socket.async->on_writable(socket, *this, ev->events);
       }
     }
 
@@ -1832,17 +1849,47 @@ async_io_t *async_context_t::poll (const milliseconds &timeout_ms,
 }
 
 
+namespace {
+
+void free_buf (void *p) noexcept
+{
+  delete[] static_cast<char *>(p);
+}
+
+} // namespace
+
+
+void async_context_t::extend_pool ()
+{
+  constexpr size_t
+    io_block_size = 1024U,
+    io_size = sizeof(async_io_t);
+
+  std::unique_ptr<char[], void(*)(void*)> buf(
+    new char[io_block_size * io_size],
+    &free_buf
+  );
+  pool.emplace_back(std::move(buf));
+
+  auto it = reinterpret_cast<async_io_t *>(pool.back().get());
+  for (const auto * const end = it + io_block_size;  it != end;  ++it)
+  {
+    free.push(new(it) async_io_t(this));
+  }
+}
+
+
 void async_receive_from_t::start (async_io_t *io,
   socket_t &socket,
   message_flags_t flags) noexcept
 {
   auto op = new_op(io);
   op->flags = flags | MSG_DONTWAIT;
-  op->address_size = sizeof(op->address);
+  op->remote_address_size = sizeof(op->remote_address);
 
   op->transferred = socket.receive_from(
     io->begin, io->end - io->begin,
-    &op->address, &op->address_size,
+    &op->remote_address, &op->remote_address_size,
     op->flags,
     io->error
   );
@@ -1905,7 +1952,7 @@ void async_send_to_t::start (async_io_t *io,
   {
     std::memcpy(&op->address, address, address_size);
     op->address_size = address_size;
-    socket.async->push_send(io);
+    socket.async->push_send(socket, io);
   }
 }
 
@@ -1929,7 +1976,7 @@ void async_send_t::start (async_io_t *io,
   }
   else
   {
-    socket.async->push_send(io);
+    socket.async->push_send(socket, io);
   }
 }
 
@@ -1947,7 +1994,7 @@ void async_connect_t::start (async_io_t *io,
   }
   else
   {
-    socket.async->push_send(io);
+    socket.async->push_send(socket, io);
   }
 }
 
@@ -1996,21 +2043,6 @@ void socket_t::associate (async_service_ptr svc, std::error_code &error)
   else if (error)
   {
     async.reset();
-  }
-}
-
-
-void async_context_t::extend_pool ()
-{
-  constexpr auto batch_size = 1024;
-  buffers.emplace_back(std::make_unique<char[]>(batch_size * async_io_t::data_size));
-
-  auto it = reinterpret_cast<char(*)[async_io_t::data_size]>(buffers.back().get());
-  auto e = it + batch_size;
-  for (/**/;  it != e;  ++it)
-  {
-    pool.emplace_back(*this, it);
-    free.push(&pool.back());
   }
 }
 
