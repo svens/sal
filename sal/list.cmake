@@ -6,6 +6,9 @@ list(APPEND sal_sources
   sal/buf_ptr.hpp
   sal/builtins.hpp
   sal/char_array.hpp
+  sal/__bits/encode.hpp
+  sal/__bits/encode.cpp
+  sal/encode.hpp
   sal/error.hpp
   sal/file.hpp
   sal/file.cpp
@@ -33,6 +36,7 @@ list(APPEND sal_unittests
   sal/builtins.test.cpp
   sal/char_array.test.cpp
   sal/common.test.hpp
+  sal/encode.test.cpp
   sal/error.test.cpp
   sal/file.test.cpp
   sal/format.test.cpp
