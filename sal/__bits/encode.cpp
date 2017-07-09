@@ -41,7 +41,8 @@ struct hex_lookup_t
     }
     for (int i = 0;  i != 22;  ++i)
     {
-      table[static_cast<size_t>("0123456789abcdefABCDEF"[i])] = i;
+      table[static_cast<size_t>("0123456789abcdefABCDEF"[i])] =
+        static_cast<char>(i);
     }
   }
 
@@ -110,7 +111,7 @@ struct base64_lookup_t
     }
     for (int i = 0;  i != 64;  ++i)
     {
-      table[static_cast<size_t>(base64_encode[i])] = i;
+      table[static_cast<size_t>(base64_encode[i])] = static_cast<char>(i);
     }
   }
 

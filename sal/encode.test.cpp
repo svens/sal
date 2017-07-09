@@ -21,17 +21,20 @@ TYPED_TEST_CASE(encode, transform_types);
 using encode_data = std::vector<std::pair<std::string, std::string>>;
 
 template <typename Encoding> const encode_data test_data{};
-template <typename Encoding> const std::string invalid_addition{};
+template <typename Encoding> const std::string invalid_data{};
+template <typename Encoding> const std::string invalid_length_data{};
 
 template <> const encode_data test_data<sal::hex_string> =
 {
+  { "", "" },
   { "hex_string", "6865785f737472696e67" },
   { "HEX_STRING", "4845585f535452494e47" },
   { "hex\nstring", "6865780a737472696e67" },
   { "hello, world", "68656c6c6f2c20776f726c64" },
 };
 
-template <> const std::string invalid_addition<sal::hex_string> = "xy";
+template <> const std::string invalid_data<sal::hex_string> = "xy";
+template <> const std::string invalid_length_data<sal::hex_string> = "A";
 
 
 // https://tools.ietf.org/html/rfc4648 (10)
@@ -46,7 +49,8 @@ template <> const encode_data test_data<sal::base64> =
   { "foobar", "Zm9vYmFy" },
 };
 
-template <> const std::string invalid_addition<sal::base64> = "====";
+template <> const std::string invalid_data<sal::base64> = "====";
+template <> const std::string invalid_length_data<sal::base64> = "A";
 
 
 TYPED_TEST(encode, max_encoded_size_range)
@@ -182,7 +186,7 @@ TYPED_TEST(encode, max_decoded_size_range_invalid)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded.push_back(encoded.back());
+    encoded += invalid_length_data<TypeParam>;
 
     std::error_code error;
     sal::max_decoded_size<TypeParam>(encoded.begin(), encoded.end(), error);
@@ -202,7 +206,7 @@ TYPED_TEST(encode, max_decoded_size_buffer_invalid)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded.push_back(encoded.back());
+    encoded += invalid_length_data<TypeParam>;
 
     std::error_code error;
     sal::max_decoded_size<TypeParam>(encoded, error);
@@ -243,7 +247,7 @@ TYPED_TEST(encode, decode_range_into_range_invalid_length)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded.push_back(encoded.back());
+    encoded += invalid_length_data<TypeParam>;
 
     char buf[4096];
     std::error_code error;
@@ -268,7 +272,7 @@ TYPED_TEST(encode, decode_range_into_range_invalid_data_in_front)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded = invalid_addition<TypeParam> + encoded;
+    encoded = invalid_data<TypeParam> + encoded;
 
     char buf[4096];
     std::error_code error;
@@ -293,7 +297,7 @@ TYPED_TEST(encode, decode_range_into_range_invalid_data_in_back)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded += invalid_addition<TypeParam>;
+    encoded += invalid_data<TypeParam>;
 
     char buf[4096];
     std::error_code error;
@@ -337,7 +341,7 @@ TYPED_TEST(encode, decode_buffer_into_range_invalid_length)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded.push_back(encoded.back());
+    encoded += invalid_length_data<TypeParam>;
 
     char buf[4096];
     std::error_code error;
@@ -360,7 +364,7 @@ TYPED_TEST(encode, decode_buffer_into_range_invalid_data_in_front)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded = invalid_addition<TypeParam> + encoded;
+    encoded = invalid_data<TypeParam> + encoded;
 
     char buf[4096];
     std::error_code error;
@@ -383,7 +387,7 @@ TYPED_TEST(encode, decode_buffer_into_range_invalid_data_in_back)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded += invalid_addition<TypeParam>;
+    encoded += invalid_data<TypeParam>;
 
     char buf[4096];
     std::error_code error;
@@ -430,7 +434,7 @@ TYPED_TEST(encode, decode_range_into_vector_invalid_length)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded.push_back(encoded.back());
+    encoded += invalid_length_data<TypeParam>;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded.begin(), encoded.end(), error);
@@ -452,7 +456,7 @@ TYPED_TEST(encode, decode_range_into_vector_invalid_data_in_front)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded = invalid_addition<TypeParam> + encoded;
+    encoded = invalid_data<TypeParam> + encoded;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded.begin(), encoded.end(), error);
@@ -474,7 +478,7 @@ TYPED_TEST(encode, decode_range_into_vector_invalid_data_in_back)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded += invalid_addition<TypeParam>;
+    encoded += invalid_data<TypeParam>;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded.begin(), encoded.end(), error);
@@ -514,7 +518,7 @@ TYPED_TEST(encode, decode_buffer_into_vector_invalid_length)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded.push_back(encoded.back());
+    encoded += invalid_length_data<TypeParam>;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded, error);
@@ -536,7 +540,7 @@ TYPED_TEST(encode, decode_buffer_into_vector_invalid_data_in_front)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded = invalid_addition<TypeParam> + encoded;
+    encoded = invalid_data<TypeParam> + encoded;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded, error);
@@ -558,7 +562,7 @@ TYPED_TEST(encode, decode_buffer_into_vector_invalid_data_in_back)
   for (auto &data: test_data<TypeParam>)
   {
     std::tie(decoded, encoded) = data;
-    encoded += invalid_addition<TypeParam>;
+    encoded += invalid_data<TypeParam>;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded, error);
