@@ -4,6 +4,7 @@ var searchData=
   ['back_5for_5fdefault',['back_or_default',['../classsal_1_1program__options_1_1option__set__t.html#aa415d557fc7bc9f89f8c7259227d1b29',1,'sal::program_options::option_set_t']]],
   ['bad',['bad',['../classsal_1_1char__array__t.html#ad641fc5ef02f2a9000a53e0992c55e56',1,'sal::char_array_t::bad()'],['../classsal_1_1memory__writer__t.html#a3e515b35c3d5a411e09084e531883a00',1,'sal::memory_writer_t::bad()']]],
   ['bad_5faddress_5fcast_5ft',['bad_address_cast_t',['../classsal_1_1net_1_1ip_1_1bad__address__cast__t.html',1,'sal::net::ip']]],
+  ['base64',['base64',['../encode_8hpp.html#a8788825da0af4c8f27808c5ccfa31799',1,'sal']]],
   ['basic_5fdatagram_5fsocket_2ehpp',['basic_datagram_socket.hpp',['../basic__datagram__socket_8hpp.html',1,'']]],
   ['basic_5fdatagram_5fsocket_5ft',['basic_datagram_socket_t',['../classsal_1_1net_1_1basic__datagram__socket__t.html',1,'sal::net::basic_datagram_socket_t&lt; Protocol &gt;'],['../classsal_1_1net_1_1basic__datagram__socket__t.html#a0267abd39dd0a7df5bbe9dc5f3f64caa',1,'sal::net::basic_datagram_socket_t::basic_datagram_socket_t(const protocol_t &amp;protocol)'],['../classsal_1_1net_1_1basic__datagram__socket__t.html#ac13095956d2b05d46e08d245b6947cde',1,'sal::net::basic_datagram_socket_t::basic_datagram_socket_t(const endpoint_t &amp;endpoint)'],['../classsal_1_1net_1_1basic__datagram__socket__t.html#ae090cf48c736a7f873c67550ed8520ab',1,'sal::net::basic_datagram_socket_t::basic_datagram_socket_t(handle_t handle)']]],
   ['basic_5fendpoint_2ehpp',['basic_endpoint.hpp',['../basic__endpoint_8hpp.html',1,'']]],

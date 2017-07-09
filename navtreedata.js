@@ -70,7 +70,7 @@ var NAVTREEINDEX =
 "classsal_1_1locked__ptr.html#af458f55977744c062dea6f6375e73ea9",
 "classsal_1_1net_1_1basic__socket__t.html#ac7a0051ce5ba1898a4581015e91c24dc",
 "classsal_1_1program__options_1_1option__set__t.html",
-"queue_8hpp_source.html"
+"net_2error_8hpp.html#aafae1b17829b8443483a4437f52ac00f"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

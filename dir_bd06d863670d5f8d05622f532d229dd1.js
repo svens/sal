@@ -10,6 +10,7 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
     [ "char_array.hpp", "char__array_8hpp.html", [
       [ "char_array_t", "classsal_1_1char__array__t.html", "classsal_1_1char__array__t" ]
     ] ],
+    [ "encode.hpp", "encode_8hpp.html", "encode_8hpp" ],
     [ "error.hpp", "error_8hpp.html", "error_8hpp" ],
     [ "file.hpp", "file_8hpp.html", [
       [ "file_t", "classsal_1_1file__t.html", "classsal_1_1file__t" ]
