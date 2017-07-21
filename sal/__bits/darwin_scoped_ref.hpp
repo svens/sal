@@ -15,7 +15,7 @@ __sal_begin
 template <typename T>
 struct scoped_ref
 {
-  T ref;
+  T ref{};
 
   scoped_ref (T ref = nullptr) noexcept
     : ref(ref)
@@ -42,8 +42,34 @@ struct scoped_ref
     return *this;
   }
 
-  scoped_ref (const scoped_ref &) = delete;
-  scoped_ref &operator= (const scoped_ref &) = delete;
+  void reset (T that = nullptr) noexcept
+  {
+    auto tmp(std::move(*this));
+    ref = that;
+  }
+
+  T release () noexcept
+  {
+    auto result = ref;
+    ref = nullptr;
+    return result;
+  }
+
+  scoped_ref (const scoped_ref &that) noexcept
+    : ref(that.ref)
+  {
+    if (ref)
+    {
+      ::CFRetain(ref);
+    }
+  }
+
+  scoped_ref &operator= (const scoped_ref &that) noexcept
+  {
+    auto copy(that);
+    swap(copy);
+    return *this;
+  }
 
   void swap (scoped_ref &that) noexcept
   {

@@ -1,5 +1,6 @@
 # sources
 list(APPEND sal_sources
+  sal/__bits/darwin_scoped_ref.hpp
   sal/__bits/platform_sdk.hpp
   sal/__bits/member_assign.hpp
   sal/assert.hpp
