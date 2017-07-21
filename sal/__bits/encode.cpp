@@ -10,10 +10,10 @@ namespace __bits {
 // hex_string {{{1
 
 
-char *hex_string::encode (const char *first, const char *last, char *out)
-  noexcept
+uint8_t *hex_string::encode (const uint8_t *first, const uint8_t *last,
+  uint8_t *out) noexcept
 {
-  static constexpr char digits[] = "0123456789abcdef";
+  static constexpr uint8_t digits[] = "0123456789abcdef";
 
   while (first != last)
   {
@@ -30,23 +30,26 @@ namespace {
 
 struct hex_lookup_t
 {
-  char table[256];
+  uint8_t table[256];
 
   constexpr hex_lookup_t ()
     : table{}
   {
     for (auto &ch: table)
     {
-      ch = -1;
+      ch = 0xff;
     }
-    for (int i = 0;  i != 22;  ++i)
+    for (int i = 0;  i != 16;  ++i)
     {
-      table[static_cast<size_t>("0123456789abcdefABCDEF"[i])] =
-        static_cast<char>(i);
+      table[static_cast<size_t>("0123456789abcdef"[i])] = static_cast<uint8_t>(i);
+    }
+    for (int i = 0;  i != 6;  ++i)
+    {
+      table[static_cast<size_t>("ABCDEF"[i])] = static_cast<uint8_t>(i + 10);
     }
   }
 
-  constexpr char operator[] (char i) const
+  constexpr uint8_t operator[] (uint8_t i) const
   {
     return table[static_cast<size_t>(i)];
   }
@@ -56,8 +59,8 @@ static constexpr hex_lookup_t hex_{};
 } // namespace
 
 
-char *hex_string::decode (const char *first, const char *last, char *out,
-  std::error_code &error) noexcept
+uint8_t *hex_string::decode (const uint8_t *first, const uint8_t *last,
+  uint8_t *out, std::error_code &error) noexcept
 {
   if ((last - first) % 2 != 0)
   {
@@ -65,11 +68,11 @@ char *hex_string::decode (const char *first, const char *last, char *out,
     return out;
   }
 
-  for (char hi, lo;  first != last;  first += 2)
+  for (uint8_t hi, lo;  first != last;  first += 2)
   {
     hi = hex_[first[0]];
     lo = hex_[first[1]];
-    if (hi != -1 && lo != -1)
+    if (hi != 0xff && lo != 0xff)
     {
       *out++ = (hi << 4) | lo;
     }
@@ -91,7 +94,7 @@ char *hex_string::decode (const char *first, const char *last, char *out,
 namespace {
 
 
-static constexpr char base64_encode[] =
+static constexpr uint8_t base64_encode[] =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   "abcdefghijklmnopqrstuvwxyz"
   "0123456789"
@@ -100,22 +103,22 @@ static constexpr char base64_encode[] =
 
 struct base64_lookup_t
 {
-  char table[256];
+  uint8_t table[256];
 
   constexpr base64_lookup_t ()
     : table{}
   {
     for (auto &ch: table)
     {
-      ch = -1;
+      ch = 0xff;
     }
     for (int i = 0;  i != 64;  ++i)
     {
-      table[static_cast<size_t>(base64_encode[i])] = static_cast<char>(i);
+      table[static_cast<size_t>(base64_encode[i])] = static_cast<uint8_t>(i);
     }
   }
 
-  constexpr char operator[] (char i) const
+  constexpr uint8_t operator[] (uint8_t i) const
   {
     return table[static_cast<size_t>(i)];
   }
@@ -126,7 +129,8 @@ static constexpr base64_lookup_t base64_decode{};
 } // namespace
 
 
-char *base64::encode (const char *first, const char *last, char *out) noexcept
+uint8_t *base64::encode (const uint8_t *first, const uint8_t *last,
+  uint8_t *out) noexcept
 {
   auto mod = (last - first) % 3;
   last -= mod;
@@ -158,7 +162,7 @@ char *base64::encode (const char *first, const char *last, char *out) noexcept
 }
 
 
-char *base64::decode (const char *first, const char *last, char *out,
+uint8_t *base64::decode (const uint8_t *first, const uint8_t *last, uint8_t *out,
   std::error_code &error) noexcept
 {
   if ((last - first) % 4 != 0)
@@ -167,9 +171,9 @@ char *base64::decode (const char *first, const char *last, char *out,
     return out;
   }
 
-  for (int val = 0, valb = -8;  first != last;  ++first)
+  for (int32_t val = 0, valb = -8;  first != last;  ++first)
   {
-    if (base64_decode[*first] == -1)
+    if (base64_decode[*first] == 0xff)
     {
       if (((last - first) == 1 && first[0] == '=')
         || (last - first == 2 && first[0] == '=' && first[1] == '='))
@@ -185,7 +189,7 @@ char *base64::decode (const char *first, const char *last, char *out,
 
     if (valb >= 0)
     {
-      *out++ = static_cast<char>((val >> valb) & 0xff);
+      *out++ = static_cast<uint8_t>((val >> valb) & 0xff);
       valb -= 8;
     }
   }
