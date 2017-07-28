@@ -2,6 +2,7 @@
 #include <sal/crypto/error.hpp>
 
 #if __sal_os_darwin // {{{1
+  #include <sal/__bits/scoped_ref.hpp>
   #include <Security/SecBase.h>
   #include <CoreFoundation/CFString.h>
 #endif // }}}1

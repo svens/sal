@@ -1,11 +1,11 @@
 # sources
 list(APPEND sal_sources
   sal/crypto/__bits/certificate.hpp
-  sal/crypto/__bits/certificate.cpp
-  sal/crypto/__bits/digest.hpp
   sal/crypto/certificate.hpp
+  sal/crypto/certificate.cpp
   sal/crypto/error.hpp
   sal/crypto/error.cpp
+  sal/crypto/__bits/digest.hpp
   sal/crypto/hash.hpp
   sal/crypto/hash.cpp
   sal/crypto/hmac.hpp
