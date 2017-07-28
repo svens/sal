@@ -10,6 +10,8 @@ list(APPEND sal_sources
   sal/crypto/hash.cpp
   sal/crypto/hmac.hpp
   sal/crypto/hmac.cpp
+  sal/crypto/oid.hpp
+  sal/crypto/oid.cpp
   sal/crypto/random.hpp
   sal/crypto/random.cpp
 )
