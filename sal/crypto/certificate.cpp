@@ -307,9 +307,21 @@ std::string certificate_t::display_name (std::error_code &error)
 {
   if (impl_)
   {
-    scoped_ref<CFStringRef> s = ::SecCertificateCopySubjectSummary(impl_.ref);
-    char buf[1024];
-    return c_str(s.ref, buf);
+    try
+    {
+      scoped_ref<CFStringRef> s = ::SecCertificateCopySubjectSummary(impl_.ref);
+      char buf[1024];
+      error.clear();
+      return c_str(s.ref, buf);
+    }
+
+    // LCOV_EXCL_START
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+      return {};
+    }
+    // LCOV_EXCL_STOP
   }
 
   error = std::make_error_code(std::errc::bad_address);
