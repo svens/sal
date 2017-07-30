@@ -51,15 +51,8 @@ public:
   /**
    */
   static certificate_t from_pem (const std::string &data,
-    std::error_code &error) noexcept
-  {
-    uint8_t der[8192];
-    if (auto end = pem_to_der(data, der, sizeof(der), error))
-    {
-      return certificate_t(der, end, error);
-    }
-    return certificate_t{};
-  }
+    std::error_code &error
+  ) noexcept;
 
 
   /**
@@ -186,11 +179,6 @@ private:
   __bits::certificate_t impl_{};
 
   certificate_t (const uint8_t *first, const uint8_t *last,
-    std::error_code &error
-  ) noexcept;
-
-  static uint8_t *pem_to_der (const std::string &pem,
-    uint8_t *buf, size_t buf_size,
     std::error_code &error
   ) noexcept;
 };

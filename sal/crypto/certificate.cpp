@@ -53,11 +53,7 @@ std::string unwrap (const std::string &pem)
 }
 
 
-} // namespace
-
-
-uint8_t *certificate_t::pem_to_der (const std::string &pem,
-  uint8_t *buf, size_t buf_size,
+uint8_t *pem_to_der (const std::string &pem, uint8_t *buf, size_t buf_size,
   std::error_code &error) noexcept
 {
   try
@@ -86,6 +82,21 @@ uint8_t *certificate_t::pem_to_der (const std::string &pem,
     return {};
   }
   // LCOV_EXCL_STOP
+}
+
+
+} // namespace
+
+
+certificate_t certificate_t::from_pem (const std::string &data,
+  std::error_code &error) noexcept
+{
+  uint8_t der[8192];
+  if (auto end = pem_to_der(data, der, sizeof(der), error))
+  {
+    return certificate_t(der, end, error);
+  }
+  return certificate_t{};
 }
 
 
