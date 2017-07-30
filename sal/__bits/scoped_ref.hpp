@@ -12,7 +12,7 @@ __sal_begin
 
 namespace __bits {
 
-#if __sal_os_darwin // {{{1
+#if __sal_os_darwin //{{{1
 
 template <typename T>
 using native_ref = ::CFTypeRef;
@@ -29,7 +29,7 @@ inline void dec_ref (native_ref<T> ref) noexcept
   ::CFRelease(ref);
 }
 
-#elif __sal_os_windows // {{{1
+#elif __sal_os_linux || __sal_os_windows //{{{1
 
 template <typename T>
 using native_ref = T;
@@ -46,7 +46,11 @@ inline void dec_ref (native_ref<T> ref) noexcept
   (void)ref;
 }
 
-#endif // }}}1
+#else //{{{1
+
+  #error Unsupported platform
+
+#endif //}}}1
 
 } // namespace __bits
 
