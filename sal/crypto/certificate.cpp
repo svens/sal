@@ -452,10 +452,96 @@ std::string certificate_t::display_name (std::error_code &error)
 }
 
 
+namespace {
+
+
+auto to_distinguished_name (X509_NAME *name, std::error_code &error)
+  noexcept
+{
+  certificate_t::distinguished_name_t result;
+
+  try
+  {
+    for (auto i = 0;  i != X509_NAME_entry_count(name);  ++i)
+    {
+      auto entry = X509_NAME_get_entry(name, i);
+
+      char oid[128];
+      OBJ_obj2txt(oid, sizeof(oid), X509_NAME_ENTRY_get_object(entry), 1);
+
+      result.emplace_back(oid,
+        reinterpret_cast<const char *>(
+          ASN1_STRING_data(X509_NAME_ENTRY_get_data(entry))
+        )
+      );
+    }
+    error.clear();
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    result.clear();
+  }
+  // LCOV_EXCL_STOP
+
+  return result;
+}
+
+
+auto to_distinguished_name (X509_NAME *name, const oid_t &filter_oid,
+  std::error_code &error) noexcept
+{
+  certificate_t::distinguished_name_t result;
+
+  auto filter_nid = OBJ_txt2nid(filter_oid.c_str());
+  if (filter_nid == NID_undef)
+  {
+    error.clear();
+    return result;
+  }
+
+  try
+  {
+    for (auto i = 0;  i != X509_NAME_entry_count(name);  ++i)
+    {
+      auto entry = X509_NAME_get_entry(name, i);
+      if (OBJ_obj2nid(X509_NAME_ENTRY_get_object(entry)) == filter_nid)
+      {
+        result.emplace_back(filter_oid,
+          reinterpret_cast<const char *>(
+            ASN1_STRING_data(X509_NAME_ENTRY_get_data(entry))
+          )
+        );
+      }
+    }
+    error.clear();
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    result.clear();
+  }
+  // LCOV_EXCL_STOP
+
+  return result;
+}
+
+
+} // namespace
+
+
 certificate_t::distinguished_name_t certificate_t::issuer (
   std::error_code &error) const noexcept
 {
-  error.clear();
+  if (impl_)
+  {
+    return to_distinguished_name(X509_get_issuer_name(impl_.ref), error);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
@@ -463,8 +549,11 @@ certificate_t::distinguished_name_t certificate_t::issuer (
 certificate_t::distinguished_name_t certificate_t::issuer (const oid_t &oid,
   std::error_code &error) const noexcept
 {
-  (void)oid;
-  error.clear();
+  if (impl_)
+  {
+    return to_distinguished_name(X509_get_issuer_name(impl_.ref), oid, error);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
@@ -472,7 +561,11 @@ certificate_t::distinguished_name_t certificate_t::issuer (const oid_t &oid,
 certificate_t::distinguished_name_t certificate_t::subject (
   std::error_code &error) const noexcept
 {
-  error.clear();
+  if (impl_)
+  {
+    return to_distinguished_name(X509_get_subject_name(impl_.ref), error);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
@@ -480,8 +573,11 @@ certificate_t::distinguished_name_t certificate_t::subject (
 certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
   std::error_code &error) const noexcept
 {
-  (void)oid;
-  error.clear();
+  if (impl_)
+  {
+    return to_distinguished_name(X509_get_subject_name(impl_.ref), oid, error);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
@@ -681,6 +777,7 @@ std::string certificate_t::display_name (std::error_code &error)
 certificate_t::distinguished_name_t certificate_t::issuer (
   std::error_code &error) const noexcept
 {
+  // TODO
   error.clear();
   return {};
 }
@@ -689,6 +786,7 @@ certificate_t::distinguished_name_t certificate_t::issuer (
 certificate_t::distinguished_name_t certificate_t::issuer (const oid_t &oid,
   std::error_code &error) const noexcept
 {
+  // TODO
   (void)oid;
   error.clear();
   return {};
@@ -698,6 +796,7 @@ certificate_t::distinguished_name_t certificate_t::issuer (const oid_t &oid,
 certificate_t::distinguished_name_t certificate_t::subject (
   std::error_code &error) const noexcept
 {
+  // TODO
   error.clear();
   return {};
 }
@@ -706,6 +805,7 @@ certificate_t::distinguished_name_t certificate_t::subject (
 certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
   std::error_code &error) const noexcept
 {
+  // TODO
   (void)oid;
   error.clear();
   return {};
