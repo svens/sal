@@ -282,12 +282,17 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     nullptr
   );
 
-  auto data = ::CFDataGetBytePtr(value.ref);
-  auto size = ::CFDataGetLength(value.ref);
+  auto first = ::CFDataGetBytePtr(value.ref);
+  auto last = first + ::CFDataGetLength(value.ref);
+
+  while (first != last && !first[0])
+  {
+    ++first;
+  }
 
   try
   {
-    std::vector<uint8_t> result(data, data + size);
+    std::vector<uint8_t> result(first, last);
     error.clear();
     return result;
   }
@@ -357,7 +362,131 @@ certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
 }
 
 
-#elif 0 && __sal_os_windows // {{{1
+#elif __sal_os_linux //{{{1
+
+
+certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
+  std::error_code &error) noexcept
+{
+  if (last <= first)
+  {
+    error = std::make_error_code(std::errc::invalid_argument);
+    return;
+  }
+
+  impl_ = d2i_X509(nullptr, &first, (last - first));
+  if (impl_)
+  {
+    error.clear();
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::illegal_byte_sequence);
+  }
+}
+
+
+std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
+  const noexcept
+{
+  std::vector<uint8_t> result;
+
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return result;
+  }
+
+  if (auto bn = ASN1_INTEGER_to_BN(X509_get_serialNumber(impl_.ref), nullptr))
+  {
+    try
+    {
+      result.resize(BN_num_bytes(bn));
+      BN_bn2bin(bn, &result[0]);
+      error.clear();
+    }
+
+    // LCOV_EXCL_START
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+    }
+    // LCOV_EXCL_STOP
+
+    BN_free(bn);
+  }
+
+  // LCOV_EXCL_START
+  else
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  // LCOV_EXCL_STOP
+
+  return result;
+}
+
+
+std::string certificate_t::display_name (std::error_code &error)
+  const noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  try
+  {
+    // TODO
+    return {};
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return {};
+  }
+  // LCOV_EXCL_STOP
+}
+
+
+certificate_t::distinguished_name_t certificate_t::issuer (
+  std::error_code &error) const noexcept
+{
+  error.clear();
+  return {};
+}
+
+
+certificate_t::distinguished_name_t certificate_t::issuer (const oid_t &oid,
+  std::error_code &error) const noexcept
+{
+  (void)oid;
+  error.clear();
+  return {};
+}
+
+
+certificate_t::distinguished_name_t certificate_t::subject (
+  std::error_code &error) const noexcept
+{
+  error.clear();
+  return {};
+}
+
+
+certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
+  std::error_code &error) const noexcept
+{
+  (void)oid;
+  error.clear();
+  return {};
+}
+
+
+#elif __sal_os_windows // {{{1
 
 
 certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
@@ -398,10 +527,15 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
 
   try
   {
-    std::vector<uint8_t> result;
     auto first = impl_.ref->pCertInfo->SerialNumber.pbData;
     auto last = first + impl_.ref->pCertInfo->SerialNumber.cbData;
 
+    while (last != first && !last[-1])
+    {
+      --last;
+    }
+
+    std::vector<uint8_t> result;
     while (first != last)
     {
       result.push_back(*--last);
@@ -421,6 +555,7 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
 }
 
 
+#if 0
 namespace {
 
 
@@ -496,6 +631,84 @@ std::string certificate_t::subject_name_impl (std::error_code &error)
     &string_type,
     error
   );
+}
+#endif
+
+
+std::string certificate_t::display_name (std::error_code &error)
+  const noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  try
+  {
+    auto size = ::CertGetNameString(impl_.ref,
+      CERT_NAME_FRIENDLY_DISPLAY_TYPE,
+      0,
+      nullptr,
+      nullptr,
+      0
+    );
+
+    std::string result(size, {});
+    ::CertGetNameString(impl_.ref,
+      CERT_NAME_FRIENDLY_DISPLAY_TYPE,
+      0,
+      nullptr,
+      &result[0],
+      size
+    );
+    result.pop_back();
+
+    error.clear();
+    return result;
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return {};
+  }
+  // LCOV_EXCL_STOP
+}
+
+
+certificate_t::distinguished_name_t certificate_t::issuer (
+  std::error_code &error) const noexcept
+{
+  error.clear();
+  return {};
+}
+
+
+certificate_t::distinguished_name_t certificate_t::issuer (const oid_t &oid,
+  std::error_code &error) const noexcept
+{
+  (void)oid;
+  error.clear();
+  return {};
+}
+
+
+certificate_t::distinguished_name_t certificate_t::subject (
+  std::error_code &error) const noexcept
+{
+  error.clear();
+  return {};
+}
+
+
+certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
+  std::error_code &error) const noexcept
+{
+  (void)oid;
+  error.clear();
+  return {};
 }
 
 

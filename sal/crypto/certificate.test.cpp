@@ -47,9 +47,6 @@ struct crypto_certificate
 };
 
 
-#if __sal_os_darwin || (__sal_os_windows && 0)
-
-
 TEST_F(crypto_certificate, ctor)
 {
   cert_t cert;
@@ -134,7 +131,7 @@ TEST_F(crypto_certificate, serial_number)
   const std::pair<std::string, std::vector<uint8_t>> certs[] =
   {
     { root_cert,
-      { 0x00, 0x93, 0x3a, 0xca, 0x86, 0x76, 0xa6, 0x4c, 0xd6 }
+      { 0x93, 0x3a, 0xca, 0x86, 0x76, 0xa6, 0x4c, 0xd6 }
     },
     { intermediate_cert,
       { 0x10, 0x00 }
@@ -176,7 +173,7 @@ TEST_F(crypto_certificate, serial_number_from_null)
 }
 
 
-TEST_F(crypto_certificate, display_name)
+TEST_F(crypto_certificate, DISABLED_display_name)
 {
   const std::pair<std::string, std::string> certs[] =
   {
@@ -216,7 +213,7 @@ TEST_F(crypto_certificate, display_name_from_null)
 }
 
 
-TEST_F(crypto_certificate, issuer)
+TEST_F(crypto_certificate, DISABLED_issuer)
 {
   const std::pair<std::string, cert_t::distinguished_name_t> certs[] =
   {
@@ -264,7 +261,7 @@ TEST_F(crypto_certificate, issuer)
 }
 
 
-TEST_F(crypto_certificate, issuer_from_null)
+TEST_F(crypto_certificate, DISABLED_issuer_from_null)
 {
   cert_t cert;
   EXPECT_TRUE(cert.is_null());
@@ -280,7 +277,7 @@ TEST_F(crypto_certificate, issuer_from_null)
 }
 
 
-TEST_F(crypto_certificate, issuer_with_oid)
+TEST_F(crypto_certificate, DISABLED_issuer_with_oid)
 {
   const std::pair<std::string, cert_t::distinguished_name_t> certs[] =
   {
@@ -304,7 +301,7 @@ TEST_F(crypto_certificate, issuer_with_oid)
 }
 
 
-TEST_F(crypto_certificate, issuer_with_oid_from_null)
+TEST_F(crypto_certificate, DISABLED_issuer_with_oid_from_null)
 {
   cert_t cert;
   EXPECT_TRUE(cert.is_null());
@@ -320,7 +317,7 @@ TEST_F(crypto_certificate, issuer_with_oid_from_null)
 }
 
 
-TEST_F(crypto_certificate, issuer_with_oid_missing)
+TEST_F(crypto_certificate, DISABLED_issuer_with_oid_missing)
 {
   auto cert = cert_t::from_pem(root_cert);
   ASSERT_FALSE(cert.is_null());
@@ -336,7 +333,7 @@ TEST_F(crypto_certificate, issuer_with_oid_missing)
 }
 
 
-TEST_F(crypto_certificate, issuer_with_oid_invalid)
+TEST_F(crypto_certificate, DISABLED_issuer_with_oid_invalid)
 {
   auto cert = cert_t::from_pem(root_cert);
   ASSERT_FALSE(cert.is_null());
@@ -352,7 +349,7 @@ TEST_F(crypto_certificate, issuer_with_oid_invalid)
 }
 
 
-TEST_F(crypto_certificate, subject)
+TEST_F(crypto_certificate, DISABLED_subject)
 {
   const std::pair<std::string, cert_t::distinguished_name_t> certs[] =
   {
@@ -400,7 +397,7 @@ TEST_F(crypto_certificate, subject)
 }
 
 
-TEST_F(crypto_certificate, subject_from_null)
+TEST_F(crypto_certificate, DISABLED_subject_from_null)
 {
   cert_t cert;
   EXPECT_TRUE(cert.is_null());
@@ -416,7 +413,7 @@ TEST_F(crypto_certificate, subject_from_null)
 }
 
 
-TEST_F(crypto_certificate, subject_with_oid)
+TEST_F(crypto_certificate, DISABLED_subject_with_oid)
 {
   const std::pair<std::string, cert_t::distinguished_name_t> certs[] =
   {
@@ -440,7 +437,7 @@ TEST_F(crypto_certificate, subject_with_oid)
 }
 
 
-TEST_F(crypto_certificate, subject_with_oid_from_null)
+TEST_F(crypto_certificate, DISABLED_subject_with_oid_from_null)
 {
   cert_t cert;
   EXPECT_TRUE(cert.is_null());
@@ -456,7 +453,7 @@ TEST_F(crypto_certificate, subject_with_oid_from_null)
 }
 
 
-TEST_F(crypto_certificate, subject_with_oid_missing)
+TEST_F(crypto_certificate, DISABLED_subject_with_oid_missing)
 {
   auto cert = cert_t::from_pem(root_cert);
   ASSERT_FALSE(cert.is_null());
@@ -472,7 +469,7 @@ TEST_F(crypto_certificate, subject_with_oid_missing)
 }
 
 
-TEST_F(crypto_certificate, subject_with_oid_invalid)
+TEST_F(crypto_certificate, DISABLED_subject_with_oid_invalid)
 {
   auto cert = cert_t::from_pem(root_cert);
   ASSERT_FALSE(cert.is_null());
@@ -771,9 +768,6 @@ TEST_F(crypto_certificate, from_pem_with_too_big_data)
     std::system_error
   );
 }
-
-
-#endif // __sal_os_darwin
 
 
 // see scripts/make_ca.sh
