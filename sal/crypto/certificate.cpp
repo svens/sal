@@ -455,7 +455,7 @@ std::string certificate_t::display_name (std::error_code &error)
 namespace {
 
 
-auto to_distinguished_name (X509_NAME *name, std::error_code &error)
+auto to_distinguished_name (const X509_NAME *name, std::error_code &error)
   noexcept
 {
   certificate_t::distinguished_name_t result;
@@ -490,7 +490,7 @@ auto to_distinguished_name (X509_NAME *name, std::error_code &error)
 }
 
 
-auto to_distinguished_name (X509_NAME *name, const oid_t &filter_oid,
+auto to_distinguished_name (const X509_NAME *name, const oid_t &filter_oid,
   std::error_code &error) noexcept
 {
   certificate_t::distinguished_name_t result;
@@ -640,95 +640,12 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     error.clear();
     return result;
   }
-
-  // LCOV_EXCL_START
   catch (const std::bad_alloc &)
   {
     error = std::make_error_code(std::errc::not_enough_memory);
     return {};
   }
-  // LCOV_EXCL_STOP
 }
-
-
-#if 0
-namespace {
-
-
-std::string get_name (PCCERT_CONTEXT cert,
-  DWORD type,
-  DWORD flags,
-  void *params,
-  std::error_code &error) noexcept
-{
-  if (!cert)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return {};
-  }
-
-  try
-  {
-    auto size = ::CertGetNameString(cert, type, flags, params, nullptr, 0);
-
-    std::string result(size, {});
-    ::CertGetNameString(cert, type, flags, params, &result[0], size);
-    result.pop_back();
-
-    error.clear();
-    return result;
-  }
-
-  // LCOV_EXCL_START
-  catch (const std::bad_alloc &)
-  {
-    error = std::make_error_code(std::errc::not_enough_memory);
-    return {};
-  }
-  // LCOV_EXCL_STOP
-}
-
-
-} // namespace
-
-
-std::string certificate_t::display_name (std::error_code &error)
-  const noexcept
-{
-  return get_name(impl_.ref,
-    CERT_NAME_FRIENDLY_DISPLAY_TYPE,
-    0,
-    nullptr,
-    error
-  );
-}
-
-
-std::string certificate_t::issuer_name_impl (std::error_code &error)
-  const noexcept
-{
-  DWORD string_type = CERT_X500_NAME_STR;
-  return get_name(impl_.ref,
-    CERT_NAME_RDN_TYPE,
-    CERT_NAME_ISSUER_FLAG,
-    &string_type,
-    error
-  );
-}
-
-
-std::string certificate_t::subject_name_impl (std::error_code &error)
-  const noexcept
-{
-  DWORD string_type = CERT_X500_NAME_STR;
-  return get_name(impl_.ref,
-    CERT_NAME_RDN_TYPE,
-    0,
-    &string_type,
-    error
-  );
-}
-#endif
 
 
 std::string certificate_t::display_name (std::error_code &error)
@@ -763,22 +680,107 @@ std::string certificate_t::display_name (std::error_code &error)
     error.clear();
     return result;
   }
-
-  // LCOV_EXCL_START
   catch (const std::bad_alloc &)
   {
     error = std::make_error_code(std::errc::not_enough_memory);
     return {};
   }
-  // LCOV_EXCL_STOP
 }
+
+
+namespace {
+
+
+auto encoded_name_list (const CERT_NAME_BLOB &name, std::error_code &error)
+  noexcept
+{
+  constexpr auto decode_flags =
+    CRYPT_DECODE_ALLOC_FLAG |
+    CRYPT_DECODE_NOCOPY_FLAG |
+    CRYPT_DECODE_SHARE_OID_STRING_FLAG;
+
+  HLOCAL rdn_buf{};
+  DWORD rdn_size{};
+
+  auto result = ::CryptDecodeObjectEx(
+    X509_ASN_ENCODING,
+    X509_NAME,
+    name.pbData,
+    name.cbData,
+    decode_flags,
+    nullptr,
+    &rdn_buf,
+    &rdn_size
+  );
+
+  if (!result)
+  {
+    error.assign(::GetLastError(), std::system_category());
+  }
+
+  return rdn_buf;
+}
+
+
+auto to_distinguished_name (const CERT_NAME_BLOB &name,
+  const oid_t *filter_oid, std::error_code &error) noexcept
+{
+  certificate_t::distinguished_name_t result;
+
+  auto rdn_buf = encoded_name_list(name, error);
+  if (!rdn_buf)
+  {
+    return result;
+  }
+
+  try
+  {
+    auto &rdn = *reinterpret_cast<CERT_NAME_INFO *>(rdn_buf);
+    for (auto i = 0U;  i != rdn.cRDN;  ++i)
+    {
+      for (auto j = 0U;  j != rdn.rgRDN[i].cRDNAttr;  ++j)
+      {
+        auto &rdn_attr = rdn.rgRDN[i].rgRDNAttr[j];
+        if (filter_oid && *filter_oid != rdn_attr.pszObjId)
+        {
+          continue;
+        }
+
+        char value_string[1024];
+        CertRDNValueToStr(rdn_attr.dwValueType,
+          &rdn_attr.Value,
+          value_string,
+          sizeof(value_string)
+        );
+
+        result.emplace_back(rdn_attr.pszObjId, value_string);
+      }
+    }
+    error.clear();
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    result.clear();
+  }
+
+  ::LocalFree(rdn_buf);
+
+  return result;
+}
+
+
+} // namespace
 
 
 certificate_t::distinguished_name_t certificate_t::issuer (
   std::error_code &error) const noexcept
 {
-  // TODO
-  error.clear();
+  if (impl_)
+  {
+    return to_distinguished_name(impl_.ref->pCertInfo->Issuer, nullptr, error);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
@@ -786,9 +788,11 @@ certificate_t::distinguished_name_t certificate_t::issuer (
 certificate_t::distinguished_name_t certificate_t::issuer (const oid_t &oid,
   std::error_code &error) const noexcept
 {
-  // TODO
-  (void)oid;
-  error.clear();
+  if (impl_)
+  {
+    return to_distinguished_name(impl_.ref->pCertInfo->Issuer, &oid, error);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
@@ -796,8 +800,11 @@ certificate_t::distinguished_name_t certificate_t::issuer (const oid_t &oid,
 certificate_t::distinguished_name_t certificate_t::subject (
   std::error_code &error) const noexcept
 {
-  // TODO
-  error.clear();
+  if (impl_)
+  {
+    return to_distinguished_name(impl_.ref->pCertInfo->Subject, nullptr, error);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
@@ -805,9 +812,11 @@ certificate_t::distinguished_name_t certificate_t::subject (
 certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
   std::error_code &error) const noexcept
 {
-  // TODO
-  (void)oid;
-  error.clear();
+  if (impl_)
+  {
+    return to_distinguished_name(impl_.ref->pCertInfo->Subject, &oid, error);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 

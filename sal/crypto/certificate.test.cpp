@@ -173,7 +173,7 @@ TEST_F(crypto_certificate, serial_number_from_null)
 }
 
 
-TEST_F(crypto_certificate, DISABLED_display_name)
+TEST_F(crypto_certificate, display_name)
 {
   const std::pair<std::string, std::string> certs[] =
   {
