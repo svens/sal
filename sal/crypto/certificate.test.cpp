@@ -173,46 +173,6 @@ TEST_F(crypto_certificate, serial_number_from_null)
 }
 
 
-TEST_F(crypto_certificate, display_name)
-{
-  const std::pair<std::string, std::string> certs[] =
-  {
-    { root_cert,         "SAL Root CA" },
-    { intermediate_cert, "SAL Intermediate CA" },
-    { leaf_cert,         "test.sal.ee" },
-  };
-
-  for (const auto &cert_pem: certs)
-  {
-    auto cert = cert_t::from_pem(cert_pem.first);
-    ASSERT_FALSE(cert.is_null()) << cert_pem.second;
-
-    std::error_code error;
-    auto display_name = cert.display_name(error);
-    ASSERT_TRUE(!error) << cert_pem.second;
-    EXPECT_EQ(cert_pem.second, display_name);
-
-    EXPECT_NO_THROW((void)cert.display_name());
-  }
-}
-
-
-TEST_F(crypto_certificate, display_name_from_null)
-{
-  cert_t cert;
-  EXPECT_TRUE(cert.is_null());
-
-  std::error_code error;
-  EXPECT_TRUE(cert.display_name(error).empty());
-  EXPECT_EQ(std::errc::bad_address, error);
-
-  EXPECT_THROW(
-    (void)cert.display_name(),
-    std::system_error
-  );
-}
-
-
 TEST_F(crypto_certificate, issuer)
 {
   const std::pair<std::string, cert_t::distinguished_name_t> certs[] =

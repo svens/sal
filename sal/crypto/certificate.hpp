@@ -94,19 +94,6 @@ public:
 
   /**
    */
-  std::string display_name (std::error_code &error) const noexcept;
-
-
-  /**
-   */
-  std::string display_name () const
-  {
-    return display_name(throw_on_error("certificate::display_name"));
-  }
-
-
-  /**
-   */
   // bool is_authority () const noexcept;
 
 

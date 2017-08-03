@@ -140,7 +140,9 @@ scoped_ref<CFArrayRef> copy_values (SecCertificateRef cert, CFTypeRef oid)
     }
   }
 
+  // LCOV_EXCL_START
   return {};
+  // LCOV_EXCL_STOP
 }
 
 
@@ -307,33 +309,6 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
 }
 
 
-std::string certificate_t::display_name (std::error_code &error)
-  const noexcept
-{
-  if (impl_)
-  {
-    try
-    {
-      scoped_ref<CFStringRef> s = ::SecCertificateCopySubjectSummary(impl_.ref);
-      char buf[1024];
-      error.clear();
-      return c_str(s.ref, buf);
-    }
-
-    // LCOV_EXCL_START
-    catch (const std::bad_alloc &)
-    {
-      error = std::make_error_code(std::errc::not_enough_memory);
-      return {};
-    }
-    // LCOV_EXCL_STOP
-  }
-
-  error = std::make_error_code(std::errc::bad_address);
-  return {};
-}
-
-
 certificate_t::distinguished_name_t certificate_t::issuer (
   std::error_code &error) const noexcept
 {
@@ -427,36 +402,10 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
 }
 
 
-std::string certificate_t::display_name (std::error_code &error)
-  const noexcept
-{
-  if (!impl_)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return {};
-  }
-
-  try
-  {
-    // TODO
-    return {};
-  }
-
-  // LCOV_EXCL_START
-  catch (const std::bad_alloc &)
-  {
-    error = std::make_error_code(std::errc::not_enough_memory);
-    return {};
-  }
-  // LCOV_EXCL_STOP
-}
-
-
 namespace {
 
 
-auto to_distinguished_name (const X509_NAME *name, std::error_code &error)
-  noexcept
+auto to_distinguished_name (X509_NAME *name, std::error_code &error) noexcept
 {
   certificate_t::distinguished_name_t result;
 
@@ -490,7 +439,7 @@ auto to_distinguished_name (const X509_NAME *name, std::error_code &error)
 }
 
 
-auto to_distinguished_name (const X509_NAME *name, const oid_t &filter_oid,
+auto to_distinguished_name (X509_NAME *name, const oid_t &filter_oid,
   std::error_code &error) noexcept
 {
   certificate_t::distinguished_name_t result;
@@ -636,46 +585,6 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     {
       result.push_back(*--last);
     }
-
-    error.clear();
-    return result;
-  }
-  catch (const std::bad_alloc &)
-  {
-    error = std::make_error_code(std::errc::not_enough_memory);
-    return {};
-  }
-}
-
-
-std::string certificate_t::display_name (std::error_code &error)
-  const noexcept
-{
-  if (!impl_)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return {};
-  }
-
-  try
-  {
-    auto size = ::CertGetNameString(impl_.ref,
-      CERT_NAME_FRIENDLY_DISPLAY_TYPE,
-      0,
-      nullptr,
-      nullptr,
-      0
-    );
-
-    std::string result(size, {});
-    ::CertGetNameString(impl_.ref,
-      CERT_NAME_FRIENDLY_DISPLAY_TYPE,
-      0,
-      nullptr,
-      &result[0],
-      size
-    );
-    result.pop_back();
 
     error.clear();
     return result;
