@@ -7,8 +7,10 @@
   #if !defined(__apple_build_version__)
     #define availability(...) /**/
   #endif
+  #include <CoreFoundation/CFNumber.h>
   #include <Security/SecCertificateOIDs.h>
 #elif __sal_os_linux //{{{1
+  #include <openssl/asn1.h>
   #include <openssl/x509v3.h>
 #endif //}}}1
 
@@ -241,6 +243,31 @@ auto to_distinguished_name (SecCertificateRef cert,
 }
 
 
+sal::time_t to_time (SecCertificateRef cert, CFTypeRef oid,
+  std::error_code &error) noexcept
+{
+  if (!cert)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  if (auto value = copy_values(cert, oid))
+  {
+    CFAbsoluteTime time;
+    ::CFNumberGetValue((CFNumberRef)value.ref, kCFNumberDoubleType, &time);
+
+    error.clear();
+    return sal::clock_t::from_time_t(time + kCFAbsoluteTimeIntervalSince1970);
+  }
+
+  // LCOV_EXCL_START
+  error = std::make_error_code(std::errc::illegal_byte_sequence);
+  return {};
+  // LCOV_EXCL_STOP
+}
+
+
 } // namespae
 
 
@@ -269,6 +296,18 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+sal::time_t certificate_t::not_before (std::error_code &error) const noexcept
+{
+  return to_time(impl_.ref, kSecOIDX509V1ValidityNotBefore, error);
+}
+
+
+sal::time_t certificate_t::not_after (std::error_code &error) const noexcept
+{
+  return to_time(impl_.ref, kSecOIDX509V1ValidityNotAfter, error);
 }
 
 
@@ -393,6 +432,97 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   else
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
+  }
+}
+
+
+namespace {
+
+
+sal::time_t to_time (const ASN1_TIME *time, std::error_code &error) noexcept
+{
+  if (ASN1_TIME_check(const_cast<ASN1_TIME *>(time)) == 0)
+  {
+    error = std::make_error_code(std::errc::illegal_byte_sequence);
+    return {};
+  }
+
+  std::tm tm{};
+  auto in = static_cast<const unsigned char *>(time->data);
+
+  if (time->type == V_ASN1_UTCTIME)
+  {
+    // two-digit year
+    tm.tm_year = (in[0] - '0') * 10 + (in[1] - '0');
+    in += 2;
+
+    if (tm.tm_year < 70)
+    {
+      tm.tm_year += 100;
+    }
+  }
+  else if (time->type == V_ASN1_GENERALIZEDTIME)
+  {
+    // four-digit year
+    tm.tm_year =
+      (in[0] - '0') * 1000 +
+      (in[1] - '0') * 100 +
+      (in[2] - '0') * 10 +
+      (in[3] - '0');
+    in += 4;
+
+    tm.tm_year -= 1900;
+  }
+
+  tm.tm_mon = (in[0] - '0') * 10 + (in[1] - '0') - 1;
+  in += 2;
+
+  tm.tm_mday = (in[0] - '0') * 10 + (in[1] - '0');
+  in += 2;
+
+  tm.tm_hour = (in[0] - '0') * 10 + (in[1] - '0');
+  in += 2;
+
+  tm.tm_min = (in[0] - '0') * 10 + (in[1] - '0');
+  in += 2;
+
+  tm.tm_sec = (in[0] - '0') * 10 + (in[1] - '0');
+
+  // ignoring fractional seconds and timezones
+
+  return sal::clock_t::from_time_t(mktime(&tm));
+}
+
+
+} // namespace
+
+
+sal::time_t certificate_t::not_before (std::error_code &error) const noexcept
+{
+  if (impl_)
+  {
+    error.clear();
+    return to_time(X509_get_notBefore(impl_.ref), error);
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+}
+
+
+sal::time_t certificate_t::not_after (std::error_code &error) const noexcept
+{
+  if (impl_)
+  {
+    error.clear();
+    return to_time(X509_get_notAfter(impl_.ref), error);
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
   }
 }
 
@@ -608,6 +738,56 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+namespace {
+
+sal::time_t to_time (const FILETIME &time, std::error_code &error) noexcept
+{
+  SYSTEMTIME sys_time;
+  if (::FileTimeToSystemTime(&time, &sys_time))
+  {
+    std::tm tm{};
+    tm.tm_sec = sys_time.wSecond;
+    tm.tm_min = sys_time.wMinute;
+    tm.tm_hour = sys_time.wHour;
+    tm.tm_mday = sys_time.wDay;
+    tm.tm_mon = sys_time.wMonth - 1;
+    tm.tm_year = sys_time.wYear - 1900;
+
+    error.clear();
+    return sal::clock_t::from_time_t(mktime(&tm));
+  }
+
+  error = std::make_error_code(std::errc::illegal_byte_sequence);
+  return {};
+}
+
+} // namespace
+
+
+sal::time_t certificate_t::not_before (std::error_code &error) const noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  return to_time(impl_.ref->pCertInfo->NotBefore, error);
+}
+
+
+sal::time_t certificate_t::not_after (std::error_code &error) const noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  return to_time(impl_.ref->pCertInfo->NotAfter, error);
 }
 
 

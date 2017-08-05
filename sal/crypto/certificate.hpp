@@ -9,6 +9,7 @@
 #include <sal/crypto/__bits/certificate.hpp>
 #include <sal/crypto/error.hpp>
 #include <sal/crypto/oid.hpp>
+#include <sal/time.hpp>
 #include <vector>
 
 
@@ -76,6 +77,32 @@ public:
   explicit operator bool () const noexcept
   {
     return !is_null();
+  }
+
+
+  /**
+   */
+  sal::time_t not_before (std::error_code &error) const noexcept;
+
+
+  /**
+   */
+  sal::time_t not_before () const
+  {
+    return not_before(throw_on_error("certificate::not_before"));
+  }
+
+
+  /**
+   */
+  sal::time_t not_after (std::error_code &error) const noexcept;
+
+
+  /**
+   */
+  sal::time_t not_after () const
+  {
+    return not_after(throw_on_error("certificate::not_after"));
   }
 
 

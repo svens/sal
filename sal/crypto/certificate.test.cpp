@@ -7,6 +7,8 @@
 namespace {
 
 
+using namespace std::chrono_literals;
+
 namespace oid = sal::crypto::oid;
 using cert_t = sal::crypto::certificate_t;
 
@@ -160,7 +162,7 @@ TEST_F(crypto_certificate, serial_number)
 TEST_F(crypto_certificate, serial_number_from_null)
 {
   cert_t cert;
-  EXPECT_TRUE(cert.is_null());
+  ASSERT_TRUE(!cert);
 
   std::error_code error;
   EXPECT_TRUE(cert.serial_number(error).empty());
@@ -168,6 +170,96 @@ TEST_F(crypto_certificate, serial_number_from_null)
 
   EXPECT_THROW(
     (void)cert.serial_number(),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, not_before)
+{
+  const std::string certs[] =
+  {
+    root_cert,
+    intermediate_cert,
+    leaf_cert,
+  };
+
+  for (const auto &pem: certs)
+  {
+    auto cert = cert_t::from_pem(pem);
+    ASSERT_FALSE(!cert);
+
+    std::error_code error;
+    auto not_before = cert.not_before(error);
+    EXPECT_TRUE(!error);
+
+    auto at = sal::now();
+    EXPECT_GT(at, not_before);
+
+    at -= 30 * 365 * 24h;
+    EXPECT_LT(at, not_before);
+
+    EXPECT_NO_THROW((void)cert.not_before());
+  }
+}
+
+
+TEST_F(crypto_certificate, not_before_null)
+{
+  cert_t cert;
+  ASSERT_TRUE(!cert);
+
+  std::error_code error;
+  (void)cert.not_before(error);
+  EXPECT_EQ(std::errc::bad_address, error);
+
+  EXPECT_THROW(
+    (void)cert.not_before(),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, not_after)
+{
+  const std::string certs[] =
+  {
+    root_cert,
+    intermediate_cert,
+    leaf_cert,
+  };
+
+  for (const auto &pem: certs)
+  {
+    auto cert = cert_t::from_pem(pem);
+    ASSERT_FALSE(!cert);
+
+    std::error_code error;
+    auto not_after = cert.not_after(error);
+    EXPECT_TRUE(!error);
+
+    auto at = sal::now();
+    EXPECT_LT(at, not_after);
+
+    at += 30 * 365 * 24h;
+    EXPECT_GT(at, not_after);
+
+    EXPECT_NO_THROW((void)cert.not_after());
+  }
+}
+
+
+TEST_F(crypto_certificate, not_after_null)
+{
+  cert_t cert;
+  ASSERT_TRUE(!cert);
+
+  std::error_code error;
+  (void)cert.not_after(error);
+  EXPECT_EQ(std::errc::bad_address, error);
+
+  EXPECT_THROW(
+    (void)cert.not_after(),
     std::system_error
   );
 }
@@ -856,6 +948,8 @@ TEST_F(crypto_certificate, from_pem_with_too_big_data)
 
 
 // see scripts/make_ca.sh
+// notBefore=Jul 17 15:41:xx 2017 GMT
+// notAfter=Jun 12 15:41:xx 2037 GMT
 
 const std::string crypto_certificate::root_cert = // {{{1
   "MIIFjjCCA3agAwIBAgIJAJM6yoZ2pkzWMA0GCSqGSIb3DQEBCwUAMFQxCzAJBgNV"
