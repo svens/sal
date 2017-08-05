@@ -94,12 +94,32 @@ public:
 
   /**
    */
-  // bool is_authority () const noexcept;
+  bool issued_by (const certificate_t &issuer, std::error_code &error)
+    const noexcept;
 
 
   /**
    */
-  // bool is_self_signed () const noexcept;
+  bool issued_by (const certificate_t &issuer) const
+  {
+    return issued_by(issuer, throw_on_error("certificate::issued_by"));
+  }
+
+
+  /**
+   */
+  bool is_self_signed (std::error_code &error) const noexcept
+  {
+    return issued_by(*this, error);
+  }
+
+
+  /**
+   */
+  bool is_self_signed () const
+  {
+    return is_self_signed(throw_on_error("certificate::is_self_signed"));
+  }
 
 
   /**

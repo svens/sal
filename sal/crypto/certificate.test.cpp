@@ -173,6 +173,131 @@ TEST_F(crypto_certificate, serial_number_from_null)
 }
 
 
+TEST_F(crypto_certificate, issued_by)
+{
+  const std::pair<std::string, std::string> certs[] =
+  {
+    { root_cert, root_cert },
+    { intermediate_cert, root_cert },
+    { leaf_cert, intermediate_cert },
+  };
+
+  for (const auto &pair: certs)
+  {
+    auto this_cert = cert_t::from_pem(pair.first);
+    ASSERT_FALSE(this_cert.is_null());
+
+    auto issuer_cert = cert_t::from_pem(pair.second);
+    ASSERT_FALSE(issuer_cert.is_null());
+
+    std::error_code error;
+    EXPECT_TRUE(this_cert.issued_by(issuer_cert, error));
+    EXPECT_TRUE(!error);
+
+    EXPECT_NO_THROW((void)this_cert.issued_by(issuer_cert));
+  }
+}
+
+
+TEST_F(crypto_certificate, issued_by_leaf)
+{
+  const std::string certs[] =
+  {
+    root_cert,
+    intermediate_cert,
+    leaf_cert,
+  };
+
+  for (const auto &cert_pem: certs)
+  {
+    auto this_cert = cert_t::from_pem(cert_pem);
+    ASSERT_FALSE(this_cert.is_null());
+
+    auto issuer_cert = cert_t::from_pem(leaf_cert);
+    ASSERT_FALSE(issuer_cert.is_null());
+
+    std::error_code error;
+    EXPECT_FALSE(this_cert.issued_by(issuer_cert, error));
+    EXPECT_TRUE(!error);
+
+    EXPECT_NO_THROW((void)this_cert.issued_by(issuer_cert));
+  }
+}
+
+
+TEST_F(crypto_certificate, issued_by_null_cert)
+{
+  cert_t this_cert, issuer_cert = cert_t::from_pem(root_cert);
+  ASSERT_TRUE(this_cert.is_null());
+  ASSERT_FALSE(issuer_cert.is_null());
+
+  std::error_code error;
+  (void)this_cert.issued_by(issuer_cert, error);
+  EXPECT_EQ(std::errc::bad_address, error);
+
+  EXPECT_THROW(
+    (void)this_cert.issued_by(issuer_cert),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, issued_by_null_issuer)
+{
+  cert_t this_cert = cert_t::from_pem(root_cert), issuer_cert;
+  ASSERT_FALSE(this_cert.is_null());
+  ASSERT_TRUE(issuer_cert.is_null());
+
+  std::error_code error;
+  (void)this_cert.issued_by(issuer_cert, error);
+  EXPECT_EQ(std::errc::bad_address, error);
+
+  EXPECT_THROW(
+    (void)this_cert.issued_by(issuer_cert),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, is_self_signed)
+{
+  const std::pair<std::string, bool> certs[] =
+  {
+    { root_cert, true },
+    { intermediate_cert, false },
+    { leaf_cert, false },
+  };
+
+  for (const auto &cert_pem: certs)
+  {
+    auto cert = cert_t::from_pem(cert_pem.first);
+    ASSERT_FALSE(cert.is_null());
+
+    std::error_code error;
+    EXPECT_EQ(cert_pem.second, cert.is_self_signed(error));
+    EXPECT_TRUE(!error);
+
+    EXPECT_NO_THROW((void)cert.is_self_signed());
+  }
+}
+
+
+TEST_F(crypto_certificate, is_self_signed_from_null)
+{
+  cert_t cert;
+  EXPECT_TRUE(cert.is_null());
+
+  std::error_code error;
+  (void)cert.is_self_signed(error);
+  EXPECT_EQ(std::errc::bad_address, error);
+
+  EXPECT_THROW(
+    (void)cert.is_self_signed(),
+    std::system_error
+  );
+}
+
+
 TEST_F(crypto_certificate, issuer)
 {
   const std::pair<std::string, cert_t::distinguished_name_t> certs[] =

@@ -8,6 +8,8 @@
     #define availability(...) /**/
   #endif
   #include <Security/SecCertificateOIDs.h>
+#elif __sal_os_linux //{{{1
+  #include <openssl/x509v3.h>
 #endif //}}}1
 
 
@@ -309,6 +311,40 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
 }
 
 
+bool certificate_t::issued_by (const certificate_t &issuer,
+  std::error_code &error) const noexcept
+{
+  if (!impl_ || !issuer.impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  scoped_ref<CFDataRef> issuer_cert_subject_data =
+    ::SecCertificateCopyNormalizedSubjectSequence(
+      issuer.impl_.ref
+    );
+
+  scoped_ref<CFDataRef> this_cert_issuer_data =
+    ::SecCertificateCopyNormalizedIssuerSequence(
+      impl_.ref
+    );
+
+  auto size_1 = ::CFDataGetLength(issuer_cert_subject_data.ref);
+  auto size_2 = ::CFDataGetLength(this_cert_issuer_data.ref);
+  if (size_1 != size_2)
+  {
+    return false;
+  }
+
+  auto data_1 = ::CFDataGetBytePtr(issuer_cert_subject_data.ref);
+  auto data_2 = ::CFDataGetBytePtr(this_cert_issuer_data.ref);
+
+  error.clear();
+  return std::equal(data_1, data_1 + size_1, data_2);
+}
+
+
 certificate_t::distinguished_name_t certificate_t::issuer (
   std::error_code &error) const noexcept
 {
@@ -399,6 +435,20 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
   // LCOV_EXCL_STOP
 
   return result;
+}
+
+
+bool certificate_t::issued_by (const certificate_t &issuer,
+  std::error_code &error) const noexcept
+{
+  if (!impl_ || !issuer.impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  error.clear();
+  return X509_check_issued(issuer.impl_.ref, impl_.ref) == X509_V_OK;
 }
 
 
@@ -594,6 +644,24 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     error = std::make_error_code(std::errc::not_enough_memory);
     return {};
   }
+}
+
+
+bool certificate_t::issued_by (const certificate_t &issuer,
+  std::error_code &error) const noexcept
+{
+  if (!impl_ || !issuer.impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  error.clear();
+  return ::CertCompareCertificateName(
+    X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+    &issuer.impl_.ref->pCertInfo->Subject,
+    &impl_.ref->pCertInfo->Issuer
+  );
 }
 
 
