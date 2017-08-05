@@ -121,6 +121,38 @@ public:
 
   /**
    */
+  std::vector<uint8_t> authority_key_identifier (std::error_code &error)
+    const noexcept;
+
+
+  /**
+   */
+  std::vector<uint8_t> authority_key_identifier () const
+  {
+    return authority_key_identifier(
+      throw_on_error("certificate::authority_key_identifier")
+    );
+  }
+
+
+  /**
+   */
+  std::vector<uint8_t> subject_key_identifier (std::error_code &error)
+    const noexcept;
+
+
+  /**
+   */
+  std::vector<uint8_t> subject_key_identifier () const
+  {
+    return subject_key_identifier(
+      throw_on_error("certificate::subject_key_identifier")
+    );
+  }
+
+
+  /**
+   */
   bool issued_by (const certificate_t &issuer, std::error_code &error)
     const noexcept;
 

@@ -19,7 +19,8 @@ struct crypto_certificate
   static const std::string
     root_cert,
     intermediate_cert,
-    leaf_cert;
+    leaf_cert,
+    leaf_cert_without_key_id;
 
   static std::vector<uint8_t> to_der (const std::string &base64)
   {
@@ -171,6 +172,146 @@ TEST_F(crypto_certificate, serial_number_from_null)
   EXPECT_THROW(
     (void)cert.serial_number(),
     std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, authority_key_identifier)
+{
+  const std::pair<std::string, std::vector<uint8_t>> certs[] =
+  {
+    { root_cert,
+      {
+        0xd8, 0x59, 0x5f, 0xcf, 0x86, 0x9c, 0xcb, 0x52, 0x29, 0x98,
+        0x5f, 0x55, 0xf6, 0x0e, 0xe5, 0x8e, 0xaa, 0x24, 0x82, 0xe1,
+      }
+    },
+    { intermediate_cert,
+      {
+        0xd8, 0x59, 0x5f, 0xcf, 0x86, 0x9c, 0xcb, 0x52, 0x29, 0x98,
+        0x5f, 0x55, 0xf6, 0x0e, 0xe5, 0x8e, 0xaa, 0x24, 0x82, 0xe1,
+      }
+    },
+    { leaf_cert,
+      {
+        0x9a, 0x34, 0xc2, 0x55, 0x79, 0xbc, 0xda, 0xbc, 0x12, 0x54,
+        0x43, 0x36, 0xb5, 0x8d, 0x1e, 0x7b, 0x16, 0xbf, 0xd2, 0x63,
+      }
+    },
+  };
+
+  for (const auto &cert_pem: certs)
+  {
+    auto cert = cert_t::from_pem(cert_pem.first);
+    ASSERT_FALSE(!cert);
+
+    std::error_code error;
+    auto id = cert.authority_key_identifier(error);
+    ASSERT_TRUE(!error);
+    EXPECT_EQ(cert_pem.second, id);
+
+    EXPECT_NO_THROW((void)cert.authority_key_identifier());
+  }
+}
+
+
+TEST_F(crypto_certificate, authority_key_identifier_from_null)
+{
+  cert_t cert;
+  ASSERT_TRUE(!cert);
+
+  std::error_code error;
+  EXPECT_TRUE(cert.authority_key_identifier(error).empty());
+  EXPECT_EQ(std::errc::bad_address, error);
+
+  EXPECT_THROW(
+    (void)cert.authority_key_identifier(),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, authority_key_identifier_none)
+{
+  cert_t cert = cert_t::from_pem(leaf_cert_without_key_id);
+  ASSERT_FALSE(!cert);
+
+  std::error_code error;
+  EXPECT_TRUE(cert.authority_key_identifier(error).empty());
+  EXPECT_TRUE(!error);
+
+  EXPECT_NO_THROW(
+    (void)cert.authority_key_identifier()
+  );
+}
+
+
+TEST_F(crypto_certificate, subject_key_identifier)
+{
+  const std::pair<std::string, std::vector<uint8_t>> certs[] =
+  {
+    { root_cert,
+      {
+        0xd8, 0x59, 0x5f, 0xcf, 0x86, 0x9c, 0xcb, 0x52, 0x29, 0x98,
+        0x5f, 0x55, 0xf6, 0x0e, 0xe5, 0x8e, 0xaa, 0x24, 0x82, 0xe1,
+      }
+    },
+    { intermediate_cert,
+      {
+        0x9a, 0x34, 0xc2, 0x55, 0x79, 0xbc, 0xda, 0xbc, 0x12, 0x54,
+        0x43, 0x36, 0xb5, 0x8d, 0x1e, 0x7b, 0x16, 0xbf, 0xd2, 0x63,
+      }
+    },
+    { leaf_cert,
+      {
+        0x11, 0xac, 0xe4, 0x02, 0xf6, 0x74, 0x0d, 0xa4, 0x0a, 0x0e,
+        0x9d, 0xa9, 0x96, 0x51, 0x3d, 0x55, 0x6c, 0xff, 0x73, 0xdc,
+      }
+    },
+  };
+
+  for (const auto &cert_pem: certs)
+  {
+    auto cert = cert_t::from_pem(cert_pem.first);
+    ASSERT_FALSE(!cert);
+
+    std::error_code error;
+    auto id = cert.subject_key_identifier(error);
+    ASSERT_TRUE(!error);
+    EXPECT_EQ(cert_pem.second, id);
+
+    EXPECT_NO_THROW((void)cert.subject_key_identifier());
+  }
+}
+
+
+TEST_F(crypto_certificate, subject_key_identifier_from_null)
+{
+  cert_t cert;
+  ASSERT_TRUE(!cert);
+
+  std::error_code error;
+  EXPECT_TRUE(cert.subject_key_identifier(error).empty());
+  EXPECT_EQ(std::errc::bad_address, error);
+
+  EXPECT_THROW(
+    (void)cert.subject_key_identifier(),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, subject_key_identifier_none)
+{
+  cert_t cert = cert_t::from_pem(leaf_cert_without_key_id);
+  ASSERT_FALSE(!cert);
+
+  std::error_code error;
+  EXPECT_TRUE(cert.subject_key_identifier(error).empty());
+  EXPECT_TRUE(!error);
+
+  EXPECT_NO_THROW(
+    (void)cert.subject_key_identifier()
   );
 }
 
@@ -1044,6 +1185,32 @@ const std::string crypto_certificate::leaf_cert = // {{{1
   "JCvERrkOfZ8JkVoZBk5zmDcmFqRwm8rpA4lzh0uXod2VVV9X6BrPQ/JVCjjaAHsN"
   "iR1h504PD/CwqwMb+Tu2MWBFiQMoNgLSVVySmMIESrtJRQjsMBaDRfHv33+lCWb0"
   "ZPosECETQA==";
+
+const std::string crypto_certificate::leaf_cert_without_key_id = // {{{1
+  "MIIEczCCAlugAwIBAgICEAEwDQYJKoZIhvcNAQELBQAwXDELMAkGA1UEBhMCRUUx"
+  "EDAOBgNVBAgMB0VzdG9uaWExDDAKBgNVBAoMA1NBTDEPMA0GA1UECwwGU0FMIENB"
+  "MRwwGgYDVQQDDBNTQUwgSW50ZXJtZWRpYXRlIENBMB4XDTE3MDgwNTE3NDM0MFoX"
+  "DTM3MDcwMTE3NDM0MFowVjELMAkGA1UEBhMCRUUxEDAOBgNVBAgMB0VzdG9uaWEx"
+  "DDAKBgNVBAoMA1NBTDERMA8GA1UECwwIU0FMIFRlc3QxFDASBgNVBAMMC3Rlc3Qu"
+  "c2FsLmVlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxIo08Ex4zQEW"
+  "PML0MailnwLzNCUF5CXjMvemrow+ecSSG9XgRHCTZcvVF1zBLMZdx7B6g69Qhkp4"
+  "mCRLceXhYhCfByL/j6qYDMjhUOuFQ3snzQHaghtK+qj86QqnYx9JWsCnww4iLwJ5"
+  "gG/wbo+53cB20EyE1Gb3DSdN3OuAUid+K4AldQZCLCheT3X4nHj1q8jouqcvNQzb"
+  "+oQso486gmr7cjuPZjBeNUSnK8y37VV2MLSnbneo/yd/c9MGlrKr9saj+Kdlba/r"
+  "7Z+QBDkGstahFIohmiZYADAm4xnOQbCuumstouvHxQKAWqzsBLcuKfwRvXwkOh8V"
+  "edR9oV8LSQIDAQABo0UwQzAJBgNVHRMEAjAAMBEGCWCGSAGG+EIBAQQEAwIGQDAO"
+  "BgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDQYJKoZIhvcNAQEL"
+  "BQADggIBACahCmH39B9x9EReBNZRhN64d7y9JnaDFSGGoDWl7dApXfPwLpJu55dd"
+  "41N6u6UrOBsBYX5AOTacMzDsPRNn/qSc1crOcu+seyZatzsmIXhgK2JQnPgatjEI"
+  "+HCntZ2TGaQnTsQc14BlWNN9PKtj5RhZKqA8DihPzIyIpCagoUnDMkTnMt6GuXdt"
+  "9qknAyjR91NNkZnnap6AHZFGj/RYQmxzpzXRnAeZUsLjTJ0nDL+c9ooEXkfH+EEX"
+  "2qK/j0asNsg/yaJ1DwBC6AWKI+HHLVObbKsa1IgfisCiq/qBA1nvmcYMSZIjF8WV"
+  "SoOIxhJL3L7C4QbxccT3lcgCHGVFwxkVsSiJxyS+Javf9YBfBElpPmf90gxqMM9M"
+  "wa0CVvFZCgIjHbNzANn/mkYsg8U+Sux39BbKEni58Ds+QUXZXFrhL8Jb/75bGv8S"
+  "Wmt+SwKNg6dO10oxx/TdvwywcM/rYHE6EaGiyNUCB8IY3t/9DPFCj6S7hWPaCAn6"
+  "sfg/V2SJ9f07HtNgcGKMkAOwFJUhMLASz46ns0Bk29ewOsmqVIAsug4r40biMG6x"
+  "Di2iFMdIDSZlfaWfOyCEF5E2O3H5itDnmvDb+f/Z8gRVLWbN1XsYDULaacEmHzAE"
+  "mJ9jLcEZFj1nEsX2o6hFPKUGIy01e6MlMtOnSxiiCq5LikfNvgmi";
 
 // }}}
 

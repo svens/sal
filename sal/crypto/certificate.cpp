@@ -130,7 +130,7 @@ inline const char *c_str (CFTypeRef s, char (&buf)[N]) noexcept
 scoped_ref<CFArrayRef> copy_values (SecCertificateRef cert, CFTypeRef oid)
   noexcept
 {
-  scoped_ref<CFArrayRef> keys = ::CFArrayCreate(nullptr, &oid, 1, nullptr);
+  scoped_ref<CFArrayRef> keys = ::CFArrayCreate(nullptr, &oid, 1, &kCFTypeArrayCallBacks);
   scoped_ref<CFDictionaryRef> dir = ::SecCertificateCopyValues(cert, keys.ref, nullptr);
 
   CFTypeRef values;
@@ -268,6 +268,42 @@ sal::time_t to_time (SecCertificateRef cert, CFTypeRef oid,
 }
 
 
+std::vector<uint8_t> key_identifier (SecCertificateRef cert, CFTypeRef oid,
+  std::error_code &error) noexcept
+{
+  if (!cert)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  std::vector<uint8_t> result;
+  if (auto values = copy_values(cert, oid))
+  {
+    try
+    {
+      auto data = (CFDataRef)::CFDictionaryGetValue(
+        (CFDictionaryRef)::CFArrayGetValueAtIndex(values.ref, 1),
+        kSecPropertyKeyValue
+      );
+      auto content = ::CFDataGetBytePtr(data);
+      result.assign(content, content + ::CFDataGetLength(data));
+    }
+
+    // LCOV_EXCL_START
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+      return {};
+    }
+    // LCOV_EXCL_STOP
+  }
+
+  error.clear();
+  return result;
+}
+
+
 } // namespae
 
 
@@ -347,6 +383,20 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     return {};
   }
   // LCOV_EXCL_STOP
+}
+
+
+std::vector<uint8_t> certificate_t::authority_key_identifier (
+  std::error_code &error) const noexcept
+{
+  return key_identifier(impl_.ref, kSecOIDAuthorityKeyIdentifier, error);
+}
+
+
+std::vector<uint8_t> certificate_t::subject_key_identifier (
+  std::error_code &error) const noexcept
+{
+  return key_identifier(impl_.ref, kSecOIDSubjectKeyIdentifier, error);
 }
 
 
@@ -563,6 +613,89 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     error = std::make_error_code(std::errc::not_enough_memory);
   }
   // LCOV_EXCL_STOP
+
+  return result;
+}
+
+
+std::vector<uint8_t> certificate_t::authority_key_identifier (
+  std::error_code &error) const noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  auto index = X509_get_ext_by_NID(impl_.ref, NID_authority_key_identifier, -1);
+  if (index < 0)
+  {
+    error.clear();
+    return {};
+  }
+
+  auto decoded = static_cast<AUTHORITY_KEYID *>(
+    X509V3_EXT_d2i(X509_get_ext(impl_.ref, index))
+  );
+
+  std::vector<uint8_t> result;
+  try
+  {
+    result.assign(
+      decoded->keyid->data,
+      decoded->keyid->data + decoded->keyid->length
+    );
+    error.clear();
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  // LCOV_EXCL_STOP
+
+  AUTHORITY_KEYID_free(decoded);
+
+  return result;
+}
+
+
+std::vector<uint8_t> certificate_t::subject_key_identifier (
+  std::error_code &error) const noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  auto index = X509_get_ext_by_NID(impl_.ref, NID_subject_key_identifier, -1);
+  if (index < 0)
+  {
+    error.clear();
+    return {};
+  }
+
+  auto decoded = static_cast<ASN1_OCTET_STRING *>(
+    X509V3_EXT_d2i(X509_get_ext(impl_.ref, index))
+  );
+
+  std::vector<uint8_t> result;
+  try
+  {
+    result.assign(decoded->data, decoded->data + decoded->length);
+    error.clear();
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  // LCOV_EXCL_STOP
+
+  ASN1_OCTET_STRING_free(decoded);
 
   return result;
 }
@@ -824,6 +957,116 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     error = std::make_error_code(std::errc::not_enough_memory);
     return {};
   }
+}
+
+
+std::vector<uint8_t> certificate_t::authority_key_identifier (
+  std::error_code &error) const noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  auto ext = ::CertFindExtension(szOID_AUTHORITY_KEY_IDENTIFIER2,
+    impl_.ref->pCertInfo->cExtension,
+    impl_.ref->pCertInfo->rgExtension
+  );
+  if (!ext)
+  {
+    error.clear();
+    return {};
+  }
+
+  CERT_AUTHORITY_KEY_ID2_INFO *decoded;
+  DWORD length = 0;
+  ::CryptDecodeObjectEx(X509_ASN_ENCODING,
+    X509_AUTHORITY_KEY_ID2,
+    ext->Value.pbData,
+    ext->Value.cbData,
+    CRYPT_DECODE_ALLOC_FLAG,
+    0,
+    &decoded,
+    &length
+  );
+  if (!decoded)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return {};
+  }
+
+  std::vector<uint8_t> result;
+  try
+  {
+    result.assign(
+      decoded->KeyId.pbData,
+      decoded->KeyId.pbData + decoded->KeyId.cbData
+    );
+    error.clear();
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  ::LocalFree(decoded);
+
+  return result;
+}
+
+
+std::vector<uint8_t> certificate_t::subject_key_identifier (
+  std::error_code &error) const noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  auto ext = ::CertFindExtension(szOID_SUBJECT_KEY_IDENTIFIER,
+    impl_.ref->pCertInfo->cExtension,
+    impl_.ref->pCertInfo->rgExtension
+  );
+  if (!ext)
+  {
+    error.clear();
+    return {};
+  }
+
+  CRYPT_DATA_BLOB *decoded;
+  DWORD length = 0;
+  ::CryptDecodeObjectEx(X509_ASN_ENCODING,
+    szOID_SUBJECT_KEY_IDENTIFIER,
+    ext->Value.pbData,
+    ext->Value.cbData,
+    CRYPT_DECODE_ALLOC_FLAG,
+    0,
+    &decoded,
+    &length
+  );
+  if (!decoded)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return {};
+  }
+
+  std::vector<uint8_t> result;
+  try
+  {
+    result.assign(
+      decoded->pbData,
+      decoded->pbData + decoded->cbData
+    );
+    error.clear();
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  ::LocalFree(decoded);
+
+  return result;
 }
 
 
