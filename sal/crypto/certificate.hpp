@@ -24,6 +24,18 @@ class certificate_t
 public:
 
   certificate_t () = default;
+  certificate_t (const certificate_t &) = default;
+  certificate_t (certificate_t &&) = default;
+  certificate_t &operator= (const certificate_t &) = default;
+  certificate_t &operator= (certificate_t &&) = default;
+
+
+  /**
+   */
+  void swap (certificate_t &that) noexcept
+  {
+    impl_.swap(that.impl_);
+  }
 
 
   /**
@@ -78,6 +90,11 @@ public:
   {
     return !is_null();
   }
+
+
+  /**
+   */
+  int version () const noexcept;
 
 
   /**

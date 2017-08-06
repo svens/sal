@@ -129,6 +129,34 @@ TEST_F(crypto_certificate, assign_move)
 }
 
 
+TEST_F(crypto_certificate, swap)
+{
+  cert_t a, b = cert_t::from_pem(root_cert);
+  EXPECT_TRUE(a.is_null());
+  EXPECT_FALSE(b.is_null());
+
+  a.swap(b);
+  EXPECT_FALSE(a.is_null());
+  EXPECT_TRUE(b.is_null());
+}
+
+
+TEST_F(crypto_certificate, version)
+{
+  auto cert = cert_t::from_pem(root_cert);
+  ASSERT_FALSE(!cert);
+  EXPECT_EQ(3, cert.version());
+}
+
+
+TEST_F(crypto_certificate, version_from_null)
+{
+  cert_t cert;
+  ASSERT_TRUE(!cert);
+  EXPECT_EQ(0, cert.version());
+}
+
+
 TEST_F(crypto_certificate, serial_number)
 {
   const std::pair<std::string, std::vector<uint8_t>> certs[] =

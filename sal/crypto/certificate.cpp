@@ -127,9 +127,15 @@ inline const char *c_str (CFTypeRef s, char (&buf)[N]) noexcept
 }
 
 
-scoped_ref<CFArrayRef> copy_values (SecCertificateRef cert, CFTypeRef oid)
-  noexcept
+scoped_ref<CFArrayRef> copy_values (SecCertificateRef cert, CFTypeRef oid,
+  std::error_code &error) noexcept
 {
+  if (!cert)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
   scoped_ref<CFArrayRef> keys = ::CFArrayCreate(nullptr, &oid, 1, &kCFTypeArrayCallBacks);
   scoped_ref<CFDictionaryRef> dir = ::SecCertificateCopyValues(cert, keys.ref, nullptr);
 
@@ -155,13 +161,7 @@ auto to_distinguished_name (SecCertificateRef cert, CFTypeRef oid,
 {
   certificate_t::distinguished_name_t result;
 
-  if (!cert)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return result;
-  }
-
-  if (auto values = copy_values(cert, oid))
+  if (auto values = copy_values(cert, oid, error))
   {
     try
     {
@@ -174,6 +174,8 @@ auto to_distinguished_name (SecCertificateRef cert, CFTypeRef oid,
           c_str(::CFDictionaryGetValue(key, kSecPropertyKeyValue), buf)
         );
       }
+
+      error.clear();
     }
 
     // LCOV_EXCL_START
@@ -196,13 +198,7 @@ auto to_distinguished_name (SecCertificateRef cert,
 {
   certificate_t::distinguished_name_t result;
 
-  if (!cert)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return result;
-  }
-
-  if (auto values = copy_values(cert, oid))
+  if (auto values = copy_values(cert, oid, error))
   {
     try
     {
@@ -228,6 +224,8 @@ auto to_distinguished_name (SecCertificateRef cert,
           );
         }
       }
+
+      error.clear();
     }
 
     // LCOV_EXCL_START
@@ -246,13 +244,7 @@ auto to_distinguished_name (SecCertificateRef cert,
 sal::time_t to_time (SecCertificateRef cert, CFTypeRef oid,
   std::error_code &error) noexcept
 {
-  if (!cert)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return {};
-  }
-
-  if (auto value = copy_values(cert, oid))
+  if (auto value = copy_values(cert, oid, error))
   {
     CFAbsoluteTime time;
     ::CFNumberGetValue((CFNumberRef)value.ref, kCFNumberDoubleType, &time);
@@ -261,24 +253,15 @@ sal::time_t to_time (SecCertificateRef cert, CFTypeRef oid,
     return sal::clock_t::from_time_t(time + kCFAbsoluteTimeIntervalSince1970);
   }
 
-  // LCOV_EXCL_START
-  error = std::make_error_code(std::errc::illegal_byte_sequence);
   return {};
-  // LCOV_EXCL_STOP
 }
 
 
 std::vector<uint8_t> key_identifier (SecCertificateRef cert, CFTypeRef oid,
   std::error_code &error) noexcept
 {
-  if (!cert)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return {};
-  }
-
   std::vector<uint8_t> result;
-  if (auto values = copy_values(cert, oid))
+  if (auto values = copy_values(cert, oid, error))
   {
     try
     {
@@ -288,23 +271,22 @@ std::vector<uint8_t> key_identifier (SecCertificateRef cert, CFTypeRef oid,
       );
       auto content = ::CFDataGetBytePtr(data);
       result.assign(content, content + ::CFDataGetLength(data));
+      error.clear();
     }
 
     // LCOV_EXCL_START
     catch (const std::bad_alloc &)
     {
       error = std::make_error_code(std::errc::not_enough_memory);
-      return {};
     }
     // LCOV_EXCL_STOP
   }
 
-  error.clear();
   return result;
 }
 
 
-} // namespae
+} // namespace
 
 
 certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
@@ -332,6 +314,18 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+int certificate_t::version () const noexcept
+{
+  std::error_code ignored;
+  if (auto value = copy_values(impl_.ref, kSecOIDX509V1Version, ignored))
+  {
+    char buf[16];
+    return atoi(c_str(value.ref, buf));
+  }
+  return 0;
 }
 
 
@@ -369,20 +363,21 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     ++first;
   }
 
+  std::vector<uint8_t> result;
   try
   {
-    std::vector<uint8_t> result(first, last);
+    result.assign(first, last);
     error.clear();
-    return result;
   }
 
   // LCOV_EXCL_START
   catch (const std::bad_alloc &)
   {
     error = std::make_error_code(std::errc::not_enough_memory);
-    return {};
   }
   // LCOV_EXCL_STOP
+
+  return result;
 }
 
 
@@ -408,6 +403,7 @@ bool certificate_t::issued_by (const certificate_t &issuer,
     error = std::make_error_code(std::errc::bad_address);
     return {};
   }
+  error.clear();
 
   scoped_ref<CFDataRef> issuer_cert_subject_data =
     ::SecCertificateCopyNormalizedSubjectSequence(
@@ -428,8 +424,6 @@ bool certificate_t::issued_by (const certificate_t &issuer,
 
   auto data_1 = ::CFDataGetBytePtr(issuer_cert_subject_data.ref);
   auto data_2 = ::CFDataGetBytePtr(this_cert_issuer_data.ref);
-
-  error.clear();
   return std::equal(data_1, data_1 + size_1, data_2);
 }
 
@@ -483,6 +477,12 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+int certificate_t::version () const noexcept
+{
+  return impl_.ref ? X509_get_version(impl_.ref) + 1 : 0;
 }
 
 
@@ -871,6 +871,12 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+int certificate_t::version () const noexcept
+{
+  return impl_.ref ? impl_.ref->pCertInfo->dwVersion + 1 : 0;
 }
 
 
