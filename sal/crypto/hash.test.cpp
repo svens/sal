@@ -253,4 +253,15 @@ TYPED_TEST(crypto_hash, one_shot)
 }
 
 
+TYPED_TEST(crypto_hash, one_shot_vector)
+{
+  for (auto &kv: expected<TypeParam>)
+  {
+    auto result = sal::crypto::hash_t<TypeParam>::one_shot(kv.first);
+    EXPECT_EQ(kv.second, to_string(result))
+      << "   Input: " << kv.first;
+  }
+}
+
+
 } // namespace

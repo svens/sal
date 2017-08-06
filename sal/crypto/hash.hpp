@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/crypto/__bits/digest.hpp>
 #include <sal/error.hpp>
+#include <vector>
 
 
 __sal_begin
@@ -120,6 +121,19 @@ public:
   {
     sal_throw_if(digest.size() < digest_size());
     one_shot(data.data(), data.size(), digest.data(), digest.size());
+  }
+
+
+  /**
+   * Convenience wrapper for one_shot() to preallocate, fill and return digest
+   * in vector of bytes.
+   */
+  template <typename DataPtr>
+  static std::vector<uint8_t> one_shot (const DataPtr &data)
+  {
+    std::vector<uint8_t> result(digest_size());
+    one_shot(data.data(), data.size(), result.data(), result.size());
+    return result;
   }
 
 
