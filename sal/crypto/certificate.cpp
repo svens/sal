@@ -130,29 +130,35 @@ inline const char *c_str (CFTypeRef s, char (&buf)[N]) noexcept
 scoped_ref<CFArrayRef> copy_values (SecCertificateRef cert, CFTypeRef oid,
   std::error_code &error) noexcept
 {
-  if (!cert)
+  if (cert)
+  {
+    scoped_ref<CFArrayRef> keys = ::CFArrayCreate(nullptr,
+      &oid, 1,
+      &kCFTypeArrayCallBacks
+    );
+    scoped_ref<CFDictionaryRef> dir = ::SecCertificateCopyValues(cert,
+      keys.ref,
+      nullptr
+    );
+
+    CFTypeRef values;
+    if (::CFDictionaryGetValueIfPresent(dir.ref, oid, &values))
+    {
+      if (::CFDictionaryGetValueIfPresent(static_cast<CFDictionaryRef>(values),
+          kSecPropertyKeyValue,
+          &values))
+      {
+        return static_cast<CFArrayRef>(::CFRetain(values));
+      }
+    }
+
+    error.clear();
+  }
+  else
   {
     error = std::make_error_code(std::errc::bad_address);
-    return {};
   }
-
-  scoped_ref<CFArrayRef> keys = ::CFArrayCreate(nullptr, &oid, 1, &kCFTypeArrayCallBacks);
-  scoped_ref<CFDictionaryRef> dir = ::SecCertificateCopyValues(cert, keys.ref, nullptr);
-
-  CFTypeRef values;
-  if (::CFDictionaryGetValueIfPresent(dir.ref, oid, &values))
-  {
-    if (::CFDictionaryGetValueIfPresent(static_cast<CFDictionaryRef>(values),
-        kSecPropertyKeyValue,
-        &values))
-    {
-      return static_cast<CFArrayRef>(::CFRetain(values));
-    }
-  }
-
-  // LCOV_EXCL_START
   return {};
-  // LCOV_EXCL_STOP
 }
 
 
@@ -317,6 +323,54 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
 }
 
 
+uint8_t *certificate_t::to_der (uint8_t *first, uint8_t *last,
+  std::error_code &error) const noexcept
+{
+  if (scoped_ref<CFDataRef> data = ::SecCertificateCopyData(impl_.ref))
+  {
+    auto size = ::CFDataGetLength(data.ref);
+    if (last - first >= size)
+    {
+      auto der = ::CFDataGetBytePtr(data.ref);
+      error.clear();
+      return std::uninitialized_copy(der, der + size, first);
+    }
+    error = std::make_error_code(std::errc::result_out_of_range);
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+  }
+  return {};
+}
+
+
+std::vector<uint8_t> certificate_t::to_der (std::error_code &error)
+  const noexcept
+{
+  if (scoped_ref<CFDataRef> data = ::SecCertificateCopyData(impl_.ref))
+  {
+    try
+    {
+      auto der = ::CFDataGetBytePtr(data.ref);
+      return std::vector<uint8_t>(der, der + ::CFDataGetLength(data.ref));
+    }
+
+    // LCOV_EXCL_START
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+    }
+    // LCOV_EXCL_STOP
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+  }
+  return {};
+}
+
+
 int certificate_t::version () const noexcept
 {
   std::error_code ignored;
@@ -477,6 +531,57 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+uint8_t *certificate_t::to_der (uint8_t *first, uint8_t *last,
+  std::error_code &error) const noexcept
+{
+  if (!impl_.ref)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  auto size = i2d_X509(impl_.ref, nullptr);
+  if (size > last - first)
+  {
+    error = std::make_error_code(std::errc::result_out_of_range);
+    return {};
+  }
+
+  error.clear();
+
+  i2d_X509(impl_.ref, &first);
+  return first;
+}
+
+
+std::vector<uint8_t> certificate_t::to_der (std::error_code &error)
+  const noexcept
+{
+  if (!impl_.ref)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  try
+  {
+    auto size = i2d_X509(impl_.ref, nullptr);
+    std::vector<uint8_t> result(size);
+    auto begin = &result[0];
+    i2d_X509(impl_.ref, &begin);
+    return result;
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return {};
+  }
+  // LCOV_EXCL_STOP
 }
 
 
@@ -871,6 +976,53 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+uint8_t *certificate_t::to_der (uint8_t *first, uint8_t *last,
+  std::error_code &error) const noexcept
+{
+  if (impl_.ref)
+  {
+    if (last - first >= impl_.ref->cbCertEncoded)
+    {
+      error.clear();
+      memcpy(first, impl_.ref->pbCertEncoded, impl_.ref->cbCertEncoded);
+      return first + impl_.ref->cbCertEncoded;
+    }
+    error = std::make_error_code(std::errc::result_out_of_range);
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+  }
+  return {};
+}
+
+
+std::vector<uint8_t> certificate_t::to_der (std::error_code &error)
+  const noexcept
+{
+  if (impl_.ref)
+  {
+    try
+    {
+      error.clear();
+      return std::vector<uint8_t>(
+        impl_.ref->pbCertEncoded,
+        impl_.ref->pbCertEncoded + impl_.ref->cbCertEncoded
+      );
+    }
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+    }
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+  }
+  return {};
 }
 
 

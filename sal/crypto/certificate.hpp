@@ -46,7 +46,7 @@ public:
   {
     return certificate_t(
       reinterpret_cast<const uint8_t *>(data.data()),
-      reinterpret_cast<const uint8_t *>(data.data() + data.size()),
+      reinterpret_cast<const uint8_t *>(data.data()) + data.size(),
       error
     );
   }
@@ -73,6 +73,47 @@ public:
   static certificate_t from_pem (const std::string &data)
   {
     return from_pem(data, throw_on_error("certificate::from_pem"));
+  }
+
+
+  /**
+   */
+  template <typename Ptr>
+  uint8_t *to_der (const Ptr &data, std::error_code &error) const noexcept
+  {
+    return to_der(
+      reinterpret_cast<uint8_t *>(data.data()),
+      reinterpret_cast<uint8_t *>(data.data()) + data.size(),
+      error
+    );
+  }
+
+
+  /**
+   */
+  template <typename Ptr>
+  uint8_t *to_der (const Ptr &data) const
+  {
+    return to_der(data, throw_on_error("certificate::to_der"));
+  }
+
+
+  /**
+   */
+  std::vector<uint8_t> to_der (std::error_code &error) const noexcept;
+
+
+  /**
+   */
+  std::vector<uint8_t> to_der () const
+  {
+    std::error_code error;
+    auto result = to_der(error);
+    if (error)
+    {
+      throw_system_error(error, "certificate::to_der");
+    }
+    return result;
   }
 
 
@@ -264,6 +305,9 @@ private:
   certificate_t (const uint8_t *first, const uint8_t *last,
     std::error_code &error
   ) noexcept;
+
+  uint8_t *to_der (uint8_t *first, uint8_t *last, std::error_code &error)
+    const noexcept;
 };
 
 
