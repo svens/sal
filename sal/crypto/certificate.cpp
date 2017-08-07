@@ -1,4 +1,5 @@
 #include <sal/crypto/certificate.hpp>
+#include <sal/net/ip/__bits/inet.hpp>
 #include <sal/encode.hpp>
 #include <sstream>
 
@@ -8,6 +9,7 @@
     #define availability(...) /**/
   #endif
   #include <CoreFoundation/CFNumber.h>
+  #include <CoreFoundation/CFURL.h>
   #include <Security/SecCertificateOIDs.h>
 #elif __sal_os_linux //{{{1
   #include <openssl/asn1.h>
@@ -86,6 +88,23 @@ uint8_t *pem_to_der (const std::string &pem, uint8_t *buf, size_t buf_size,
     return {};
   }
   // LCOV_EXCL_STOP
+}
+
+
+std::string normalized_ip_string (const uint8_t *first, size_t size)
+{
+  char buf[128] = { 0 };
+  if (size == 4)
+  {
+    auto a = *reinterpret_cast<const in_addr *>(first);
+    net::ip::__bits::inet_ntop(a, buf, sizeof(buf));
+  }
+  else if (size == 16)
+  {
+    auto a = *reinterpret_cast<const in6_addr *>(first);
+    net::ip::__bits::inet_ntop(a, buf, sizeof(buf));
+  }
+  return buf;
 }
 
 
@@ -221,7 +240,7 @@ auto to_distinguished_name (SecCertificateRef cert,
       {
         auto key = (CFDictionaryRef)::CFArrayGetValueAtIndex(values.ref, i);
         auto label = (CFStringRef)::CFDictionaryGetValue(key, kSecPropertyKeyLabel);
-        if (::CFStringCompare(label, filter.ref, 0) == kCFCompareEqualTo)
+        if (::CFEqual(label, filter.ref))
         {
           char buf[1024];
           result.emplace_back(
@@ -507,6 +526,105 @@ certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
   std::error_code &error) const noexcept
 {
   return to_distinguished_name(impl_.ref, kSecOIDX509V1SubjectName, oid, error);
+}
+
+
+namespace {
+
+
+std::string normalized_ip_string (CFTypeRef data)
+{
+  auto s = static_cast<CFStringRef>(data);
+
+  char buf[64];
+  auto p = c_str(s, buf);
+
+  if (::CFStringGetLength(s) == 39)
+  {
+    // convert to RFC5952 (recommended IPv6 textual representation) format
+    in6_addr ip;
+    net::ip::__bits::inet_pton(p, ip);
+    return normalized_ip_string(reinterpret_cast<uint8_t *>(&ip), sizeof(ip));
+  }
+
+  return p;
+}
+
+
+std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
+  SecCertificateRef cert,
+  CFTypeRef oid,
+  std::error_code &error) noexcept
+{
+  static const auto
+    dns_name = CFSTR("DNS Name"),
+    ip_address = CFSTR("IP Address"),
+    email_address = CFSTR("Email Address"),
+    uri = CFSTR("URI");
+
+  std::vector<std::pair<certificate_t::alt_name, std::string>> result;
+  if (auto values = copy_values(cert, oid, error))
+  {
+    try
+    {
+      char buf[1024];
+      for (auto i = 0U;  i != ::CFArrayGetCount(values.ref);  ++i)
+      {
+        auto entry = (CFDictionaryRef)::CFArrayGetValueAtIndex(values.ref, i);
+        auto label = ::CFDictionaryGetValue(entry, kSecPropertyKeyLabel);
+        if (::CFEqual(label, dns_name))
+        {
+          result.emplace_back(certificate_t::alt_name::dns,
+            c_str(::CFDictionaryGetValue(entry, kSecPropertyKeyValue), buf)
+          );
+        }
+        else if (::CFEqual(label, ip_address))
+        {
+          result.emplace_back(certificate_t::alt_name::ip,
+            normalized_ip_string(::CFDictionaryGetValue(entry, kSecPropertyKeyValue))
+          );
+        }
+        else if (::CFEqual(label, uri))
+        {
+          result.emplace_back(certificate_t::alt_name::uri,
+            c_str(::CFURLGetString((CFURLRef)::CFDictionaryGetValue(entry, kSecPropertyKeyValue)), buf)
+          );
+        }
+        else if (::CFEqual(label, email_address))
+        {
+          result.emplace_back(certificate_t::alt_name::email,
+            c_str(::CFDictionaryGetValue(entry, kSecPropertyKeyValue), buf)
+          );
+        }
+      }
+    }
+
+    // LCOV_EXCL_START
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+      result.clear();
+    }
+    // LCOV_EXCL_STOP
+  }
+  return result;
+}
+
+
+} // namespace
+
+
+std::vector<std::pair<certificate_t::alt_name, std::string>>
+certificate_t::issuer_alt_name (std::error_code &error) const noexcept
+{
+  return to_alt_name(impl_.ref, kSecOIDIssuerAltName, error);
+}
+
+
+std::vector<std::pair<certificate_t::alt_name, std::string>>
+certificate_t::subject_alt_name (std::error_code &error) const noexcept
+{
+  return to_alt_name(impl_.ref, kSecOIDSubjectAltName, error);
 }
 
 
@@ -949,6 +1067,117 @@ certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
 }
 
 
+namespace {
+
+std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
+  X509 *cert, int nid, std::error_code &error) noexcept
+{
+  std::vector<std::pair<certificate_t::alt_name, std::string>> result;
+
+  if (!cert)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return result;
+  }
+
+  auto names = X509_get_ext_d2i(cert, nid, nullptr, nullptr);
+  if (!names)
+  {
+    return result;
+  }
+
+  try
+  {
+    for (auto i = 0;  i != sk_GENERAL_NAME_num(names);  ++i)
+    {
+      auto name = sk_GENERAL_NAME_value(names, i);
+      switch (name->type)
+      {
+        case GEN_EMAIL:
+        {
+          auto s = name->d.rfc822Name;
+          if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
+          {
+            result.emplace_back(certificate_t::alt_name::email,
+              std::string{s->data, s->data + s->length}
+            );
+          }
+          break;
+        }
+
+        case GEN_DNS:
+        {
+          auto s = name->d.dNSName;
+          if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
+          {
+            result.emplace_back(certificate_t::alt_name::dns,
+              std::string{s->data, s->data + s->length}
+            );
+          }
+          break;
+        }
+
+        case GEN_URI:
+        {
+          auto s = name->d.uniformResourceIdentifier;
+          if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
+          {
+            result.emplace_back(certificate_t::alt_name::uri,
+              std::string{s->data, s->data + s->length}
+            );
+          }
+          break;
+        }
+
+        case GEN_IPADD:
+        {
+          auto s = name->d.iPAddress;
+          if (s && s->type == V_ASN1_OCTET_STRING && s->data
+            && (s->length == 4 || s->length == 16))
+          {
+            result.emplace_back(certificate_t::alt_name::ip,
+              normalized_ip_string(s->data, s->length)
+            );
+          }
+          break;
+        }
+
+        default:
+          continue;
+      }
+    }
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    result.clear();
+  }
+  // LCOV_EXCL_STOP
+
+  sk_GENERAL_NAME_pop_free(names, GENERAL_NAME_free);
+
+  return result;
+}
+
+} // namespace
+
+
+std::vector<std::pair<certificate_t::alt_name, std::string>>
+certificate_t::issuer_alt_name (std::error_code &error) const noexcept
+{
+  return to_alt_name(impl_.ref, NID_issuer_alt_name, error);
+}
+
+
+std::vector<std::pair<certificate_t::alt_name, std::string>>
+certificate_t::subject_alt_name (std::error_code &error) const noexcept
+{
+  return to_alt_name(impl_.ref, NID_subject_alt_name, error);
+}
+
+
 #elif __sal_os_windows // {{{1
 
 
@@ -1376,6 +1605,129 @@ certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
   }
   error = std::make_error_code(std::errc::bad_address);
   return {};
+}
+
+
+namespace {
+
+
+inline std::string to_string (LPWSTR in)
+{
+  char out[256];
+  auto size = ::WideCharToMultiByte(
+    CP_ACP,
+    0,
+    in, -1,
+    out, sizeof(out),
+    nullptr,
+    nullptr
+  );
+  return std::string(out, out + size - 1);
+}
+
+
+std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
+  PCCERT_CONTEXT cert,
+  LPCSTR oid,
+  std::error_code &error) noexcept
+{
+  std::vector<std::pair<certificate_t::alt_name, std::string>> result;
+
+  if (!cert)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return result;
+  }
+
+  auto extension = ::CertFindExtension(oid,
+    cert->pCertInfo->cExtension,
+    cert->pCertInfo->rgExtension
+  );
+  if (!extension)
+  {
+    return result;
+  }
+
+  CERT_ALT_NAME_INFO *alt_name;
+  DWORD size = 0;
+  auto status = ::CryptDecodeObjectEx(
+    X509_ASN_ENCODING,
+    X509_ALTERNATE_NAME,
+    extension->Value.pbData,
+    extension->Value.cbData,
+    CRYPT_DECODE_ALLOC_FLAG,
+    nullptr,
+    &alt_name,
+    &size
+  );
+  if (!status)
+  {
+    error.assign(::GetLastError(), std::system_category());
+    return result;
+  }
+
+  try
+  {
+    for (auto i = 0U;  i != alt_name->cAltEntry;  ++i)
+    {
+      auto &entry = alt_name->rgAltEntry[i];
+      switch (entry.dwAltNameChoice)
+      {
+        case CERT_ALT_NAME_RFC822_NAME:
+          result.emplace_back(certificate_t::alt_name::email,
+            to_string(entry.pwszRfc822Name)
+          );
+          break;
+
+        case CERT_ALT_NAME_DNS_NAME:
+          result.emplace_back(certificate_t::alt_name::dns,
+            to_string(entry.pwszDNSName)
+          );
+          break;
+
+        case CERT_ALT_NAME_URL:
+          result.emplace_back(certificate_t::alt_name::uri,
+            to_string(entry.pwszURL)
+          );
+          break;
+
+        case CERT_ALT_NAME_IP_ADDRESS:
+          result.emplace_back(certificate_t::alt_name::ip,
+            normalized_ip_string(entry.IPAddress.pbData, entry.IPAddress.cbData)
+          );
+          break;
+
+        default:
+          continue;
+      }
+    }
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    result.clear();
+  }
+
+  LocalFree(alt_name);
+
+  return result;
+}
+
+
+} // namespace
+
+
+std::vector<std::pair<certificate_t::alt_name, std::string>>
+certificate_t::issuer_alt_name (std::error_code &error) const noexcept
+{
+  return to_alt_name(impl_.ref, szOID_ISSUER_ALT_NAME2, error);
+}
+
+
+std::vector<std::pair<certificate_t::alt_name, std::string>>
+certificate_t::subject_alt_name (std::error_code &error) const noexcept
+{
+  return to_alt_name(impl_.ref, szOID_SUBJECT_ALT_NAME2, error);
 }
 
 

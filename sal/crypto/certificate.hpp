@@ -298,6 +298,47 @@ public:
   }
 
 
+  /**
+   */
+  enum class alt_name
+  {
+    dns,
+    ip,
+    uri,
+    email,
+  };
+
+
+  /**
+   */
+  std::vector<std::pair<alt_name, std::string>> issuer_alt_name (
+    std::error_code &error
+  ) const noexcept;
+
+
+  /**
+   */
+  std::vector<std::pair<alt_name, std::string>> issuer_alt_name () const
+  {
+    return issuer_alt_name(throw_on_error("certificate::issuer_alt_name"));
+  }
+
+
+  /**
+   */
+  std::vector<std::pair<alt_name, std::string>> subject_alt_name (
+    std::error_code &error
+  ) const noexcept;
+
+
+  /**
+   */
+  std::vector<std::pair<alt_name, std::string>> subject_alt_name () const
+  {
+    return subject_alt_name(throw_on_error("certificate::subject_alt_name"));
+  }
+
+
 private:
 
   __bits::certificate_t impl_{};

@@ -29,6 +29,7 @@ name_opt = ca_default
 cert_opt = ca_default
 preserve = no
 policy = policy_match
+copy_extensions = copy
 
 [ policy_match ]
 C = match
@@ -77,17 +78,31 @@ keyUsage = critical, digitalSignature, keyCertSign, cRLSign
 basicConstraints = CA:FALSE
 nsCertType = server
 subjectKeyIdentifier = hash
+issuerAltName = DNS:ca.sal.alt.ee,URI:https://ca.sal.alt.ee/path
+subjectAltName = @server_alt_names
 authorityKeyIdentifier = keyid,issuer:always
 keyUsage = critical, digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
+
+[ server_alt_names ]
+IP.1 = 1.2.3.4
+IP.2 = 2001:db8:85a3::8a2e:370:7334
+DNS.1 = *.sal.alt.ee
+DNS.2 = sal.alt.ee
+email.1 = sal@alt.ee
+URI.1 = https://sal.alt.ee/path
 
 [ client_cert ]
 basicConstraints = CA:FALSE
 nsCertType = client, email
 subjectKeyIdentifier = hash
+subjectAltName = @client_alt_names
 authorityKeyIdentifier = keyid,issuer
 keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
 extendedKeyUsage = clientAuth, emailProtection
+
+[ client_alt_names ]
+email.1 = sal@alt.ee
 OPENSSL_CONF
 
 echo '*** Root key ***' #{{{1
