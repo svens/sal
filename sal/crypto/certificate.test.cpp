@@ -890,7 +890,7 @@ TEST_F(crypto_certificate, subject_with_oid_invalid) //{{{1
 }
 
 
-TEST_F(crypto_certificate, issuer_alt_name) //{{{1
+TEST_F(crypto_certificate, issuer_alt_names) //{{{1
 {
   const std::pair<std::string, std::vector<std::pair<cert_t::alt_name, std::string>>> certs[] =
   {
@@ -914,11 +914,11 @@ TEST_F(crypto_certificate, issuer_alt_name) //{{{1
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
-    auto alt_name = cert.issuer_alt_name(error);
+    auto alt_name = cert.issuer_alt_names(error);
     ASSERT_TRUE(!error);
     EXPECT_EQ(cert_pem.second, alt_name);
 
-    EXPECT_NO_THROW((void)cert.issuer_alt_name());
+    EXPECT_NO_THROW((void)cert.issuer_alt_names());
   }
 }
 
@@ -929,17 +929,17 @@ TEST_F(crypto_certificate, issuer_alt_name_from_null) //{{{1
   EXPECT_TRUE(cert.is_null());
 
   std::error_code error;
-  EXPECT_TRUE(cert.issuer_alt_name(error).empty());
+  EXPECT_TRUE(cert.issuer_alt_names(error).empty());
   EXPECT_EQ(std::errc::bad_address, error);
 
   EXPECT_THROW(
-    (void)cert.issuer_alt_name(),
+    (void)cert.issuer_alt_names(),
     std::system_error
   );
 }
 
 
-TEST_F(crypto_certificate, subject_alt_name) //{{{1
+TEST_F(crypto_certificate, subject_alt_names) //{{{1
 {
   const std::pair<std::string, std::vector<std::pair<cert_t::alt_name, std::string>>> certs[] =
   {
@@ -967,11 +967,11 @@ TEST_F(crypto_certificate, subject_alt_name) //{{{1
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
-    auto alt_name = cert.subject_alt_name(error);
+    auto alt_name = cert.subject_alt_names(error);
     ASSERT_TRUE(!error);
     EXPECT_EQ(cert_pem.second, alt_name);
 
-    EXPECT_NO_THROW((void)cert.subject_alt_name());
+    EXPECT_NO_THROW((void)cert.subject_alt_names());
   }
 }
 
@@ -982,11 +982,11 @@ TEST_F(crypto_certificate, subject_alt_name_from_null) //{{{1
   EXPECT_TRUE(cert.is_null());
 
   std::error_code error;
-  EXPECT_TRUE(cert.subject_alt_name(error).empty());
+  EXPECT_TRUE(cert.subject_alt_names(error).empty());
   EXPECT_EQ(std::errc::bad_address, error);
 
   EXPECT_THROW(
-    (void)cert.subject_alt_name(),
+    (void)cert.subject_alt_names(),
     std::system_error
   );
 }

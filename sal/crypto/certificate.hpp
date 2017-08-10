@@ -329,31 +329,31 @@ public:
 
   /**
    */
-  std::vector<std::pair<alt_name, std::string>> issuer_alt_name (
+  std::vector<std::pair<alt_name, std::string>> issuer_alt_names (
     std::error_code &error
   ) const noexcept;
 
 
   /**
    */
-  std::vector<std::pair<alt_name, std::string>> issuer_alt_name () const
+  std::vector<std::pair<alt_name, std::string>> issuer_alt_names () const
   {
-    return issuer_alt_name(throw_on_error("certificate::issuer_alt_name"));
+    return issuer_alt_names(throw_on_error("certificate::issuer_alt_names"));
   }
 
 
   /**
    */
-  std::vector<std::pair<alt_name, std::string>> subject_alt_name (
+  std::vector<std::pair<alt_name, std::string>> subject_alt_names (
     std::error_code &error
   ) const noexcept;
 
 
   /**
    */
-  std::vector<std::pair<alt_name, std::string>> subject_alt_name () const
+  std::vector<std::pair<alt_name, std::string>> subject_alt_names () const
   {
-    return subject_alt_name(throw_on_error("certificate::subject_alt_name"));
+    return subject_alt_names(throw_on_error("certificate::subject_alt_names"));
   }
 
 

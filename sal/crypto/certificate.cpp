@@ -619,14 +619,14 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
-certificate_t::issuer_alt_name (std::error_code &error) const noexcept
+certificate_t::issuer_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_name(impl_.ref, kSecOIDIssuerAltName, error);
 }
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
-certificate_t::subject_alt_name (std::error_code &error) const noexcept
+certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_name(impl_.ref, kSecOIDSubjectAltName, error);
 }
@@ -1169,14 +1169,14 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
-certificate_t::issuer_alt_name (std::error_code &error) const noexcept
+certificate_t::issuer_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_name(impl_.ref, NID_issuer_alt_name, error);
 }
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
-certificate_t::subject_alt_name (std::error_code &error) const noexcept
+certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_name(impl_.ref, NID_subject_alt_name, error);
 }
@@ -1722,14 +1722,14 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
-certificate_t::issuer_alt_name (std::error_code &error) const noexcept
+certificate_t::issuer_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_name(impl_.ref, szOID_ISSUER_ALT_NAME2, error);
 }
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
-certificate_t::subject_alt_name (std::error_code &error) const noexcept
+certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_name(impl_.ref, szOID_SUBJECT_ALT_NAME2, error);
 }
