@@ -565,7 +565,7 @@ std::string normalized_ip_string (CFTypeRef data)
 }
 
 
-std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
+std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
   SecCertificateRef cert,
   CFTypeRef oid,
   std::error_code &error) noexcept
@@ -635,14 +635,14 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
 std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::issuer_alt_names (std::error_code &error) const noexcept
 {
-  return to_alt_name(impl_.ref, kSecOIDIssuerAltName, error);
+  return to_alt_names(impl_.ref, kSecOIDIssuerAltName, error);
 }
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
-  return to_alt_name(impl_.ref, kSecOIDSubjectAltName, error);
+  return to_alt_names(impl_.ref, kSecOIDSubjectAltName, error);
 }
 
 
@@ -986,11 +986,9 @@ auto to_distinguished_name (X509_NAME *name, std::error_code &error) noexcept
       char oid[128];
       OBJ_obj2txt(oid, sizeof(oid), X509_NAME_ENTRY_get_object(entry), 1);
 
-      result.emplace_back(oid,
-        reinterpret_cast<const char *>(
-          ASN1_STRING_data(X509_NAME_ENTRY_get_data(entry))
-        )
-      );
+      auto value = ASN1_STRING_data(X509_NAME_ENTRY_get_data(entry));
+
+      result.emplace_back(oid, reinterpret_cast<const char *>(value));
     }
     error.clear();
   }
@@ -1026,11 +1024,8 @@ auto to_distinguished_name (X509_NAME *name, const oid_t &filter_oid,
       auto entry = X509_NAME_get_entry(name, i);
       if (OBJ_obj2nid(X509_NAME_ENTRY_get_object(entry)) == filter_nid)
       {
-        result.emplace_back(filter_oid,
-          reinterpret_cast<const char *>(
-            ASN1_STRING_data(X509_NAME_ENTRY_get_data(entry))
-          )
-        );
+        auto value = ASN1_STRING_data(X509_NAME_ENTRY_get_data(entry));
+        result.emplace_back(filter_oid, reinterpret_cast<const char *>(value));
       }
     }
     error.clear();
@@ -1101,7 +1096,7 @@ certificate_t::distinguished_name_t certificate_t::subject (const oid_t &oid,
 
 namespace {
 
-std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
+std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
   X509 *cert, int nid, std::error_code &error) noexcept
 {
   std::vector<std::pair<certificate_t::alt_name, std::string>> result;
@@ -1130,8 +1125,9 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
           auto s = name->d.rfc822Name;
           if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
           {
-            result.emplace_back(certificate_t::alt_name::email,
-              std::string{s->data, s->data + s->length}
+            result.emplace_back(
+              certificate_t::alt_name::email,
+              std::string(s->data, s->data + s->length)
             );
           }
           break;
@@ -1142,8 +1138,9 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
           auto s = name->d.dNSName;
           if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
           {
-            result.emplace_back(certificate_t::alt_name::dns,
-              std::string{s->data, s->data + s->length}
+            result.emplace_back(
+              certificate_t::alt_name::dns,
+              std::string(s->data, s->data + s->length)
             );
           }
           break;
@@ -1154,8 +1151,9 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
           auto s = name->d.uniformResourceIdentifier;
           if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
           {
-            result.emplace_back(certificate_t::alt_name::uri,
-              std::string{s->data, s->data + s->length}
+            result.emplace_back(
+              certificate_t::alt_name::uri,
+              std::string(s->data, s->data + s->length)
             );
           }
           break;
@@ -1167,15 +1165,13 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
           if (s && s->type == V_ASN1_OCTET_STRING && s->data
             && (s->length == 4 || s->length == 16))
           {
-            result.emplace_back(certificate_t::alt_name::ip,
+            result.emplace_back(
+              certificate_t::alt_name::ip,
               normalized_ip_string(s->data, s->length)
             );
           }
           break;
         }
-
-        default:
-          continue;
       }
     }
   }
@@ -1199,14 +1195,14 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
 std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::issuer_alt_names (std::error_code &error) const noexcept
 {
-  return to_alt_name(impl_.ref, NID_issuer_alt_name, error);
+  return to_alt_names(impl_.ref, NID_issuer_alt_name, error);
 }
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
-  return to_alt_name(impl_.ref, NID_subject_alt_name, error);
+  return to_alt_names(impl_.ref, NID_subject_alt_name, error);
 }
 
 
@@ -1676,7 +1672,7 @@ inline std::string to_string (LPWSTR in)
 }
 
 
-std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
+std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
   PCCERT_CONTEXT cert,
   LPCSTR oid,
   std::error_code &error) noexcept
@@ -1746,9 +1742,6 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
             normalized_ip_string(entry.IPAddress.pbData, entry.IPAddress.cbData)
           );
           break;
-
-        default:
-          continue;
       }
     }
   }
@@ -1770,14 +1763,14 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
 std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::issuer_alt_names (std::error_code &error) const noexcept
 {
-  return to_alt_name(impl_.ref, szOID_ISSUER_ALT_NAME2, error);
+  return to_alt_names(impl_.ref, szOID_ISSUER_ALT_NAME2, error);
 }
 
 
 std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
-  return to_alt_name(impl_.ref, szOID_SUBJECT_ALT_NAME2, error);
+  return to_alt_names(impl_.ref, szOID_SUBJECT_ALT_NAME2, error);
 }
 
 
