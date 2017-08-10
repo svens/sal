@@ -436,6 +436,63 @@ TEST_F(crypto_certificate, not_after_null) //{{{1
 }
 
 
+TEST_F(crypto_certificate, not_expired) //{{{1
+{
+  auto cert = cert_t::from_pem(root_cert);
+  ASSERT_FALSE(!cert);
+
+  // now
+  EXPECT_TRUE(cert.not_expired());
+
+  // from now within 1 year
+  EXPECT_TRUE(cert.not_expired(365 * 24h));
+
+  // from tomorrow within 1 year
+  EXPECT_TRUE(cert.not_expired(365 * 24h, sal::now() + 24h));
+}
+
+
+TEST_F(crypto_certificate, not_expired_null) //{{{1
+{
+  cert_t cert;
+  ASSERT_TRUE(!cert);
+
+  EXPECT_THROW(
+    cert.not_expired(),
+    std::system_error
+  );
+
+  EXPECT_THROW(
+    cert.not_expired(1h),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, not_expired_past) //{{{1
+{
+  auto cert = cert_t::from_pem(root_cert);
+  ASSERT_FALSE(!cert);
+
+  // 30 years in past
+  auto past = sal::now() - 30 * 365 * 24h;
+  EXPECT_FALSE(cert.not_expired(past));
+  EXPECT_FALSE(cert.not_expired(365 * 24h, past));
+}
+
+
+TEST_F(crypto_certificate, not_expired_future) //{{{1
+{
+  auto cert = cert_t::from_pem(root_cert);
+  ASSERT_FALSE(!cert);
+
+  // 30 years in future
+  auto future = sal::now() + 30 * 365 * 24h;
+  EXPECT_FALSE(cert.not_expired(future));
+  EXPECT_FALSE(cert.not_expired(365 * 24h, future));
+}
+
+
 TEST_F(crypto_certificate, issued_by) //{{{1
 {
   const std::pair<std::string, std::string> certs[] =

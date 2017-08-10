@@ -574,27 +574,31 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_name (
         auto label = ::CFDictionaryGetValue(entry, kSecPropertyKeyLabel);
         if (::CFEqual(label, dns_name))
         {
-          result.emplace_back(certificate_t::alt_name::dns,
-            c_str(::CFDictionaryGetValue(entry, kSecPropertyKeyValue), buf)
+          auto value = c_str(
+            ::CFDictionaryGetValue(entry, kSecPropertyKeyValue), buf
           );
+          result.emplace_back(certificate_t::alt_name::dns, value);
         }
         else if (::CFEqual(label, ip_address))
         {
-          result.emplace_back(certificate_t::alt_name::ip,
-            normalized_ip_string(::CFDictionaryGetValue(entry, kSecPropertyKeyValue))
+          auto value = normalized_ip_string(
+            ::CFDictionaryGetValue(entry, kSecPropertyKeyValue)
           );
+          result.emplace_back(certificate_t::alt_name::ip, value);
         }
         else if (::CFEqual(label, uri))
         {
-          result.emplace_back(certificate_t::alt_name::uri,
-            c_str(::CFURLGetString((CFURLRef)::CFDictionaryGetValue(entry, kSecPropertyKeyValue)), buf)
+          auto value = c_str(
+            ::CFURLGetString((CFURLRef)::CFDictionaryGetValue(entry, kSecPropertyKeyValue)), buf
           );
+          result.emplace_back(certificate_t::alt_name::uri, value);
         }
         else if (::CFEqual(label, email_address))
         {
-          result.emplace_back(certificate_t::alt_name::email,
-            c_str(::CFDictionaryGetValue(entry, kSecPropertyKeyValue), buf)
+          auto value = c_str(
+            ::CFDictionaryGetValue(entry, kSecPropertyKeyValue), buf
           );
+          result.emplace_back(certificate_t::alt_name::email, value);
         }
       }
     }

@@ -166,6 +166,24 @@ public:
 
   /**
    */
+  bool not_expired (sal::time_t t = now()) const
+  {
+    return t >= not_before() && t <= not_after();
+  }
+
+
+  /**
+   */
+  template <class Rep, class Period>
+  bool not_expired (const std::chrono::duration<Rep, Period> &d,
+    sal::time_t t = now()) const
+  {
+    return t >= not_before() && t + d <= not_after();
+  }
+
+
+  /**
+   */
   std::vector<uint8_t> serial_number (std::error_code &error) const noexcept;
 
 
