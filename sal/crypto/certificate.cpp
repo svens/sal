@@ -342,6 +342,20 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
 }
 
 
+bool certificate_t::operator== (const certificate_t &that) const noexcept
+{
+  if (impl_.ref && that.impl_.ref)
+  {
+    return ::CFEqual(impl_.ref, that.impl_.ref);
+  }
+  else if (!impl_.ref && !that.impl_.ref)
+  {
+    return true;
+  }
+  return false;
+}
+
+
 uint8_t *certificate_t::to_der (uint8_t *first, uint8_t *last,
   std::error_code &error) const noexcept
 {
@@ -653,6 +667,20 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+bool certificate_t::operator== (const certificate_t &that) const noexcept
+{
+  if (impl_.ref && that.impl_.ref)
+  {
+    return X509_cmp(impl_.ref, that.impl_.ref) == 0;
+  }
+  else if (!impl_.ref && !that.impl_.ref)
+  {
+    return true;
+  }
+  return false;
 }
 
 
@@ -1209,6 +1237,24 @@ certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
   {
     error = std::make_error_code(std::errc::illegal_byte_sequence);
   }
+}
+
+
+bool certificate_t::operator== (const certificate_t &that) const noexcept
+{
+  if (impl_.ref && that.impl_.ref)
+  {
+    return ::CertCompareCertificate(
+      X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+      impl_.ref->pCertInfo,
+      that.impl_.ref->pCertInfo
+    ) != 0;
+  }
+  else if (!impl_.ref && !that.impl_.ref)
+  {
+    return true;
+  }
+  return false;
 }
 
 

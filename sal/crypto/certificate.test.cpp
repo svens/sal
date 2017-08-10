@@ -142,6 +142,42 @@ TEST_F(crypto_certificate, swap) //{{{1
 }
 
 
+TEST_F(crypto_certificate, equals_true) //{{{1
+{
+  auto a = cert_t::from_pem(root_cert), b = cert_t::from_pem(root_cert);
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+}
+
+
+TEST_F(crypto_certificate, equals_false) //{{{1
+{
+  auto a = cert_t::from_pem(root_cert), b = cert_t::from_pem(leaf_cert);
+  EXPECT_TRUE(a != b);
+  EXPECT_FALSE(a == b);
+}
+
+
+TEST_F(crypto_certificate, equals_one_null) //{{{1
+{
+  cert_t a = cert_t::from_pem(root_cert), b;
+
+  EXPECT_TRUE(a != b);
+  EXPECT_FALSE(a == b);
+
+  EXPECT_TRUE(b != a);
+  EXPECT_FALSE(b == a);
+}
+
+
+TEST_F(crypto_certificate, equals_both_null) //{{{1
+{
+  cert_t a, b;
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+}
+
+
 TEST_F(crypto_certificate, version) //{{{1
 {
   auto cert = cert_t::from_pem(root_cert);

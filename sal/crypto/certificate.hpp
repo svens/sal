@@ -40,6 +40,19 @@ public:
 
   /**
    */
+  bool operator== (const certificate_t &that) const noexcept;
+
+
+  /**
+   */
+  bool operator!= (const certificate_t &that) const noexcept
+  {
+    return !operator==(that);
+  }
+
+
+  /**
+   */
   template <typename Ptr>
   static certificate_t from_der (const Ptr &data, std::error_code &error)
     noexcept
