@@ -108,6 +108,30 @@ std::string normalized_ip_string (const uint8_t *first, size_t size)
 }
 
 
+std::vector<uint8_t> calculate_digest (
+  const void *data, size_t size,
+  std::vector<uint8_t>(*fn)(const void *, size_t),
+  std::error_code &error) noexcept
+{
+  try
+  {
+    return fn(data, size);
+  }
+
+  // LCOV_EXCL_START
+  catch (const std::system_error &e)
+  {
+    error = e.code();
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  return {};
+  // LCOV_EXCL_STOP
+}
+
+
 } // namespace
 
 
@@ -643,6 +667,25 @@ std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_names(impl_.ref, kSecOIDSubjectAltName, error);
+}
+
+
+std::vector<uint8_t> certificate_t::apply (
+  std::vector<uint8_t>(*fn)(const void *, size_t),
+  std::error_code &error) const noexcept
+{
+  if (impl_.ref)
+  {
+    scoped_ref<CFDataRef> der = ::SecCertificateCopyData(impl_.ref);
+    return calculate_digest(
+      ::CFDataGetBytePtr(der.ref),
+      ::CFDataGetLength(der.ref),
+      fn,
+      error
+    );
+  }
+  error = std::make_error_code(std::errc::bad_address);
+  return {};
 }
 
 
@@ -1203,6 +1246,26 @@ std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_names(impl_.ref, NID_subject_alt_name, error);
+}
+
+
+std::vector<uint8_t> certificate_t::apply (
+  std::vector<uint8_t>(*fn)(const void *, size_t),
+  std::error_code &error) const noexcept
+{
+  if (impl_.ref)
+  {
+    uint8_t der[16 * 1024];
+    if (auto end = to_der(der, der + sizeof(der), error))
+    {
+      return calculate_digest(der, (end - der), fn, error);
+    }
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+  }
+  return {};
 }
 
 
@@ -1771,6 +1834,24 @@ std::vector<std::pair<certificate_t::alt_name, std::string>>
 certificate_t::subject_alt_names (std::error_code &error) const noexcept
 {
   return to_alt_names(impl_.ref, szOID_SUBJECT_ALT_NAME2, error);
+}
+
+
+std::vector<uint8_t> certificate_t::apply (
+  std::vector<uint8_t>(*fn)(const void *, size_t),
+  std::error_code &error) const noexcept
+{
+  if (impl_.ref)
+  {
+    return calculate_digest(
+      impl_.ref->pbCertEncoded,
+      impl_.ref->cbCertEncoded,
+      fn,
+      error
+    );
+  }
+  error = std::make_error_code(std::errc::bad_address);
+  return {};
 }
 
 

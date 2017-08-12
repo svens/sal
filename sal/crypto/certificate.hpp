@@ -8,7 +8,9 @@
 #include <sal/config.hpp>
 #include <sal/crypto/__bits/certificate.hpp>
 #include <sal/crypto/error.hpp>
+#include <sal/crypto/hash.hpp>
 #include <sal/crypto/oid.hpp>
+#include <sal/buf_ptr.hpp>
 #include <sal/time.hpp>
 #include <vector>
 
@@ -197,6 +199,24 @@ public:
 
   /**
    */
+  template <typename Algorithm>
+  std::vector<uint8_t> digest (std::error_code &error) const noexcept
+  {
+    return apply(&digest_fn<Algorithm>, error);
+  }
+
+
+  /**
+   */
+  template <typename Algorithm>
+  std::vector<uint8_t> digest () const
+  {
+    return digest<Algorithm>(throw_on_error("certificate::digest"));
+  }
+
+
+  /**
+   */
   std::vector<uint8_t> serial_number (std::error_code &error) const noexcept;
 
 
@@ -380,6 +400,17 @@ private:
 
   uint8_t *to_der (uint8_t *first, uint8_t *last, std::error_code &error)
     const noexcept;
+
+  template <typename Algorithm>
+  static std::vector<uint8_t> digest_fn (const void *data, size_t size)
+  {
+    return hash_t<Algorithm>::one_shot(make_buf(data, size));
+  }
+
+  std::vector<uint8_t> apply (
+    std::vector<uint8_t>(*fn)(const void *, size_t),
+    std::error_code &error
+  ) const noexcept;
 };
 
 
