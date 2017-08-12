@@ -6,7 +6,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/crypto/__bits/certificate.hpp>
+#include <sal/crypto/__bits/x509.hpp>
 #include <sal/crypto/error.hpp>
 #include <sal/crypto/hash.hpp>
 #include <sal/crypto/oid.hpp>

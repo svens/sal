@@ -1,6 +1,6 @@
 # sources
 list(APPEND sal_sources
-  sal/crypto/__bits/certificate.hpp
+  sal/crypto/__bits/x509.hpp
   sal/crypto/certificate.hpp
   sal/crypto/certificate.cpp
   sal/crypto/error.hpp
