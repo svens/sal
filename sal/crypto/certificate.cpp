@@ -1168,10 +1168,8 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
           auto s = name->d.rfc822Name;
           if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
           {
-            result.emplace_back(
-              certificate_t::alt_name::email,
-              std::string(s->data, s->data + s->length)
-            );
+            auto v = std::string(s->data, s->data + s->length);
+            result.emplace_back(certificate_t::alt_name::email, std::move(v));
           }
           break;
         }
@@ -1181,10 +1179,8 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
           auto s = name->d.dNSName;
           if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
           {
-            result.emplace_back(
-              certificate_t::alt_name::dns,
-              std::string(s->data, s->data + s->length)
-            );
+            auto v = std::string(s->data, s->data + s->length);
+            result.emplace_back(certificate_t::alt_name::dns, std::move(v));
           }
           break;
         }
@@ -1194,10 +1190,8 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
           auto s = name->d.uniformResourceIdentifier;
           if (s && s->type == V_ASN1_IA5STRING && s->data && s->length > 0)
           {
-            result.emplace_back(
-              certificate_t::alt_name::uri,
-              std::string(s->data, s->data + s->length)
-            );
+            auto v = std::string(s->data, s->data + s->length);
+            result.emplace_back(certificate_t::alt_name::uri, std::move(v));
           }
           break;
         }
@@ -1208,10 +1202,8 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
           if (s && s->type == V_ASN1_OCTET_STRING && s->data
             && (s->length == 4 || s->length == 16))
           {
-            result.emplace_back(
-              certificate_t::alt_name::ip,
-              normalized_ip_string(s->data, s->length)
-            );
+            auto v = normalized_ip_string(s->data, s->length);
+            result.emplace_back(certificate_t::alt_name::ip, std::move(v));
           }
           break;
         }
