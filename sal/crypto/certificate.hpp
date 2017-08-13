@@ -7,7 +7,6 @@
 
 #include <sal/config.hpp>
 #include <sal/crypto/__bits/x509.hpp>
-#include <sal/crypto/error.hpp>
 #include <sal/crypto/hash.hpp>
 #include <sal/crypto/oid.hpp>
 #include <sal/buf_ptr.hpp>
@@ -55,11 +54,18 @@ public:
 
   /**
    */
+  static certificate_t from_der (const uint8_t *first, const uint8_t *last,
+    std::error_code &error
+  ) noexcept;
+
+
+  /**
+   */
   template <typename Ptr>
   static certificate_t from_der (const Ptr &data, std::error_code &error)
     noexcept
   {
-    return certificate_t(
+    return from_der(
       reinterpret_cast<const uint8_t *>(data.data()),
       reinterpret_cast<const uint8_t *>(data.data()) + data.size(),
       error
@@ -78,9 +84,23 @@ public:
 
   /**
    */
-  static certificate_t from_pem (const std::string &data,
+  static certificate_t from_pem (const uint8_t *first, const uint8_t *last,
     std::error_code &error
   ) noexcept;
+
+
+  /**
+   */
+  template <typename Ptr>
+  static certificate_t from_pem (const Ptr &data, std::error_code &error)
+    noexcept
+  {
+    return from_pem(
+      reinterpret_cast<const uint8_t *>(data.data()),
+      reinterpret_cast<const uint8_t *>(data.data()) + data.size(),
+      error
+    );
+  }
 
 
   /**
@@ -394,9 +414,9 @@ private:
 
   __bits::certificate_t impl_{};
 
-  certificate_t (const uint8_t *first, const uint8_t *last,
-    std::error_code &error
-  ) noexcept;
+  certificate_t (__bits::certificate_t &&that)
+    : impl_(std::move(that))
+  {}
 
   uint8_t *to_der (uint8_t *first, uint8_t *last, std::error_code &error)
     const noexcept;

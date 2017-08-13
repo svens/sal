@@ -2,7 +2,7 @@
 list(APPEND sal_sources
   sal/__bits/member_assign.hpp
   sal/__bits/platform_sdk.hpp
-  sal/__bits/scoped_ref.hpp
+  sal/__bits/ref.hpp
   sal/assert.hpp
   sal/buf_ptr.hpp
   sal/builtins.hpp

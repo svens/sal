@@ -1,7 +1,7 @@
 #pragma once
 
 #include <sal/config.hpp>
-#include <sal/__bits/scoped_ref.hpp>
+#include <sal/__bits/ref.hpp>
 
 #if __sal_os_darwin //{{{1
   #include <Security/SecCertificate.h>
@@ -22,7 +22,7 @@ namespace crypto { namespace __bits {
 
 #if __sal_os_darwin //{{{1
 
-using certificate_t = scoped_ref<SecCertificateRef>;
+using certificate_t = shared_ref<SecCertificateRef>;
 
 #elif __sal_os_linux //{{{1
 
@@ -41,7 +41,7 @@ inline void dec_ref (X509 *ref) noexcept
   X509_free(ref);
 }
 
-using certificate_t = scoped_ref<X509 *, inc_ref, dec_ref>;
+using certificate_t = shared_ref<X509 *, inc_ref, dec_ref>;
 
 #elif __sal_os_windows //{{{1
 
@@ -55,9 +55,19 @@ inline void dec_ref (PCCERT_CONTEXT ref) noexcept
   (void)::CertFreeCertificateContext(ref);
 }
 
-using certificate_t = scoped_ref<PCCERT_CONTEXT, inc_ref, dec_ref>;
+using certificate_t = shared_ref<PCCERT_CONTEXT, inc_ref, dec_ref>;
 
 #endif //}}}1
+
+
+//
+// Helpers
+//
+
+uint8_t *pem_to_der (
+  const uint8_t *pem_first, const uint8_t *pem_last,
+  uint8_t *der_first, uint8_t *der_last
+) noexcept;
 
 
 }} // namespace crypto::__bits

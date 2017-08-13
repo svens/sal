@@ -28,8 +28,7 @@ struct crypto_certificate
     return sal::decode<sal::base64>(base64);
   }
 
-  static std::string to_armored_pem (const std::string &base64,
-    bool with_suffix = true)
+  static std::string to_pem (const std::string &base64)
   {
     std::string result = "-----BEGIN CERTIFICATE-----\n";
     auto current_line_length = 0U;
@@ -42,10 +41,7 @@ struct crypto_certificate
         current_line_length = 0;
       }
     }
-    if (with_suffix)
-    {
-      result += "\n-----END CERTIFICATE-----\n";
-    }
+    result += "\n-----END CERTIFICATE-----\n";
     return result;
   }
 };
@@ -60,7 +56,7 @@ TEST_F(crypto_certificate, ctor) //{{{1
 
 TEST_F(crypto_certificate, ctor_copy) //{{{1
 {
-  auto a = cert_t::from_pem(root_cert);
+  auto a = cert_t::from_pem(to_pem(root_cert));
   EXPECT_FALSE(a.is_null());
 
   auto b = a;
@@ -75,7 +71,7 @@ TEST_F(crypto_certificate, ctor_copy) //{{{1
 
 TEST_F(crypto_certificate, ctor_move) //{{{1
 {
-  auto a = cert_t::from_pem(root_cert);
+  auto a = cert_t::from_pem(to_pem(root_cert));
   EXPECT_FALSE(a.is_null());
 
   auto b = std::move(a);
@@ -88,10 +84,10 @@ TEST_F(crypto_certificate, ctor_move) //{{{1
 
 TEST_F(crypto_certificate, assign_copy) //{{{1
 {
-  auto a = cert_t::from_pem(root_cert);
+  auto a = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(a.is_null());
 
-  auto b = cert_t::from_pem(intermediate_cert);
+  auto b = cert_t::from_pem(to_pem(intermediate_cert));
   ASSERT_FALSE(b.is_null());
 
   EXPECT_FALSE(a.serial_number().empty());
@@ -110,10 +106,10 @@ TEST_F(crypto_certificate, assign_copy) //{{{1
 
 TEST_F(crypto_certificate, assign_move) //{{{1
 {
-  auto a = cert_t::from_pem(root_cert);
+  auto a = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(a.is_null());
 
-  auto b = cert_t::from_pem(intermediate_cert);
+  auto b = cert_t::from_pem(to_pem(intermediate_cert));
   ASSERT_FALSE(b.is_null());
 
   EXPECT_FALSE(a.serial_number().empty());
@@ -132,7 +128,7 @@ TEST_F(crypto_certificate, assign_move) //{{{1
 
 TEST_F(crypto_certificate, swap) //{{{1
 {
-  cert_t a, b = cert_t::from_pem(root_cert);
+  cert_t a, b = cert_t::from_pem(to_pem(root_cert));
   EXPECT_TRUE(a.is_null());
   EXPECT_FALSE(b.is_null());
 
@@ -144,7 +140,8 @@ TEST_F(crypto_certificate, swap) //{{{1
 
 TEST_F(crypto_certificate, equals_true) //{{{1
 {
-  auto a = cert_t::from_pem(root_cert), b = cert_t::from_pem(root_cert);
+  auto a = cert_t::from_pem(to_pem(root_cert)),
+       b = cert_t::from_pem(to_pem(root_cert));
   EXPECT_TRUE(a == b);
   EXPECT_FALSE(a != b);
 }
@@ -152,7 +149,8 @@ TEST_F(crypto_certificate, equals_true) //{{{1
 
 TEST_F(crypto_certificate, equals_false) //{{{1
 {
-  auto a = cert_t::from_pem(root_cert), b = cert_t::from_pem(leaf_cert);
+  auto a = cert_t::from_pem(to_pem(root_cert)),
+       b = cert_t::from_pem(to_pem(leaf_cert));
   EXPECT_TRUE(a != b);
   EXPECT_FALSE(a == b);
 }
@@ -160,7 +158,7 @@ TEST_F(crypto_certificate, equals_false) //{{{1
 
 TEST_F(crypto_certificate, equals_one_null) //{{{1
 {
-  cert_t a = cert_t::from_pem(root_cert), b;
+  cert_t a = cert_t::from_pem(to_pem(root_cert)), b;
 
   EXPECT_TRUE(a != b);
   EXPECT_FALSE(a == b);
@@ -180,7 +178,7 @@ TEST_F(crypto_certificate, equals_both_null) //{{{1
 
 TEST_F(crypto_certificate, version) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(!cert);
   EXPECT_EQ(3, cert.version());
 }
@@ -212,7 +210,7 @@ TEST_F(crypto_certificate, serial_number) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -296,7 +294,7 @@ TEST_F(crypto_certificate, digest) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -357,7 +355,7 @@ TEST_F(crypto_certificate, authority_key_identifier) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(!cert);
 
     std::error_code error;
@@ -388,7 +386,7 @@ TEST_F(crypto_certificate, authority_key_identifier_from_null) //{{{1
 
 TEST_F(crypto_certificate, authority_key_identifier_none) //{{{1
 {
-  cert_t cert = cert_t::from_pem(leaf_cert_without_key_id);
+  cert_t cert = cert_t::from_pem(to_pem(leaf_cert_without_key_id));
   ASSERT_FALSE(!cert);
 
   std::error_code error;
@@ -427,7 +425,7 @@ TEST_F(crypto_certificate, subject_key_identifier) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(!cert);
 
     std::error_code error;
@@ -458,7 +456,7 @@ TEST_F(crypto_certificate, subject_key_identifier_from_null) //{{{1
 
 TEST_F(crypto_certificate, subject_key_identifier_none) //{{{1
 {
-  cert_t cert = cert_t::from_pem(leaf_cert_without_key_id);
+  cert_t cert = cert_t::from_pem(to_pem(leaf_cert_without_key_id));
   ASSERT_FALSE(!cert);
 
   std::error_code error;
@@ -480,9 +478,9 @@ TEST_F(crypto_certificate, not_before) //{{{1
     leaf_cert,
   };
 
-  for (const auto &pem: certs)
+  for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(pem);
+    auto cert = cert_t::from_pem(to_pem(cert_pem));
     ASSERT_FALSE(!cert);
 
     std::error_code error;
@@ -525,9 +523,9 @@ TEST_F(crypto_certificate, not_after) //{{{1
     leaf_cert,
   };
 
-  for (const auto &pem: certs)
+  for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(pem);
+    auto cert = cert_t::from_pem(to_pem(cert_pem));
     ASSERT_FALSE(!cert);
 
     std::error_code error;
@@ -563,7 +561,7 @@ TEST_F(crypto_certificate, not_after_null) //{{{1
 
 TEST_F(crypto_certificate, not_expired) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(!cert);
 
   // now
@@ -596,7 +594,7 @@ TEST_F(crypto_certificate, not_expired_null) //{{{1
 
 TEST_F(crypto_certificate, not_expired_past) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(!cert);
 
   // 30 years in past
@@ -608,7 +606,7 @@ TEST_F(crypto_certificate, not_expired_past) //{{{1
 
 TEST_F(crypto_certificate, not_expired_future) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(!cert);
 
   // 30 years in future
@@ -629,10 +627,10 @@ TEST_F(crypto_certificate, issued_by) //{{{1
 
   for (const auto &pair: certs)
   {
-    auto this_cert = cert_t::from_pem(pair.first);
+    auto this_cert = cert_t::from_pem(to_pem(pair.first));
     ASSERT_FALSE(this_cert.is_null());
 
-    auto issuer_cert = cert_t::from_pem(pair.second);
+    auto issuer_cert = cert_t::from_pem(to_pem(pair.second));
     ASSERT_FALSE(issuer_cert.is_null());
 
     std::error_code error;
@@ -653,13 +651,13 @@ TEST_F(crypto_certificate, issued_by_leaf) //{{{1
     leaf_cert,
   };
 
+  auto issuer_cert = cert_t::from_pem(to_pem(leaf_cert));
+  ASSERT_FALSE(issuer_cert.is_null());
+
   for (const auto &cert_pem: certs)
   {
-    auto this_cert = cert_t::from_pem(cert_pem);
+    auto this_cert = cert_t::from_pem(to_pem(cert_pem));
     ASSERT_FALSE(this_cert.is_null());
-
-    auto issuer_cert = cert_t::from_pem(leaf_cert);
-    ASSERT_FALSE(issuer_cert.is_null());
 
     std::error_code error;
     EXPECT_FALSE(this_cert.issued_by(issuer_cert, error));
@@ -672,7 +670,7 @@ TEST_F(crypto_certificate, issued_by_leaf) //{{{1
 
 TEST_F(crypto_certificate, issued_by_null_cert) //{{{1
 {
-  cert_t this_cert, issuer_cert = cert_t::from_pem(root_cert);
+  cert_t this_cert, issuer_cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_TRUE(this_cert.is_null());
   ASSERT_FALSE(issuer_cert.is_null());
 
@@ -689,7 +687,7 @@ TEST_F(crypto_certificate, issued_by_null_cert) //{{{1
 
 TEST_F(crypto_certificate, issued_by_null_issuer) //{{{1
 {
-  cert_t this_cert = cert_t::from_pem(root_cert), issuer_cert;
+  cert_t this_cert = cert_t::from_pem(to_pem(root_cert)), issuer_cert;
   ASSERT_FALSE(this_cert.is_null());
   ASSERT_TRUE(issuer_cert.is_null());
 
@@ -715,7 +713,7 @@ TEST_F(crypto_certificate, is_self_signed) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -778,7 +776,7 @@ TEST_F(crypto_certificate, issuer) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -818,7 +816,7 @@ TEST_F(crypto_certificate, issuer_with_oid) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -849,7 +847,7 @@ TEST_F(crypto_certificate, issuer_with_oid_from_null) //{{{1
 
 TEST_F(crypto_certificate, issuer_with_oid_missing) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(cert.is_null());
 
   std::error_code error;
@@ -865,7 +863,7 @@ TEST_F(crypto_certificate, issuer_with_oid_missing) //{{{1
 
 TEST_F(crypto_certificate, issuer_with_oid_invalid) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(cert.is_null());
 
   std::error_code error;
@@ -914,7 +912,7 @@ TEST_F(crypto_certificate, subject) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -954,7 +952,7 @@ TEST_F(crypto_certificate, subject_with_oid) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -985,7 +983,7 @@ TEST_F(crypto_certificate, subject_with_oid_from_null) //{{{1
 
 TEST_F(crypto_certificate, subject_with_oid_missing) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(cert.is_null());
 
   std::error_code error;
@@ -1001,7 +999,7 @@ TEST_F(crypto_certificate, subject_with_oid_missing) //{{{1
 
 TEST_F(crypto_certificate, subject_with_oid_invalid) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(cert.is_null());
 
   std::error_code error;
@@ -1035,7 +1033,7 @@ TEST_F(crypto_certificate, issuer_alt_names) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -1088,7 +1086,7 @@ TEST_F(crypto_certificate, subject_alt_names) //{{{1
 
   for (const auto &cert_pem: certs)
   {
-    auto cert = cert_t::from_pem(cert_pem.first);
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
     ASSERT_FALSE(cert.is_null());
 
     std::error_code error;
@@ -1119,7 +1117,7 @@ TEST_F(crypto_certificate, subject_alt_name_from_null) //{{{1
 
 TEST_F(crypto_certificate, to_der) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
 
   uint8_t data[8192];
   std::error_code error;
@@ -1156,7 +1154,7 @@ TEST_F(crypto_certificate, to_der_from_null) //{{{1
 
 TEST_F(crypto_certificate, to_der_result_exact_range) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(cert.is_null());
 
   uint8_t data[8192];
@@ -1173,7 +1171,7 @@ TEST_F(crypto_certificate, to_der_result_exact_range) //{{{1
 
 TEST_F(crypto_certificate, to_der_result_out_of_range) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
   ASSERT_FALSE(cert.is_null());
 
   uint8_t data[1];
@@ -1190,7 +1188,7 @@ TEST_F(crypto_certificate, to_der_result_out_of_range) //{{{1
 
 TEST_F(crypto_certificate, to_der_vector) //{{{1
 {
-  auto cert = cert_t::from_pem(root_cert);
+  auto cert = cert_t::from_pem(to_pem(root_cert));
 
   std::error_code error;
   auto der = cert.to_der(error);
@@ -1238,7 +1236,7 @@ TEST_F(crypto_certificate, from_der_empty_data) //{{{1
 
   std::error_code error;
   auto cert = cert_t::from_der(data, error);
-  ASSERT_EQ(std::errc::invalid_argument, error);
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
   EXPECT_TRUE(cert.is_null());
 
   EXPECT_THROW(
@@ -1255,7 +1253,7 @@ TEST_F(crypto_certificate, from_der_insufficient_data) //{{{1
 
   std::error_code error;
   auto cert = cert_t::from_der(data, error);
-  ASSERT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
   EXPECT_TRUE(cert.is_null());
 
   EXPECT_THROW(
@@ -1272,7 +1270,7 @@ TEST_F(crypto_certificate, from_der_invalid_data) //{{{1
 
   std::error_code error;
   auto cert = cert_t::from_der(data, error);
-  ASSERT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
   EXPECT_TRUE(cert.is_null());
 
   EXPECT_THROW(
@@ -1287,11 +1285,11 @@ TEST_F(crypto_certificate, from_pem) //{{{1
   auto data = root_cert;
 
   std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
+  auto cert = cert_t::from_pem(to_pem(data), error);
   ASSERT_TRUE(!error) << error.message() << " (" << error.value() << ')';
   EXPECT_FALSE(cert.is_null());
 
-  EXPECT_NO_THROW(cert_t::from_pem(data));
+  EXPECT_NO_THROW(cert_t::from_pem(to_pem(data)));
 }
 
 
@@ -1315,10 +1313,11 @@ TEST_F(crypto_certificate, from_pem_insufficient_data) //{{{1
 {
   auto data = root_cert;
   data.resize(data.size() / 2);
+  data = to_pem(data);
 
   std::error_code error;
   auto cert = cert_t::from_pem(data, error);
-  ASSERT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
   EXPECT_TRUE(cert.is_null());
 
   EXPECT_THROW(
@@ -1330,171 +1329,12 @@ TEST_F(crypto_certificate, from_pem_insufficient_data) //{{{1
 
 TEST_F(crypto_certificate, from_pem_invalid_data) //{{{1
 {
-  auto data = root_cert;
+  auto data = to_pem(root_cert);
   data[0] = 'X';
 
   std::error_code error;
   auto cert = cert_t::from_pem(data, error);
-  ASSERT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
-  EXPECT_TRUE(cert.is_null());
-
-  EXPECT_THROW(
-    cert_t::from_pem(data),
-    std::system_error
-  );
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_armor) //{{{1
-{
-  auto data = to_armored_pem(root_cert);
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_TRUE(!error) << error.message() << " (" << error.value() << ')';
-  EXPECT_FALSE(cert.is_null());
-
-  EXPECT_NO_THROW(cert_t::from_pem(data));
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_armor_empty_data) //{{{1
-{
-  std::string data;
-  data = to_armored_pem(data);
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_EQ(std::errc::invalid_argument, error);
-  EXPECT_TRUE(cert.is_null());
-
-  EXPECT_THROW(
-    cert_t::from_pem(data),
-    std::system_error
-  );
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_armor_insufficient_data) //{{{1
-{
-  auto data = root_cert;
-  data.resize(data.size() / 2);
-  data = to_armored_pem(data);
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
-  EXPECT_TRUE(cert.is_null());
-
-  EXPECT_THROW(
-    cert_t::from_pem(data),
-    std::system_error
-  );
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_armor_invalid_data) //{{{1
-{
-  auto data = root_cert;
-  data[0] = 'X';
-  data = to_armored_pem(data);
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
-  EXPECT_TRUE(cert.is_null());
-
-  EXPECT_THROW(
-    cert_t::from_pem(data),
-    std::system_error
-  );
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_armor_invalid_data_length) //{{{1
-{
-  auto data = 'A' + root_cert;
-  data = to_armored_pem(data);
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_EQ(std::errc::message_size, error) << error.message();
-  EXPECT_TRUE(cert.is_null());
-
-  EXPECT_THROW(
-    cert_t::from_pem(data),
-    std::system_error
-  );
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_armor_invalid_prefix) //{{{1
-{
-  auto data = case_name + to_armored_pem(root_cert);
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_TRUE(!error) << error.message();
-  EXPECT_FALSE(cert.is_null());
-
-  EXPECT_NO_THROW(
-    cert_t::from_pem(data)
-  );
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_armor_invalid_suffix) //{{{1
-{
-  auto data = to_armored_pem(root_cert) + case_name;
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_TRUE(!error) << error.message();
-  EXPECT_FALSE(cert.is_null());
-
-  EXPECT_NO_THROW(
-    cert_t::from_pem(data)
-  );
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_armor_missing_suffix) //{{{1
-{
-  auto data = to_armored_pem(root_cert, false);
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_TRUE(!error) << error.message();
-  EXPECT_FALSE(cert.is_null());
-
-  EXPECT_NO_THROW(
-    cert_t::from_pem(data)
-  );
-}
-
-
-TEST_F(crypto_certificate, from_pem_with_too_big_data) //{{{1
-{
-  auto data = root_cert;
-
-  // use internal knowledge here: implementation uses 8kB buffer, let's create
-  // here bigger data (remove padding, multiply data, restore padding)
-  while (data.back() == '=')
-  {
-    data.pop_back();
-  }
-  while (data.size() < 32 * 1024)
-  {
-    data = data + data;
-  }
-  while (data.size() % 4 != 0)
-  {
-    data.push_back('=');
-  }
-
-  std::error_code error;
-  auto cert = cert_t::from_pem(data, error);
-  ASSERT_EQ(std::errc::no_buffer_space, error) << error.message();
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
   EXPECT_TRUE(cert.is_null());
 
   EXPECT_THROW(

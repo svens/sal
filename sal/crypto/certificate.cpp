@@ -1,8 +1,6 @@
 #include <sal/crypto/certificate.hpp>
 #include <sal/net/ip/__bits/inet.hpp>
-#include <sal/encode.hpp>
-#include <sstream>
-
+#include <cstdlib>
 
 #if __sal_os_darwin //{{{1
   #if !defined(__apple_build_version__)
@@ -24,71 +22,6 @@ namespace crypto {
 
 
 namespace {
-
-
-std::string unwrap (const std::string &pem)
-{
-  static constexpr char
-    BEGIN[] = "-----BEGIN",
-    END[] = "-----END";
-
-  auto envelope_begin = pem.find(BEGIN, 0, sizeof(BEGIN) - 1);
-  if (envelope_begin == pem.npos)
-  {
-    // not armored at all
-    return pem;
-  }
-
-  // extract data since BEGIN
-  auto line = pem.substr(envelope_begin, pem.npos);
-  std::istringstream iss{line};
-
-  // ignore BEGIN and read until END
-  iss.ignore(pem.size(), '\n');
-  std::string result;
-  while (std::getline(iss, line))
-  {
-    if (line.find(END, 0, sizeof(END) - 1) == 0)
-    {
-      break;
-    }
-    result += line;
-  }
-
-  return result;
-}
-
-
-uint8_t *pem_to_der (const std::string &pem, uint8_t *buf, size_t buf_size,
-  std::error_code &error) noexcept
-{
-  try
-  {
-    auto unwrapped_pem = unwrap(pem);
-
-    auto decoded_size = max_decoded_size<base64>(unwrapped_pem, error);
-    if (error)
-    {
-      return nullptr;
-    }
-
-    if (decoded_size > buf_size)
-    {
-      error = std::make_error_code(std::errc::no_buffer_space);
-      return nullptr;
-    }
-
-    return decode<base64>(unwrapped_pem, buf, error);
-  }
-
-  // LCOV_EXCL_START
-  catch (const std::bad_alloc &)
-  {
-    error = std::make_error_code(std::errc::not_enough_memory);
-    return {};
-  }
-  // LCOV_EXCL_STOP
-}
 
 
 std::string normalized_ip_string (const uint8_t *first, size_t size)
@@ -135,15 +68,16 @@ std::vector<uint8_t> calculate_digest (
 } // namespace
 
 
-certificate_t certificate_t::from_pem (const std::string &data,
+certificate_t certificate_t::from_pem (const uint8_t *first, const uint8_t *last,
   std::error_code &error) noexcept
 {
-  uint8_t der[8192];
-  if (auto end = pem_to_der(data, der, sizeof(der), error))
+  uint8_t der[16 * 1024];
+  if (auto der_end = __bits::pem_to_der(first, last, der, der + sizeof(der)))
   {
-    return certificate_t(der, end, error);
+    return from_der(der, der_end, error);
   }
-  return certificate_t{};
+  error = std::make_error_code(std::errc::invalid_argument);
+  return {};
 }
 
 
@@ -170,16 +104,16 @@ inline const char *c_str (CFTypeRef s, char (&buf)[N]) noexcept
 }
 
 
-scoped_ref<CFArrayRef> copy_values (SecCertificateRef cert, CFTypeRef oid,
+unique_ref<CFArrayRef> copy_values (SecCertificateRef cert, CFTypeRef oid,
   std::error_code &error) noexcept
 {
   if (cert)
   {
-    scoped_ref<CFArrayRef> keys = ::CFArrayCreate(nullptr,
+    unique_ref<CFArrayRef> keys = ::CFArrayCreate(nullptr,
       &oid, 1,
       &kCFTypeArrayCallBacks
     );
-    scoped_ref<CFDictionaryRef> dir = ::SecCertificateCopyValues(cert,
+    unique_ref<CFDictionaryRef> dir = ::SecCertificateCopyValues(cert,
       keys.ref,
       nullptr
     );
@@ -251,7 +185,7 @@ auto to_distinguished_name (SecCertificateRef cert,
   {
     try
     {
-      scoped_ref<CFStringRef> filter = ::CFStringCreateWithBytesNoCopy(
+      unique_ref<CFStringRef> filter = ::CFStringCreateWithBytesNoCopy(
         nullptr,
         reinterpret_cast<const UInt8 *>(filter_oid.data()),
         filter_oid.size(),
@@ -338,31 +272,25 @@ std::vector<uint8_t> key_identifier (SecCertificateRef cert, CFTypeRef oid,
 } // namespace
 
 
-certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
+certificate_t certificate_t::from_der (const uint8_t *first, const uint8_t *last,
   std::error_code &error) noexcept
 {
-  if (last <= first)
-  {
-    error = std::make_error_code(std::errc::invalid_argument);
-    return;
-  }
-
-  scoped_ref<CFDataRef> data = ::CFDataCreateWithBytesNoCopy(
+  unique_ref<CFDataRef> data = ::CFDataCreateWithBytesNoCopy(
     nullptr,
     first,
     last - first,
     kCFAllocatorNull
   );
-
-  impl_.reset(::SecCertificateCreateWithData(nullptr, data.ref));
-  if (impl_)
+  auto cert = ::SecCertificateCreateWithData(nullptr, data.ref);
+  if (cert)
   {
     error.clear();
   }
   else
   {
-    error = std::make_error_code(std::errc::illegal_byte_sequence);
+    error = std::make_error_code(std::errc::invalid_argument);
   }
+  return __bits::certificate_t{cert};
 }
 
 
@@ -383,7 +311,7 @@ bool certificate_t::operator== (const certificate_t &that) const noexcept
 uint8_t *certificate_t::to_der (uint8_t *first, uint8_t *last,
   std::error_code &error) const noexcept
 {
-  if (scoped_ref<CFDataRef> data = ::SecCertificateCopyData(impl_.ref))
+  if (unique_ref<CFDataRef> data = ::SecCertificateCopyData(impl_.ref))
   {
     auto size = ::CFDataGetLength(data.ref);
     if (last - first >= size)
@@ -405,7 +333,7 @@ uint8_t *certificate_t::to_der (uint8_t *first, uint8_t *last,
 std::vector<uint8_t> certificate_t::to_der (std::error_code &error)
   const noexcept
 {
-  if (scoped_ref<CFDataRef> data = ::SecCertificateCopyData(impl_.ref))
+  if (unique_ref<CFDataRef> data = ::SecCertificateCopyData(impl_.ref))
   {
     try
     {
@@ -434,7 +362,7 @@ int certificate_t::version () const noexcept
   if (auto value = copy_values(impl_.ref, kSecOIDX509V1Version, ignored))
   {
     char buf[16];
-    return atoi(c_str(value.ref, buf));
+    return std::atoi(c_str(value.ref, buf));
   }
   return 0;
 }
@@ -461,7 +389,7 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     return {};
   }
 
-  scoped_ref<CFDataRef> value = ::SecCertificateCopySerialNumber(
+  unique_ref<CFDataRef> value = ::SecCertificateCopySerialNumber(
     impl_.ref,
     nullptr
   );
@@ -516,12 +444,12 @@ bool certificate_t::issued_by (const certificate_t &issuer,
   }
   error.clear();
 
-  scoped_ref<CFDataRef> issuer_cert_subject_data =
+  unique_ref<CFDataRef> issuer_cert_subject_data =
     ::SecCertificateCopyNormalizedSubjectSequence(
       issuer.impl_.ref
     );
 
-  scoped_ref<CFDataRef> this_cert_issuer_data =
+  unique_ref<CFDataRef> this_cert_issuer_data =
     ::SecCertificateCopyNormalizedIssuerSequence(
       impl_.ref
     );
@@ -676,7 +604,7 @@ std::vector<uint8_t> certificate_t::apply (
 {
   if (impl_.ref)
   {
-    scoped_ref<CFDataRef> der = ::SecCertificateCopyData(impl_.ref);
+    unique_ref<CFDataRef> der = ::SecCertificateCopyData(impl_.ref);
     return calculate_digest(
       ::CFDataGetBytePtr(der.ref),
       ::CFDataGetLength(der.ref),
@@ -692,24 +620,19 @@ std::vector<uint8_t> certificate_t::apply (
 #elif __sal_os_linux //{{{1
 
 
-certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
+certificate_t certificate_t::from_der (const uint8_t *first, const uint8_t *last,
   std::error_code &error) noexcept
 {
-  if (last <= first)
-  {
-    error = std::make_error_code(std::errc::invalid_argument);
-    return;
-  }
-
-  impl_ = d2i_X509(nullptr, &first, (last - first));
-  if (impl_)
+  auto cert = d2i_X509(nullptr, &first, (last - first));
+  if (cert)
   {
     error.clear();
   }
   else
   {
-    error = std::make_error_code(std::errc::illegal_byte_sequence);
+    error = std::make_error_code(std::errc::invalid_argument);
   }
+  return __bits::certificate_t{cert};
 }
 
 
@@ -791,7 +714,7 @@ sal::time_t to_time (const ASN1_TIME *time, std::error_code &error) noexcept
 {
   if (ASN1_TIME_check(const_cast<ASN1_TIME *>(time)) == 0)
   {
-    error = std::make_error_code(std::errc::illegal_byte_sequence);
+    error = std::make_error_code(std::errc::invalid_argument);
     return {};
   }
 
@@ -1264,30 +1187,23 @@ std::vector<uint8_t> certificate_t::apply (
 #elif __sal_os_windows // {{{1
 
 
-certificate_t::certificate_t (const uint8_t *first, const uint8_t *last,
+certificate_t certificate_t::from_der (const uint8_t *first, const uint8_t *last,
   std::error_code &error) noexcept
 {
-  if (last <= first)
-  {
-    error = std::make_error_code(std::errc::invalid_argument);
-    return;
-  }
-
-  impl_.reset(
-    ::CertCreateCertificateContext(
-      X509_ASN_ENCODING,
-      first,
-      static_cast<DWORD>(last - first)
-    )
+  auto cert = ::CertCreateCertificateContext(
+    X509_ASN_ENCODING,
+    first,
+    static_cast<DWORD>(last - first)
   );
-  if (impl_)
+  if (cert)
   {
     error.clear();
   }
   else
   {
-    error = std::make_error_code(std::errc::illegal_byte_sequence);
+    error = std::make_error_code(std::errc::invalid_argument);
   }
+  return __bits::certificate_t{cert};
 }
 
 
@@ -1381,7 +1297,7 @@ sal::time_t to_time (const FILETIME &time, std::error_code &error) noexcept
     return sal::clock_t::from_time_t(mktime(&tm));
   }
 
-  error = std::make_error_code(std::errc::illegal_byte_sequence);
+  error = std::make_error_code(std::errc::invalid_argument);
   return {};
 }
 

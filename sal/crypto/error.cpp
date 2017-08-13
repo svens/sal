@@ -2,7 +2,7 @@
 #include <sal/crypto/error.hpp>
 
 #if __sal_os_darwin // {{{1
-  #include <sal/__bits/scoped_ref.hpp>
+  #include <sal/__bits/ref.hpp>
   #include <Security/SecBase.h>
   #include <CoreFoundation/CFString.h>
 #endif // }}}1
@@ -28,7 +28,7 @@ class category_impl_t
 
   std::string message (int value) const final override
   {
-    if (scoped_ref<CFStringRef> s = ::SecCopyErrorMessageString(value, nullptr))
+    if (unique_ref<CFStringRef> s = ::SecCopyErrorMessageString(value, nullptr))
     {
       static constexpr auto encoding = kCFStringEncodingUTF8;
 

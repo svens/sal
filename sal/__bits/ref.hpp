@@ -59,17 +59,18 @@ template <typename T,
   __bits::native_ref<T>(*IncRef)(__bits::native_ref<T>) = __bits::inc_ref<T>,
   void(*DecRef)(__bits::native_ref<T>) = __bits::dec_ref<T>
 >
-struct scoped_ref
+struct shared_ref
 {
-  T ref{};
+  static constexpr T null{};
+  T ref = null;
 
-  scoped_ref () = default;
+  shared_ref () = default;
 
-  scoped_ref (T ref) noexcept
+  shared_ref (T ref) noexcept
     : ref(ref)
   {}
 
-  scoped_ref (const scoped_ref &that) noexcept
+  shared_ref (const shared_ref &that) noexcept
     : ref(that.ref)
   {
     if (ref)
@@ -78,27 +79,27 @@ struct scoped_ref
     }
   }
 
-  scoped_ref &operator= (const scoped_ref &that) noexcept
+  shared_ref &operator= (const shared_ref &that) noexcept
   {
     auto copy(that);
     swap(copy);
     return *this;
   }
 
-  scoped_ref (scoped_ref &&that) noexcept
+  shared_ref (shared_ref &&that) noexcept
     : ref(that.ref)
   {
-    that.ref = nullptr;
+    that.ref = null;
   }
 
-  scoped_ref &operator= (scoped_ref &&that) noexcept
+  shared_ref &operator= (shared_ref &&that) noexcept
   {
     auto tmp(std::move(that));
     swap(tmp);
     return *this;
   }
 
-  ~scoped_ref () noexcept
+  ~shared_ref () noexcept
   {
     if (ref)
     {
@@ -106,7 +107,7 @@ struct scoped_ref
     }
   }
 
-  void reset (T that = nullptr) noexcept
+  void reset (T that = null) noexcept
   {
     auto tmp(std::move(*this));
     ref = that;
@@ -115,11 +116,11 @@ struct scoped_ref
   T release () noexcept
   {
     auto result = ref;
-    ref = nullptr;
+    ref = null;
     return result;
   }
 
-  void swap (scoped_ref &that) noexcept
+  void swap (shared_ref &that) noexcept
   {
     using std::swap;
     swap(ref, that.ref);
@@ -127,12 +128,81 @@ struct scoped_ref
 
   bool is_null () const noexcept
   {
-    return ref == nullptr;
+    return ref == null;
   }
 
   explicit operator bool () const noexcept
   {
-    return ref != nullptr;
+    return ref != null;
+  }
+};
+
+
+template <typename T,
+  void(*DecRef)(__bits::native_ref<T>) = __bits::dec_ref<T>
+>
+struct unique_ref
+{
+  static constexpr T null{};
+  T ref = null;
+
+  unique_ref () = default;
+
+  unique_ref (T ref) noexcept
+    : ref(ref)
+  {}
+
+  unique_ref (const unique_ref &that) noexcept = delete;
+  unique_ref &operator= (const unique_ref &that) noexcept = delete;
+
+  unique_ref (unique_ref &&that) noexcept
+    : ref(that.ref)
+  {
+    that.ref = null;
+  }
+
+  unique_ref &operator= (unique_ref &&that) noexcept
+  {
+    auto tmp(std::move(that));
+    swap(tmp);
+    return *this;
+  }
+
+  ~unique_ref () noexcept
+  {
+    if (ref)
+    {
+      DecRef(ref);
+    }
+  }
+
+  void reset (T that = null) noexcept
+  {
+    auto tmp(std::move(*this));
+    ref = that;
+  }
+
+  T release () noexcept
+  {
+    auto result = ref;
+    ref = null;
+    return result;
+  }
+
+  void swap (unique_ref &that) noexcept
+  {
+    using std::swap;
+    swap(ref, that.ref);
+  }
+
+  bool is_null () const noexcept
+  {
+    return ref == null;
+  }
+
+  explicit operator bool () const noexcept
+  {
+    return ref != null;
   }
 };
 
