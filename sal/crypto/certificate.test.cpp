@@ -1374,10 +1374,119 @@ TEST_F(crypto_certificate, from_pem_insufficient_data) //{{{1
 }
 
 
-TEST_F(crypto_certificate, from_pem_invalid_data) //{{{1
+TEST_F(crypto_certificate, from_pem_invalid_envelope) //{{{1
 {
   auto data = to_pem(root_cert);
   data[0] = 'X';
+
+  std::error_code error;
+  auto cert = cert_t::from_pem(data, error);
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
+  EXPECT_TRUE(cert.is_null());
+
+  EXPECT_THROW(
+    cert_t::from_pem(data),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, from_pem_only_header) //{{{1
+{
+  std::string data = "-----BEGIN CERTIFICATE-----\n";
+
+  std::error_code error;
+  auto cert = cert_t::from_pem(data, error);
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
+  EXPECT_TRUE(cert.is_null());
+
+  EXPECT_THROW(
+    cert_t::from_pem(data),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, from_pem_without_footer) //{{{1
+{
+  auto data = to_pem(root_cert);
+  auto footer = data.find("-----END");
+  ASSERT_NE(data.npos, footer);
+  data.erase(footer);
+
+  std::error_code error;
+  auto cert = cert_t::from_pem(data, error);
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
+  EXPECT_TRUE(cert.is_null());
+
+  EXPECT_THROW(
+    cert_t::from_pem(data),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, from_pem_only_envelope) //{{{1
+{
+  std::string data =
+    "-----BEGIN CERTIFICATE-----\n"
+    "-----END CERTIFICATE-----";
+
+  std::error_code error;
+  auto cert = cert_t::from_pem(data, error);
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
+  EXPECT_TRUE(cert.is_null());
+
+  EXPECT_THROW(
+    cert_t::from_pem(data),
+    std::system_error
+  );
+}
+
+TEST_F(crypto_certificate, from_pem_partial_envelope_without_data) //{{{1
+{
+  std::string data =
+    "-----BEGIN"
+    "-----END";
+
+  std::error_code error;
+  auto cert = cert_t::from_pem(data, error);
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
+  EXPECT_TRUE(cert.is_null());
+
+  EXPECT_THROW(
+    cert_t::from_pem(data),
+    std::system_error
+  );
+}
+
+
+
+TEST_F(crypto_certificate, from_pem_invalid_data) //{{{1
+{
+  auto data = to_pem(root_cert + 'X');
+
+  std::error_code error;
+  auto cert = cert_t::from_pem(data, error);
+  ASSERT_EQ(std::errc::invalid_argument, error) << error.message();
+  EXPECT_TRUE(cert.is_null());
+
+  EXPECT_THROW(
+    cert_t::from_pem(data),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, from_pem_too_much_data) //{{{1
+{
+  // using internal knowledge: max 16kB PEM is accepted
+  auto raw_data = to_der(root_cert);
+  while (raw_data.size() <= 16 * 1024)
+  {
+    raw_data.insert(raw_data.end(), raw_data.begin(), raw_data.end());
+  }
+  auto data = to_pem(sal::encode<sal::base64>(raw_data));
 
   std::error_code error;
   auto cert = cert_t::from_pem(data, error);
