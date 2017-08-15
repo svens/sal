@@ -4,8 +4,14 @@
 #include <sal/__bits/ref.hpp>
 
 #if __sal_os_darwin //{{{1
+  #if !defined(__apple_build_version__)
+    #define availability(...) /**/
+  #endif
   #include <Security/SecCertificate.h>
+  #include <Security/SecKey.h>
+  #undef availability
 #elif __sal_os_linux //{{{1
+  #include <openssl/evp.h>
   #include <openssl/x509.h>
 #elif __sal_os_windows //{{{1
   #include <windows.h>
@@ -23,6 +29,8 @@ namespace crypto { namespace __bits {
 #if __sal_os_darwin //{{{1
 
 using certificate_t = shared_ref<SecCertificateRef>;
+using public_key_t = unique_ref<SecKeyRef>;
+using private_key_t = unique_ref<SecKeyRef>;
 
 #elif __sal_os_linux //{{{1
 
@@ -43,6 +51,13 @@ inline void dec_ref (X509 *ref) noexcept
 
 using certificate_t = shared_ref<X509 *, inc_ref, dec_ref>;
 
+inline void dec_ref (EVP_PKEY *ref) noexcept
+{
+  EVP_PKEY_free(ref);
+}
+
+using public_key_t = unique_ref<EVP_PKEY *, dec_ref>;
+
 #elif __sal_os_windows //{{{1
 
 inline PCCERT_CONTEXT inc_ref (PCCERT_CONTEXT ref) noexcept
@@ -56,6 +71,13 @@ inline void dec_ref (PCCERT_CONTEXT ref) noexcept
 }
 
 using certificate_t = shared_ref<PCCERT_CONTEXT, inc_ref, dec_ref>;
+
+inline void dec_ref (BCRYPT_KEY_HANDLE ref) noexcept
+{
+  (void)::BCryptDestroyKey(ref);
+}
+
+using public_key_t = unique_ref<BCRYPT_KEY_HANDLE, dec_ref>;
 
 #endif //}}}1
 

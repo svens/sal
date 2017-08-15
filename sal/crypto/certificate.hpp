@@ -8,6 +8,7 @@
 #include <sal/config.hpp>
 #include <sal/crypto/__bits/x509.hpp>
 #include <sal/crypto/hash.hpp>
+#include <sal/crypto/key.hpp>
 #include <sal/crypto/oid.hpp>
 #include <sal/buf_ptr.hpp>
 #include <sal/time.hpp>
@@ -407,6 +408,19 @@ public:
   std::vector<std::pair<alt_name, std::string>> subject_alt_names () const
   {
     return subject_alt_names(throw_on_error("certificate::subject_alt_names"));
+  }
+
+
+  /**
+   */
+  public_key_t public_key (std::error_code &error) const noexcept;
+
+
+  /**
+   */
+  public_key_t public_key () const
+  {
+    return public_key(throw_on_error("certificate::public_key"));
   }
 
 

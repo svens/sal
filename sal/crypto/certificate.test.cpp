@@ -1115,6 +1115,53 @@ TEST_F(crypto_certificate, subject_alt_name_from_null) //{{{1
 }
 
 
+TEST_F(crypto_certificate, public_key) //{{{1
+{
+  const std::pair<std::string, std::vector<uint8_t>> certs[] =
+  {
+    { root_cert,
+      { }
+    },
+    { intermediate_cert,
+      { }
+    },
+    { leaf_cert,
+      { }
+    },
+  };
+
+  for (const auto &cert_pem: certs)
+  {
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
+    ASSERT_FALSE(cert.is_null());
+
+    std::error_code error;
+    auto key = cert.public_key(error);
+    ASSERT_TRUE(!error);
+    ASSERT_FALSE(!key);
+
+    EXPECT_NO_THROW((void)cert.public_key());
+  }
+}
+
+
+TEST_F(crypto_certificate, public_key_from_null) //{{{1
+{
+  cert_t cert;
+  EXPECT_TRUE(cert.is_null());
+
+  std::error_code error;
+  auto key = cert.public_key(error);
+  ASSERT_EQ(std::errc::bad_address, error);
+  ASSERT_TRUE(key.is_null());
+
+  EXPECT_THROW(
+    (void)cert.public_key(),
+    std::system_error
+  );
+}
+
+
 TEST_F(crypto_certificate, to_der) //{{{1
 {
   auto cert = cert_t::from_pem(to_pem(root_cert));

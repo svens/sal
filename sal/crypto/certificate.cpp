@@ -1,4 +1,5 @@
 #include <sal/crypto/certificate.hpp>
+#include <sal/crypto/error.hpp>
 #include <sal/net/ip/__bits/inet.hpp>
 #include <cstdlib>
 
@@ -617,6 +618,26 @@ std::vector<uint8_t> certificate_t::apply (
 }
 
 
+public_key_t certificate_t::public_key (std::error_code &error) const noexcept
+{
+  if (impl_.ref)
+  {
+    __bits::public_key_t key;
+    auto status = ::SecCertificateCopyPublicKey(impl_.ref, &key.ref);
+    if (status == errSecSuccess)
+    {
+      return std::move(key);
+    }
+    error.assign(status, category());
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+  }
+  return {};
+}
+
+
 #elif __sal_os_linux //{{{1
 
 
@@ -1175,6 +1196,20 @@ std::vector<uint8_t> certificate_t::apply (
     {
       return calculate_digest(der, (end - der), fn, error);
     }
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+  }
+  return {};
+}
+
+
+public_key_t certificate_t::public_key (std::error_code &error) const noexcept
+{
+  if (impl_.ref)
+  {
+    return __bits::public_key_t(X509_get_pubkey(impl_.ref));
   }
   else
   {
@@ -1759,6 +1794,32 @@ std::vector<uint8_t> certificate_t::apply (
     );
   }
   error = std::make_error_code(std::errc::bad_address);
+  return {};
+}
+
+
+public_key_t certificate_t::public_key (std::error_code &error) const noexcept
+{
+  if (impl_.ref)
+  {
+    __bits::public_key_t key;
+    auto status = ::CryptImportPublicKeyInfoEx2(
+      X509_ASN_ENCODING,
+      &impl_.ref->pCertInfo->SubjectPublicKeyInfo,
+      0,
+      nullptr,
+      &key.ref
+    );
+    if (status)
+    {
+      return key;
+    }
+    error.assign(::GetLastError(), std::system_category());
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::bad_address);
+  }
   return {};
 }
 
