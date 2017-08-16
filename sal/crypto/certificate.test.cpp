@@ -21,7 +21,8 @@ struct crypto_certificate
     root_cert,
     intermediate_cert,
     leaf_cert,
-    leaf_cert_without_key_id;
+    cert_without_key_id,
+    cert_with_generalized_time;
 
   static std::vector<uint8_t> to_der (const std::string &base64)
   {
@@ -386,7 +387,7 @@ TEST_F(crypto_certificate, authority_key_identifier_from_null) //{{{1
 
 TEST_F(crypto_certificate, authority_key_identifier_none) //{{{1
 {
-  cert_t cert = cert_t::from_pem(to_pem(leaf_cert_without_key_id));
+  cert_t cert = cert_t::from_pem(to_pem(cert_without_key_id));
   ASSERT_FALSE(!cert);
 
   std::error_code error;
@@ -456,7 +457,7 @@ TEST_F(crypto_certificate, subject_key_identifier_from_null) //{{{1
 
 TEST_F(crypto_certificate, subject_key_identifier_none) //{{{1
 {
-  cert_t cert = cert_t::from_pem(to_pem(leaf_cert_without_key_id));
+  cert_t cert = cert_t::from_pem(to_pem(cert_without_key_id));
   ASSERT_FALSE(!cert);
 
   std::error_code error;
@@ -556,6 +557,19 @@ TEST_F(crypto_certificate, not_after_null) //{{{1
     (void)cert.not_after(),
     std::system_error
   );
+}
+
+
+TEST_F(crypto_certificate, not_after_with_generalized_time)
+{
+  auto cert = cert_t::from_pem(to_pem(cert_with_generalized_time));
+  ASSERT_FALSE(!cert);
+
+  std::error_code error;
+  (void)cert.not_after(error);
+  EXPECT_TRUE(!error);
+
+  EXPECT_NO_THROW(cert.not_after());
 }
 
 
@@ -1603,7 +1617,7 @@ const std::string crypto_certificate::leaf_cert = // {{{1
   "9j8gWQniHbptcWVgTj0vp2WrHMMPz401JcJgCd80VKbe7clKFspNLAsclJjVu7Ko"
   "QOXpu3kF+2btU7ro9vJPcWs=";
 
-const std::string crypto_certificate::leaf_cert_without_key_id = // {{{1
+const std::string crypto_certificate::cert_without_key_id = // {{{1
   "MIIEczCCAlugAwIBAgICEAEwDQYJKoZIhvcNAQELBQAwXDELMAkGA1UEBhMCRUUx"
   "EDAOBgNVBAgMB0VzdG9uaWExDDAKBgNVBAoMA1NBTDEPMA0GA1UECwwGU0FMIENB"
   "MRwwGgYDVQQDDBNTQUwgSW50ZXJtZWRpYXRlIENBMB4XDTE3MDgwNTE3NDM0MFoX"
@@ -1628,6 +1642,24 @@ const std::string crypto_certificate::leaf_cert_without_key_id = // {{{1
   "sfg/V2SJ9f07HtNgcGKMkAOwFJUhMLASz46ns0Bk29ewOsmqVIAsug4r40biMG6x"
   "Di2iFMdIDSZlfaWfOyCEF5E2O3H5itDnmvDb+f/Z8gRVLWbN1XsYDULaacEmHzAE"
   "mJ9jLcEZFj1nEsX2o6hFPKUGIy01e6MlMtOnSxiiCq5LikfNvgmi";
+
+const std::string crypto_certificate::cert_with_generalized_time = // {{{1
+  "MIIC4DCCAkmgAwIBAgIJAJVaNiMqdm70MA0GCSqGSIb3DQEBBQUAMFQxCzAJBgNV"
+  "BAYTAkVFMRAwDgYDVQQIEwdFc3RvbmlhMQwwCgYDVQQKEwNTQUwxDzANBgNVBAsT"
+  "BlNBTCBDQTEUMBIGA1UEAxMLU0FMIFJvb3QgQ0EwIBcNMTcwODE2MTQ0NDM3WhgP"
+  "MjExNzA3MjMxNDQ0MzdaMFQxCzAJBgNVBAYTAkVFMRAwDgYDVQQIEwdFc3Rvbmlh"
+  "MQwwCgYDVQQKEwNTQUwxDzANBgNVBAsTBlNBTCBDQTEUMBIGA1UEAxMLU0FMIFJv"
+  "b3QgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAOR1MTVq798PWzMZ82EX"
+  "pQPUMZpJsUC1CpgvHfMfroExkiigOnyI1ZUJCdf3MIUP/KDS7Cn+ITTh9Cm7za+J"
+  "YruFKYw12XjJFalD8bzLuBT5UJ45CRhCZZS+YFVllSpTp4qG4kJgIwna5oUd+pr1"
+  "+RQ/UzfQsV6bkSvTLf2Tr6fbAgMBAAGjgbcwgbQwHQYDVR0OBBYEFBYUixO2Db6a"
+  "w8Ykp634qEMSQSNnMIGEBgNVHSMEfTB7gBQWFIsTtg2+msPGJKet+KhDEkEjZ6FY"
+  "pFYwVDELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0VzdG9uaWExDDAKBgNVBAoTA1NB"
+  "TDEPMA0GA1UECxMGU0FMIENBMRQwEgYDVQQDEwtTQUwgUm9vdCBDQYIJAJVaNiMq"
+  "dm70MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEAti5U6NnqaFrfpYH2"
+  "IPw6dmZkSPETfTB3G4xNFeS2+xj02V+TOtTiF2k2nQy/OGP3nX7dTDjPogvV54ZK"
+  "vsZdyWtugSlBmzc0+40GJ5l8c4aiwqdjz5Xc7l9Zd5TI8J5+gM1vf5L0apFn0tu/"
+  "0ZMVcJiK7QldCk/RsD3FL8H5nEs=";
 
 // }}}
 
