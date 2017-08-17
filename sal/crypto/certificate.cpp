@@ -638,6 +638,23 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 }
 
 
+certificate_t import_pkcs12 (
+  const uint8_t *first, const uint8_t *last,
+  const std::string &passphrase,
+  std::vector<certificate_t> *chain,
+  std::error_code &error) noexcept
+{
+  printf("import_pkcs12(size=%zu; passphrase=%s; with_chain=%s)\n",
+    (last - first),
+    passphrase.c_str(),
+    (chain ? "yes" : "no")
+  );
+
+  error.clear();
+  return {};
+}
+
+
 #elif __sal_os_linux //{{{1
 
 
@@ -1215,6 +1232,21 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
   {
     error = std::make_error_code(std::errc::bad_address);
   }
+  return {};
+}
+
+
+certificate_t import_pkcs12 (
+  const uint8_t *first, const uint8_t *last,
+  const std::string &passphrase,
+  std::vector<certificate_t> *chain,
+  std::error_code &error) noexcept
+{
+  (void)first;
+  (void)last;
+  (void)passphrase;
+  (void)chain;
+  (void)error;
   return {};
 }
 
@@ -1820,6 +1852,21 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
   {
     error = std::make_error_code(std::errc::bad_address);
   }
+  return {};
+}
+
+
+certificate_t import_pkcs12 (
+  const uint8_t *first, const uint8_t *last,
+  const std::string &passphrase,
+  std::vector<certificate_t> *chain,
+  std::error_code &error) noexcept
+{
+  (void)first;
+  (void)last;
+  (void)passphrase;
+  (void)chain;
+  (void)error;
   return {};
 }
 
