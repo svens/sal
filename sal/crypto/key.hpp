@@ -63,6 +63,54 @@ private:
 };
 
 
+class private_key_t
+{
+public:
+
+  private_key_t () = default;
+  private_key_t (private_key_t &&) = default;
+  private_key_t &operator= (private_key_t &&) = default;
+
+  private_key_t (const private_key_t &) = delete;
+  private_key_t &operator= (const private_key_t &) = delete;
+
+
+  /**
+   */
+  void swap (private_key_t &that) noexcept
+  {
+    impl_.swap(that.impl_);
+  }
+
+
+  /**
+   */
+  bool is_null () const noexcept
+  {
+    return impl_.is_null();
+  }
+
+
+  /**
+   */
+  explicit operator bool () const noexcept
+  {
+    return !is_null();
+  }
+
+
+private:
+
+  __bits::private_key_t impl_{};
+
+  private_key_t (__bits::private_key_t &&that) noexcept
+    : impl_(std::move(that))
+  {}
+
+  friend class certificate_t;
+};
+
+
 } // namespace crypto
 
 
