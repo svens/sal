@@ -57,6 +57,7 @@ inline void dec_ref (EVP_PKEY *ref) noexcept
 }
 
 using public_key_t = unique_ref<EVP_PKEY *, dec_ref>;
+using private_key_t = unique_ref<EVP_PKEY *, dec_ref>;
 
 #elif __sal_os_windows //{{{1
 

@@ -15,7 +15,11 @@
   #include <Security/SecImportExport.h>
 #elif __sal_os_linux //{{{1
   #include <openssl/asn1.h>
+  #include <openssl/err.h>
+  #include <openssl/evp.h>
+  #include <openssl/pkcs12.h>
   #include <openssl/x509v3.h>
+  #include <mutex>
 #endif //}}}1
 
 
@@ -1336,18 +1340,71 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 }
 
 
-certificate_t import_pkcs12 (
+namespace {
+
+using pkcs12_ptr = unique_ref<PKCS12 *, PKCS12_free>;
+
+inline void init_openssl () noexcept
+{
+  static std::once_flag init_flag;
+  std::call_once(init_flag,
+    []()
+    {
+      OpenSSL_add_all_algorithms();
+    }
+  );
+}
+
+} // namespace
+
+
+certificate_t certificate_t::import_pkcs12 (
   const uint8_t *first, const uint8_t *last,
   const std::string &passphrase,
+  private_key_t *private_key,
   std::vector<certificate_t> *chain,
   std::error_code &error) noexcept
 {
-  (void)first;
-  (void)last;
-  (void)passphrase;
-  (void)chain;
-  (void)error;
-  return {};
+  init_openssl();
+
+  pkcs12_ptr p12 = d2i_PKCS12(nullptr, &first, last - first);
+  if (!p12)
+  {
+    error = std::make_error_code(std::errc::invalid_argument);
+    return {};
+  }
+
+  __bits::certificate_t certificate;
+  __bits::private_key_t pkey;
+  STACK_OF(X509) *ca = nullptr;
+
+  auto result = PKCS12_parse(p12.ref,
+    passphrase.c_str(),
+    &pkey.ref,
+    &certificate.ref,
+    chain ? &ca : nullptr
+  );
+  if (!result)
+  {
+    error.assign(ERR_get_error(), category());
+    return {};
+  }
+
+  if (private_key)
+  {
+    private_key->impl_ = std::move(pkey);
+  }
+
+  if (chain && ca)
+  {
+    while (auto x509 = sk_X509_pop(ca))
+    {
+      chain->emplace_back(certificate_t(std::move(x509)));
+    }
+  }
+
+  error.clear();
+  return certificate_t(std::move(certificate));
 }
 
 
@@ -1956,18 +2013,31 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 }
 
 
-certificate_t import_pkcs12 (
+certificate_t certificate_t::import_pkcs12 (
   const uint8_t *first, const uint8_t *last,
   const std::string &passphrase,
+  private_key_t *private_key,
   std::vector<certificate_t> *chain,
   std::error_code &error) noexcept
 {
+  __bits::certificate_t certificate;
+  __bits::private_key_t pkey;
+
   (void)first;
   (void)last;
   (void)passphrase;
-  (void)chain;
-  (void)error;
-  return {};
+
+  if (private_key)
+  {
+    private_key->impl_ = std::move(pkey);
+  }
+
+  if (chain)
+  {
+  }
+
+  error.clear();
+  return certificate_t(std::move(certificate));
 }
 
 

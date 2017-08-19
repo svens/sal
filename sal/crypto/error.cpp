@@ -5,6 +5,8 @@
   #include <sal/__bits/ref.hpp>
   #include <Security/SecBase.h>
   #include <CoreFoundation/CFString.h>
+#elif __sal_os_linux // {{{1
+  #include <openssl/err.h>
 #endif // }}}1
 
 
@@ -18,7 +20,7 @@ namespace {
 
 #if __sal_os_darwin // {{{1
 
-class category_impl_t
+struct category_impl_t
   : public std::error_category
 {
   const char *name () const noexcept final override
@@ -53,6 +55,26 @@ class category_impl_t
 
 #elif __sal_os_linux // {{{1
 
+struct category_impl_t
+  : public std::error_category
+{
+  category_impl_t () noexcept
+  {
+    ERR_load_crypto_strings();
+  }
+
+  const char *name () const noexcept final override
+  {
+    return "crypto";
+  }
+
+  std::string message (int value) const final override
+  {
+    char buf[120];
+    return ERR_error_string(value, buf);
+  }
+};
+
 #elif __sal_os_windows // {{{1
 
 #endif // }}}1
@@ -62,11 +84,9 @@ class category_impl_t
 
 const std::error_category &category () noexcept
 {
-  #if __sal_os_darwin
+  #if __sal_os_darwin || __sal_os_linux
     static const category_impl_t cat_{};
     return cat_;
-  #elif __sal_os_linux
-    return std::generic_category();
   #elif __sal_os_windows
     return std::system_category();
   #endif
