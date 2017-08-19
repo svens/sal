@@ -1536,18 +1536,14 @@ TEST_F(crypto_certificate, import_pkcs12) //{{{1
   );
   ASSERT_TRUE(!error) << error.message();
 
-  EXPECT_FALSE(!cert);
+  ASSERT_FALSE(!cert);
+  EXPECT_EQ(cert_t::from_pem(to_pem(leaf_cert)), cert);
+
   EXPECT_FALSE(!private_key);
 
   ASSERT_EQ(2U, chain.size());
-  EXPECT_EQ(
-    cert_t::from_pem(to_pem(intermediate_cert)),
-    chain[0]
-  );
-  EXPECT_EQ(
-    cert_t::from_pem(to_pem(root_cert)),
-    chain[1]
-  );
+  EXPECT_EQ(cert_t::from_pem(to_pem(intermediate_cert)), chain[0]);
+  EXPECT_EQ(cert_t::from_pem(to_pem(root_cert)), chain[1]);
 
   EXPECT_NO_THROW(
     sal::crypto::import_pkcs12(pkcs12, "TestPassword", private_key, chain)

@@ -17,6 +17,7 @@
   #include <windows.h>
   #include <wincrypt.h>
   #pragma comment(lib, "crypt32")
+  #pragma comment(lib, "ncrypt")
 #endif //}}}1
 
 
@@ -79,6 +80,13 @@ inline void dec_ref (BCRYPT_KEY_HANDLE ref) noexcept
 }
 
 using public_key_t = unique_ref<BCRYPT_KEY_HANDLE, dec_ref>;
+
+inline void dec_ref (NCRYPT_KEY_HANDLE ref) noexcept
+{
+  (void)::NCryptFreeObject(ref);
+}
+
+using private_key_t = unique_ref<NCRYPT_KEY_HANDLE, dec_ref>;
 
 #endif //}}}1
 

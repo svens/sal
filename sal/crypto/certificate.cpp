@@ -1,13 +1,13 @@
 #include <sal/crypto/certificate.hpp>
 #include <sal/crypto/error.hpp>
 #include <sal/net/ip/__bits/inet.hpp>
+#include <sal/assert.hpp>
 #include <cstdlib>
 
 #if __sal_os_darwin //{{{1
   #if !defined(__apple_build_version__)
     #define availability(...) /**/
   #endif
-  #include <sal/assert.hpp>
   #include <CoreFoundation/CFNumber.h>
   #include <CoreFoundation/CFURL.h>
   #include <Security/SecCertificateOIDs.h>
@@ -2013,6 +2013,27 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 }
 
 
+namespace {
+
+template <size_t N>
+inline wchar_t *to_wide (const std::string &v, wchar_t (&buf)[N]) noexcept
+{
+  ::MultiByteToWideChar(
+    CP_UTF8,
+    0,
+    v.c_str(),
+    -1,
+    buf,
+    N - 1
+  );
+  buf[N - 1] = L'\0';
+
+  return buf;
+}
+
+} // namespace
+
+
 certificate_t certificate_t::import_pkcs12 (
   const uint8_t *first, const uint8_t *last,
   const std::string &passphrase,
@@ -2020,24 +2041,78 @@ certificate_t certificate_t::import_pkcs12 (
   std::vector<certificate_t> *chain,
   std::error_code &error) noexcept
 {
-  __bits::certificate_t certificate;
-  __bits::private_key_t pkey;
+  CRYPT_DATA_BLOB pfx;
+  pfx.pbData = const_cast<uint8_t *>(first);
+  pfx.cbData = static_cast<DWORD>(last - first);
 
-  (void)first;
-  (void)last;
-  (void)passphrase;
+  wchar_t pwd[1024];
+  auto store = ::PFXImportCertStore(&pfx, to_wide(passphrase, pwd), 0);
+  ::SecureZeroMemory(pwd, sizeof(pwd));
+
+  if (!store)
+  {
+    error.assign(::GetLastError(), category());
+    return {};
+  }
+
+  auto count = 0U;
+  std::array<__bits::certificate_t, 64> certificates;
+
+  PCCERT_CONTEXT it = nullptr;
+  while ((it = ::CertEnumCertificatesInStore(store, it)) != nullptr)
+  {
+    sal_assert(count != certificates.size());
+    certificates[count++].ref = ::CertDuplicateCertificateContext(it);
+  }
+  ::CertCloseStore(store, 0);
+
+  if (!count)
+  {
+    return {};
+  }
+
+  auto result = certificate_t(std::move(certificates[--count]));
 
   if (private_key)
   {
-    private_key->impl_ = std::move(pkey);
+    DWORD pkey_spec;
+    HCRYPTPROV_OR_NCRYPT_KEY_HANDLE pkey_handle;
+    BOOL pkey_owner;
+
+    auto status = ::CryptAcquireCertificatePrivateKey(
+      result.impl_.ref,
+      CRYPT_ACQUIRE_ONLY_NCRYPT_KEY_FLAG,
+      nullptr,
+      &pkey_handle,
+      &pkey_spec,
+      &pkey_owner
+    );
+
+    if (status)
+    {
+      if (pkey_owner && (pkey_spec & CERT_NCRYPT_KEY_SPEC))
+      {
+        private_key->impl_.ref = pkey_handle;
+      }
+      // else: not owner or not CNG private key -- do not take ownership
+    }
+    else
+    {
+      error.assign(::GetLastError(), std::system_category());
+      return {};
+    }
   }
 
   if (chain)
   {
+    while (count)
+    {
+      chain->emplace_back(certificate_t(std::move(certificates[--count])));
+    }
   }
 
   error.clear();
-  return certificate_t(std::move(certificate));
+  return result;
 }
 
 
