@@ -7,9 +7,12 @@
   #if !defined(__apple_build_version__)
     #define availability(...) /**/
   #endif
+  #include <sal/assert.hpp>
   #include <CoreFoundation/CFNumber.h>
   #include <CoreFoundation/CFURL.h>
   #include <Security/SecCertificateOIDs.h>
+  #include <Security/SecIdentity.h>
+  #include <Security/SecImportExport.h>
 #elif __sal_os_linux //{{{1
   #include <openssl/asn1.h>
   #include <openssl/x509v3.h>
@@ -270,19 +273,23 @@ std::vector<uint8_t> key_identifier (SecCertificateRef cert, CFTypeRef oid,
 }
 
 
+inline unique_ref<CFDataRef> data (const uint8_t *first, const uint8_t *last)
+  noexcept
+{
+  return ::CFDataCreateWithBytesNoCopy(nullptr,
+    first, last - first,
+    kCFAllocatorNull
+  );
+}
+
+
 } // namespace
 
 
 certificate_t certificate_t::from_der (const uint8_t *first, const uint8_t *last,
   std::error_code &error) noexcept
 {
-  unique_ref<CFDataRef> data = ::CFDataCreateWithBytesNoCopy(
-    nullptr,
-    first,
-    last - first,
-    kCFAllocatorNull
-  );
-  auto cert = ::SecCertificateCreateWithData(nullptr, data.ref);
+  auto cert = ::SecCertificateCreateWithData(nullptr, data(first, last).ref);
   if (cert)
   {
     error.clear();
@@ -503,7 +510,7 @@ std::string normalized_ip_string (CFTypeRef data)
 {
   auto s = static_cast<CFStringRef>(data);
 
-  char buf[64];
+  char buf[INET6_ADDRSTRLEN];
   auto p = c_str(s, buf);
 
   if (::CFStringGetLength(s) == 39)
@@ -638,20 +645,113 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 }
 
 
-certificate_t import_pkcs12 (
+namespace {
+
+
+inline unique_ref<CFDictionaryRef> import_options (const std::string &passphrase)
+  noexcept
+{
+  auto import_passphrase = ::CFStringCreateWithBytesNoCopy(
+    nullptr,
+    reinterpret_cast<const uint8_t *>(&passphrase[0]),
+    passphrase.size(),
+    kCFStringEncodingUTF8,
+    false,
+    kCFAllocatorNull
+  );
+
+  const void
+    *keys[] =
+    {
+      kSecImportExportPassphrase,
+    },
+    *values[] =
+    {
+      import_passphrase,
+    };
+
+  return ::CFDictionaryCreate(nullptr, keys, values, 1, nullptr, nullptr);
+}
+
+
+inline auto copy_certificate (SecIdentityRef identity) noexcept
+{
+  __bits::certificate_t result;
+  (void)::SecIdentityCopyCertificate(identity, &result.ref);
+  return result;
+}
+
+
+inline auto copy_private_key (SecIdentityRef identity) noexcept
+{
+  __bits::private_key_t result;
+  (void)::SecIdentityCopyPrivateKey(identity, &result.ref);
+  return result;
+}
+
+
+} // namespace
+
+
+certificate_t certificate_t::import_pkcs12 (
   const uint8_t *first, const uint8_t *last,
   const std::string &passphrase,
+  private_key_t *private_key,
   std::vector<certificate_t> *chain,
   std::error_code &error) noexcept
 {
-  printf("import_pkcs12(size=%zu; passphrase=%s; with_chain=%s)\n",
-    (last - first),
-    passphrase.c_str(),
-    (chain ? "yes" : "no")
+  certificate_t result;
+
+  unique_ref<CFArrayRef> items = ::CFArrayCreate(nullptr, 0, 0, nullptr);
+  auto status = ::SecPKCS12Import(
+    data(first, last).ref,
+    import_options(passphrase).ref,
+    &items.ref
   );
 
+  if (status != errSecSuccess)
+  {
+    error.assign(status, category());
+    return result;
+  }
   error.clear();
-  return {};
+
+  sal_assert(::CFArrayGetCount(items.ref) > 0);
+  auto item = (CFDictionaryRef)::CFArrayGetValueAtIndex(items.ref, 0);
+
+  auto identity = (SecIdentityRef)::CFDictionaryGetValue(item,
+    kSecImportItemIdentity
+  );
+
+  result.impl_ = copy_certificate(identity);
+
+  if (private_key)
+  {
+    private_key->impl_ = copy_private_key(identity);
+  }
+
+  if (chain)
+  {
+    auto chain_ = (CFArrayRef)::CFDictionaryGetValue(item,
+      kSecImportItemCertChain
+    );
+    auto chain_size = ::CFArrayGetCount(chain_);
+
+    certificate_t certificate;
+    for (auto i = 0U;  i < chain_size;  ++i)
+    {
+      certificate.impl_.reset(
+        (SecCertificateRef)::CFRetain(::CFArrayGetValueAtIndex(chain_, i))
+      );
+
+      if (certificate != result)
+      {
+        chain->emplace_back(certificate);
+      }
+    }
+  }
+
+  return result;
 }
 
 
