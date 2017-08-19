@@ -32,27 +32,22 @@ class category_impl_t
     {
       static constexpr auto encoding = kCFStringEncodingUTF8;
 
-      auto size = ::CFStringGetLength(s.ref);
-      std::string result;
-
       if (auto p = ::CFStringGetCStringPtr(s.ref, encoding))
       {
-        result.assign(p, size);
+        return p;
       }
       else
       {
-        result.resize(size);
-        ::CFStringGetCString(s.ref,
-          const_cast<char *>(result.data()),
-          result.size(),
-          encoding
-        );
+        char buf[256];
+        ::CFStringGetCString(s.ref, buf, sizeof(buf), encoding);
+        return buf;
       }
-
-      return result;
     }
 
-    return "Unknown error " + std::to_string(value);
+    std::string result = name();
+    result += ':';
+    result += std::to_string(value);
+    return result;
   }
 };
 
