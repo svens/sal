@@ -73,7 +73,7 @@ std::vector<uint8_t> calculate_digest (
 }
 
 
-using certificate_list = std::array<__bits::certificate_t, 64>;
+using certificate_list = std::array<__bits::certificate_t, 9>;
 
 
 // fwd
@@ -761,7 +761,7 @@ certificate_t certificate_t::import_pkcs12 (
     size_t chain_size = ::CFArrayGetCount(chain_);
     if (chain_size > certificates.max_size() - 1)
     {
-      error = std::make_error_code(std::errc::invalid_argument);
+      error = std::make_error_code(std::errc::result_out_of_range);
       return {};
     }
 
@@ -1431,7 +1431,7 @@ certificate_t certificate_t::import_pkcs12 (
     if ((size_t)sk_X509_num(ca) > certificates.max_size() - 1)
     {
       sk_X509_pop_free(ca, X509_free);
-      error = std::make_error_code(std::errc::invalid_argument);
+      error = std::make_error_code(std::errc::result_out_of_range);
       return {};
     }
     while (auto x509 = sk_X509_pop(ca))
@@ -2127,7 +2127,7 @@ certificate_t certificate_t::import_pkcs12 (
   if (it != nullptr)
   {
     // didn't reach to end of store, chain size limit hit first
-    error = std::make_error_code(std::errc::invalid_argument);
+    error = std::make_error_code(std::errc::result_out_of_range);
     return {};
   }
 
