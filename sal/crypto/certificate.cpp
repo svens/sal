@@ -73,6 +73,35 @@ std::vector<uint8_t> calculate_digest (
 }
 
 
+using certificate_list = std::array<__bits::certificate_t, 64>;
+
+
+// fwd
+bool is_issued_by (
+  const __bits::certificate_t &certificate,
+  const __bits::certificate_t &issuer
+) noexcept;
+
+
+// reorder list
+// in: cert0, ..., cert[count - 1], leaf
+// out: unrelated*, CA, intermediate[N], ..., intermediate[0], leaf
+void issued_order (certificate_list &list, size_t count) noexcept
+{
+  for (auto it = list.begin() + count - 1;  it != list.begin();  --it)
+  {
+    for (auto that = list.begin();  that != it - 1;  ++that)
+    {
+      if (is_issued_by(*it, *that))
+      {
+        it[-1].swap(*that);
+        break;
+      }
+    }
+  }
+}
+
+
 } // namespace
 
 
@@ -85,6 +114,19 @@ certificate_t certificate_t::from_pem (const uint8_t *first, const uint8_t *last
     return from_der(der, der_end, error);
   }
   error = std::make_error_code(std::errc::invalid_argument);
+  return {};
+}
+
+
+bool certificate_t::issued_by (const certificate_t &issuer,
+  std::error_code &error) const noexcept
+{
+  if (impl_ && issuer.impl_)
+  {
+    error.clear();
+    return is_issued_by(impl_, issuer.impl_);
+  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
@@ -287,6 +329,26 @@ inline unique_ref<CFDataRef> data (const uint8_t *first, const uint8_t *last)
 }
 
 
+inline bool is_issued_by (const __bits::certificate_t &certificate,
+  const __bits::certificate_t &issuer) noexcept
+{
+  unique_ref<CFDataRef>
+    certificate_issuer = ::SecCertificateCopyNormalizedIssuerSequence(certificate.ref),
+    issuer_subject = ::SecCertificateCopyNormalizedSubjectSequence(issuer.ref);
+
+  auto size_1 = ::CFDataGetLength(issuer_subject.ref);
+  auto size_2 = ::CFDataGetLength(certificate_issuer.ref);
+  if (size_1 != size_2)
+  {
+    return false;
+  }
+
+  auto data_1 = ::CFDataGetBytePtr(issuer_subject.ref);
+  auto data_2 = ::CFDataGetBytePtr(certificate_issuer.ref);
+  return std::equal(data_1, data_1 + size_1, data_2);
+}
+
+
 } // namespace
 
 
@@ -443,39 +505,6 @@ std::vector<uint8_t> certificate_t::subject_key_identifier (
   std::error_code &error) const noexcept
 {
   return key_identifier(impl_.ref, kSecOIDSubjectKeyIdentifier, error);
-}
-
-
-bool certificate_t::issued_by (const certificate_t &issuer,
-  std::error_code &error) const noexcept
-{
-  if (!impl_ || !issuer.impl_)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return {};
-  }
-  error.clear();
-
-  unique_ref<CFDataRef> issuer_cert_subject_data =
-    ::SecCertificateCopyNormalizedSubjectSequence(
-      issuer.impl_.ref
-    );
-
-  unique_ref<CFDataRef> this_cert_issuer_data =
-    ::SecCertificateCopyNormalizedIssuerSequence(
-      impl_.ref
-    );
-
-  auto size_1 = ::CFDataGetLength(issuer_cert_subject_data.ref);
-  auto size_2 = ::CFDataGetLength(this_cert_issuer_data.ref);
-  if (size_1 != size_2)
-  {
-    return false;
-  }
-
-  auto data_1 = ::CFDataGetBytePtr(issuer_cert_subject_data.ref);
-  auto data_2 = ::CFDataGetBytePtr(this_cert_issuer_data.ref);
-  return std::equal(data_1, data_1 + size_1, data_2);
 }
 
 
@@ -704,8 +733,6 @@ certificate_t certificate_t::import_pkcs12 (
   std::vector<certificate_t> *chain,
   std::error_code &error) noexcept
 {
-  certificate_t result;
-
   unique_ref<CFArrayRef> items = ::CFArrayCreate(nullptr, 0, 0, nullptr);
   auto status = ::SecPKCS12Import(
     data(first, last).ref,
@@ -716,46 +743,60 @@ certificate_t certificate_t::import_pkcs12 (
   if (status != errSecSuccess)
   {
     error.assign(status, category());
-    return result;
+    return {};
   }
-  error.clear();
 
   sal_assert(::CFArrayGetCount(items.ref) > 0);
   auto item = (CFDictionaryRef)::CFArrayGetValueAtIndex(items.ref, 0);
 
-  auto identity = (SecIdentityRef)::CFDictionaryGetValue(item,
-    kSecImportItemIdentity
-  );
-
-  result.impl_ = copy_certificate(identity);
-
-  if (private_key)
-  {
-    private_key->impl_ = copy_private_key(identity);
-  }
+  auto count = 0;
+  certificate_list certificates;
 
   if (chain)
   {
     auto chain_ = (CFArrayRef)::CFDictionaryGetValue(item,
       kSecImportItemCertChain
     );
-    auto chain_size = ::CFArrayGetCount(chain_);
 
-    certificate_t certificate;
-    for (auto i = 0U;  i < chain_size;  ++i)
+    size_t chain_size = ::CFArrayGetCount(chain_);
+    if (chain_size > certificates.max_size() - 1)
     {
-      certificate.impl_.reset(
-        (SecCertificateRef)::CFRetain(::CFArrayGetValueAtIndex(chain_, i))
-      );
+      error = std::make_error_code(std::errc::invalid_argument);
+      return {};
+    }
 
-      if (certificate != result)
-      {
-        chain->emplace_back(certificate);
-      }
+    // XXX: [0] is certificate itself, is it always so?
+    for (auto i = 1U;  i < chain_size;  ++i)
+    {
+      certificates[count++].ref = (SecCertificateRef)::CFRetain(
+        ::CFArrayGetValueAtIndex(chain_, i)
+      );
     }
   }
 
-  return result;
+  auto identity = (SecIdentityRef)::CFDictionaryGetValue(item,
+    kSecImportItemIdentity
+  );
+
+  certificates[count++] = copy_certificate(identity);
+  issued_order(certificates, count);
+  auto certificate = std::move(certificates[--count]);
+
+  if (chain)
+  {
+    while (count)
+    {
+      chain->emplace_back(certificate_t(std::move(certificates[--count])));
+    }
+  }
+
+  if (private_key)
+  {
+    private_key->impl_ = copy_private_key(identity);
+  }
+
+  error.clear();
+  return certificate_t(std::move(certificate));
 }
 
 
@@ -1064,20 +1105,6 @@ std::vector<uint8_t> certificate_t::subject_key_identifier (
 }
 
 
-bool certificate_t::issued_by (const certificate_t &issuer,
-  std::error_code &error) const noexcept
-{
-  if (!impl_ || !issuer.impl_)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return {};
-  }
-
-  error.clear();
-  return X509_check_issued(issuer.impl_.ref, impl_.ref) == X509_V_OK;
-}
-
-
 namespace {
 
 
@@ -1355,6 +1382,12 @@ inline void init_openssl () noexcept
   );
 }
 
+inline bool is_issued_by (const __bits::certificate_t &certificate,
+  const __bits::certificate_t &issuer) noexcept
+{
+  return X509_check_issued(issuer.ref, certificate.ref) == X509_V_OK;
+}
+
 } // namespace
 
 
@@ -1390,17 +1423,38 @@ certificate_t certificate_t::import_pkcs12 (
     return {};
   }
 
+  auto count = 0U;
+  certificate_list certificates;
+
+  if (ca)
+  {
+    if ((size_t)sk_X509_num(ca) > certificates.max_size() - 1)
+    {
+      sk_X509_pop_free(ca, X509_free);
+      error = std::make_error_code(std::errc::invalid_argument);
+      return {};
+    }
+    while (auto x509 = sk_X509_pop(ca))
+    {
+      certificates[count++].ref = x509;
+    }
+  }
+
+  certificates[count++] = std::move(certificate);
+  issued_order(certificates, count);
+  certificate = std::move(certificates[--count]);
+
+  if (chain)
+  {
+    while (count)
+    {
+      chain->emplace_back(certificate_t(std::move(certificates[--count])));
+    }
+  }
+
   if (private_key)
   {
     private_key->impl_ = std::move(pkey);
-  }
-
-  if (chain && ca)
-  {
-    while (auto x509 = sk_X509_pop(ca))
-    {
-      chain->emplace_back(certificate_t(std::move(x509)));
-    }
   }
 
   error.clear();
@@ -1695,24 +1749,6 @@ std::vector<uint8_t> certificate_t::subject_key_identifier (
   ::LocalFree(decoded);
 
   return result;
-}
-
-
-bool certificate_t::issued_by (const certificate_t &issuer,
-  std::error_code &error) const noexcept
-{
-  if (!impl_ || !issuer.impl_)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return {};
-  }
-
-  error.clear();
-  return ::CertCompareCertificateName(
-    X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-    &issuer.impl_.ref->pCertInfo->Subject,
-    &impl_.ref->pCertInfo->Issuer
-  );
 }
 
 
@@ -2015,6 +2051,7 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 
 namespace {
 
+
 template <size_t N>
 inline wchar_t *to_wide (const std::string &v, wchar_t (&buf)[N]) noexcept
 {
@@ -2030,6 +2067,18 @@ inline wchar_t *to_wide (const std::string &v, wchar_t (&buf)[N]) noexcept
 
   return buf;
 }
+
+
+inline bool is_issued_by (const __bits::certificate_t &certificate,
+  const __bits::certificate_t &issuer) noexcept
+{
+  return ::CertCompareCertificateName(
+    X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+    &issuer.ref->pCertInfo->Subject,
+    &certificate.ref->pCertInfo->Issuer
+  );
+}
+
 
 } // namespace
 
@@ -2056,21 +2105,33 @@ certificate_t certificate_t::import_pkcs12 (
   }
 
   auto count = 0U;
-  std::array<__bits::certificate_t, 64> certificates;
+  certificate_list certificates;
 
   PCCERT_CONTEXT it = nullptr;
   while ((it = ::CertEnumCertificatesInStore(store, it)) != nullptr)
   {
-    sal_assert(count != certificates.size());
+    if (count == certificates.max_size())
+    {
+      break;
+    }
     certificates[count++].ref = ::CertDuplicateCertificateContext(it);
   }
   ::CertCloseStore(store, 0);
 
   if (!count)
   {
+    error.clear();
     return {};
   }
 
+  if (it != nullptr)
+  {
+    // didn't reach to end of store, chain size limit hit first
+    error = std::make_error_code(std::errc::invalid_argument);
+    return {};
+  }
+
+  issued_order(certificates, count);
   auto result = certificate_t(std::move(certificates[--count]));
 
   if (private_key)
