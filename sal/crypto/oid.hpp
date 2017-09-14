@@ -40,8 +40,14 @@ extern const std::string
 } // namespace oid
 
 
+/**
+ * Return alias for \a oid. Supported OID aliases are listed in RFC 1779 2.3.
+ * If there is no alias for \a oid, it is returned itself.
+ */
+const std::string &alias_or_oid (const oid_t &oid) noexcept;
+
+
 } // namespace crypto
 
 
 __sal_end
-

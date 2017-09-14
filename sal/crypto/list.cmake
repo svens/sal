@@ -26,5 +26,6 @@ list(APPEND sal_unittests
   sal/crypto/hash.test.cpp
   sal/crypto/hmac.test.cpp
   sal/crypto/key.test.cpp
+  sal/crypto/oid.test.cpp
   sal/crypto/random.test.cpp
 )
