@@ -11,7 +11,9 @@
 #include <sal/crypto/key.hpp>
 #include <sal/crypto/oid.hpp>
 #include <sal/buf_ptr.hpp>
+#include <sal/char_array.hpp>
 #include <sal/time.hpp>
+#include <ostream>
 #include <vector>
 
 
@@ -435,6 +437,34 @@ public:
   }
 
 
+  /**
+   */
+  struct distinguished_name_format_t
+  {
+    const distinguished_name_t &rdn;
+    const std::string &assign, &separator;
+
+    distinguished_name_format_t (const distinguished_name_t &rdn,
+        const std::string &assign,
+        const std::string &separator) noexcept
+      : rdn(rdn)
+      , assign(assign)
+      , separator(separator)
+    {}
+  };
+
+
+  /**
+   */
+  static distinguished_name_format_t format (
+    const distinguished_name_t &rdn,
+    const std::string &assign = "=",
+    const std::string &separator = "; ") noexcept
+  {
+    return distinguished_name_format_t{rdn, assign, separator};
+  }
+
+
 private:
 
   __bits::certificate_t impl_{};
@@ -582,6 +612,41 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
   const std::string &passphrase)
 {
   return import_pkcs12(pkcs12, passphrase, throw_on_error("import_pkcs12"));
+}
+
+
+/**
+ */
+memory_writer_t &operator<< (memory_writer_t &writer,
+  const certificate_t::distinguished_name_format_t &rdn
+);
+
+
+/**
+ */
+inline memory_writer_t &operator<< (memory_writer_t &writer,
+  const certificate_t &certificate)
+{
+  return (writer << certificate_t::format(certificate.subject()));
+}
+
+
+/**
+ */
+inline std::ostream &operator<< (std::ostream &os,
+  const certificate_t::distinguished_name_format_t &rdn)
+{
+  char_array_t<1024> buf;
+  return (os << ((buf << rdn) ? buf.c_str() : "<...>"));
+}
+
+
+/**
+ */
+inline std::ostream &operator<< (std::ostream &os,
+  const certificate_t &certificate)
+{
+  return (os << certificate_t::format(certificate.subject()));
 }
 
 

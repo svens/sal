@@ -102,6 +102,27 @@ void issued_order (certificate_list &list, size_t count) noexcept
 }
 
 
+inline std::string rdn_escape (const std::string &value)
+{
+  std::string result;
+  for (auto ch: value)
+  {
+    if (ch == ','
+      || ch == '='
+      || ch == '+'
+      || ch == '<'
+      || ch == '>'
+      || ch == '#'
+      || ch == ';')
+    {
+      result += '\\';
+    }
+    result += ch;
+  }
+  return result;
+}
+
+
 } // namespace
 
 
@@ -128,6 +149,23 @@ bool certificate_t::issued_by (const certificate_t &issuer,
   }
   error = std::make_error_code(std::errc::bad_address);
   return {};
+}
+
+
+memory_writer_t &operator<< (memory_writer_t &writer,
+  const certificate_t::distinguished_name_format_t &rdn)
+{
+  for (const auto &name: rdn.rdn)
+  {
+    writer
+      << alias_or_oid(name.first)
+      << rdn.assign
+      << rdn_escape(name.second)
+      << rdn.separator;
+  }
+  writer.first -= rdn.separator.size();
+
+  return writer;
 }
 
 

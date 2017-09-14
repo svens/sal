@@ -30,8 +30,7 @@ struct crypto_certificate
 
     // specific testcase certificates
     chain_as_base64_too_many_certificates,
-    cert_without_key_id,
-    cert_with_generalized_time;
+    cert_without_key_id;
 
 
   static std::vector<uint8_t> to_der (const std::string &base64)
@@ -573,7 +572,24 @@ TEST_F(crypto_certificate, not_after_null) //{{{1
 
 TEST_F(crypto_certificate, not_after_with_generalized_time)
 {
-  auto cert = cert_t::from_pem(to_pem(cert_with_generalized_time));
+  auto cert = cert_t::from_pem(to_pem(
+    "MIIC4DCCAkmgAwIBAgIJAJVaNiMqdm70MA0GCSqGSIb3DQEBBQUAMFQxCzAJBgNV"
+    "BAYTAkVFMRAwDgYDVQQIEwdFc3RvbmlhMQwwCgYDVQQKEwNTQUwxDzANBgNVBAsT"
+    "BlNBTCBDQTEUMBIGA1UEAxMLU0FMIFJvb3QgQ0EwIBcNMTcwODE2MTQ0NDM3WhgP"
+    "MjExNzA3MjMxNDQ0MzdaMFQxCzAJBgNVBAYTAkVFMRAwDgYDVQQIEwdFc3Rvbmlh"
+    "MQwwCgYDVQQKEwNTQUwxDzANBgNVBAsTBlNBTCBDQTEUMBIGA1UEAxMLU0FMIFJv"
+    "b3QgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAOR1MTVq798PWzMZ82EX"
+    "pQPUMZpJsUC1CpgvHfMfroExkiigOnyI1ZUJCdf3MIUP/KDS7Cn+ITTh9Cm7za+J"
+    "YruFKYw12XjJFalD8bzLuBT5UJ45CRhCZZS+YFVllSpTp4qG4kJgIwna5oUd+pr1"
+    "+RQ/UzfQsV6bkSvTLf2Tr6fbAgMBAAGjgbcwgbQwHQYDVR0OBBYEFBYUixO2Db6a"
+    "w8Ykp634qEMSQSNnMIGEBgNVHSMEfTB7gBQWFIsTtg2+msPGJKet+KhDEkEjZ6FY"
+    "pFYwVDELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0VzdG9uaWExDDAKBgNVBAoTA1NB"
+    "TDEPMA0GA1UECxMGU0FMIENBMRQwEgYDVQQDEwtTQUwgUm9vdCBDQYIJAJVaNiMq"
+    "dm70MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEAti5U6NnqaFrfpYH2"
+    "IPw6dmZkSPETfTB3G4xNFeS2+xj02V+TOtTiF2k2nQy/OGP3nX7dTDjPogvV54ZK"
+    "vsZdyWtugSlBmzc0+40GJ5l8c4aiwqdjz5Xc7l9Zd5TI8J5+gM1vf5L0apFn0tu/"
+    "0ZMVcJiK7QldCk/RsD3FL8H5nEs="
+  ));
   ASSERT_FALSE(!cert);
 
   std::error_code error;
@@ -1725,6 +1741,117 @@ TEST_F(crypto_certificate, import_pkcs12_invalid_passphrase) //{{{1
 }
 
 
+TEST_F(crypto_certificate, ostream) //{{{1
+{
+  const std::pair<std::string, std::string> certs[] =
+  {
+    {
+      root_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL CA; CN=SAL Root CA"
+    },
+    {
+      intermediate_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL CA; CN=SAL Intermediate CA"
+    },
+    {
+      leaf_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL Test; CN=test.sal.ee"
+    },
+  };
+
+  for (const auto &cert_pem: certs)
+  {
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
+    ASSERT_FALSE(!cert);
+
+    std::ostringstream oss;
+    oss << cert;
+    EXPECT_EQ(cert_pem.second, oss.str());
+  }
+}
+
+
+TEST_F(crypto_certificate, ostream_issuer) //{{{1
+{
+  const std::pair<std::string, std::string> certs[] =
+  {
+    {
+      root_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL CA; CN=SAL Root CA"
+    },
+    {
+      intermediate_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL CA; CN=SAL Root CA"
+    },
+    {
+      leaf_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL CA; CN=SAL Intermediate CA"
+    },
+  };
+
+  for (const auto &cert_pem: certs)
+  {
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
+    ASSERT_FALSE(!cert);
+
+    std::ostringstream oss;
+    oss << cert.format(cert.issuer());
+    EXPECT_EQ(cert_pem.second, oss.str());
+  }
+}
+
+
+TEST_F(crypto_certificate, ostream_subject) //{{{1
+{
+  const std::pair<std::string, std::string> certs[] =
+  {
+    {
+      root_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL CA; CN=SAL Root CA"
+    },
+    {
+      intermediate_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL CA; CN=SAL Intermediate CA"
+    },
+    {
+      leaf_cert,
+      "C=EE; ST=Estonia; O=SAL; OU=SAL Test; CN=test.sal.ee"
+    },
+  };
+
+  for (const auto &cert_pem: certs)
+  {
+    auto cert = cert_t::from_pem(to_pem(cert_pem.first));
+    ASSERT_FALSE(!cert);
+
+    std::ostringstream oss;
+    oss << cert.format(cert.subject());
+    EXPECT_EQ(cert_pem.second, oss.str());
+  }
+}
+
+
+TEST_F(crypto_certificate, ostream_escape) //{{{1
+{
+  static const auto cert = cert_t::from_pem(to_pem(
+    "MIIBkzCCAT2gAwIBAgIJAJS/4Y1RBSIaMA0GCSqGSIb3DQEBBQUAMBMxETAPBgNV"
+    "BAMUCEEsKzw+IztCMB4XDTE3MDkxNDE1MDU0OFoXDTE3MTAxNDE1MDU0OFowEzER"
+    "MA8GA1UEAxQIQSwrPD4jO0IwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAywCPrX3d"
+    "VJE9f3uzGH5WbtpeQnRKfmAe8YEqk+6d9aUZ2NrgCF6vYEcs32ivdf25SVLVsgcy"
+    "pf+B5BzdUyZw0QIDAQABo3QwcjAdBgNVHQ4EFgQUP9SvXUSWIRTTsHJ8a6vYGTLj"
+    "sRgwQwYDVR0jBDwwOoAUP9SvXUSWIRTTsHJ8a6vYGTLjsRihF6QVMBMxETAPBgNV"
+    "BAMUCEEsKzw+IztCggkAlL/hjVEFIhowDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0B"
+    "AQUFAANBAApsD+cPytGVZFv08arhfXLSDamfm6fq86aCytB53q6jn+IdjB7e2mpm"
+    "mp7oULFgeYNE6+bk2PMqkon3zh0tR78="
+  ));
+  ASSERT_FALSE(!cert);
+
+  std::ostringstream oss;
+  oss << cert;
+  EXPECT_EQ("CN=A\\,\\+\\<\\>\\#\\;B", oss.str());
+}
+
+
 //}}}1
 
 /* see scripts/make_ca.sh
@@ -2277,23 +2404,6 @@ const std::string crypto_certificate::cert_without_key_id = // {{{1
   "Di2iFMdIDSZlfaWfOyCEF5E2O3H5itDnmvDb+f/Z8gRVLWbN1XsYDULaacEmHzAE"
   "mJ9jLcEZFj1nEsX2o6hFPKUGIy01e6MlMtOnSxiiCq5LikfNvgmi";
 
-const std::string crypto_certificate::cert_with_generalized_time = // {{{1
-  "MIIC4DCCAkmgAwIBAgIJAJVaNiMqdm70MA0GCSqGSIb3DQEBBQUAMFQxCzAJBgNV"
-  "BAYTAkVFMRAwDgYDVQQIEwdFc3RvbmlhMQwwCgYDVQQKEwNTQUwxDzANBgNVBAsT"
-  "BlNBTCBDQTEUMBIGA1UEAxMLU0FMIFJvb3QgQ0EwIBcNMTcwODE2MTQ0NDM3WhgP"
-  "MjExNzA3MjMxNDQ0MzdaMFQxCzAJBgNVBAYTAkVFMRAwDgYDVQQIEwdFc3Rvbmlh"
-  "MQwwCgYDVQQKEwNTQUwxDzANBgNVBAsTBlNBTCBDQTEUMBIGA1UEAxMLU0FMIFJv"
-  "b3QgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAOR1MTVq798PWzMZ82EX"
-  "pQPUMZpJsUC1CpgvHfMfroExkiigOnyI1ZUJCdf3MIUP/KDS7Cn+ITTh9Cm7za+J"
-  "YruFKYw12XjJFalD8bzLuBT5UJ45CRhCZZS+YFVllSpTp4qG4kJgIwna5oUd+pr1"
-  "+RQ/UzfQsV6bkSvTLf2Tr6fbAgMBAAGjgbcwgbQwHQYDVR0OBBYEFBYUixO2Db6a"
-  "w8Ykp634qEMSQSNnMIGEBgNVHSMEfTB7gBQWFIsTtg2+msPGJKet+KhDEkEjZ6FY"
-  "pFYwVDELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0VzdG9uaWExDDAKBgNVBAoTA1NB"
-  "TDEPMA0GA1UECxMGU0FMIENBMRQwEgYDVQQDEwtTQUwgUm9vdCBDQYIJAJVaNiMq"
-  "dm70MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEAti5U6NnqaFrfpYH2"
-  "IPw6dmZkSPETfTB3G4xNFeS2+xj02V+TOtTiF2k2nQy/OGP3nX7dTDjPogvV54ZK"
-  "vsZdyWtugSlBmzc0+40GJ5l8c4aiwqdjz5Xc7l9Zd5TI8J5+gM1vf5L0apFn0tu/"
-  "0ZMVcJiK7QldCk/RsD3FL8H5nEs=";
 
 // }}}
 
