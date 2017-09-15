@@ -1617,7 +1617,7 @@ TEST_F(crypto_certificate, import_pkcs12_no_data) //{{{1
   EXPECT_TRUE(!cert);
 
   ASSERT_FALSE(!error);
-  EXPECT_STREQ("crypto", error.category().name());
+  EXPECT_NE(nullptr, error.category().name());
   EXPECT_FALSE(error.message().empty());
 
   EXPECT_THROW(
