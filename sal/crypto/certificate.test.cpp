@@ -1614,8 +1614,11 @@ TEST_F(crypto_certificate, import_pkcs12_no_data) //{{{1
 
   std::error_code error;
   auto cert = sal::crypto::import_pkcs12(pkcs12, "TestPassword", error);
-  EXPECT_FALSE(!error);
   EXPECT_TRUE(!cert);
+
+  ASSERT_FALSE(!error);
+  EXPECT_STREQ("crypto", error.category().name());
+  EXPECT_FALSE(error.message().empty());
 
   EXPECT_THROW(
     (void)sal::crypto::import_pkcs12(pkcs12, "TestPassword"),
