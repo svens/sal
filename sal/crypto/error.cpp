@@ -1,7 +1,7 @@
 #include <sal/__bits/platform_sdk.hpp>
 #include <sal/crypto/error.hpp>
 
-#if __sal_os_darwin // {{{1
+#if __sal_os_macos // {{{1
   #include <sal/__bits/ref.hpp>
   #include <Security/SecBase.h>
   #include <CoreFoundation/CFString.h>
@@ -18,7 +18,7 @@ namespace crypto {
 
 namespace {
 
-#if __sal_os_darwin // {{{1
+#if __sal_os_macos // {{{1
 
 struct category_impl_t
   : public std::error_category
@@ -84,7 +84,7 @@ struct category_impl_t
 
 const std::error_category &category () noexcept
 {
-  #if __sal_os_darwin || __sal_os_linux
+  #if __sal_os_macos || __sal_os_linux
     static const category_impl_t cat_{};
     return cat_;
   #elif __sal_os_windows

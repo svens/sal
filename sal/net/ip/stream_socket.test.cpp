@@ -311,7 +311,7 @@ TEST_P(stream_socket, send_after_remote_close)
   {
     std::error_code error;
     b.send(sal::make_buf(case_name), error);
-#if __sal_os_darwin
+#if __sal_os_macos
     EXPECT_EQ(std::errc::broken_pipe, error);
 #else
     EXPECT_EQ(std::errc::connection_reset, error);
@@ -918,7 +918,7 @@ TEST_P(stream_socket, async_receive_before_shutdown)
   auto io = ctx.poll();
   ASSERT_NE(nullptr, io);
 
-#if __sal_os_darwin
+#if __sal_os_macos
 
   std::error_code error;
   auto result = a.async_receive_result(io, error);

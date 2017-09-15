@@ -3,7 +3,7 @@
 #include <sal/assert.hpp>
 #include <sal/net/error.hpp>
 
-#if __sal_os_darwin || __sal_os_linux
+#if __sal_os_macos || __sal_os_linux
   #include <fcntl.h>
   #include <poll.h>
   #include <signal.h>
@@ -13,7 +13,7 @@
   #include <mswsock.h>
 #endif
 
-#if __sal_os_darwin
+#if __sal_os_macos
   #include <sys/types.h>
   #include <sys/event.h>
 #elif __sal_os_linux
@@ -491,7 +491,7 @@ size_t socket_t::available (std::error_code &error) const noexcept
 }
 
 
-#elif __sal_os_darwin || __sal_os_linux // {{{1
+#elif __sal_os_macos || __sal_os_linux // {{{1
 
 
 namespace {
@@ -533,7 +533,7 @@ void socket_t::open (int domain, int type, int protocol,
 {
   handle = call(::socket, error, domain, type, protocol);
 
-#if __sal_os_darwin
+#if __sal_os_macos
   if (handle != invalid)
   {
     int optval = 1;
@@ -600,7 +600,7 @@ retry:
   {
     if (address_size)
     {
-#if __sal_os_darwin
+#if __sal_os_macos
       // LCOV_EXCL_START
       // kernel bug: instead of ECONNABORTED, we might get size=0
       if (!size)
@@ -618,7 +618,7 @@ retry:
       *address_size = size;
     }
 
-#if __sal_os_darwin
+#if __sal_os_macos
     int optval = 1;
     ::setsockopt(new_socket, SOL_SOCKET, SO_NOSIGPIPE,
       &optval, sizeof(optval)
@@ -1425,12 +1425,12 @@ async_accept_t *async_accept_t::result (async_io_t *io,
 }
 
 
-#elif __sal_os_darwin || __sal_os_linux // {{{1
+#elif __sal_os_macos || __sal_os_linux // {{{1
 
 
 namespace {
 
-#if __sal_os_darwin // {{{2
+#if __sal_os_macos // {{{2
 
 inline auto make_queue () noexcept
 {
@@ -1493,7 +1493,7 @@ socket_t::async_t::async_t (socket_t &socket,
     return;
   }
 
-#if __sal_os_darwin // {{{2
+#if __sal_os_macos // {{{2
 
   struct ::kevent change;
   EV_SET(&change,
@@ -1626,7 +1626,7 @@ void socket_t::async_t::on_writable (socket_t &socket,
     }
     else if (auto *op = async_connect_t::get_op(io))
     {
-#if __sal_os_darwin // {{{2
+#if __sal_os_macos // {{{2
 
       (void)op;
       if (flags & EV_EOF)
@@ -1683,7 +1683,7 @@ void socket_t::async_t::on_writable (socket_t &socket,
   {
     listen_writable = false;
 
-#if __sal_os_darwin // {{{2
+#if __sal_os_macos // {{{2
 
     struct ::kevent change;
     EV_SET(&change,
@@ -1726,7 +1726,7 @@ void socket_t::async_t::push_send (socket_t &socket, async_io_t *io) noexcept
   {
     listen_writable = true;
 
-#if __sal_os_darwin // {{{2
+#if __sal_os_macos // {{{2
 
     struct ::kevent change;
     EV_SET(&change,
@@ -1768,7 +1768,7 @@ async_io_t *async_context_t::poll (const milliseconds &timeout_ms,
     return io;
   }
 
-#if __sal_os_darwin // {{{2
+#if __sal_os_macos // {{{2
 
   ::timespec ts, *timeout = to_timespec(&ts, timeout_ms);
   struct ::kevent events[async_service_t::max_events_per_poll];

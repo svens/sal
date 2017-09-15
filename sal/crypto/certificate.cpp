@@ -4,7 +4,7 @@
 #include <sal/assert.hpp>
 #include <cstdlib>
 
-#if __sal_os_darwin //{{{1
+#if __sal_os_macos //{{{1
   #if !defined(__apple_build_version__)
     #define availability(...) /**/
   #endif
@@ -169,7 +169,7 @@ memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
-#if __sal_os_darwin // {{{1
+#if __sal_os_macos // {{{1
 
 
 namespace {

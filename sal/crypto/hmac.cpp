@@ -8,7 +8,7 @@ __sal_begin
 namespace crypto {
 
 
-#if __sal_os_darwin //{{{1
+#if __sal_os_macos //{{{1
 
 
 namespace {

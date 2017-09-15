@@ -3,7 +3,7 @@
 #include <sal/config.hpp>
 #include <utility>
 
-#if __sal_os_darwin
+#if __sal_os_macos
   #include <CoreFoundation/CFBase.h>
 #endif
 
@@ -12,7 +12,7 @@ __sal_begin
 
 namespace __bits {
 
-#if __sal_os_darwin //{{{1
+#if __sal_os_macos //{{{1
 
 template <typename T>
 using native_ref = ::CFTypeRef;

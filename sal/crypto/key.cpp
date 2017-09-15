@@ -1,7 +1,7 @@
 #include <sal/crypto/key.hpp>
 
 #if 0
-#if __sal_os_darwin //{{{1
+#if __sal_os_macos //{{{1
   #if !defined(__apple_build_version__)
     #define availability(...) /**/
   #endif
@@ -21,7 +21,7 @@ __sal_begin
 namespace crypto {
 
 
-#if __sal_os_darwin // {{{1
+#if __sal_os_macos // {{{1
 
 #elif __sal_os_linux //{{{1
 

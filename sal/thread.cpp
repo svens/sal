@@ -1,6 +1,6 @@
 #include <sal/thread.hpp>
 
-#if __sal_os_darwin
+#if __sal_os_macos
   #include <pthread.h>
 #elif __sal_os_linux
   #include <unistd.h>
@@ -20,7 +20,7 @@ namespace this_thread { namespace __bits {
 
 thread_id make_id () noexcept
 {
-#if __sal_os_darwin
+#if __sal_os_macos
   return pthread_mach_thread_np(pthread_self());
 #elif __sal_os_linux
   return syscall(SYS_gettid);

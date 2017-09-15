@@ -8,7 +8,7 @@
 #include <mutex>
 #include <system_error>
 
-#if __sal_os_darwin || __sal_os_linux // {{{1
+#if __sal_os_macos || __sal_os_linux // {{{1
   #include <sys/socket.h>
 #elif __sal_os_windows // {{{1
   #include <winsock2.h>
@@ -37,7 +37,7 @@ const std::error_code &init_lib () noexcept;
 using sa_family_t = ::ADDRESS_FAMILY;
 using message_flags_t = DWORD;
 
-#elif __sal_os_darwin || __sal_os_linux // {{{1
+#elif __sal_os_macos || __sal_os_linux // {{{1
 
 using sa_family_t = ::sa_family_t;
 using message_flags_t = int;
@@ -71,7 +71,7 @@ struct socket_t
 #if __sal_os_windows // {{{1
   using handle_t = SOCKET;
   static constexpr handle_t invalid = INVALID_SOCKET;
-#elif __sal_os_darwin || __sal_os_linux // {{{1
+#elif __sal_os_macos || __sal_os_linux // {{{1
   using handle_t = int;
   static constexpr handle_t invalid = -1;
 #endif // }}}1
@@ -280,7 +280,7 @@ struct async_service_t
 {
 #if __sal_os_windows // {{{1
   HANDLE iocp;
-#elif __sal_os_darwin || __sal_os_linux // {{{1
+#elif __sal_os_macos || __sal_os_linux // {{{1
   int queue;
 #endif // }}}1
 
@@ -377,7 +377,7 @@ struct async_op_base_t
 {
 #if __sal_os_windows // {{{1
   DWORD transferred;
-#elif __sal_os_darwin || __sal_os_linux // {{{1
+#elif __sal_os_macos || __sal_os_linux // {{{1
   size_t transferred;
 #endif // }}}1
 };
@@ -515,7 +515,7 @@ struct async_accept_t
 };
 
 
-#elif __sal_os_darwin || __sal_os_linux // {{{1
+#elif __sal_os_macos || __sal_os_linux // {{{1
 
 
 struct socket_t::async_t

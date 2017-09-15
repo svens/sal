@@ -3,7 +3,7 @@
 #include <sal/config.hpp>
 #include <sal/__bits/ref.hpp>
 
-#if __sal_os_darwin //{{{1
+#if __sal_os_macos //{{{1
   #if !defined(__apple_build_version__)
     #define availability(...) /**/
   #endif
@@ -27,7 +27,7 @@ __sal_begin
 namespace crypto { namespace __bits {
 
 
-#if __sal_os_darwin //{{{1
+#if __sal_os_macos //{{{1
 
 using certificate_t = shared_ref<SecCertificateRef>;
 using public_key_t = unique_ref<SecKeyRef>;

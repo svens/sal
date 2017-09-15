@@ -1704,7 +1704,7 @@ TEST_F(crypto_certificate, import_pkcs12_no_passphrase) //{{{1
 
 TEST_F(crypto_certificate, import_pkcs12_valid_no_passphrase) //{{{1
 {
-#if __sal_os_darwin
+#if __sal_os_macos
   return;
 #endif
 

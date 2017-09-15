@@ -11,7 +11,7 @@
 #include <sal/crypto/random.hpp>
 #include <sal/error.hpp>
 
-#if __sal_os_darwin
+#if __sal_os_macos
   #include <CommonCrypto/CommonCrypto.h>
   #include <CommonCrypto/CommonRandom.h>
 #elif __sal_os_linux
@@ -35,7 +35,7 @@ void random (void *data, size_t size)
 
   if (!random_failed)
   {
-#if __sal_os_darwin
+#if __sal_os_macos
     random_failed = kCCSuccess != ::CCRandomGenerateBytes(data, size);
 #elif __sal_os_linux
     random_failed = !RAND_bytes(static_cast<uint8_t *>(data), size);

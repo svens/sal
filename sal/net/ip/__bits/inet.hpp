@@ -2,7 +2,7 @@
 
 #include <sal/config.hpp>
 
-#if __sal_os_linux || __sal_os_darwin
+#if __sal_os_linux || __sal_os_macos
   #include <arpa/inet.h>
   #include <netinet/tcp.h>
   #include <netdb.h>
@@ -109,7 +109,7 @@ inline int to_gai_error (int sys_error,
       return EAI_SOCKTYPE;
   }
 
-#elif __sal_os_darwin
+#elif __sal_os_macos
 
   if (sys_error == EAI_NONAME && (!host_name || !*host_name))
   {
