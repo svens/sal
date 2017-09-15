@@ -2,6 +2,9 @@
 
 /**
  * \file sal/crypto/certificate.hpp
+ * Public key certificate in X509 format.
+ *
+ * \see https://en.wikipedia.org/wiki/Public_key_certificate
  */
 
 
@@ -23,18 +26,47 @@ __sal_begin
 namespace crypto {
 
 
+/**
+ * Wrapper for platform's native public key certificate.
+ *
+ * Platforms use following native implementations:
+ * - MacOS: Security framework with SecCertificateRef
+ * - Linux: OpenSSL with X509
+ * - Windows: WinCrypt with PCCERT_CONTEXT
+ */
 class certificate_t
 {
 public:
 
+  /**
+   * Construct new empty certificate
+   */
   certificate_t () = default;
+
+  /**
+   * Construct new certificate from other (increase reference count)
+   */
   certificate_t (const certificate_t &) = default;
+
+  /**
+   * Construct new certificate from other, acquiring native handle and zeroing
+   * other instance.
+   */
   certificate_t (certificate_t &&) = default;
+
+  /**
+   * Assign \a this from other, increasing native handle reference count.
+   */
   certificate_t &operator= (const certificate_t &) = default;
+
+  /**
+   * Assign \a this from other, zeroing other instance.
+   */
   certificate_t &operator= (certificate_t &&) = default;
 
 
   /**
+   * Swap \a this certificate handle with \a that.
    */
   void swap (certificate_t &that) noexcept
   {
@@ -43,11 +75,13 @@ public:
 
 
   /**
+   * Return true if \a this represents same certificate as \a that.
    */
   bool operator== (const certificate_t &that) const noexcept;
 
 
   /**
+   * Return true if \a this represents different certificate as \a that.
    */
   bool operator!= (const certificate_t &that) const noexcept
   {
@@ -56,6 +90,14 @@ public:
 
 
   /**
+   * Import certificates from PKCS12 formatted blob [\a first, \a last).
+   * Return leaf certificate and inserts other possible certificates into
+   * \a chain (if not \c nullptr). Private key corresponding to leaf
+   * certificate is extracted using \a passphrase and assigned to
+   * \a private_key if not \c nullptr.
+   *
+   * On success, error is cleared. On failure returns null certificate and
+   * sets \a error.
    */
   static certificate_t import_pkcs12 (
     const uint8_t *first, const uint8_t *last,
@@ -67,6 +109,9 @@ public:
 
 
   /**
+   * Load and construct new certificate from DER encoded blob in
+   * [\a first, \a last). On failure return null certificate and set
+   * \a error.
    */
   static certificate_t from_der (const uint8_t *first, const uint8_t *last,
     std::error_code &error
@@ -74,6 +119,8 @@ public:
 
 
   /**
+   * Load and construct new certificate from DER encoded blob in \a data. On
+   * failure, return null certificate and set \a error.
    */
   template <typename Ptr>
   static certificate_t from_der (const Ptr &data, std::error_code &error)
@@ -88,6 +135,8 @@ public:
 
 
   /**
+   * Load and construct new certificate from DER encoded blob in \a data. On
+   * failure, throws std::system_error
    */
   template <typename Ptr>
   static certificate_t from_der (const Ptr &data)
@@ -97,6 +146,9 @@ public:
 
 
   /**
+   * Load and construct new certificate from PEM encoded blob in
+   * [\a first, \a last). On failure return null certificate and set
+   * \a error.
    */
   static certificate_t from_pem (const uint8_t *first, const uint8_t *last,
     std::error_code &error
@@ -104,6 +156,8 @@ public:
 
 
   /**
+   * Load and construct new certificate from PEM encoded blob in \a data. On
+   * failure, return null certificate and set \a error.
    */
   template <typename Ptr>
   static certificate_t from_pem (const Ptr &data, std::error_code &error)
@@ -118,6 +172,8 @@ public:
 
 
   /**
+   * Load and construct new certificate from DER encoded blob in \a data. On
+   * failure, throws std::system_error
    */
   static certificate_t from_pem (const std::string &data)
   {
@@ -126,6 +182,12 @@ public:
 
 
   /**
+   * Convert \a this certificate into DER encoded blob in \a data and return
+   * pointer to end of newly constructed blob.
+   *
+   * Possible errors:
+   * - std::errc::bad_address: certificate is null
+   * - std::errc::result_out_of_range: blob wouldn't fit into \a data
    */
   template <typename Ptr>
   uint8_t *to_der (const Ptr &data, std::error_code &error) const noexcept
@@ -139,6 +201,10 @@ public:
 
 
   /**
+   * Convert \a this certificate into DER encoded blob in \a data and return
+   * pointer to end of newly constructed blob.
+   *
+   * \throw std::system_error on failure.
    */
   template <typename Ptr>
   uint8_t *to_der (const Ptr &data) const
@@ -148,11 +214,21 @@ public:
 
 
   /**
+   * Convert \a this certificate into DER encoded blob and return it as vector
+   * of bytes.
+   *
+   * Possible errors:
+   * - std::errc::bad_address: certificate is null
+   * - std::errc::not_enough_memory: vector allocation failed
    */
   std::vector<uint8_t> to_der (std::error_code &error) const noexcept;
 
 
   /**
+   * Convert \a this certificate into DER encoded blob and return it as vector
+   * of bytes.
+   *
+   * \throws std::system_error on failure.
    */
   std::vector<uint8_t> to_der () const
   {
@@ -167,6 +243,7 @@ public:
 
 
   /**
+   * Return true if \a this represents no certificate.
    */
   bool is_null () const noexcept
   {
@@ -175,6 +252,7 @@ public:
 
 
   /**
+   * Return true if \a this represents valid native certificate.
    */
   explicit operator bool () const noexcept
   {
@@ -183,16 +261,22 @@ public:
 
 
   /**
+   * Returns X509 structure version (1 for V1, 3 for V3, etc) or
+   * 0 if is_null() is true.
    */
   int version () const noexcept;
 
 
   /**
+   * Returns absolute time since when \a this certificate is valid. On failure
+   * sets \a error (cleared on success).
    */
   sal::time_t not_before (std::error_code &error) const noexcept;
 
 
   /**
+   * Returns absolute time since when \a this certificate is valid.
+   * \throws std::system_error on failure.
    */
   sal::time_t not_before () const
   {
@@ -201,11 +285,15 @@ public:
 
 
   /**
+   * Returns absolute time until \a this certificate is valid. On failure
+   * sets \a error (cleared on success).
    */
   sal::time_t not_after (std::error_code &error) const noexcept;
 
 
   /**
+   * Returns absolute time until \a this certificate is valid.
+   * \throws std::system_error on failure.
    */
   sal::time_t not_after () const
   {
@@ -214,6 +302,7 @@ public:
 
 
   /**
+   * Returns true if \a this certificate is valid at absolute time \a t.
    */
   bool not_expired (sal::time_t t = now()) const
   {
@@ -222,6 +311,8 @@ public:
 
 
   /**
+   * Returns true if \a this certificate is valid during time \a t for at
+   * least duration of \a d.
    */
   template <class Rep, class Period>
   bool not_expired (const std::chrono::duration<Rep, Period> &d,
@@ -232,6 +323,8 @@ public:
 
 
   /**
+   * Returns thumbprint of \a this certificate using digest \a Algorithm.
+   * On failure sets \a error (clear on success).
    */
   template <typename Algorithm>
   std::vector<uint8_t> digest (std::error_code &error) const noexcept
@@ -241,6 +334,8 @@ public:
 
 
   /**
+   * Returns thumbprint of \a this certificate using digest \a Algorithm.
+   * \throws std::system_error on failure.
    */
   template <typename Algorithm>
   std::vector<uint8_t> digest () const
@@ -250,11 +345,15 @@ public:
 
 
   /**
+   * Returns serial number of \a this certificate.
+   * On failure sets \a error (clear on success).
    */
   std::vector<uint8_t> serial_number (std::error_code &error) const noexcept;
 
 
   /**
+   * Returns serial number of \a this certificate.
+   * \throws std::system_error on failure.
    */
   std::vector<uint8_t> serial_number () const
   {
@@ -263,12 +362,16 @@ public:
 
 
   /**
+   * Returns authority key identifier of \a this certificate.
+   * On failure sets \a error (clear on success).
    */
   std::vector<uint8_t> authority_key_identifier (std::error_code &error)
     const noexcept;
 
 
   /**
+   * Returns authority key identifier of \a this certificate.
+   * \throws std::system_error on failure.
    */
   std::vector<uint8_t> authority_key_identifier () const
   {
@@ -279,12 +382,16 @@ public:
 
 
   /**
+   * Returns subject key identifier of \a this certificate.
+   * On failure sets \a error (clear on success).
    */
   std::vector<uint8_t> subject_key_identifier (std::error_code &error)
     const noexcept;
 
 
   /**
+   * Returns subject key identifier of \a this certificate.
+   * \throws std::system_error on failure.
    */
   std::vector<uint8_t> subject_key_identifier () const
   {
@@ -295,12 +402,16 @@ public:
 
 
   /**
+   * Returns true if \a this certificate is issued by \a issuer.
+   * On failure sets \a error (clear on success).
    */
   bool issued_by (const certificate_t &issuer, std::error_code &error)
     const noexcept;
 
 
   /**
+   * Returns true if \a this certificate is issued by \a issuer.
+   * \throws std::system_error on failure.
    */
   bool issued_by (const certificate_t &issuer) const
   {
@@ -309,6 +420,9 @@ public:
 
 
   /**
+   * Returns true if \a this certificate is self signed (ie subject and issuer
+   * fields are same).
+   * On failure sets \a error (clear on success).
    */
   bool is_self_signed (std::error_code &error) const noexcept
   {
@@ -317,6 +431,9 @@ public:
 
 
   /**
+   * Returns true if \a this certificate is self signed (ie subject and issuer
+   * fields are same).
+   * \throws std::system_error on failure.
    */
   bool is_self_signed () const
   {
@@ -325,16 +442,22 @@ public:
 
 
   /**
+   * List of certificate's distinguished names as pairs of OID and textual
+   * value.
    */
   using distinguished_name_t = std::vector<std::pair<oid_t, std::string>>;
 
 
   /**
+   * Returns issuer's distinguished names.
+   * On failure sets \a error (clear on success).
    */
   distinguished_name_t issuer (std::error_code &error) const noexcept;
 
 
   /**
+   * Returns issuer's distinguished names.
+   * \throws std::system_error on failure.
    */
   distinguished_name_t issuer () const
   {
@@ -343,12 +466,16 @@ public:
 
 
   /**
+   * Filter and return issuer's distinguished names by \a oid
+   * On failure sets \a error (clear on success).
    */
   distinguished_name_t issuer (const oid_t &oid, std::error_code &error)
     const noexcept;
 
 
   /**
+   * Filter and return issuer's distinguished names by \a oid
+   * \throws std::system_error on failure.
    */
   distinguished_name_t issuer (const oid_t &oid) const
   {
@@ -357,11 +484,15 @@ public:
 
 
   /**
+   * Returns subject's distinguished names.
+   * On failure sets \a error (clear on success).
    */
   distinguished_name_t subject (std::error_code &error) const noexcept;
 
 
   /**
+   * Returns subject's distinguished names.
+   * \throws std::system_error on failure.
    */
   distinguished_name_t subject () const
   {
@@ -370,12 +501,16 @@ public:
 
 
   /**
+   * Filter and return subject's distinguished names by \a oid
+   * On failure sets \a error (clear on success).
    */
   distinguished_name_t subject (const oid_t &oid, std::error_code &error)
     const noexcept;
 
 
   /**
+   * Filter and return subject's distinguished names by \a oid
+   * \throws std::system_error on failure.
    */
   distinguished_name_t subject (const oid_t &oid) const
   {
@@ -384,17 +519,21 @@ public:
 
 
   /**
+   * Certificate alternative name types.
    */
   enum class alt_name
   {
-    dns,
-    ip,
-    uri,
-    email,
+    dns,        ///< DNS name
+    ip,         ///< IP address
+    uri,        ///< URI
+    email,      ///< Email address
   };
 
 
   /**
+   * Returns list of issuer's alternative names as pairs of types and
+   * corresponding textual values.
+   * On failure sets \a error (clear on success).
    */
   std::vector<std::pair<alt_name, std::string>> issuer_alt_names (
     std::error_code &error
@@ -402,6 +541,9 @@ public:
 
 
   /**
+   * Returns list of issuer's alternative names as pairs of types and
+   * corresponding textual values.
+   * \throws std::system_error on failure.
    */
   std::vector<std::pair<alt_name, std::string>> issuer_alt_names () const
   {
@@ -410,6 +552,9 @@ public:
 
 
   /**
+   * Returns list of subject's alternative names as pairs of types and
+   * corresponding textual values.
+   * On failure sets \a error (clear on success).
    */
   std::vector<std::pair<alt_name, std::string>> subject_alt_names (
     std::error_code &error
@@ -417,6 +562,9 @@ public:
 
 
   /**
+   * Returns list of subject's alternative names as pairs of types and
+   * corresponding textual values.
+   * \throws std::system_error on failure.
    */
   std::vector<std::pair<alt_name, std::string>> subject_alt_names () const
   {
@@ -425,11 +573,15 @@ public:
 
 
   /**
+   * Returns certificate's public key.
+   * On failure sets error (clear on success).
    */
   public_key_t public_key (std::error_code &error) const noexcept;
 
 
   /**
+   * Returns certificate's public key.
+   * \throws std::system_error on failure.
    */
   public_key_t public_key () const
   {
@@ -438,12 +590,24 @@ public:
 
 
   /**
+   * Helper structure to create textual representation of list of
+   * distinguished names.
+   *
+   * \note All attributes are references ie original variables must be kept
+   * live until inserter methods have finished.
    */
   struct distinguished_name_format_t
   {
+    /// Reference to distinguished names for formatting
     const distinguished_name_t &rdn;
-    const std::string &assign, &separator;
 
+    /// String to use as assignment
+    const std::string &assign;
+
+    /// Separator between distinguished names
+    const std::string &separator;
+
+    /// Ctor
     distinguished_name_format_t (const distinguished_name_t &rdn,
         const std::string &assign,
         const std::string &separator) noexcept
@@ -455,6 +619,7 @@ public:
 
 
   /**
+   * Convenience method to create distinguished names list formatter.
    */
   static distinguished_name_format_t format (
     const distinguished_name_t &rdn,
@@ -490,6 +655,7 @@ private:
 
 
 /**
+ * \see certificate_t::import_pkcs12
  */
 template <typename DataPtr>
 inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
@@ -510,6 +676,7 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 
 
 /**
+ * \see certificate_t::import_pkcs12
  */
 template <typename DataPtr>
 inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
@@ -524,6 +691,7 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 
 
 /**
+ * \see certificate_t::import_pkcs12
  */
 template <typename DataPtr>
 inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
@@ -543,6 +711,7 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 
 
 /**
+ * \see certificate_t::import_pkcs12
  */
 template <typename DataPtr>
 inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
@@ -556,6 +725,7 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 
 
 /**
+ * \see certificate_t::import_pkcs12
  */
 template <typename DataPtr>
 inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
@@ -575,6 +745,7 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 
 
 /**
+ * \see certificate_t::import_pkcs12
  */
 template <typename DataPtr>
 inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
@@ -588,6 +759,7 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 
 
 /**
+ * \see certificate_t::import_pkcs12
  */
 template <typename DataPtr>
 inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
@@ -606,6 +778,7 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 
 
 /**
+ * \see certificate_t::import_pkcs12
  */
 template <typename DataPtr>
 inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
@@ -616,6 +789,8 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 
 
 /**
+ * Format certificate's distinguished names list in \a rdn into memory
+ * \a writer.
  */
 memory_writer_t &operator<< (memory_writer_t &writer,
   const certificate_t::distinguished_name_format_t &rdn
@@ -623,6 +798,8 @@ memory_writer_t &operator<< (memory_writer_t &writer,
 
 
 /**
+ * Format certificate's subject distinguished names list in \a rdn into memory
+ * \a writer.
  */
 inline memory_writer_t &operator<< (memory_writer_t &writer,
   const certificate_t &certificate)
@@ -632,6 +809,7 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 
 
 /**
+ * Format certificate's distinguished names list in \a rdn into stream \a os.
  */
 inline std::ostream &operator<< (std::ostream &os,
   const certificate_t::distinguished_name_format_t &rdn)
@@ -642,6 +820,8 @@ inline std::ostream &operator<< (std::ostream &os,
 
 
 /**
+ * Format certificate's subject distinguished names list in \a rdn into stream
+ * \a os
  */
 inline std::ostream &operator<< (std::ostream &os,
   const certificate_t &certificate)
