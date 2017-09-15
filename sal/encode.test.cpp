@@ -404,7 +404,7 @@ TYPED_TEST(encode, decode_buffer_into_range_invalid_data_in_back)
 }
 
 
-inline auto to_string (const std::vector<char> &in)
+inline auto to_string (const std::vector<uint8_t> &in)
 {
   return std::string(in.begin(), in.end());
 }
