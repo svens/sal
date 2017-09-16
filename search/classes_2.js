@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['certificate_5ft',['certificate_t',['../classsal_1_1crypto_1_1certificate__t.html',1,'sal::crypto']]],
   ['channel_5ft',['channel_t',['../classsal_1_1logger_1_1channel__t.html',1,'sal::logger']]],
   ['char_5farray_5ft',['char_array_t',['../classsal_1_1char__array__t.html',1,'sal']]],
   ['char_5farray_5ft_3c_20max_5fmessage_5fsize_20_3e',['char_array_t&lt; max_message_size &gt;',['../classsal_1_1char__array__t.html',1,'sal']]],

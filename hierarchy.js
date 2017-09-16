@@ -43,12 +43,14 @@ var hierarchy =
       [ "sal::logger::worker_t", "classsal_1_1logger_1_1worker__t.html", null ]
     ] ],
     [ "sal::buf_ptr", "classsal_1_1buf__ptr.html", null ],
+    [ "sal::crypto::certificate_t", "classsal_1_1crypto_1_1certificate__t.html", null ],
     [ "sal::logger::channel_t< Worker >", "classsal_1_1logger_1_1channel__t.html", null ],
     [ "sal::char_array_t< Size >", "classsal_1_1char__array__t.html", null ],
     [ "sal::char_array_t< max_message_size >", "classsal_1_1char__array__t.html", null ],
     [ "sal::program_options::command_line_t", "classsal_1_1program__options_1_1command__line__t.html", null ],
     [ "sal::program_options::config_reader_t", "classsal_1_1program__options_1_1config__reader__t.html", null ],
     [ "sal::const_buf_ptr", "classsal_1_1const__buf__ptr.html", null ],
+    [ "sal::crypto::certificate_t::distinguished_name_format_t", "structsal_1_1crypto_1_1certificate__t_1_1distinguished__name__format__t.html", null ],
     [ "sal::logger::event_t", "structsal_1_1logger_1_1event__t.html", null ],
     [ "std::exception", null, [
       [ "std::bad_cast", null, [
@@ -81,6 +83,8 @@ var hierarchy =
     [ "pair", null, [
       [ "sal::memory_writer_t", "classsal_1_1memory__writer__t.html", null ]
     ] ],
+    [ "sal::crypto::private_key_t", "classsal_1_1crypto_1_1private__key__t.html", null ],
+    [ "sal::crypto::public_key_t", "classsal_1_1crypto_1_1public__key__t.html", null ],
     [ "sal::queue_t< T, SyncPolicy >", "classsal_1_1queue__t.html", null ],
     [ "sal::net::ip::resolver_base_t", "classsal_1_1net_1_1ip_1_1resolver__base__t.html", [
       [ "sal::net::ip::basic_resolver_t< Protocol >", "classsal_1_1net_1_1ip_1_1basic__resolver__t.html", null ]

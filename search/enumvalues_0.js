@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['do_5fnot_5froute',['do_not_route',['../classsal_1_1net_1_1socket__base__t.html#a02c464f92e6a4c9e2be26ee23f9d5392ab94d1ddef890d21dc22b18d5c057bbd6',1,'sal::net::socket_base_t']]]
+  ['dns',['dns',['../classsal_1_1crypto_1_1certificate__t.html#a27bbc09d780d81b41e31cdbb331dfd22ab3bf60b851ebaeb2768b01a32e2ef32f',1,'sal::crypto::certificate_t']]]
 ];

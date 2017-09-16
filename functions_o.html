@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.13.0</span>
+   &#160;<span id="projectnumber">0.14.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -94,12 +94,12 @@ $(document).ready(function(){initNavTree('functions_o.html','');});
 <h3><a id="index_o"></a>- o -</h3><ul>
 <li>one_shot()
 : <a class="el" href="classsal_1_1crypto_1_1hash__t.html#ab441599ac3742760c47cbe372db4759e">sal::crypto::hash_t&lt; Algorithm &gt;</a>
-, <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#aa4bad345284c2d77590abbc16473660a">sal::crypto::hmac_t&lt; Algorithm &gt;</a>
+, <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a6d6296cb4b00b1f2d4463a2025cc0b5c">sal::crypto::hmac_t&lt; Algorithm &gt;</a>
 </li>
 <li>open()
 : <a class="el" href="classsal_1_1file__t.html#af2ba73de6b2ce015415ac1ae3a7c043d">sal::file_t</a>
 , <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#adf1e33e868e9352a98da1db269b4f0cc">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
-, <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a658d48f0f818e0d7a0033259f113efcc">sal::net::basic_socket_t&lt; Protocol &gt;</a>
+, <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a06f00f1d52818c91a7d774af1d80d085">sal::net::basic_socket_t&lt; Protocol &gt;</a>
 </li>
 <li>open_mode
 : <a class="el" href="classsal_1_1file__t.html#afe60ce0ab5a5891f6046bc41d80b7957">sal::file_t</a>
@@ -109,6 +109,9 @@ $(document).ready(function(){initNavTree('functions_o.html','');});
 </li>
 <li>operator bool()
 : <a class="el" href="classsal_1_1char__array__t.html#a50e47d17f8b4ff9017d8db33fbd565f0">sal::char_array_t&lt; Size &gt;</a>
+, <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a280db3d1ed3a52f670883d27069d8e28">sal::crypto::certificate_t</a>
+, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html#ab436778a619b3288c0c35b4d89ada66e">sal::crypto::private_key_t</a>
+, <a class="el" href="classsal_1_1crypto_1_1public__key__t.html#a8cd4ceaefed95aa0643bb9bc4e7237e0">sal::crypto::public_key_t</a>
 , <a class="el" href="classsal_1_1file__t.html#ad65fe7f090f75b49e4fbfd7d6e23fe01">sal::file_t</a>
 , <a class="el" href="classsal_1_1locked__ptr.html#aca3f8fa0a1f1316a5a97dc8c8fd87c53">sal::locked_ptr&lt; T, Mutex &gt;</a>
 , <a class="el" href="classsal_1_1memory__writer__t.html#a89a0edc9baaa0d8acae9b309f005dcb9">sal::memory_writer_t</a>
@@ -116,8 +119,9 @@ $(document).ready(function(){initNavTree('functions_o.html','');});
 <li>operator endpoint_t()
 : <a class="el" href="classsal_1_1net_1_1ip_1_1basic__resolver__entry__t.html#a75a3fb15a2618af498f59f9ef28f9eaf">sal::net::ip::basic_resolver_entry_t&lt; Protocol &gt;</a>
 </li>
-<li>operator!=
-: <a class="el" href="classsal_1_1net_1_1ip_1_1basic__resolver__results__iterator__t.html#a336d12ec9df73bf8818c61dbbaa04359">sal::net::ip::basic_resolver_results_iterator_t&lt; Protocol &gt;</a>
+<li>operator!=()
+: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a306cfb0b000ac93045b35fe38ef8b894">sal::crypto::certificate_t</a>
+, <a class="el" href="classsal_1_1net_1_1ip_1_1basic__resolver__results__iterator__t.html#a336d12ec9df73bf8818c61dbbaa04359">sal::net::ip::basic_resolver_results_iterator_t&lt; Protocol &gt;</a>
 </li>
 <li>operator()()
 : <a class="el" href="classsal_1_1program__options_1_1command__line__t.html#afba180d47f7176d80e0596be3ed6f859">sal::program_options::command_line_t</a>
@@ -140,16 +144,19 @@ $(document).ready(function(){initNavTree('functions_o.html','');});
 </li>
 <li>operator&lt;&lt;()
 : <a class="el" href="classsal_1_1char__array__t.html#af5ee6752ca80df959212a5097f38ca34">sal::char_array_t&lt; Size &gt;</a>
-, <a class="el" href="classsal_1_1memory__writer__t.html#a6597d676ebbe2888866967c7cfaba19f">sal::memory_writer_t</a>
+, <a class="el" href="classsal_1_1memory__writer__t.html#a69298c3801bf229b75b2d86a9cfa1f60">sal::memory_writer_t</a>
 , <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a14d56d51ecc5f99b97d94fb58aec435c">sal::net::ip::address_t</a>
 , <a class="el" href="classsal_1_1net_1_1ip_1_1address__v4__t.html#a1ef910ba35c5d6ea964c377d293e628b">sal::net::ip::address_v4_t</a>
 , <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a03ff8728db1f0e24ddda304462f0f4a3">sal::net::ip::address_v6_t</a>
 , <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a2ba57a16b8df399e63ad9d1cf239dd54">sal::net::ip::basic_endpoint_t&lt; Protocol &gt;</a>
 </li>
 <li>operator=()
-: <a class="el" href="classsal_1_1char__array__t.html#a85b0c04be4a651de1d1d6a3e7d5d033b">sal::char_array_t&lt; Size &gt;</a>
+: <a class="el" href="classsal_1_1char__array__t.html#a34c4c6146cc4313fa2299b4dbf59808c">sal::char_array_t&lt; Size &gt;</a>
+, <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a9fafebc495020dbe10e78a1061e35f30">sal::crypto::certificate_t</a>
 , <a class="el" href="classsal_1_1crypto_1_1hash__t.html#abc06ca49421043eb7d8f26e245a4a962">sal::crypto::hash_t&lt; Algorithm &gt;</a>
 , <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a16323c9d31f3348a127f666b4095453e">sal::crypto::hmac_t&lt; Algorithm &gt;</a>
+, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html#a57ecc0957d8455f7834d58205a0fc402">sal::crypto::private_key_t</a>
+, <a class="el" href="classsal_1_1crypto_1_1public__key__t.html#a00f3a7c0eb15b960f331c93b39917147">sal::crypto::public_key_t</a>
 , <a class="el" href="classsal_1_1file__t.html#a069f4671d0a3ee8814b10998ddbc4a94">sal::file_t</a>
 , <a class="el" href="classsal_1_1intrusive__queue__t.html#ab61295bd1e6c94df551b0ece9e64bddc">sal::intrusive_queue_t&lt; T, SyncPolicy, Hook &gt;</a>
 , <a class="el" href="classsal_1_1locked__ptr.html#ace091a7af7e8fe81315c57df8c96fa9a">sal::locked_ptr&lt; T, Mutex &gt;</a>
@@ -159,8 +166,9 @@ $(document).ready(function(){initNavTree('functions_o.html','');});
 , <a class="el" href="classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#aa477e3366e6b72f7cf07ecd3f2b05e4d">sal::net::ip::basic_resolver_results_t&lt; Protocol &gt;</a>
 , <a class="el" href="classsal_1_1queue__t.html#a36293867ad98cc3eaf1977d72d688188">sal::queue_t&lt; T, SyncPolicy &gt;</a>
 </li>
-<li>operator==
-: <a class="el" href="classsal_1_1net_1_1ip_1_1basic__resolver__results__iterator__t.html#ac5a999053e1c69ae6781ef094e2cbfd6">sal::net::ip::basic_resolver_results_iterator_t&lt; Protocol &gt;</a>
+<li>operator==()
+: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a5478a3fb21e1be494c35037f43b7ff80">sal::crypto::certificate_t</a>
+, <a class="el" href="classsal_1_1net_1_1ip_1_1basic__resolver__results__iterator__t.html#ac5a999053e1c69ae6781ef094e2cbfd6">sal::net::ip::basic_resolver_results_iterator_t&lt; Protocol &gt;</a>
 </li>
 <li>operator[]()
 : <a class="el" href="classsal_1_1char__array__t.html#a526d029c022483c9710098fe47eb8da2">sal::char_array_t&lt; Size &gt;</a>

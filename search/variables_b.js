@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['v4_5fmapped',['v4_mapped',['../classsal_1_1net_1_1ip_1_1resolver__base__t.html#a978a35baa977f9ec0cd4d728d02816a2',1,'sal::net::ip::resolver_base_t']]]
+  ['rdn',['rdn',['../structsal_1_1crypto_1_1certificate__t_1_1distinguished__name__format__t.html#a7dae3c31a2b6dadba5b0b2993acdf364',1,'sal::crypto::certificate_t::distinguished_name_format_t']]]
 ];
