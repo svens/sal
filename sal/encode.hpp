@@ -35,14 +35,12 @@ using base64 = __bits::base64;
 template <typename Encoding, typename In>
 inline size_t max_encoded_size (In first, In last) noexcept
 {
-#if _MSC_VER && _DEBUG
   if (first == last)
   {
     return 0;
   }
-#endif
 
-  auto begin = reinterpret_cast<const char *>(std::addressof(*first));
+  auto begin = reinterpret_cast<const uint8_t *>(std::addressof(*first));
   auto end = begin + (last - first) * sizeof(*first);
   return Encoding::max_encoded_size(begin, end);
 }
@@ -67,17 +65,17 @@ inline size_t max_encoded_size (const InPtr &data) noexcept
 template <typename Encoding, typename In, typename Out>
 inline Out encode (In first, In last, Out d_first) noexcept
 {
-#if _MSC_VER && _DEBUG
   if (first == last)
   {
     return d_first;
   }
-#endif
 
-  auto begin = reinterpret_cast<const char *>(std::addressof(*first));
+  auto begin = reinterpret_cast<const uint8_t *>(std::addressof(*first));
   auto end = begin + (last - first) * sizeof(*first);
-  return Encoding::encode(begin, end,
-    reinterpret_cast<char *>(std::addressof(*d_first))
+  return reinterpret_cast<Out>(
+    Encoding::encode(begin, end,
+      reinterpret_cast<uint8_t *>(std::addressof(*d_first))
+    )
   );
 }
 
@@ -129,14 +127,12 @@ template <typename Encoding, typename In>
 inline size_t max_decoded_size (In first, In last, std::error_code &error)
   noexcept
 {
-#if _MSC_VER && _DEBUG
   if (first == last)
   {
     return 0;
   }
-#endif
 
-  auto begin = reinterpret_cast<const char *>(std::addressof(*first));
+  auto begin = reinterpret_cast<const uint8_t *>(std::addressof(*first));
   auto end = begin + (last - first) * sizeof(*first);
   return Encoding::max_decoded_size(begin, end, error);
 }
@@ -194,18 +190,18 @@ template <typename Encoding, typename In, typename Out>
 inline Out decode (In first, In last, Out d_first, std::error_code &error)
   noexcept
 {
-#if _MSC_VER && _DEBUG
   if (first == last)
   {
     return d_first;
   }
-#endif
 
-  auto begin = reinterpret_cast<const char *>(std::addressof(*first));
+  auto begin = reinterpret_cast<const uint8_t *>(std::addressof(*first));
   auto end = begin + (last - first) * sizeof(*first);
-  return Encoding::decode(begin, end,
-    reinterpret_cast<char *>(std::addressof(*d_first)),
-    error
+  return reinterpret_cast<Out>(
+    Encoding::decode(begin, end,
+      reinterpret_cast<uint8_t *>(std::addressof(*d_first)),
+      error
+    )
   );
 }
 
@@ -257,12 +253,13 @@ inline Out decode (const InPtr &data, Out d_first)
 
 /**
  * Conveniency wrapper for decoding, returning output data wrapped into
- * std::vector<char>.
+ * std::vector<uint8_t>.
  */
 template <typename Encoding, typename In>
-std::vector<char> decode (In first, In last, std::error_code &error) noexcept
+inline std::vector<uint8_t> decode (In first, In last, std::error_code &error)
+  noexcept
 {
-  std::vector<char> result;
+  std::vector<uint8_t> result;
   auto size = max_decoded_size<Encoding>(first, last, error);
   if (!error && size)
   {
@@ -276,12 +273,12 @@ std::vector<char> decode (In first, In last, std::error_code &error) noexcept
 
 /**
  * Conveniency wrapper for decoding, returning output data wrapped into
- * std::vector<char>.
+ * std::vector<uint8_t>.
  */
 template <typename Encoding, typename In>
-inline std::vector<char> decode (In first, In last)
+inline std::vector<uint8_t> decode (In first, In last)
 {
-  std::vector<char> result;
+  std::vector<uint8_t> result;
   if (auto size = max_decoded_size<Encoding>(first, last))
   {
     result.resize(size);
@@ -294,10 +291,10 @@ inline std::vector<char> decode (In first, In last)
 
 /**
  * Conveniency wrapper for decoding, returning output data wrapped into
- * std::vector<char>.
+ * std::vector<uint8_t>.
  */
 template <typename Encoding, typename InPtr>
-inline std::vector<char> decode (const InPtr &data, std::error_code &error)
+inline std::vector<uint8_t> decode (const InPtr &data, std::error_code &error)
   noexcept
 {
   return decode<Encoding>(data.begin(), data.end(), error);
@@ -306,10 +303,10 @@ inline std::vector<char> decode (const InPtr &data, std::error_code &error)
 
 /**
  * Conveniency wrapper for decoding, returning output data wrapped into
- * std::vector<char>.
+ * std::vector<uint8_t>.
  */
 template <typename Encoding, typename InPtr>
-inline std::vector<char> decode (const InPtr &data)
+inline std::vector<uint8_t> decode (const InPtr &data)
 {
   return decode<Encoding>(data.begin(), data.end());
 }

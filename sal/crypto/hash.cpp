@@ -9,7 +9,7 @@ __sal_begin
 namespace crypto {
 
 
-#if __sal_os_darwin
+#if __sal_os_macos
 
 // md5 {{{1
 

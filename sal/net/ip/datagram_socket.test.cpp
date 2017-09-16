@@ -803,7 +803,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
     auto result = socket_t::async_receive_from_result(io, error);
     ASSERT_NE(nullptr, result);
 
-#if __sal_os_darwin
+#if __sal_os_macos
 
     // 1st succeed immediately with 0B transferred
     EXPECT_TRUE(!error);
@@ -834,7 +834,7 @@ TEST_P(datagram_socket, async_receive_from_empty_buf)
 #endif
   }
 
-#if !__sal_os_darwin
+#if !__sal_os_macos
   // error from closed socket still in context
   EXPECT_THROW(
     socket_t::async_receive_from_result(ctx.poll()),
@@ -1230,7 +1230,7 @@ TEST_P(datagram_socket, async_receive_empty_buf)
     auto result = socket_t::async_receive_result(io, error);
     ASSERT_NE(nullptr, result);
 
-#if __sal_os_darwin
+#if __sal_os_macos
 
     EXPECT_TRUE(!error);
     EXPECT_EQ(0U, result->transferred());
@@ -1258,7 +1258,7 @@ TEST_P(datagram_socket, async_receive_empty_buf)
 #endif
   }
 
-#if !__sal_os_darwin
+#if !__sal_os_macos
   // error from closed socket still in context
   EXPECT_THROW(
     socket_t::async_receive_result(ctx.poll()),

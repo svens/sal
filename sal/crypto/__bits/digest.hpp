@@ -2,7 +2,7 @@
 
 #include <sal/config.hpp>
 
-#if __sal_os_darwin
+#if __sal_os_macos
   #include <CommonCrypto/CommonDigest.h>
   #include <CommonCrypto/CommonHMAC.h>
 #elif __sal_os_linux
@@ -25,7 +25,7 @@ __sal_begin
 namespace crypto { namespace __bits {
 
 
-#if __sal_os_darwin //{{{1
+#if __sal_os_macos //{{{1
 
   struct md5_t
   {

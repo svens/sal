@@ -12,13 +12,13 @@ namespace __bits {
 
 struct hex_string
 {
-  static size_t max_encoded_size (const char *first, const char *last)
+  static size_t max_encoded_size (const uint8_t *first, const uint8_t *last)
     noexcept
   {
     return 2 * (last - first);
   }
 
-  static size_t max_decoded_size (const char *first, const char *last,
+  static size_t max_decoded_size (const uint8_t *first, const uint8_t *last,
     std::error_code &error) noexcept
   {
     if ((last - first) % 2 == 0)
@@ -31,10 +31,10 @@ struct hex_string
     return 0;
   }
 
-  static char *encode (const char *first, const char *last, char *out)
+  static uint8_t *encode (const uint8_t *first, const uint8_t *last, uint8_t *out)
     noexcept;
 
-  static char *decode (const char *first, const char *last, char *out,
+  static uint8_t *decode (const uint8_t *first, const uint8_t *last, uint8_t *out,
     std::error_code &error
   ) noexcept;
 };
@@ -42,13 +42,13 @@ struct hex_string
 
 struct base64
 {
-  static size_t max_encoded_size (const char *first, const char *last)
+  static size_t max_encoded_size (const uint8_t *first, const uint8_t *last)
     noexcept
   {
     return (((last - first) * 4 / 3) + 3) & ~3;
   }
 
-  static size_t max_decoded_size (const char *first, const char *last,
+  static size_t max_decoded_size (const uint8_t *first, const uint8_t *last,
     std::error_code &error) noexcept
   {
     if ((last - first) % 4 == 0)
@@ -61,10 +61,10 @@ struct base64
     return 0;
   }
 
-  static char *encode (const char *first, const char *last, char *out)
+  static uint8_t *encode (const uint8_t *first, const uint8_t *last, uint8_t *out)
     noexcept;
 
-  static char *decode (const char *first, const char *last, char *out,
+  static uint8_t *decode (const uint8_t *first, const uint8_t *last, uint8_t *out,
     std::error_code &error
   ) noexcept;
 };

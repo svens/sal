@@ -65,7 +65,7 @@ constexpr uint64_t number = make(@version_major@, @version_minor@, @version_patc
 //
 
 #if defined(__APPLE__)
-  #define __sal_os_darwin 1
+  #define __sal_os_macos 1
 #elif defined(__linux__)
   #define __sal_os_linux 1
 #elif defined(_WIN32) \
