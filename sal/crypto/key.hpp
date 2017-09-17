@@ -9,6 +9,7 @@
 
 
 #include <sal/config.hpp>
+#include <sal/crypto/__bits/digest.hpp>
 #include <sal/crypto/__bits/x509.hpp>
 #include <sal/crypto/error.hpp>
 
@@ -26,8 +27,17 @@ enum class key_type
 };
 
 
+enum class sign_digest_type
+{
+  sha1,
+  sha256,
+  sha384,
+  sha512,
+};
+
+
 /**
- * Public key.
+ * Public key portion of asymmetric key pair.
  */
 class public_key_t
 {
@@ -94,6 +104,18 @@ public:
   }
 
 
+  /**
+   * Verify signature [\a signature_first, \a signature_last) is valid for
+   * data in range [\a first, \a last) signed with corresponding private key
+   * using \a digest.
+   */
+  bool verify_signature (sign_digest_type digest,
+    const uint8_t *first, const uint8_t *last,
+    const uint8_t *signature_first, const uint8_t *signature_last,
+    std::error_code &error
+  ) noexcept;
+
+
 private:
 
   __bits::public_key_t impl_{};
@@ -107,7 +129,7 @@ private:
 
 
 /**
- * Private key.
+ * Private key portion of asymmetric key pair.
  */
 class private_key_t
 {
@@ -172,6 +194,21 @@ public:
   {
     return block_size_;
   }
+
+
+  /**
+   * Sign data in range [\a first, \a last) writing signature data into
+   * [\a signature_first, \a signature_last) (might write less but never
+   * more).
+   *
+   * \returns Pointer to last signature byte written or undefined value on
+   * error.
+   */
+  uint8_t *sign (sign_digest_type digest,
+    const uint8_t *first, const uint8_t *last,
+    uint8_t *signature_first, uint8_t *signature_last,
+    std::error_code &error
+  ) noexcept;
 
 
 private:

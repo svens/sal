@@ -179,4 +179,178 @@ TEST_F(crypto_key, private_key_properties) //{{{1
 //}}}1
 
 
+TEST_F(crypto_key, sign_and_verify_signature) //{{{1
+{
+  std::vector<uint8_t> data(case_name.begin(), case_name.end());
+  uint8_t signature[1024];
+
+  // sign
+  std::error_code error;
+  auto end = private_key.sign(sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, signature + sizeof(signature),
+    error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_EQ(private_key.block_size(), static_cast<size_t>(end - signature));
+
+  // verify digest signature
+  auto is_valid = public_key.verify_signature(
+    sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, end,
+    error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_TRUE(is_valid);
+}
+
+
+TEST_F(crypto_key, sign_with_null_private_key) //{{{1
+{
+  private_key_t key;
+  std::vector<uint8_t> data(case_name.begin(), case_name.end());
+  uint8_t signature[1024];
+
+  // sign
+  std::error_code error;
+  (void)key.sign(sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, signature + sizeof(signature),
+    error
+  );
+  EXPECT_EQ(std::errc::bad_address, error);
+}
+
+
+TEST_F(crypto_key, sign_with_invalid_digest_type) //{{{1
+{
+  std::vector<uint8_t> data(case_name.begin(), case_name.end());
+  uint8_t signature[1024];
+
+  // sign
+  auto digest_type = static_cast<sal::crypto::sign_digest_type>(99);
+  std::error_code error;
+  (void)private_key.sign(digest_type,
+    data.data(), data.data() + data.size(),
+    signature, signature + sizeof(signature),
+    error
+  );
+  EXPECT_EQ(std::errc::invalid_argument, error);
+}
+
+
+TEST_F(crypto_key, sign_and_verify_signature_with_null_public_key) //{{{1
+{
+  std::vector<uint8_t> data(case_name.begin(), case_name.end());
+  uint8_t signature[1024];
+
+  // sign
+  std::error_code error;
+  auto end = private_key.sign(sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, signature + sizeof(signature),
+    error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_EQ(private_key.block_size(), static_cast<size_t>(end - signature));
+
+  // verify digest signature
+  public_key_t key;
+  (void)key.verify_signature(
+    sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, end,
+    error
+  );
+  EXPECT_EQ(std::errc::bad_address, error);
+}
+
+
+TEST_F(crypto_key, sign_and_verify_signature_invalid_signature) //{{{1
+{
+  std::vector<uint8_t> data(case_name.begin(), case_name.end());
+  uint8_t signature[1024];
+
+  // sign
+  std::error_code error;
+  auto end = private_key.sign(sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, signature + sizeof(signature),
+    error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_EQ(private_key.block_size(), static_cast<size_t>(end - signature));
+
+  // invalidate
+  signature[0] ^= 1;
+
+  // verify digest signature
+  auto is_valid = public_key.verify_signature(
+    sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, end,
+    error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_FALSE(is_valid);
+}
+
+
+TEST_F(crypto_key, verify_signature_with_different_digest_type)
+{
+  std::vector<uint8_t> data(case_name.begin(), case_name.end());
+  uint8_t signature[1024];
+
+  // sign
+  std::error_code error;
+  auto end = private_key.sign(sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, signature + sizeof(signature),
+    error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_EQ(private_key.block_size(), static_cast<size_t>(end - signature));
+
+  // verify digest signature
+  auto digest_type = sal::crypto::sign_digest_type::sha512;
+  auto is_valid = public_key.verify_signature(digest_type,
+    data.data(), data.data() + data.size(),
+    signature, end,
+    error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_FALSE(is_valid);
+}
+
+
+TEST_F(crypto_key, verify_signature_with_invalid_digest)
+{
+  std::vector<uint8_t> data(case_name.begin(), case_name.end());
+  uint8_t signature[1024];
+
+  // sign
+  std::error_code error;
+  auto end = private_key.sign(sal::crypto::sign_digest_type::sha1,
+    data.data(), data.data() + data.size(),
+    signature, signature + sizeof(signature),
+    error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_EQ(private_key.block_size(), static_cast<size_t>(end - signature));
+
+  // verify digest signature
+  auto digest_type = static_cast<sal::crypto::sign_digest_type>(99);
+  (void)public_key.verify_signature(digest_type,
+    data.data(), data.data() + data.size(),
+    signature, end,
+    error
+  );
+  EXPECT_EQ(std::errc::invalid_argument, error);
+}
+
+
+//}}}1
+
+
 } // namespace
