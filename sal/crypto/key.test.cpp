@@ -178,7 +178,6 @@ TEST_F(crypto_key, private_key_properties) //{{{1
 
 //}}}1
 
-
 TEST_F(crypto_key, sign_and_verify_signature) //{{{1
 {
   std::vector<uint8_t> data(case_name.begin(), case_name.end());

@@ -722,6 +722,7 @@ namespace {
 inline unique_ref<CFDictionaryRef> import_options (const std::string &passphrase)
   noexcept
 {
+  // kSecImportExportPassphrase
   auto import_passphrase = ::CFStringCreateWithBytesNoCopy(
     nullptr,
     reinterpret_cast<const uint8_t *>(&passphrase[0]),
@@ -731,17 +732,23 @@ inline unique_ref<CFDictionaryRef> import_options (const std::string &passphrase
     kCFAllocatorNull
   );
 
+  // kSecImportExportAccess
+  SecAccessRef access{};
+  ::SecAccessCreate(CFSTR("Imported by SAL"), nullptr, &access);
+
   const void
     *keys[] =
     {
       kSecImportExportPassphrase,
+      kSecImportExportAccess,
     },
     *values[] =
     {
       import_passphrase,
+      access,
     };
 
-  return ::CFDictionaryCreate(nullptr, keys, values, 1, nullptr, nullptr);
+  return ::CFDictionaryCreate(nullptr, keys, values, 2, nullptr, nullptr);
 }
 
 
