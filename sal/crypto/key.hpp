@@ -10,12 +10,20 @@
 
 #include <sal/config.hpp>
 #include <sal/crypto/__bits/x509.hpp>
+#include <sal/crypto/error.hpp>
 
 
 __sal_begin
 
 
 namespace crypto {
+
+
+enum class key_type
+{
+  opaque,
+  rsa,
+};
 
 
 /**
@@ -44,6 +52,8 @@ public:
   void swap (public_key_t &that) noexcept
   {
     impl_.swap(that.impl_);
+    std::swap(type_, that.type_);
+    std::swap(block_size_, that.block_size_);
   }
 
 
@@ -65,13 +75,32 @@ public:
   }
 
 
+  /**
+   * Return key type. Result is undefined if key is not set.
+   */
+  key_type type () const noexcept
+  {
+    return type_;
+  }
+
+
+  /**
+   * Return block length associated with key. Result is undefined if key is
+   * not set.
+   */
+  size_t block_size () const noexcept
+  {
+    return block_size_;
+  }
+
+
 private:
 
   __bits::public_key_t impl_{};
+  key_type type_{};
+  size_t block_size_{};
 
-  public_key_t (__bits::public_key_t &&that) noexcept
-    : impl_(std::move(that))
-  {}
+  public_key_t (__bits::public_key_t &&that) noexcept;
 
   friend class certificate_t;
 };
@@ -103,6 +132,8 @@ public:
   void swap (private_key_t &that) noexcept
   {
     impl_.swap(that.impl_);
+    std::swap(type_, that.type_);
+    std::swap(block_size_, that.block_size_);
   }
 
 
@@ -124,13 +155,32 @@ public:
   }
 
 
+  /**
+   * Return private key type. Result is undefined if key is not set.
+   */
+  key_type type () const noexcept
+  {
+    return type_;
+  }
+
+
+  /**
+   * Return block length associated with key. Result is undefined if key is
+   * not set.
+   */
+  size_t block_size () const noexcept
+  {
+    return block_size_;
+  }
+
+
 private:
 
   __bits::private_key_t impl_{};
+  key_type type_{};
+  size_t block_size_{};
 
-  private_key_t (__bits::private_key_t &&that) noexcept
-    : impl_(std::move(that))
-  {}
+  private_key_t (__bits::private_key_t &&that) noexcept;
 
   friend class certificate_t;
 };
