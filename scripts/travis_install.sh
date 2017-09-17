@@ -34,8 +34,3 @@ case "${TRAVIS_OS_NAME}-${CC}" in
     brew install cmake gcc || true
     ;;
 esac
-
-if "${TRAVIS_OS_NAME}" = "osx"; then
-  # get rid of test identity (unittest will import again)
-  security delete-identity -c test.sal.ee
-fi
