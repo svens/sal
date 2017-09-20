@@ -1,6 +1,5 @@
 #include <sal/__bits/platform_sdk.hpp>
 #include <sal/crypto/key.hpp>
-#include <sal/assert.hpp>
 
 #if __sal_os_macos //{{{1
   #include <Security/SecItem.h>
@@ -72,28 +71,28 @@ private_key_t::private_key_t (__bits::private_key_t &&that) noexcept
 
 namespace {
 
-inline unique_ref<CFDataRef> make_data (const uint8_t *first,
-  const uint8_t *last) noexcept
+inline unique_ref<CFDataRef> make_data (const void *ptr, size_t size) noexcept
 {
   return ::CFDataCreateWithBytesNoCopy(nullptr,
-    first, last - first,
+    static_cast<const uint8_t *>(ptr),
+    size,
     kCFAllocatorNull
   );
 }
 
-inline auto to_algorithm (key_type type, sign_digest_type digest) noexcept
+inline auto to_algorithm (key_type type, size_t digest_type) noexcept
 {
   if (type == key_type::rsa)
   {
-    switch (digest)
+    switch (digest_type)
     {
-      case sign_digest_type::sha1:
+      case __bits::digest_type_v<__bits::sha1_t>:
         return kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA1;
-      case sign_digest_type::sha256:
+      case __bits::digest_type_v<__bits::sha256_t>:
         return kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA256;
-      case sign_digest_type::sha384:
+      case __bits::digest_type_v<__bits::sha384_t>:
         return kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA384;
-      case sign_digest_type::sha512:
+      case __bits::digest_type_v<__bits::sha512_t>:
         return kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA512;
     }
   }
@@ -103,56 +102,9 @@ inline auto to_algorithm (key_type type, sign_digest_type digest) noexcept
 } // namespace
 
 
-uint8_t *private_key_t::sign (sign_digest_type digest,
-  const uint8_t *first, const uint8_t *last,
-  uint8_t *signature_first, uint8_t *signature_last,
-  std::error_code &error) noexcept
-{
-  if (!impl_)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return signature_first;
-  }
-
-  auto algorithm = to_algorithm(type_, digest);
-  if (!algorithm)
-  {
-    error = std::make_error_code(std::errc::invalid_argument);
-    return signature_first;
-  }
-
-  unique_ref<CFErrorRef> status;
-  unique_ref<CFDataRef> signature = ::SecKeyCreateSignature(impl_.ref,
-    algorithm,
-    make_data(first, last).ref,
-    &status.ref);
-
-  if (signature)
-  {
-    auto s = ::CFDataGetLength(signature.ref);
-    if (signature_last - signature_first >= s)
-    {
-      auto p = CFDataGetBytePtr(signature.ref);
-      signature_last = std::uninitialized_copy(p, p + s, signature_first);
-      error.clear();
-    }
-    else
-    {
-      error = std::make_error_code(std::errc::result_out_of_range);
-    }
-  }
-  else
-  {
-    error.assign(::CFErrorGetCode(status.ref), category());
-  }
-
-  return signature_last;
-}
-
-
-bool public_key_t::verify_signature (sign_digest_type digest,
-  const uint8_t *first, const uint8_t *last,
-  const uint8_t *signature_first, const uint8_t *signature_last,
+size_t private_key_t::sign (size_t digest_type,
+  const void *data, size_t data_size,
+  void *signature, size_t signature_size,
   std::error_code &error) noexcept
 {
   if (!impl_)
@@ -161,7 +113,53 @@ bool public_key_t::verify_signature (sign_digest_type digest,
     return {};
   }
 
-  auto algorithm = to_algorithm(type_, digest);
+  auto algorithm = to_algorithm(type_, digest_type);
+  if (!algorithm)
+  {
+    error = std::make_error_code(std::errc::invalid_argument);
+    return {};
+  }
+
+  unique_ref<CFErrorRef> status;
+  unique_ref<CFDataRef> sig = ::SecKeyCreateSignature(impl_.ref,
+    algorithm,
+    make_data(data, data_size).ref,
+    &status.ref);
+
+  if (sig)
+  {
+    size_t sig_size = ::CFDataGetLength(sig.ref);
+    if (signature_size >= sig_size)
+    {
+      auto sig_ptr = ::CFDataGetBytePtr(sig.ref);
+      std::uninitialized_copy(sig_ptr, sig_ptr + sig_size,
+        static_cast<uint8_t *>(signature)
+      );
+      error.clear();
+      return sig_size;
+    }
+
+    error = std::make_error_code(std::errc::result_out_of_range);
+    return {};
+  }
+
+  error.assign(::CFErrorGetCode(status.ref), category());
+  return {};
+}
+
+
+bool public_key_t::verify_signature (size_t digest_type,
+  const void *data, size_t data_size,
+  const void *signature, size_t signature_size,
+  std::error_code &error) noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  auto algorithm = to_algorithm(type_, digest_type);
   if (!algorithm)
   {
     error = std::make_error_code(std::errc::invalid_argument);
@@ -171,8 +169,8 @@ bool public_key_t::verify_signature (sign_digest_type digest,
   unique_ref<CFErrorRef> status;
   auto result = ::SecKeyVerifySignature(impl_.ref,
     algorithm,
-    make_data(first, last).ref,
-    make_data(signature_first, signature_last).ref,
+    make_data(data, data_size).ref,
+    make_data(signature, signature_size).ref,
     &status.ref
   );
 
@@ -232,17 +230,17 @@ private_key_t::private_key_t (__bits::private_key_t &&that) noexcept
 
 namespace {
 
-inline const EVP_MD *to_algorithm (sign_digest_type digest) noexcept
+inline const EVP_MD *to_algorithm (size_t digest) noexcept
 {
   switch (digest)
   {
-    case sign_digest_type::sha1:
+    case __bits::digest_type_v<__bits::sha1_t>:
       return EVP_sha1();
-    case sign_digest_type::sha256:
+    case __bits::digest_type_v<__bits::sha256_t>:
       return EVP_sha256();
-    case sign_digest_type::sha384:
+    case __bits::digest_type_v<__bits::sha384_t>:
       return EVP_sha384();
-    case sign_digest_type::sha512:
+    case __bits::digest_type_v<__bits::sha512_t>:
       return EVP_sha512();
   }
   return nullptr;
@@ -251,63 +249,59 @@ inline const EVP_MD *to_algorithm (sign_digest_type digest) noexcept
 } // namespace
 
 
-uint8_t *private_key_t::sign (sign_digest_type digest,
-  const uint8_t *first, const uint8_t *last,
-  uint8_t *signature_first, uint8_t *signature_last,
+size_t private_key_t::sign (size_t digest_type,
+  const void *data, size_t data_size,
+  void *signature, size_t signature_size,
   std::error_code &error) noexcept
 {
   if (!impl_)
   {
     error = std::make_error_code(std::errc::bad_address);
-    return signature_first;
+    return {};
   }
 
-  auto algorithm = to_algorithm(digest);
-  if (!algorithm)
+  bool invalid_argument = true;
+  if (auto algorithm = to_algorithm(digest_type))
   {
-    error = std::make_error_code(std::errc::invalid_argument);
-    return signature_first;
+    EVP_MD_CTX ctx;
+    EVP_MD_CTX_init(&ctx);
+
+    if (EVP_DigestSignInit(&ctx, nullptr, algorithm, nullptr, impl_.ref) == 1
+      && EVP_DigestSignUpdate(&ctx, data, data_size) == 1)
+    {
+      size_t result_size;
+      if (EVP_DigestSignFinal(&ctx, nullptr, &result_size) == 1)
+      {
+        if (signature_size >= result_size)
+        {
+          EVP_DigestSignFinal(&ctx,
+            static_cast<uint8_t *>(signature),
+            &signature_size
+          );
+        }
+        else
+        {
+          error = std::make_error_code(std::errc::result_out_of_range);
+        }
+        invalid_argument = false;
+      }
+    }
+
+    EVP_MD_CTX_cleanup(&ctx);
   }
 
-  EVP_MD_CTX md_ctx;
-  EVP_MD_CTX_init(&md_ctx);
-
-  auto status = EVP_DigestSignInit(&md_ctx,
-    nullptr,
-    algorithm,
-    nullptr,
-    impl_.ref
-  );
-
-  if (status == 1)
-  {
-    status = EVP_DigestSignUpdate(&md_ctx, first, last - first);
-  }
-
-  if (status == 1)
-  {
-    size_t signature_size = signature_last - signature_first;
-    status = EVP_DigestSignFinal(&md_ctx, signature_first, &signature_size);
-    signature_last = signature_first + signature_size;
-  }
-
-  if (status == 1)
-  {
-    error.clear();
-  }
-  else
+  if (invalid_argument)
   {
     error = std::make_error_code(std::errc::invalid_argument);
   }
 
-  EVP_MD_CTX_cleanup(&md_ctx);
-  return signature_last;
+  return signature_size;
 }
 
 
-bool public_key_t::verify_signature (sign_digest_type digest,
-  const uint8_t *first, const uint8_t *last,
-  const uint8_t *signature_first, const uint8_t *signature_last,
+bool public_key_t::verify_signature (size_t digest_type,
+  const void *data, size_t data_size,
+  const void *signature, size_t signature_size,
   std::error_code &error) noexcept
 {
   if (!impl_)
@@ -316,17 +310,17 @@ bool public_key_t::verify_signature (sign_digest_type digest,
     return {};
   }
 
-  auto algorithm = to_algorithm(digest);
+  auto algorithm = to_algorithm(digest_type);
   if (!algorithm)
   {
     error = std::make_error_code(std::errc::invalid_argument);
     return {};
   }
 
-  EVP_MD_CTX md_ctx;
-  EVP_MD_CTX_init(&md_ctx);
+  EVP_MD_CTX ctx;
+  EVP_MD_CTX_init(&ctx);
 
-  auto status = EVP_DigestVerifyInit(&md_ctx,
+  auto status = EVP_DigestVerifyInit(&ctx,
     nullptr,
     algorithm,
     nullptr,
@@ -335,15 +329,15 @@ bool public_key_t::verify_signature (sign_digest_type digest,
 
   if (status == 1)
   {
-    status = EVP_DigestVerifyUpdate(&md_ctx, first, last - first);
+    status = EVP_DigestVerifyUpdate(&ctx, data, data_size);
   }
 
   bool result = false;
   if (status == 1)
   {
-    status = EVP_DigestVerifyFinal(&md_ctx,
-      const_cast<uint8_t *>(signature_first),
-      signature_last - signature_first
+    status = EVP_DigestVerifyFinal(&ctx,
+      static_cast<uint8_t *>(const_cast<void *>(signature)),
+      signature_size
     );
     if (status == 1)
     {
@@ -361,7 +355,7 @@ bool public_key_t::verify_signature (sign_digest_type digest,
     error = std::make_error_code(std::errc::invalid_argument);
   }
 
-  EVP_MD_CTX_cleanup(&md_ctx);
+  EVP_MD_CTX_cleanup(&ctx);
   return result;
 }
 
@@ -504,25 +498,25 @@ inline DWORD make_digest (const uint8_t *first, const uint8_t *last,
 }
 
 
-wchar_t *digest_and_algorithm (sign_digest_type algorithm,
+wchar_t *digest_and_algorithm (size_t digest_type,
   const uint8_t *first, const uint8_t *last,
   uint8_t *digest_buf, DWORD *digest_size) noexcept
 {
-  switch (algorithm)
+  switch (digest_type)
   {
-    case sign_digest_type::sha1:
+    case __bits::digest_type_v<__bits::sha1_t>:
       *digest_size = make_digest<sha1>(first, last, digest_buf, *digest_size);
       return NCRYPT_SHA1_ALGORITHM;
 
-    case sign_digest_type::sha256:
+    case __bits::digest_type_v<__bits::sha256_t>:
       *digest_size = make_digest<sha256>(first, last, digest_buf, *digest_size);
       return NCRYPT_SHA256_ALGORITHM;
 
-    case sign_digest_type::sha384:
+    case __bits::digest_type_v<__bits::sha384_t>:
       *digest_size = make_digest<sha384>(first, last, digest_buf, *digest_size);
       return NCRYPT_SHA384_ALGORITHM;
 
-    case sign_digest_type::sha512:
+    case __bits::digest_type_v<__bits::sha512_t>:
       *digest_size = make_digest<sha512>(first, last, digest_buf, *digest_size);
       return NCRYPT_SHA512_ALGORITHM;
 
@@ -535,61 +529,9 @@ wchar_t *digest_and_algorithm (sign_digest_type algorithm,
 } // namespace
 
 
-uint8_t *private_key_t::sign (sign_digest_type digest,
-  const uint8_t *first, const uint8_t *last,
-  uint8_t *signature_first, uint8_t *signature_last,
-  std::error_code &error) noexcept
-{
-  if (!impl_)
-  {
-    error = std::make_error_code(std::errc::bad_address);
-    return signature_first;
-  }
-
-  uint8_t digest_buf[1024];
-  DWORD digest_size = sizeof(digest_buf);
-
-  BCRYPT_PKCS1_PADDING_INFO padding_info;
-  padding_info.pszAlgId = digest_and_algorithm(digest,
-    first,
-    last,
-    digest_buf,
-    &digest_size
-  );
-  if (!padding_info.pszAlgId || !digest_size)
-  {
-    error = std::make_error_code(std::errc::invalid_argument);
-    return signature_first;
-  }
-
-  auto signature_size = static_cast<DWORD>(signature_last - signature_first);
-  auto status = ::NCryptSignHash(impl_.ref,
-    &padding_info,
-    digest_buf,
-    digest_size,
-    signature_first,
-    signature_size,
-    &signature_size,
-    BCRYPT_PAD_PKCS1
-  );
-
-  if (status == ERROR_SUCCESS)
-  {
-    signature_last = signature_first + signature_size;
-    error.clear();
-  }
-  else
-  {
-    error.assign(status, category());
-  }
-
-  return signature_last;
-}
-
-
-bool public_key_t::verify_signature (sign_digest_type digest,
-  const uint8_t *first, const uint8_t *last,
-  const uint8_t *signature_first, const uint8_t *signature_last,
+size_t private_key_t::sign (size_t digest_type,
+  const void *data, size_t data_size,
+  void *signature, size_t signature_size,
   std::error_code &error) noexcept
 {
   if (!impl_)
@@ -602,9 +544,64 @@ bool public_key_t::verify_signature (sign_digest_type digest,
   DWORD digest_size = sizeof(digest_buf);
 
   BCRYPT_PKCS1_PADDING_INFO padding_info;
-  padding_info.pszAlgId = digest_and_algorithm(digest,
-    first,
-    last,
+  padding_info.pszAlgId = digest_and_algorithm(digest_type,
+    static_cast<const uint8_t *>(data),
+    static_cast<const uint8_t *>(data) + data_size,
+    digest_buf,
+    &digest_size
+  );
+  if (!padding_info.pszAlgId || !digest_size)
+  {
+    error = std::make_error_code(std::errc::invalid_argument);
+    return {};
+  }
+
+  auto result_size = static_cast<DWORD>(signature_size);
+  auto status = ::NCryptSignHash(impl_.ref,
+    &padding_info,
+    digest_buf,
+    digest_size,
+    static_cast<PBYTE>(signature),
+    result_size,
+    &result_size,
+    BCRYPT_PAD_PKCS1
+  );
+
+  if (status == ERROR_SUCCESS)
+  {
+    error.clear();
+  }
+  else if (status == NTE_BUFFER_TOO_SMALL)
+  {
+    error = std::make_error_code(std::errc::result_out_of_range);
+  }
+  else
+  {
+    error.assign(status, category());
+  }
+
+  return result_size;
+}
+
+
+bool public_key_t::verify_signature (size_t digest_type,
+  const void *data, size_t data_size,
+  const void *signature, size_t signature_size,
+  std::error_code &error) noexcept
+{
+  if (!impl_)
+  {
+    error = std::make_error_code(std::errc::bad_address);
+    return {};
+  }
+
+  uint8_t digest_buf[1024];
+  DWORD digest_size = sizeof(digest_buf);
+
+  BCRYPT_PKCS1_PADDING_INFO padding_info;
+  padding_info.pszAlgId = digest_and_algorithm(digest_type,
+    static_cast<const uint8_t *>(data),
+    static_cast<const uint8_t *>(data) + data_size,
     digest_buf,
     &digest_size
   );
@@ -618,8 +615,8 @@ bool public_key_t::verify_signature (sign_digest_type digest,
     &padding_info,
     digest_buf,
     digest_size,
-    const_cast<PUCHAR>(signature_first),
-    static_cast<DWORD>(signature_last - signature_first),
+    static_cast<PUCHAR>(const_cast<void *>(signature)),
+    static_cast<DWORD>(signature_size),
     BCRYPT_PAD_PKCS1
   );
 

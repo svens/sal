@@ -219,6 +219,14 @@ template <> constexpr size_t digest_size_v<sha384_t> = 48U;
 template <> constexpr size_t digest_size_v<sha512_t> = 64U;
 
 
+template <typename Algorithm> constexpr size_t digest_type_v = 0U;
+template <> constexpr size_t digest_type_v<md5_t> = 1U;
+template <> constexpr size_t digest_type_v<sha1_t> = 2U;
+template <> constexpr size_t digest_type_v<sha256_t> = 3U;
+template <> constexpr size_t digest_type_v<sha384_t> = 4U;
+template <> constexpr size_t digest_type_v<sha512_t> = 5U;
+
+
 }} // namespace crypto::__bits
 
 

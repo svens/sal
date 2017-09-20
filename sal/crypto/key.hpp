@@ -12,6 +12,7 @@
 #include <sal/crypto/__bits/digest.hpp>
 #include <sal/crypto/__bits/x509.hpp>
 #include <sal/crypto/error.hpp>
+#include <vector>
 
 
 __sal_begin
@@ -24,15 +25,6 @@ enum class key_type
 {
   opaque,
   rsa,
-};
-
-
-enum class sign_digest_type
-{
-  sha1,
-  sha256,
-  sha384,
-  sha512,
 };
 
 
@@ -105,15 +97,37 @@ public:
 
 
   /**
-   * Verify signature [\a signature_first, \a signature_last) is valid for
-   * data in range [\a first, \a last) signed with corresponding private key
-   * using \a digest.
+   * Verify if \a signature is valid for \a data signed with corresponding
+   * private key using \a digest.
+   * \returns True if \a signature is valid
    */
-  bool verify_signature (sign_digest_type digest,
-    const uint8_t *first, const uint8_t *last,
-    const uint8_t *signature_first, const uint8_t *signature_last,
-    std::error_code &error
-  ) noexcept;
+  template <typename Digest, typename Data, typename Signature>
+  bool verify_signature (Digest,
+    const Data &data,
+    const Signature &signature,
+    std::error_code &error) noexcept
+  {
+    return verify_signature(__bits::digest_type_v<Digest>,
+      data.data(), data.size(),
+      signature.data(), signature.size(),
+      error
+    );
+  }
+
+
+  /**
+   * Verify if \a signature is valid for \a data signed with corresponding
+   * private key using \a digest.
+   */
+  template <typename Digest, typename Data, typename Signature>
+  bool verify_signature (Digest digest,
+    const Data &data,
+    const Signature &signature)
+  {
+    return verify_signature(digest, data, signature,
+      throw_on_error("public_key::verify_signature")
+    );
+  }
 
 
 private:
@@ -123,6 +137,12 @@ private:
   size_t block_size_{};
 
   public_key_t (__bits::public_key_t &&that) noexcept;
+
+  bool verify_signature (size_t digest_type,
+    const void *data, size_t data_size,
+    const void *signature, size_t signature_size,
+    std::error_code &error
+  ) noexcept;
 
   friend class certificate_t;
 };
@@ -197,18 +217,62 @@ public:
 
 
   /**
-   * Sign data in range [\a first, \a last) writing signature data into
-   * [\a signature_first, \a signature_last) (might write less but never
-   * more).
-   *
-   * \returns Pointer to last signature byte written or undefined value on
-   * error.
+   * Sign \a data and write result into \a signature.
+   * \returns Size of signature or undefined value on error.
    */
-  uint8_t *sign (sign_digest_type digest,
-    const uint8_t *first, const uint8_t *last,
-    uint8_t *signature_first, uint8_t *signature_last,
-    std::error_code &error
-  ) noexcept;
+  template <typename Digest, typename Data, typename Signature>
+  size_t sign (Digest,
+    const Data &data,
+    const Signature &signature,
+    std::error_code &error) noexcept
+  {
+    return sign(__bits::digest_type_v<Digest>,
+      data.data(), data.size(),
+      signature.data(), signature.size(),
+      error
+    );
+  }
+
+
+  /**
+   * Sign \a data using \a digest and write result into \a signature.
+   * \returns Size of signature
+   */
+  template <typename Digest, typename Data, typename Signature>
+  size_t sign (Digest digest, const Data &data, const Signature &signature)
+  {
+    return sign(digest, data, signature, throw_on_error("private_key::sign"));
+  }
+
+
+#if 0
+  template <typename Digest, typename Data, typename Signature>
+  size_t sign (Digest digest,
+    const Data &data,
+    const Signature &signature,
+    std::error_code &error) noexcept
+  {
+    return sign(digest, data, signature, throw_on_error("private_key::sign"));
+  }
+
+
+  template <typename Digest, typename Data>
+  std::vector<uint8_t> sign (Digest digest,
+    const Data &data,
+    std::error_code &error)
+  {
+    std::vector<uint8_t> result(block_size());
+    sign(digest, data, result, error);
+    return result;
+  }
+
+
+  template <typename Digest, typename Data>
+  std::vector<uint8_t> sign (Digest digest, const Data &data)
+  {
+    return sign(digest, data, throw_on_error("private_key::sign"));
+  }
+#endif
 
 
 private:
@@ -218,6 +282,12 @@ private:
   size_t block_size_{};
 
   private_key_t (__bits::private_key_t &&that) noexcept;
+
+  size_t sign (size_t digest_type,
+    const void *data, size_t data_size,
+    void *signature, size_t signature_size,
+    std::error_code &error
+  ) noexcept;
 
   friend class certificate_t;
 };
