@@ -250,6 +250,19 @@ TYPED_TEST(crypto_key_with_digest, sign_and_verify_signature) //{{{1
 }
 
 
+TYPED_TEST(crypto_key_with_digest, sign_and_verify_signature_vector) //{{{1
+{
+  auto signature = this->private_key.sign(TypeParam(), this->case_name);
+  EXPECT_EQ(this->private_key.block_size(), signature.size());
+
+  auto is_valid = this->public_key.verify_signature(TypeParam(),
+    this->case_name,
+    signature
+  );
+  EXPECT_TRUE(is_valid);
+}
+
+
 TYPED_TEST(crypto_key_with_digest, sign_with_null_private_key) //{{{1
 {
   private_key_t key;

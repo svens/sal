@@ -246,34 +246,22 @@ public:
   }
 
 
-#if 0
-  template <typename Digest, typename Data, typename Signature>
-  size_t sign (Digest digest,
-    const Data &data,
-    const Signature &signature,
-    std::error_code &error) noexcept
-  {
-    return sign(digest, data, signature, throw_on_error("private_key::sign"));
-  }
-
-
+  /**
+   * Sign \a data using \a digest and return signature as vector.
+   * \throws std::system_error on signing failure
+   * \throws std::bad_alloc on vector allocation failure
+   */
   template <typename Digest, typename Data>
-  std::vector<uint8_t> sign (Digest digest,
-    const Data &data,
-    std::error_code &error)
+  std::vector<uint8_t> sign (Digest, const Data &data)
   {
     std::vector<uint8_t> result(block_size());
-    sign(digest, data, result, error);
+    sign(__bits::digest_type_v<Digest>,
+      data.data(), data.size(),
+      result.data(), result.size(),
+      throw_on_error("private_key::sign")
+    );
     return result;
   }
-
-
-  template <typename Digest, typename Data>
-  std::vector<uint8_t> sign (Digest digest, const Data &data)
-  {
-    return sign(digest, data, throw_on_error("private_key::sign"));
-  }
-#endif
 
 
 private:
