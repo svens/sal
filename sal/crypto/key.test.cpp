@@ -79,7 +79,7 @@ TEST_F(crypto_key, public_key_ctor_move) //{{{1
 {
   auto key = std::move(public_key);
   ASSERT_FALSE(key.is_null());
-  EXPECT_EQ(sal::crypto::key_type::rsa, key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, key.algorithm());
   EXPECT_EQ(256U, key.block_size());
 
   EXPECT_TRUE(public_key.is_null());
@@ -93,7 +93,7 @@ TEST_F(crypto_key, public_key_assign_move) //{{{1
 
   key = std::move(public_key);
   ASSERT_FALSE(key.is_null());
-  EXPECT_EQ(sal::crypto::key_type::rsa, key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, key.algorithm());
   EXPECT_EQ(256U, key.block_size());
 
   EXPECT_TRUE(public_key.is_null());
@@ -117,7 +117,7 @@ TEST_F(crypto_key, public_key_is_not_null) //{{{1
 
 TEST_F(crypto_key, public_key_swap) //{{{1
 {
-  EXPECT_EQ(sal::crypto::key_type::rsa, public_key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, public_key.algorithm());
   EXPECT_EQ(256U, public_key.block_size());
 
   public_key_t key;
@@ -127,7 +127,7 @@ TEST_F(crypto_key, public_key_swap) //{{{1
   EXPECT_TRUE(public_key.is_null());
 
   ASSERT_FALSE(key.is_null());
-  EXPECT_EQ(sal::crypto::key_type::rsa, key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, key.algorithm());
   EXPECT_EQ(256U, key.block_size());
 }
 
@@ -135,7 +135,7 @@ TEST_F(crypto_key, public_key_swap) //{{{1
 TEST_F(crypto_key, public_key_properties) //{{{1
 {
   ASSERT_FALSE(public_key.is_null());
-  EXPECT_EQ(sal::crypto::key_type::rsa, public_key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, public_key.algorithm());
   EXPECT_EQ(256U, public_key.block_size());
 }
 
@@ -152,7 +152,7 @@ TEST_F(crypto_key, private_key_ctor_move) //{{{1
 {
   auto key = std::move(private_key);
   ASSERT_FALSE(key.is_null());
-  EXPECT_EQ(sal::crypto::key_type::rsa, key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, key.algorithm());
   EXPECT_EQ(256U, key.block_size());
 
   EXPECT_TRUE(private_key.is_null());
@@ -166,7 +166,7 @@ TEST_F(crypto_key, private_key_assign_move) //{{{1
 
   key = std::move(private_key);
   ASSERT_FALSE(key.is_null());
-  EXPECT_EQ(sal::crypto::key_type::rsa, key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, key.algorithm());
   EXPECT_EQ(256U, key.block_size());
 
   EXPECT_TRUE(private_key.is_null());
@@ -190,7 +190,7 @@ TEST_F(crypto_key, private_key_is_not_null) //{{{1
 
 TEST_F(crypto_key, private_key_swap) //{{{1
 {
-  EXPECT_EQ(sal::crypto::key_type::rsa, private_key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, private_key.algorithm());
   EXPECT_EQ(256U, private_key.block_size());
 
   private_key_t key;
@@ -200,7 +200,7 @@ TEST_F(crypto_key, private_key_swap) //{{{1
   EXPECT_TRUE(private_key.is_null());
 
   ASSERT_FALSE(key.is_null());
-  EXPECT_EQ(sal::crypto::key_type::rsa, key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, key.algorithm());
   EXPECT_EQ(256U, key.block_size());
 }
 
@@ -208,7 +208,7 @@ TEST_F(crypto_key, private_key_swap) //{{{1
 TEST_F(crypto_key, private_key_properties) //{{{1
 {
   ASSERT_FALSE(private_key.is_null());
-  EXPECT_EQ(sal::crypto::key_type::rsa, private_key.type());
+  EXPECT_EQ(sal::crypto::key_algorithm::rsa, private_key.algorithm());
   EXPECT_EQ(256U, private_key.block_size());
 }
 

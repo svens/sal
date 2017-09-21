@@ -23,7 +23,7 @@ namespace crypto {
 
 namespace {
 
-key_type init (SecKeyRef key, size_t *block_size) noexcept
+key_algorithm init (SecKeyRef key, size_t *block_size) noexcept
 {
   if (key)
   {
@@ -45,11 +45,11 @@ key_type init (SecKeyRef key, size_t *block_size) noexcept
     {
       if (::CFEqual(v, kSecAttrKeyTypeRSA))
       {
-        return key_type::rsa;
+        return key_algorithm::rsa;
       }
     }
   }
-  return key_type::opaque;
+  return key_algorithm::opaque;
 }
 
 } // namespace
@@ -58,14 +58,14 @@ key_type init (SecKeyRef key, size_t *block_size) noexcept
 public_key_t::public_key_t (__bits::public_key_t &&that) noexcept
   : impl_(std::move(that))
 {
-  type_ = init(impl_.ref, &block_size_);
+  algorithm_ = init(impl_.ref, &block_size_);
 }
 
 
 private_key_t::private_key_t (__bits::private_key_t &&that) noexcept
   : impl_(std::move(that))
 {
-  type_ = init(impl_.ref, &block_size_);
+  algorithm_ = init(impl_.ref, &block_size_);
 }
 
 
@@ -80,9 +80,9 @@ inline unique_ref<CFDataRef> make_data (const void *ptr, size_t size) noexcept
   );
 }
 
-inline auto to_algorithm (key_type type, size_t digest_type) noexcept
+inline auto to_algorithm (key_algorithm type, size_t digest_type) noexcept
 {
-  if (type == key_type::rsa)
+  if (type == key_algorithm::rsa)
   {
     switch (digest_type)
     {
@@ -113,7 +113,7 @@ size_t private_key_t::sign (size_t digest_type,
     return {};
   }
 
-  auto algorithm = to_algorithm(type_, digest_type);
+  auto algorithm = to_algorithm(algorithm_, digest_type);
   if (!algorithm)
   {
     error = std::make_error_code(std::errc::invalid_argument);
@@ -159,7 +159,7 @@ bool public_key_t::verify_signature (size_t digest_type,
     return {};
   }
 
-  auto algorithm = to_algorithm(type_, digest_type);
+  auto algorithm = to_algorithm(algorithm_, digest_type);
   if (!algorithm)
   {
     error = std::make_error_code(std::errc::invalid_argument);
@@ -193,11 +193,11 @@ bool public_key_t::verify_signature (size_t digest_type,
 
 namespace {
 
-key_type init (EVP_PKEY *key, size_t *block_size) noexcept
+key_algorithm init (EVP_PKEY *key, size_t *block_size) noexcept
 {
   if (!key)
   {
-    return key_type::opaque;
+    return key_algorithm::opaque;
   }
 
   *block_size = EVP_PKEY_size(key);
@@ -205,10 +205,10 @@ key_type init (EVP_PKEY *key, size_t *block_size) noexcept
   switch (EVP_PKEY_id(key))
   {
     case EVP_PKEY_RSA:
-      return key_type::rsa;
+      return key_algorithm::rsa;
   }
 
-  return key_type::opaque;
+  return key_algorithm::opaque;
 }
 
 } // namespace
@@ -217,14 +217,14 @@ key_type init (EVP_PKEY *key, size_t *block_size) noexcept
 public_key_t::public_key_t (__bits::public_key_t &&that) noexcept
   : impl_(std::move(that))
 {
-  type_ = init(impl_.ref, &block_size_);
+  algorithm_ = init(impl_.ref, &block_size_);
 }
 
 
 private_key_t::private_key_t (__bits::private_key_t &&that) noexcept
   : impl_(std::move(that))
 {
-  type_ = init(impl_.ref, &block_size_);
+  algorithm_ = init(impl_.ref, &block_size_);
 }
 
 
@@ -366,11 +366,11 @@ bool public_key_t::verify_signature (size_t digest_type,
 namespace {
 
 
-key_type init (BCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
+key_algorithm init (BCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
 {
   if (!key)
   {
-    return key_type::opaque;
+    return key_algorithm::opaque;
   }
 
   // block_size
@@ -385,7 +385,7 @@ key_type init (BCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
   );
   if (status != ERROR_SUCCESS)
   {
-    return key_type::opaque;
+    return key_algorithm::opaque;
   }
   *block_size = int_buf;
 
@@ -403,19 +403,19 @@ key_type init (BCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
     reinterpret_cast<char *>(wchar_buf)[buf_size] = '\0';
     if (wcscmp(wchar_buf, BCRYPT_RSA_ALGORITHM) == 0)
     {
-      return key_type::rsa;
+      return key_algorithm::rsa;
     }
   }
 
-  return key_type::opaque;
+  return key_algorithm::opaque;
 }
 
 
-key_type init (NCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
+key_algorithm init (NCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
 {
   if (!key)
   {
-    return key_type::opaque;
+    return key_algorithm::opaque;
   }
 
   // block_size
@@ -430,7 +430,7 @@ key_type init (NCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
   );
   if (!NT_SUCCESS(status))
   {
-    return key_type::opaque;
+    return key_algorithm::opaque;
   }
   *block_size = int_buf;
 
@@ -448,11 +448,11 @@ key_type init (NCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
     reinterpret_cast<char *>(wchar_buf)[buf_size] = '\0';
     if (wcscmp(wchar_buf, NCRYPT_RSA_ALGORITHM_GROUP) == 0)
     {
-      return key_type::rsa;
+      return key_algorithm::rsa;
     }
   }
 
-  return key_type::opaque;
+  return key_algorithm::opaque;
 }
 
 
@@ -462,14 +462,14 @@ key_type init (NCRYPT_KEY_HANDLE key, size_t *block_size) noexcept
 public_key_t::public_key_t (__bits::public_key_t &&that) noexcept
   : impl_(std::move(that))
 {
-  type_ = init(impl_.ref, &block_size_);
+  algorithm_ = init(impl_.ref, &block_size_);
 }
 
 
 private_key_t::private_key_t (__bits::private_key_t &&that) noexcept
   : impl_(std::move(that))
 {
-  type_ = init(impl_.ref, &block_size_);
+  algorithm_ = init(impl_.ref, &block_size_);
 }
 
 

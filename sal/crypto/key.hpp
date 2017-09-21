@@ -21,10 +21,11 @@ __sal_begin
 namespace crypto {
 
 
-enum class key_type
+/** Key algorithms */
+enum class key_algorithm
 {
-  opaque,
-  rsa,
+  opaque,       ///< Unspecified algorithm type
+  rsa,          ///< RSA algorithm
 };
 
 
@@ -54,7 +55,7 @@ public:
   void swap (public_key_t &that) noexcept
   {
     impl_.swap(that.impl_);
-    std::swap(type_, that.type_);
+    std::swap(algorithm_, that.algorithm_);
     std::swap(block_size_, that.block_size_);
   }
 
@@ -78,11 +79,11 @@ public:
 
 
   /**
-   * Return key type. Result is undefined if key is not set.
+   * Return key algorithm type. Result is undefined if key is not set.
    */
-  key_type type () const noexcept
+  key_algorithm algorithm () const noexcept
   {
-    return type_;
+    return algorithm_;
   }
 
 
@@ -133,7 +134,7 @@ public:
 private:
 
   __bits::public_key_t impl_{};
-  key_type type_{};
+  key_algorithm algorithm_{};
   size_t block_size_{};
 
   public_key_t (__bits::public_key_t &&that) noexcept;
@@ -174,7 +175,7 @@ public:
   void swap (private_key_t &that) noexcept
   {
     impl_.swap(that.impl_);
-    std::swap(type_, that.type_);
+    std::swap(algorithm_, that.algorithm_);
     std::swap(block_size_, that.block_size_);
   }
 
@@ -198,11 +199,11 @@ public:
 
 
   /**
-   * Return private key type. Result is undefined if key is not set.
+   * Return private key algorithm type. Result is undefined if key is not set.
    */
-  key_type type () const noexcept
+  key_algorithm algorithm () const noexcept
   {
-    return type_;
+    return algorithm_;
   }
 
 
@@ -278,7 +279,7 @@ public:
 private:
 
   __bits::private_key_t impl_{};
-  key_type type_{};
+  key_algorithm algorithm_{};
   size_t block_size_{};
 
   private_key_t (__bits::private_key_t &&that) noexcept;
