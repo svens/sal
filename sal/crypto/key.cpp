@@ -195,19 +195,15 @@ namespace {
 
 key_algorithm init (EVP_PKEY *key, size_t *block_size) noexcept
 {
-  if (!key)
+  if (key)
   {
-    return key_algorithm::opaque;
+    *block_size = EVP_PKEY_size(key);
+    switch (EVP_PKEY_id(key))
+    {
+      case EVP_PKEY_RSA:
+        return key_algorithm::rsa;
+    }
   }
-
-  *block_size = EVP_PKEY_size(key);
-
-  switch (EVP_PKEY_id(key))
-  {
-    case EVP_PKEY_RSA:
-      return key_algorithm::rsa;
-  }
-
   return key_algorithm::opaque;
 }
 
