@@ -39,7 +39,8 @@ public:
   /**
    * Construct unspecified address (INADDR_ANY)
    */
-  constexpr address_v4_t () noexcept = default;
+  constexpr address_v4_t () noexcept
+  {}
 
 
   /**
@@ -224,7 +225,7 @@ private:
   union storage_t
   {
     in_addr in;
-    bytes_t bytes;
+    bytes_t bytes{};
 
     constexpr storage_t () noexcept
       : bytes{}

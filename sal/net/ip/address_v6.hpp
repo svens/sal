@@ -40,7 +40,8 @@ public:
   /**
    * Construct unspecified address
    */
-  constexpr address_v6_t () noexcept = default;
+  constexpr address_v6_t () noexcept
+  {}
 
 
   /**

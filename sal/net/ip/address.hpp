@@ -33,7 +33,8 @@ public:
   /**
    * Construct unspecified IPv4 address.
    */
-  constexpr address_t () noexcept = default;
+  constexpr address_t () noexcept
+  {}
 
 
   /**
