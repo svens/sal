@@ -12,6 +12,22 @@ using public_key_t = sal::crypto::public_key_t;
 using private_key_t = sal::crypto::private_key_t;
 
 
+auto import ()
+{
+  private_key_t private_key;
+  auto cert = sal::crypto::import_pkcs12(
+    to_der(cert::pkcs12),
+    "TestPassword",
+    private_key
+  );
+
+  return std::make_pair(
+    cert.public_key(),
+    std::move(private_key)
+  );
+}
+
+
 struct crypto_key
   : public sal_test::fixture
 {
@@ -20,16 +36,36 @@ struct crypto_key
 
   void SetUp ()
   {
-    public_key = sal::crypto::import_pkcs12(
-      to_der(cert::pkcs12),
-      "TestPassword",
-      private_key
-    ).public_key();
-
+    std::tie(public_key, private_key) = import();
     ASSERT_TRUE(!public_key.is_null());
     ASSERT_TRUE(!private_key.is_null());
   }
 };
+
+
+template <typename Digest>
+struct crypto_key_with_digest
+  : public sal_test::with_type<Digest>
+{
+  public_key_t public_key;
+  private_key_t private_key;
+
+  void SetUp ()
+  {
+    std::tie(public_key, private_key) = import();
+    ASSERT_TRUE(!public_key.is_null());
+    ASSERT_TRUE(!private_key.is_null());
+  }
+};
+
+
+using digest_types = ::testing::Types<
+  sal::crypto::sha1,
+  sal::crypto::sha256,
+  sal::crypto::sha384,
+  sal::crypto::sha512
+>;
+TYPED_TEST_CASE(crypto_key_with_digest, digest_types);
 
 
 TEST_F(crypto_key, public_key_ctor) //{{{1
@@ -178,20 +214,20 @@ TEST_F(crypto_key, private_key_properties) //{{{1
 
 //}}}1
 
-TEST_F(crypto_key, sign_and_verify_signature) //{{{1
+TYPED_TEST(crypto_key_with_digest, sign_and_verify_signature) //{{{1
 {
   std::error_code error;
   uint8_t signature_buf[1024];
-  auto signature_size = private_key.sign(sal::crypto::sha1(),
-    case_name,
+  auto signature_size = this->private_key.sign(TypeParam(),
+    this->case_name,
     sal::make_buf(signature_buf),
     error
   );
   ASSERT_TRUE(!error) << error.message();
-  EXPECT_EQ(private_key.block_size(), signature_size);
+  EXPECT_EQ(this->private_key.block_size(), signature_size);
 
-  auto is_valid = public_key.verify_signature(sal::crypto::sha1(),
-    case_name,
+  auto is_valid = this->public_key.verify_signature(TypeParam(),
+    this->case_name,
     sal::make_buf(signature_buf, signature_size),
     error
   );
@@ -199,32 +235,32 @@ TEST_F(crypto_key, sign_and_verify_signature) //{{{1
   EXPECT_TRUE(is_valid);
 
   EXPECT_NO_THROW(
-    signature_size = private_key.sign(sal::crypto::sha1(),
-      case_name, sal::make_buf(signature_buf)
+    signature_size = this->private_key.sign(TypeParam(),
+      this->case_name, sal::make_buf(signature_buf)
     )
   );
-  EXPECT_EQ(private_key.block_size(), signature_size);
+  EXPECT_EQ(this->private_key.block_size(), signature_size);
 
   EXPECT_NO_THROW(
-    is_valid = public_key.verify_signature(sal::crypto::sha1(),
-      case_name, sal::make_buf(signature_buf, signature_size)
+    is_valid = this->public_key.verify_signature(TypeParam(),
+      this->case_name, sal::make_buf(signature_buf, signature_size)
     )
   );
   EXPECT_TRUE(is_valid);
 }
 
 
-TEST_F(crypto_key, sign_with_null_private_key) //{{{1
+TYPED_TEST(crypto_key_with_digest, sign_with_null_private_key) //{{{1
 {
   private_key_t key;
   std::error_code error;
   uint8_t signature[1024];
 
-  key.sign(sal::crypto::sha1(), case_name, sal::make_buf(signature), error);
+  key.sign(TypeParam(), this->case_name, sal::make_buf(signature), error);
   EXPECT_EQ(std::errc::bad_address, error);
 
   EXPECT_THROW(
-    key.sign(sal::crypto::sha1(), case_name, sal::make_buf(signature)),
+    key.sign(TypeParam(), this->case_name, sal::make_buf(signature)),
     std::system_error
   );
 }
@@ -245,70 +281,77 @@ TEST_F(crypto_key, sign_with_invalid_digest_type) //{{{1
 }
 
 
-TEST_F(crypto_key, sign_with_too_small_buffer) //{{{1
+TYPED_TEST(crypto_key_with_digest, sign_with_too_small_buffer) //{{{1
 {
   std::error_code error;
   uint8_t signature[1];
 
-  private_key.sign(sal::crypto::sha1(), case_name, sal::make_buf(signature), error);
+  this->private_key.sign(TypeParam(),
+    this->case_name,
+    sal::make_buf(signature),
+    error
+  );
   EXPECT_EQ(std::errc::result_out_of_range, error);
 
   EXPECT_THROW(
-    private_key.sign(sal::crypto::sha1(), case_name, sal::make_buf(signature)),
-    std::system_error
-  );
-}
-
-
-TEST_F(crypto_key, sign_and_verify_signature_with_null_public_key) //{{{1
-{
-  std::error_code error;
-  uint8_t signature[1024];
-
-  auto size = private_key.sign(sal::crypto::sha1(),
-    case_name, sal::make_buf(signature), error
-  );
-  ASSERT_TRUE(!error) << error.message();
-  EXPECT_EQ(private_key.block_size(), size);
-
-  public_key_t key;
-  (void)key.verify_signature(sal::crypto::sha1(),
-    case_name, sal::make_buf(signature, size), error
-  );
-  EXPECT_EQ(std::errc::bad_address, error);
-
-  EXPECT_THROW(
-    key.verify_signature(sal::crypto::sha1(),
-      case_name, sal::make_buf(signature, size)
+    this->private_key.sign(TypeParam(),
+      this->case_name,
+      sal::make_buf(signature)
     ),
     std::system_error
   );
 }
 
 
-TEST_F(crypto_key, sign_and_verify_signature_invalid_signature) //{{{1
+TYPED_TEST(crypto_key_with_digest, sign_and_verify_signature_with_null_public_key) //{{{1
 {
   std::error_code error;
   uint8_t signature[1024];
 
-  auto size = private_key.sign(sal::crypto::sha1(),
-    case_name, sal::make_buf(signature), error
+  auto size = this->private_key.sign(TypeParam(),
+    this->case_name, sal::make_buf(signature), error
   );
   ASSERT_TRUE(!error) << error.message();
-  EXPECT_EQ(private_key.block_size(), size);
+  EXPECT_EQ(this->private_key.block_size(), size);
+
+  public_key_t key;
+  (void)key.verify_signature(TypeParam(),
+    this->case_name, sal::make_buf(signature, size), error
+  );
+  EXPECT_EQ(std::errc::bad_address, error);
+
+  EXPECT_THROW(
+    key.verify_signature(TypeParam(),
+      this->case_name, sal::make_buf(signature, size)
+    ),
+    std::system_error
+  );
+}
+
+
+TYPED_TEST(crypto_key_with_digest, sign_and_verify_signature_invalid_signature) //{{{1
+{
+  std::error_code error;
+  uint8_t signature[1024];
+
+  auto size = this->private_key.sign(TypeParam(),
+    this->case_name, sal::make_buf(signature), error
+  );
+  ASSERT_TRUE(!error) << error.message();
+  EXPECT_EQ(this->private_key.block_size(), size);
 
   // invalidate
   signature[0] ^= 1;
 
-  auto is_valid = public_key.verify_signature(sal::crypto::sha1(),
-    case_name, sal::make_buf(signature, size), error
+  auto is_valid = this->public_key.verify_signature(TypeParam(),
+    this->case_name, sal::make_buf(signature, size), error
   );
   ASSERT_TRUE(!error) << error.message();
   EXPECT_FALSE(is_valid);
 
   EXPECT_NO_THROW(
-    is_valid = public_key.verify_signature(sal::crypto::sha1(),
-      case_name, sal::make_buf(signature, size)
+    is_valid = this->public_key.verify_signature(TypeParam(),
+      this->case_name, sal::make_buf(signature, size)
     )
   );
   EXPECT_FALSE(is_valid);
@@ -344,27 +387,27 @@ TEST_F(crypto_key, verify_signature_with_different_digest_type) //{{{1
 }
 
 
-TEST_F(crypto_key, verify_signature_with_invalid_digest) //{{{1
+TYPED_TEST(crypto_key_with_digest, verify_signature_with_invalid_digest) //{{{1
 {
   std::error_code error;
   uint8_t signature[1024];
 
-  auto size = private_key.sign(sal::crypto::sha1(),
-    case_name, sal::make_buf(signature), error
+  auto size = this->private_key.sign(TypeParam(),
+    this->case_name, sal::make_buf(signature), error
   );
   ASSERT_TRUE(!error) << error.message();
-  EXPECT_EQ(private_key.block_size(), size);
+  EXPECT_EQ(this->private_key.block_size(), size);
 
-  (void)public_key.verify_signature(sal::crypto::md5(),
-    case_name,
+  (void)this->public_key.verify_signature(sal::crypto::md5(),
+    this->case_name,
     sal::make_buf(signature, size),
     error
   );
   EXPECT_EQ(std::errc::invalid_argument, error);
 
   EXPECT_THROW(
-    public_key.verify_signature(sal::crypto::md5(),
-      case_name,
+    this->public_key.verify_signature(sal::crypto::md5(),
+      this->case_name,
       sal::make_buf(signature, size)
     ),
     std::system_error
