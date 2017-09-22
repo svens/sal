@@ -6,10 +6,7 @@ var dir_52d2e04a6956e0461276f18ad7234dd4 =
     [ "hmac.hpp", "hmac_8hpp.html", [
       [ "hmac_t", "classsal_1_1crypto_1_1hmac__t.html", "classsal_1_1crypto_1_1hmac__t" ]
     ] ],
-    [ "key.hpp", "key_8hpp.html", [
-      [ "public_key_t", "classsal_1_1crypto_1_1public__key__t.html", "classsal_1_1crypto_1_1public__key__t" ],
-      [ "private_key_t", "classsal_1_1crypto_1_1private__key__t.html", "classsal_1_1crypto_1_1private__key__t" ]
-    ] ],
+    [ "key.hpp", "key_8hpp.html", "key_8hpp" ],
     [ "oid.hpp", "oid_8hpp.html", "oid_8hpp" ],
     [ "random.hpp", "random_8hpp.html", "random_8hpp" ]
 ];

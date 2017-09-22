@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['resolver_5ferrc',['resolver_errc',['../namespacesal_1_1net_1_1ip.html#aa50af7695b7cdb78578570fff7c5c6f2',1,'sal::net::ip']]]
+  ['key_5falgorithm',['key_algorithm',['../namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268',1,'sal::crypto']]]
 ];

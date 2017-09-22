@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.14.0</span>
+   &#160;<span id="projectnumber">0.15.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -92,6 +92,7 @@ $(document).ready(function(){initNavTree('namespacesal_1_1crypto.html','');});
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">sal::crypto Namespace Reference</div>  </div>
@@ -113,10 +114,10 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keyed-hash message authentication code (<a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">HMAC</a>) using <em>Algorithm</em>.  <a href="classsal_1_1crypto_1_1hmac__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private key.  <a href="classsal_1_1crypto_1_1private__key__t.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private key portion of asymmetric key pair.  <a href="classsal_1_1crypto_1_1private__key__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html">public_key_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Public key.  <a href="classsal_1_1crypto_1_1public__key__t.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Public key portion of asymmetric key pair.  <a href="classsal_1_1crypto_1_1public__key__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -140,6 +141,14 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>sha384</b> = __bits:
 <tr class="memitem:a3839d3714873efa49bf8649c3671c3d3"><td class="memItemLeft" align="right" valign="top"><a id="a3839d3714873efa49bf8649c3671c3d3"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>sha512</b> = __bits::sha512_t</td></tr>
 <tr class="separator:a3839d3714873efa49bf8649c3671c3d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a362b0bd3db273482fb509992e0944268"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268">key_algorithm</a> { <a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268a94619f8a70068b2591c2eed622525b0e">key_algorithm::opaque</a>, 
+<a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268aef31070d66440687a73beb6242f298bc">key_algorithm::rsa</a>
+ }<tr class="memdesc:a362b0bd3db273482fb509992e0944268"><td class="mdescLeft">&#160;</td><td class="mdescRight">Key algorithms.  <a href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268">More...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:a362b0bd3db273482fb509992e0944268"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -210,6 +219,37 @@ template&lt;typename Ptr &gt; </td></tr>
       </table>
 </div><div class="memdoc">
 <p>Cryptographic hash algorithm </p>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a362b0bd3db273482fb509992e0944268"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a362b0bd3db273482fb509992e0944268">&#9670;&nbsp;</a></span>key_algorithm</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268">sal::crypto::key_algorithm</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Key algorithms. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a362b0bd3db273482fb509992e0944268a94619f8a70068b2591c2eed622525b0e"></a>opaque&#160;</td><td class="fielddoc"><p>Unspecified algorithm type. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a362b0bd3db273482fb509992e0944268aef31070d66440687a73beb6242f298bc"></a>rsa&#160;</td><td class="fielddoc"><p>RSA algorithm. </p>
+</td></tr>
+</table>
 
 </div>
 </div>

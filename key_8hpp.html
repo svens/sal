@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.14.0</span>
+   &#160;<span id="projectnumber">0.15.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -91,7 +91,8 @@ $(document).ready(function(){initNavTree('key_8hpp.html','');});
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle">
 <div class="title">key.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -100,17 +101,20 @@ $(document).ready(function(){initNavTree('key_8hpp.html','');});
 <p>Asymmetrical cryptography public and private keys.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
+<code>#include &lt;sal/crypto/__bits/digest.hpp&gt;</code><br />
 <code>#include &lt;sal/crypto/__bits/x509.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="crypto_2error_8hpp_source.html">sal/crypto/error.hpp</a>&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
 </div>
 <p><a href="key_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html">sal::crypto::public_key_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Public key.  <a href="classsal_1_1crypto_1_1public__key__t.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Public key portion of asymmetric key pair.  <a href="classsal_1_1crypto_1_1public__key__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">sal::crypto::private_key_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private key.  <a href="classsal_1_1crypto_1_1private__key__t.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private key portion of asymmetric key pair.  <a href="classsal_1_1crypto_1_1private__key__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -118,6 +122,14 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacesal_1_1crypto"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html">sal::crypto</a></td></tr>
 <tr class="memdesc:namespacesal_1_1crypto"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cryptography primitives. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a362b0bd3db273482fb509992e0944268"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268">sal::crypto::key_algorithm</a> { <a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268a94619f8a70068b2591c2eed622525b0e">sal::crypto::key_algorithm::opaque</a>, 
+<a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268aef31070d66440687a73beb6242f298bc">sal::crypto::key_algorithm::rsa</a>
+ }<tr class="memdesc:a362b0bd3db273482fb509992e0944268"><td class="mdescLeft">&#160;</td><td class="mdescRight">Key algorithms.  <a href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268">More...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:a362b0bd3db273482fb509992e0944268"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Asymmetrical cryptography public and private keys. </p>

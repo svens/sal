@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['socket_5ferrc_5ft',['socket_errc_t',['../net_2error_8hpp.html#a2f327dd9f35f003d354396be998b1a38',1,'sal::net']]]
+  ['socket_5ferrc',['socket_errc',['../namespacesal_1_1net.html#aafae1b17829b8443483a4437f52ac00f',1,'sal::net']]]
 ];

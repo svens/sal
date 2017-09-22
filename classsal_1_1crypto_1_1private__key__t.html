@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.14.0</span>
+   &#160;<span id="projectnumber">0.15.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -98,7 +98,7 @@ $(document).ready(function(){initNavTree('classsal_1_1crypto_1_1private__key__t.
 </div><!--header-->
 <div class="contents">
 
-<p>Private key.  
+<p>Private key portion of asymmetric key pair.  
  <a href="classsal_1_1crypto_1_1private__key__t.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="key_8hpp_source.html">key.hpp</a>&gt;</code></p>
@@ -135,6 +135,24 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html#ab436778a619b3288c0c35b4d89ada66e">operator bool</a> () const noexcept</td></tr>
 <tr class="memdesc:ab436778a619b3288c0c35b4d89ada66e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if <em>this</em> is valid key. <br /></td></tr>
 <tr class="separator:ab436778a619b3288c0c35b4d89ada66e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81506498cb94fef8508614d0fe1b2450"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268">key_algorithm</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html#a81506498cb94fef8508614d0fe1b2450">algorithm</a> () const noexcept</td></tr>
+<tr class="memdesc:a81506498cb94fef8508614d0fe1b2450"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return private key algorithm type.  <a href="#a81506498cb94fef8508614d0fe1b2450">More...</a><br /></td></tr>
+<tr class="separator:a81506498cb94fef8508614d0fe1b2450"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93a3296cb1c448782044cff979066333"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html#a93a3296cb1c448782044cff979066333">block_size</a> () const noexcept</td></tr>
+<tr class="memdesc:a93a3296cb1c448782044cff979066333"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return block length associated with key.  <a href="#a93a3296cb1c448782044cff979066333">More...</a><br /></td></tr>
+<tr class="separator:a93a3296cb1c448782044cff979066333"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a457b66081ae6846dbed5a6415517cf91"><td class="memTemplParams" colspan="2">template&lt;typename Digest , typename Data , typename Signature &gt; </td></tr>
+<tr class="memitem:a457b66081ae6846dbed5a6415517cf91"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html#a457b66081ae6846dbed5a6415517cf91">sign</a> (Digest, const Data &amp;data, const Signature &amp;signature, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a457b66081ae6846dbed5a6415517cf91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sign <em>data</em> and write result into <em>signature</em>.  <a href="#a457b66081ae6846dbed5a6415517cf91">More...</a><br /></td></tr>
+<tr class="separator:a457b66081ae6846dbed5a6415517cf91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7875929047c12cc8f82b5eb7a18b05b8"><td class="memTemplParams" colspan="2">template&lt;typename Digest , typename Data , typename Signature &gt; </td></tr>
+<tr class="memitem:a7875929047c12cc8f82b5eb7a18b05b8"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html#a7875929047c12cc8f82b5eb7a18b05b8">sign</a> (Digest digest, const Data &amp;data, const Signature &amp;signature)</td></tr>
+<tr class="memdesc:a7875929047c12cc8f82b5eb7a18b05b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sign <em>data</em> using <em>digest</em> and write result into <em>signature</em>.  <a href="#a7875929047c12cc8f82b5eb7a18b05b8">More...</a><br /></td></tr>
+<tr class="separator:a7875929047c12cc8f82b5eb7a18b05b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57711475610786d4bcc8c18e1dd3dfbe"><td class="memTemplParams" colspan="2">template&lt;typename Digest , typename Data &gt; </td></tr>
+<tr class="memitem:a57711475610786d4bcc8c18e1dd3dfbe"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; uint8_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html#a57711475610786d4bcc8c18e1dd3dfbe">sign</a> (Digest, const Data &amp;data)</td></tr>
+<tr class="memdesc:a57711475610786d4bcc8c18e1dd3dfbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sign <em>data</em> using <em>digest</em> and return signature as vector.  <a href="#a57711475610786d4bcc8c18e1dd3dfbe">More...</a><br /></td></tr>
+<tr class="separator:a57711475610786d4bcc8c18e1dd3dfbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -143,8 +161,212 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>certificate_t</b></t
 <tr class="separator:a7481a5378d8db0088a1c0504da1bfc8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Private key. </p>
-</div></div><!-- contents -->
+<div class="textblock"><p>Private key portion of asymmetric key pair. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a81506498cb94fef8508614d0fe1b2450"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81506498cb94fef8508614d0fe1b2450">&#9670;&nbsp;</a></span>algorithm()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacesal_1_1crypto.html#a362b0bd3db273482fb509992e0944268">key_algorithm</a> sal::crypto::private_key_t::algorithm </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return private key algorithm type. </p>
+<p>Result is undefined if key is not set. </p>
+
+</div>
+</div>
+<a id="a93a3296cb1c448782044cff979066333"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93a3296cb1c448782044cff979066333">&#9670;&nbsp;</a></span>block_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t sal::crypto::private_key_t::block_size </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return block length associated with key. </p>
+<p>Result is undefined if key is not set. </p>
+
+</div>
+</div>
+<a id="a457b66081ae6846dbed5a6415517cf91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a457b66081ae6846dbed5a6415517cf91">&#9670;&nbsp;</a></span>sign() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Digest , typename Data , typename Signature &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t sal::crypto::private_key_t::sign </td>
+          <td>(</td>
+          <td class="paramtype">Digest&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Data &amp;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Signature &amp;&#160;</td>
+          <td class="paramname"><em>signature</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::error_code &amp;&#160;</td>
+          <td class="paramname"><em>error</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sign <em>data</em> and write result into <em>signature</em>. </p>
+<dl class="section return"><dt>Returns</dt><dd>Size of signature or undefined value on error. </dd></dl>
+
+</div>
+</div>
+<a id="a7875929047c12cc8f82b5eb7a18b05b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7875929047c12cc8f82b5eb7a18b05b8">&#9670;&nbsp;</a></span>sign() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Digest , typename Data , typename Signature &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t sal::crypto::private_key_t::sign </td>
+          <td>(</td>
+          <td class="paramtype">Digest&#160;</td>
+          <td class="paramname"><em>digest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Data &amp;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Signature &amp;&#160;</td>
+          <td class="paramname"><em>signature</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sign <em>data</em> using <em>digest</em> and write result into <em>signature</em>. </p>
+<dl class="section return"><dt>Returns</dt><dd>Size of signature </dd></dl>
+
+</div>
+</div>
+<a id="a57711475610786d4bcc8c18e1dd3dfbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a57711475610786d4bcc8c18e1dd3dfbe">&#9670;&nbsp;</a></span>sign() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Digest , typename Data &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;uint8_t&gt; sal::crypto::private_key_t::sign </td>
+          <td>(</td>
+          <td class="paramtype">Digest&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Data &amp;&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sign <em>data</em> using <em>digest</em> and return signature as vector. </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::system_error</td><td>on signing failure </td></tr>
+    <tr><td class="paramname">std::bad_alloc</td><td>on vector allocation failure </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
