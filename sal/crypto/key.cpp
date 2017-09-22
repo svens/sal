@@ -3,9 +3,6 @@
 
 #if __sal_os_macos //{{{1
   #include <Security/SecItem.h>
-  #include <memory>
-#elif __sal_os_linux //{{{1
-  #include <openssl/err.h>
 #elif __sal_os_windows //{{{1
   #include <sal/buf_ptr.hpp>
   #include <sal/crypto/hash.hpp>
@@ -195,16 +192,18 @@ namespace {
 
 key_algorithm init (EVP_PKEY *key, size_t *block_size) noexcept
 {
+  auto algorithm = key_algorithm::opaque;
   if (key)
   {
     *block_size = EVP_PKEY_size(key);
     switch (EVP_PKEY_id(key))
     {
       case EVP_PKEY_RSA:
-        return key_algorithm::rsa;
+        algorithm = key_algorithm::rsa;
+        break;
     }
   }
-  return key_algorithm::opaque;
+  return algorithm;
 }
 
 } // namespace
@@ -274,6 +273,7 @@ size_t private_key_t::sign (size_t digest_type,
             static_cast<uint8_t *>(signature),
             &signature_size
           );
+          error.clear();
         }
         else
         {
@@ -306,43 +306,26 @@ bool public_key_t::verify_signature (size_t digest_type,
     return {};
   }
 
-  auto algorithm = to_algorithm(digest_type);
-  if (!algorithm)
+  bool success = false, valid_signature = false;
+  if (auto algorithm = to_algorithm(digest_type))
   {
-    error = std::make_error_code(std::errc::invalid_argument);
-    return {};
-  }
+    EVP_MD_CTX ctx;
+    EVP_MD_CTX_init(&ctx);
 
-  EVP_MD_CTX ctx;
-  EVP_MD_CTX_init(&ctx);
-
-  auto status = EVP_DigestVerifyInit(&ctx,
-    nullptr,
-    algorithm,
-    nullptr,
-    impl_.ref
-  );
-
-  if (status == 1)
-  {
-    status = EVP_DigestVerifyUpdate(&ctx, data, data_size);
-  }
-
-  bool result = false;
-  if (status == 1)
-  {
-    status = EVP_DigestVerifyFinal(&ctx,
-      static_cast<uint8_t *>(const_cast<void *>(signature)),
-      signature_size
-    );
-    if (status == 1)
+    if (EVP_DigestVerifyInit(&ctx, nullptr, algorithm, nullptr, impl_.ref) == 1
+      && EVP_DigestVerifyUpdate(&ctx, data, data_size) == 1)
     {
-      result = true;
-      status = 0;
+      valid_signature = EVP_DigestVerifyFinal(&ctx,
+        static_cast<uint8_t *>(const_cast<void *>(signature)),
+        signature_size
+      );
+      success = true;
     }
+
+    EVP_MD_CTX_cleanup(&ctx);
   }
 
-  if (!status)
+  if (success)
   {
     error.clear();
   }
@@ -351,8 +334,7 @@ bool public_key_t::verify_signature (size_t digest_type,
     error = std::make_error_code(std::errc::invalid_argument);
   }
 
-  EVP_MD_CTX_cleanup(&ctx);
-  return result;
+  return valid_signature;
 }
 
 
