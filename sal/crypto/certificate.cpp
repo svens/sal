@@ -722,6 +722,7 @@ namespace {
 inline unique_ref<CFDictionaryRef> import_options (const std::string &passphrase)
   noexcept
 {
+  // kSecImportExportPassphrase
   auto import_passphrase = ::CFStringCreateWithBytesNoCopy(
     nullptr,
     reinterpret_cast<const uint8_t *>(&passphrase[0]),
@@ -731,17 +732,23 @@ inline unique_ref<CFDictionaryRef> import_options (const std::string &passphrase
     kCFAllocatorNull
   );
 
+  // kSecImportExportAccess
+  SecAccessRef access{};
+  ::SecAccessCreate(CFSTR("Imported by SAL"), nullptr, &access);
+
   const void
     *keys[] =
     {
       kSecImportExportPassphrase,
+      kSecImportExportAccess,
     },
     *values[] =
     {
       import_passphrase,
+      access,
     };
 
-  return ::CFDictionaryCreate(nullptr, keys, values, 1, nullptr, nullptr);
+  return ::CFDictionaryCreate(nullptr, keys, values, 2, nullptr, nullptr);
 }
 
 
@@ -749,14 +756,6 @@ inline auto copy_certificate (SecIdentityRef identity) noexcept
 {
   __bits::certificate_t result;
   (void)::SecIdentityCopyCertificate(identity, &result.ref);
-  return result;
-}
-
-
-inline auto copy_private_key (SecIdentityRef identity) noexcept
-{
-  __bits::private_key_t result;
-  (void)::SecIdentityCopyPrivateKey(identity, &result.ref);
   return result;
 }
 
@@ -830,7 +829,9 @@ certificate_t certificate_t::import_pkcs12 (
 
   if (private_key)
   {
-    private_key->impl_ = copy_private_key(identity);
+    __bits::private_key_t key;
+    (void)::SecIdentityCopyPrivateKey(identity, &key.ref);
+    *private_key = std::move(key);
   }
 
   error.clear();
@@ -1492,7 +1493,7 @@ certificate_t certificate_t::import_pkcs12 (
 
   if (private_key)
   {
-    private_key->impl_ = std::move(pkey);
+    *private_key = std::move(pkey);
   }
 
   error.clear();
@@ -2191,7 +2192,8 @@ certificate_t certificate_t::import_pkcs12 (
     {
       if (pkey_owner && (pkey_spec & CERT_NCRYPT_KEY_SPEC))
       {
-        private_key->impl_.ref = pkey_handle;
+        __bits::private_key_t key = pkey_handle;
+        *private_key = std::move(key);
       }
       // else: not owner or not CNG private key -- do not take ownership
     }
