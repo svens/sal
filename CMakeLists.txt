@@ -6,8 +6,8 @@ cmake_minimum_required(VERSION 2.8.10)
 
 # optional features
 option(SAL_UNITTESTS "Build unittests" ON)
-option(SAL_BENCH "Build benchmarking application" OFF)
-option(SAL_DOCS "Generate documentation" OFF)
+option(SAL_BENCH "Build benchmarking application" ON)
+option(SAL_DOCS "Generate documentation" ON)
 
 if(CMAKE_BUILD_TYPE MATCHES Coverage)
   # special case of coverage build
@@ -79,40 +79,7 @@ add_library(sal ${sal_sources})
 
 if(SAL_UNITTESTS)
   message(STATUS "Building unittests")
-
-  find_package(GTest QUIET)
-  find_package(Threads)
-  if(NOT GTEST_FOUND)
-    message(STATUS "Building own gtest")
-
-    # download and build
-    include(ExternalProject)
-    ExternalProject_Add(gtest
-      URL https://github.com/google/googletest/archive/release-1.7.0.zip
-      URL_HASH SHA256=b58cb7547a28b2c718d1e38aee18a3659c9e3ff52440297e965f5edffe34b6d0
-      PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest-1.7.0
-      CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-      INSTALL_COMMAND ""
-      LOG_DOWNLOAD ON
-      LOG_CONFIGURE ON
-      LOG_BUILD ON
-    )
-
-    # gtest headers
-    ExternalProject_Get_Property(gtest source_dir)
-    set(GTEST_INCLUDE_DIRS ${source_dir}/include)
-
-    # gtest libs
-    ExternalProject_Get_Property(gtest binary_dir)
-    link_directories(${binary_dir})
-    set(GTEST_BOTH_LIBRARIES
-      ${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-      ${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
-    )
-  endif()
+  include(cmake/gtest.cmake)
 
   # build sal unittests
   enable_testing()
@@ -173,21 +140,7 @@ endif()
 
 if(SAL_DOCS)
   message(STATUS "Generate documentation")
-
-  find_package(Doxygen)
-  if(DOXYGEN_FOUND)
-    configure_file(
-      ${PROJECT_SOURCE_DIR}/cmake/Doxyfile.in
-      ${CMAKE_BINARY_DIR}/Doxyfile
-    )
-    add_custom_target(gen-doc
-      ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      COMMENT "Generating documentation"
-    )
-  else()
-    message(WARNING "Doxygen not found, skipping documentation generation")
-  endif()
+  include(cmake/doxygen.cmake)
 endif()
 
 
