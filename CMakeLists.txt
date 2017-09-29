@@ -62,7 +62,7 @@ endif()
 
 # set platform flags
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-  include(cmake/darwin.cmake)
+  include(cmake/macos.cmake)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   include(cmake/linux.cmake)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
