@@ -1,5 +1,13 @@
 var NAVTREEINDEX2 =
 {
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ab6d88ca56b84b5b1e097c3a7f267ad10":[7,0,0,2,2,5],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ab940170abfff7ce84213e40c227bc65b":[7,0,0,2,2,27],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ac13095956d2b05d46e08d245b6947cde":[7,0,0,2,2,12],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ac1938f1ea7614e38d6cfd55c76a48056":[7,0,0,2,2,30],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ac6617eac1c2ff777869dc3875e412359":[7,0,0,2,2,64],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ac7a0051ce5ba1898a4581015e91c24dc":[7,0,0,2,2,55],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#acb53381dd1363764b741283a159707da":[7,0,0,2,2,48],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ad311b565a77557eb7d9d2c07b5218060":[7,0,0,2,2,43],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0":[7,0,0,2,2,20],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#ae090cf48c736a7f873c67550ed8520ab":[7,0,0,2,2,13],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#aeca585cbc50fb893e9f1c4a9a2960483":[7,0,0,2,2,61],
@@ -241,13 +249,5 @@ var NAVTREEINDEX2 =
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a875bb92772a81b0fd7ca59f3691aca06":[7,0,0,2,0,4,2],
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a88b14386f1544241ce1c3879e1f96ab0":[7,0,0,2,0,4,13],
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a89020f16554daa023f067880fd9d9539":[7,0,0,2,0,4,18],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a912892bd14897dea761af60a97b371d3":[7,0,0,2,0,4,14],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a9e975ed6150143304e7ce799b973d96d":[7,0,0,2,0,4,5],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#aa5f439ef0e2272b6c5f345919969883a":[7,0,0,2,0,4,8],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#ab1a236b8abc12178d05cd349842464d2":[7,0,0,2,0,4,12],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#ab9008d242958e4017768357849c99d2d":[7,0,0,2,0,4,20],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#acd19b9aea6c545e00cd3f97ccd15e443":[7,0,0,2,0,4,9],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#ad5b59188c63c55a7b895fa2caa21737e":[7,0,0,2,0,4,0],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#adc92f8dc91b885052551c914980a9efb":[7,0,0,2,0,4,23],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#ae40e5bd824b298dd49fa6cf41fe7d18d":[7,0,0,2,0,4,6]
+"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a912892bd14897dea761af60a97b371d3":[7,0,0,2,0,4,14]
 };

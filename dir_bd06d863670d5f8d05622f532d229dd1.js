@@ -7,6 +7,7 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
     [ "assert.hpp", "assert_8hpp.html", "assert_8hpp" ],
     [ "buf_ptr.hpp", "buf__ptr_8hpp.html", "buf__ptr_8hpp" ],
     [ "builtins.hpp", "builtins_8hpp.html", "builtins_8hpp" ],
+    [ "byte_order.hpp", "byte__order_8hpp.html", "byte__order_8hpp" ],
     [ "char_array.hpp", "char__array_8hpp.html", [
       [ "char_array_t", "classsal_1_1char__array__t.html", "classsal_1_1char__array__t" ]
     ] ],
