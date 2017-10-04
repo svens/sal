@@ -8,6 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/ip/__bits/inet.hpp>
+#include <sal/byte_order.hpp>
 #include <sal/net/error.hpp>
 #include <sal/char_array.hpp>
 #include <sal/hash.hpp>
@@ -100,7 +101,9 @@ public:
    */
   uint_t to_uint () const noexcept
   {
-    return __bits::network_to_host_long(addr_.in.s_addr);
+    return network_to_native_byte_order(
+      static_cast<uint_t>(addr_.in.s_addr)
+    );
   }
 
 
