@@ -1,13 +1,13 @@
 case "${TRAVIS_OS_NAME}-${CC}" in
   linux-clang)
-    export CC=clang-3.8
-    export CXX=clang++-3.8
+    export CC=clang-5.0
+    export CXX=clang++-5.0
     ;;
 
   linux-gcc)
-    export CC=gcc-6
-    export CXX=g++-6
-    export GCOV=gcov-6
+    export CC=gcc-7
+    export CXX=g++-7
+    export GCOV=gcov-7
     if test "${BUILD_TYPE}" = "Coverage"; then
       curl -sO http://ftp.debian.org/debian/pool/main/l/lcov/lcov_1.13.orig.tar.gz
       gunzip -c lcov_1.13.orig.tar.gz | tar xvf -

@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/net/fwd.hpp>
 #include <sal/net/ip/address.hpp>
+#include <sal/byte_order.hpp>
 #include <sal/error.hpp>
 #include <sal/hash.hpp>
 #include <sal/memory_writer.hpp>
@@ -43,7 +44,7 @@ public:
   basic_endpoint_t () noexcept
   {
     addr_.v4.sin_family = AF_INET;
-    addr_.v4.sin_port = __bits::host_to_network_short(0);
+    addr_.v4.sin_port = native_to_network_byte_order(static_cast<uint16_t>(0));
     addr_.v4.sin_addr.s_addr = INADDR_ANY;
   }
 
@@ -54,7 +55,7 @@ public:
   basic_endpoint_t (const protocol_t &protocol, port_t port) noexcept
   {
     addr_.data.ss_family = static_cast<short>(protocol.family());
-    port = __bits::host_to_network_short(port);
+    port = native_to_network_byte_order(port);
     if (addr_.data.ss_family == AF_INET)
     {
       addr_.v4.sin_port = port;
@@ -76,7 +77,7 @@ public:
   basic_endpoint_t (const address_t &address, port_t port) noexcept
   {
     address.store(addr_.data);
-    port = __bits::host_to_network_short(port);
+    port = native_to_network_byte_order(port);
     if (addr_.data.ss_family == AF_INET)
     {
       addr_.v4.sin_port = port;
@@ -180,7 +181,7 @@ public:
    */
   port_t port () const noexcept
   {
-    return __bits::network_to_host_short(
+    return network_to_native_byte_order(
       addr_.data.ss_family == AF_INET ? addr_.v4.sin_port : addr_.v6.sin6_port
     );
   }
@@ -191,7 +192,7 @@ public:
    */
   void port (port_t port) noexcept
   {
-    port = __bits::host_to_network_short(port);
+    port = native_to_network_byte_order(port);
     if (addr_.data.ss_family == AF_INET)
     {
       addr_.v4.sin_port = port;

@@ -6,6 +6,7 @@ list(APPEND sal_sources
   sal/assert.hpp
   sal/buf_ptr.hpp
   sal/builtins.hpp
+  sal/byte_order.hpp
   sal/char_array.hpp
   sal/__bits/encode.hpp
   sal/__bits/encode.cpp
@@ -35,6 +36,7 @@ list(APPEND sal_unittests
   sal/assert.test.cpp
   sal/buf_ptr.test.cpp
   sal/builtins.test.cpp
+  sal/byte_order.test.cpp
   sal/char_array.test.cpp
   sal/common.test.hpp
   sal/encode.test.cpp

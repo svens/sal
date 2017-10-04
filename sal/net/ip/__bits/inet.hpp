@@ -56,30 +56,6 @@ inline bool inet_pton (const char *src, in6_addr &dest) noexcept
 }
 
 
-inline uint16_t host_to_network_short (uint16_t v) noexcept
-{
-  return htons(v);
-}
-
-
-inline uint32_t host_to_network_long (uint32_t v) noexcept
-{
-  return htonl(v);
-}
-
-
-inline uint16_t network_to_host_short (uint16_t v) noexcept
-{
-  return ntohs(v);
-}
-
-
-inline uint32_t network_to_host_long (uint32_t v) noexcept
-{
-  return ntohl(v);
-}
-
-
 inline int to_gai_error (int sys_error,
   const char *host_name,
   const char *service_name) noexcept
