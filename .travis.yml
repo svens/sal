@@ -53,10 +53,10 @@ before_install: |
   fi
 
 install: |
-  travis_wait source scripts/travis_install.sh
+  source scripts/travis_install.sh
 
 script: |
-  travis_wait source scripts/travis_script.sh
+  source scripts/travis_script.sh
 
 after_success: |
-  travis_wait source scripts/travis_success.sh
+  source scripts/travis_success.sh

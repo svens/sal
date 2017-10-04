@@ -4,7 +4,7 @@ if test "${BUILD_TYPE}" = "Coverity"; then
 elif test "${BUILD_TYPE}" = "Coverage"; then
   cmake . -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DSAL_DOCS=no -DSAL_BENCH=no
   cmake --build .
-  cmake --build . --target gen-cov -- ARGS=--output-on-failure
+  travis_wait cmake --build . --target gen-cov -- ARGS=--output-on-failure
 else
   cmake . -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DSAL_DOCS=no -DSAL_BENCH=no
   cmake --build .
