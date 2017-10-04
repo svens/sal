@@ -12,7 +12,7 @@ configuration:
   # - Release
 
 before_build:
-  - cmake . -DSAL_UNITTESTS=yes -G "Visual Studio 15 2017 Win64"
+  - cmake . -DSAL_UNITTESTS=yes -DSAL_BENCH=no -DSAL_DOCS=no -G "Visual Studio 15 2017 Win64"
 
 build_script:
   - cmake --build . --config %CONFIGURATION%
