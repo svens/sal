@@ -75,7 +75,7 @@ milliseconds single_run ()
   for (size_t i = 0;  i != producers;  ++i)
   {
     producer_threads.emplace_back(
-      [&, i]
+      [&]
       {
         for (;;)
         {
