@@ -28,6 +28,7 @@ list(APPEND sal_sources
   sal/thread.hpp
   sal/thread.cpp
   sal/time.hpp
+  sal/type_id.hpp
 )
 
 
@@ -51,6 +52,9 @@ list(APPEND sal_unittests
   sal/spinlock.test.cpp
   sal/thread.test.cpp
   sal/time.test.cpp
+  sal/type_id.test.cpp
+  sal/type_id.unit_a.test.cpp
+  sal/type_id.unit_b.test.cpp
 )
 
 
