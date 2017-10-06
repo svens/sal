@@ -2,6 +2,7 @@
 
 #include <sal/config.hpp>
 #include <sal/intrusive_queue.hpp>
+#include <sal/type_id.hpp>
 #include <chrono>
 #include <deque>
 #include <memory>
@@ -387,32 +388,18 @@ template <typename T>
 struct async_op_t
   : public async_op_base_t
 {
-#if _MSC_VER
-  static uintptr_t type_id () noexcept
-  {
-    static const T *p{};
-    return reinterpret_cast<uintptr_t>(&p);
-  }
-#else
-  static constexpr uintptr_t type_id () noexcept
-  {
-    return reinterpret_cast<uintptr_t>(&async_op_t::type_id);
-  }
-#endif
-
-
   static T *new_op (async_io_t *io) noexcept
   {
     static_assert(sizeof(T) <= sizeof(io->op_data));
     static_assert(std::is_trivially_destructible<T>());
-    io->op_id = type_id();
+    io->op_id = type_id<T>();
     return reinterpret_cast<T *>(io->op_data);
   }
 
 
   static T *get_op (async_io_t *io) noexcept
   {
-    return io->op_id == type_id()
+    return io->op_id == type_id<T>()
       ? reinterpret_cast<T *>(io->op_data)
       : nullptr;
   }
@@ -420,7 +407,7 @@ struct async_op_t
 
   static T *result (async_io_t *io, std::error_code &error) noexcept
   {
-    if (io->op_id == type_id())
+    if (io->op_id == type_id<T>())
     {
       error = io->error;
       return reinterpret_cast<T *>(io->op_data);

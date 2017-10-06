@@ -1010,7 +1010,7 @@ void async_context_t::enqueue_completions (OVERLAPPED_ENTRY *first,
     {
       op->transferred = entry.dwNumberOfBytesTransferred;
       if (op->transferred == 0
-        && io->op_id == async_receive_t::type_id())
+        && io->op_id == type_id<async_receive_t>())
       {
         io->error = make_error_code(std::errc::broken_pipe);
       }
