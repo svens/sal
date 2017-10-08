@@ -273,4 +273,14 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
 }
 
 
+/**
+ * Insert into \a writer content of \a value
+ */
+inline memory_writer_t &operator<< (memory_writer_t &writer,
+  const std::string_view &value) noexcept
+{
+  return writer.write(value.data(), value.data() + value.size());
+}
+
+
 __sal_end

@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/memory_writer.hpp>
 #include <sal/format.hpp>
+#include <string_view>
 
 
 __sal_begin
@@ -321,6 +322,19 @@ public:
   std::string to_string () const
   {
     return std::string{begin(), end()};
+  }
+
+
+  /**
+   * Create and return string_view with content from internal buffer.
+   * This call is valid only if object is good().
+   *
+   * \note Because returned object holds pointer to internal data, it's
+   * content might change while returned object itself is still in scope.
+   */
+  constexpr std::string_view to_string_view () const noexcept
+  {
+    return std::string_view{begin(), size()};
   }
 
 
