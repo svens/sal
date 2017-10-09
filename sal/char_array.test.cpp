@@ -507,4 +507,37 @@ TEST_F(char_array, to_string_full)
 }
 
 
+TEST_F(char_array, to_string_view)
+{
+  ASSERT_TRUE(bool(chars << case_name));
+  EXPECT_TRUE(chars.good());
+  EXPECT_EQ(case_name, chars.to_string_view());
+}
+
+
+TEST_F(char_array, to_string_view_empty)
+{
+  ASSERT_TRUE(chars.good());
+  EXPECT_EQ("", chars.to_string_view());
+}
+
+
+TEST_F(char_array, to_string_view_full)
+{
+  ASSERT_TRUE(bool(chars << exact));
+  EXPECT_TRUE(chars.good());
+  EXPECT_TRUE(chars.full());
+  EXPECT_EQ(exact, chars.to_string_view());
+}
+
+
+TEST_F(char_array, XXX)
+{
+  using namespace std::string_view_literals;
+  auto x = "hello"sv;
+  chars << x;
+  std::cout << chars.c_str() << '\n';
+}
+
+
 } // namespace

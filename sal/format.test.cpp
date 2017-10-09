@@ -602,6 +602,52 @@ TEST_F(format, string_overflow)
 }
 
 
+TEST_F(format, string_view)
+{
+  std::string_view view(case_name.data(), case_name.size());
+  EXPECT_TRUE(bool(writer << view));
+  EXPECT_EQ(view, std::string(data, view.size()));
+}
+
+
+TEST_F(format, string_view_exact)
+{
+  sal::memory_writer_t w{data, data + case_name.size()};
+  std::string_view view(case_name.data(), case_name.size());
+  EXPECT_TRUE(bool(w << view));
+  EXPECT_TRUE(w.full());
+  EXPECT_EQ(view, std::string(data, view.size()));
+}
+
+
+TEST_F(format, string_view_one_char_less)
+{
+  std::string_view view(case_name.data(), case_name.size());
+  sal::memory_writer_t w{data, data + view.size() - 1};
+  EXPECT_FALSE(bool(w << view));
+  EXPECT_TRUE(w.bad());
+}
+
+
+TEST_F(format, string_view_one_char_more)
+{
+  std::string_view view(case_name.data(), case_name.size());
+  sal::memory_writer_t w{data, data + view.size() + 1};
+  EXPECT_TRUE(bool(w << view));
+  EXPECT_FALSE(w.full());
+  EXPECT_EQ(view, std::string(data, view.size()));
+}
+
+
+TEST_F(format, string_view_overflow)
+{
+  std::string_view view(case_name.data(), case_name.size());
+  sal::memory_writer_t w{data, data + view.size() / 2};
+  EXPECT_FALSE(bool(w << view));
+  EXPECT_TRUE(w.bad());
+}
+
+
 template <typename T>
 struct format_float
   : public format
