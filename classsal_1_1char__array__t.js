@@ -28,5 +28,6 @@ var classsal_1_1char__array__t =
     [ "safe_size", "classsal_1_1char__array__t.html#aeb4a97dfa6ba1e10f0665dd3cc92e677", null ],
     [ "size", "classsal_1_1char__array__t.html#a5caad28b7a66f2fb069e302e3114e402", null ],
     [ "to_string", "classsal_1_1char__array__t.html#a4a57d4e8d035e56af1a1a7dfc5550d5a", null ],
+    [ "to_string_view", "classsal_1_1char__array__t.html#a42464d29aa7a933893dbbc6dcb0dbd6b", null ],
     [ "operator<<", "classsal_1_1char__array__t.html#a0aa87397f19f8e090fe4dc4320f3e680", null ]
 ];

@@ -1,5 +1,6 @@
 var NAVTREEINDEX2 =
 {
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ab4bdda1fc04fd4b2aee32e6b783fa3c8":[7,0,0,2,2,52],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#ab6d88ca56b84b5b1e097c3a7f267ad10":[7,0,0,2,2,5],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#ab940170abfff7ce84213e40c227bc65b":[7,0,0,2,2,27],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#ac13095956d2b05d46e08d245b6947cde":[7,0,0,2,2,12],
@@ -248,6 +249,5 @@ var NAVTREEINDEX2 =
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a82a8627dbe41b8f87006304029354f3a":[7,0,0,2,0,4,11],
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a875bb92772a81b0fd7ca59f3691aca06":[7,0,0,2,0,4,2],
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a88b14386f1544241ce1c3879e1f96ab0":[7,0,0,2,0,4,13],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a89020f16554daa023f067880fd9d9539":[7,0,0,2,0,4,18],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a912892bd14897dea761af60a97b371d3":[7,0,0,2,0,4,14]
+"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a89020f16554daa023f067880fd9d9539":[7,0,0,2,0,4,18]
 };

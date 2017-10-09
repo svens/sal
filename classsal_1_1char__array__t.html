@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.17.0</span>
+   &#160;<span id="projectnumber">0.18.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -200,6 +200,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a4a57d4e8d035e56af1a1a7dfc5550d5a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1char__array__t.html#a4a57d4e8d035e56af1a1a7dfc5550d5a">to_string</a> () const</td></tr>
 <tr class="memdesc:a4a57d4e8d035e56af1a1a7dfc5550d5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and return string with content from internal buffer.  <a href="#a4a57d4e8d035e56af1a1a7dfc5550d5a">More...</a><br /></td></tr>
 <tr class="separator:a4a57d4e8d035e56af1a1a7dfc5550d5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42464d29aa7a933893dbbc6dcb0dbd6b"><td class="memItemLeft" align="right" valign="top">constexpr std::string_view&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1char__array__t.html#a42464d29aa7a933893dbbc6dcb0dbd6b">to_string_view</a> () const noexcept</td></tr>
+<tr class="memdesc:a42464d29aa7a933893dbbc6dcb0dbd6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and return string_view with content from internal buffer.  <a href="#a42464d29aa7a933893dbbc6dcb0dbd6b">More...</a><br /></td></tr>
+<tr class="separator:a42464d29aa7a933893dbbc6dcb0dbd6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -871,6 +874,37 @@ template&lt;size_t Size&gt; </div>
 
 <p>Create and return string with content from internal buffer. </p>
 <p>This call is valid only if object is <a class="el" href="classsal_1_1char__array__t.html#a3de3f0fc3d1559769d6b11fc24d3e906" title="Return true if pointer to end of currently added content is valid. ">good()</a>. </p>
+
+</div>
+</div>
+<a id="a42464d29aa7a933893dbbc6dcb0dbd6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42464d29aa7a933893dbbc6dcb0dbd6b">&#9670;&nbsp;</a></span>to_string_view()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Size&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr std::string_view <a class="el" href="classsal_1_1char__array__t.html">sal::char_array_t</a>&lt; Size &gt;::to_string_view </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create and return string_view with content from internal buffer. </p>
+<p>This call is valid only if object is <a class="el" href="classsal_1_1char__array__t.html#a3de3f0fc3d1559769d6b11fc24d3e906" title="Return true if pointer to end of currently added content is valid. ">good()</a>.</p>
+<dl class="section note"><dt>Note</dt><dd>Because returned object holds pointer to internal data, it's content might change while returned object itself is still in scope. </dd></dl>
 
 </div>
 </div>

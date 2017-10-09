@@ -1,5 +1,7 @@
 var NAVTREEINDEX5 =
 {
+"structsal_1_1program__options_1_1parser__error.html":[7,0,0,3,11],
+"structsal_1_1program__options_1_1unknown__option__error.html":[7,0,0,3,12],
 "structsal_1_1spsc__sync__t.html":[7,0,0,16],
 "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html":[7,0,0,16,0],
 "structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html#a1213873ed1919ca25dd323f7a7462d0b":[7,0,0,16,0,0],

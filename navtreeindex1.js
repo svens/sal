@@ -1,5 +1,6 @@
 var NAVTREEINDEX1 =
 {
+"classsal_1_1crypto_1_1certificate__t.html#aca849ed5fae4c7533cf0177de7a26b13":[7,0,0,0,0,46],
 "classsal_1_1crypto_1_1certificate__t.html#acbdf9ca5faade582ffc5eb87f146ed82":[7,0,0,0,0,35],
 "classsal_1_1crypto_1_1certificate__t.html#ae2c4c67b8dc58262ec51eb38cc9ee365":[7,0,0,0,0,11],
 "classsal_1_1crypto_1_1certificate__t.html#af414a01aa6c243c6d13afe421ca823ae":[7,0,0,0,0,21],
@@ -248,6 +249,5 @@ var NAVTREEINDEX1 =
 "classsal_1_1net_1_1basic__datagram__socket__t.html#aa97ed1e2544196ab7154aa75ceb0d8d5":[7,0,0,2,2,56],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#aa9b0432eaa7fb1624e260d51b73a5664":[7,0,0,2,2,67],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#aaad8caf58c3c0cadf8666ebbba54be27":[7,0,0,2,2,38],
-"classsal_1_1net_1_1basic__datagram__socket__t.html#ab32dcdff124268733cb8ddef47e91aab":[7,0,0,2,2,31],
-"classsal_1_1net_1_1basic__datagram__socket__t.html#ab4bdda1fc04fd4b2aee32e6b783fa3c8":[7,0,0,2,2,52]
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ab32dcdff124268733cb8ddef47e91aab":[7,0,0,2,2,31]
 };

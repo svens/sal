@@ -22,5 +22,6 @@ var format_8hpp =
     [ "operator<<", "format_8hpp.html#ae961ce344c95b9ed74809d3ff69d9d73", null ],
     [ "operator<<", "format_8hpp.html#aa3b3d1e9f528cf4ab8e42d256813d633", null ],
     [ "operator<<", "format_8hpp.html#a99df8250bd900fda97aec4592b2201c7", null ],
-    [ "operator<<", "format_8hpp.html#a824a9ff46610e3959492878d4cf73d9e", null ]
+    [ "operator<<", "format_8hpp.html#a824a9ff46610e3959492878d4cf73d9e", null ],
+    [ "operator<<", "format_8hpp.html#a60b0b644fb2984c94496e14f15daa063", null ]
 ];
