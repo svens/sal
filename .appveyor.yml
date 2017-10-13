@@ -9,7 +9,7 @@ image:
 
 configuration:
   - Debug
-  # - Release
+  - Release
 
 before_build:
   - cmake . -DSAL_UNITTESTS=yes -DSAL_BENCH=no -DSAL_DOCS=no -G "Visual Studio 15 2017 Win64"

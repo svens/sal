@@ -24,11 +24,11 @@ struct option_set
   {
     sal_test::hardcoded_config_t config =
     {
-      { "option_" + option, "argument_" + option + "_0" },
-      { "option_" + option, "argument_" + option + "_1" },
-      { "x_option_" + option, "x_argument_" + option },
-      { "option_" + case_name, option },
-      { "", "positional_" + option },
+      std::make_pair("option_" + option, "argument_" + option + "_0"),
+      std::make_pair("option_" + option, "argument_" + option + "_1"),
+      std::make_pair("x_option_" + option, "x_argument_" + option),
+      std::make_pair("option_" + case_name, option),
+      std::make_pair("", "positional_" + option),
     };
     return options.load_from(config);
   }
