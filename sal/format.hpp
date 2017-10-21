@@ -15,6 +15,7 @@
 #include <sal/config.hpp>
 #include <sal/__bits/format.hpp>
 #include <string>
+#include <string_view>
 
 
 __sal_begin
