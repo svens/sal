@@ -1,5 +1,9 @@
 var NAVTREEINDEX2 =
 {
+"classsal_1_1net_1_1basic__datagram__socket__t.html#aa97ed1e2544196ab7154aa75ceb0d8d5":[7,0,0,2,2,56],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#aa9b0432eaa7fb1624e260d51b73a5664":[7,0,0,2,2,67],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#aaad8caf58c3c0cadf8666ebbba54be27":[7,0,0,2,2,38],
+"classsal_1_1net_1_1basic__datagram__socket__t.html#ab32dcdff124268733cb8ddef47e91aab":[7,0,0,2,2,31],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#ab4bdda1fc04fd4b2aee32e6b783fa3c8":[7,0,0,2,2,52],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#ab6d88ca56b84b5b1e097c3a7f267ad10":[7,0,0,2,2,5],
 "classsal_1_1net_1_1basic__datagram__socket__t.html#ab940170abfff7ce84213e40c227bc65b":[7,0,0,2,2,27],
@@ -245,9 +249,5 @@ var NAVTREEINDEX2 =
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a5531b5e8154c2b0bcf8010a82f864ccb":[7,0,0,2,0,4,3],
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a5eba06374722216d2f5b093b5cb5f00f":[7,0,0,2,0,4,7],
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a6da489000e4b8ec47f6f69cd1782baa6":[7,0,0,2,0,4,15],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a7f2b253530cc74b2966a7ca66dcf48de":[7,0,0,2,0,4,4],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a82a8627dbe41b8f87006304029354f3a":[7,0,0,2,0,4,11],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a875bb92772a81b0fd7ca59f3691aca06":[7,0,0,2,0,4,2],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a88b14386f1544241ce1c3879e1f96ab0":[7,0,0,2,0,4,13],
-"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a89020f16554daa023f067880fd9d9539":[7,0,0,2,0,4,18]
+"classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a7f2b253530cc74b2966a7ca66dcf48de":[7,0,0,2,0,4,4]
 };
