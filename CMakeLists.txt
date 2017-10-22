@@ -21,7 +21,7 @@ endif()
 # Version {{{1
 
 # read and parse
-file(STRINGS VERSION version LIMIT_COUNT 1)
+include(VERSION)
 set(version_regex "([0-9]*)\\.([0-9]*)\\.([0-9]*)")
 string(REGEX REPLACE ${version_regex} "\\1" version_major ${version})
 math(EXPR v ${version_major}+0)
