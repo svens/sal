@@ -5,16 +5,16 @@ cmake_minimum_required(VERSION 2.8.10)
 # Settings {{{1
 
 # optional features
-option(SAL_UNITTESTS "Build unittests" ON)
-option(SAL_BENCH "Build benchmarking application" ON)
-option(SAL_DOCS "Generate documentation" ON)
+option(UNITTESTS "Build unittests" ON)
+option(BENCH "Build benchmarking application" ON)
+option(DOCS "Generate documentation" ON)
 
 if(CMAKE_BUILD_TYPE MATCHES Coverage)
   # special case of coverage build
   set(CMAKE_BUILD_TYPE "Debug")
-  set(SAL_COVERAGE ON)
-  set(SAL_UNITTESTS ON)
-  set(SAL_BENCH OFF)
+  set(COVERAGE ON)
+  set(UNITTESTS ON)
+  set(BENCH OFF)
 endif()
 
 
@@ -77,7 +77,7 @@ add_library(sal ${sal_sources})
 
 # Testing targets {{{1
 
-if(SAL_UNITTESTS)
+if(UNITTESTS)
   message(STATUS "Building unittests")
   include(cmake/gtest.cmake)
 
@@ -111,7 +111,7 @@ endif()
 
 # Benchmarking application {{{1
 
-if(SAL_BENCH)
+if(BENCH)
   message(STATUS "Building benchmarking applications")
 
   find_package(Threads)
@@ -138,7 +138,7 @@ endif()
 
 # Generate documentation {{{1
 
-if(SAL_DOCS)
+if(DOCS)
   message(STATUS "Generate documentation")
   include(cmake/doxygen.cmake)
 endif()
