@@ -531,13 +531,4 @@ TEST_F(char_array, to_string_view_full)
 }
 
 
-TEST_F(char_array, XXX)
-{
-  using namespace std::string_view_literals;
-  auto x = "hello"sv;
-  chars << x;
-  std::cout << chars.c_str() << '\n';
-}
-
-
 } // namespace

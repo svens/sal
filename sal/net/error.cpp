@@ -9,6 +9,20 @@ namespace net {
 
 namespace {
 
+
+inline const char *to_message (int value) noexcept
+{
+  switch (static_cast<socket_errc>(value))
+  {
+    case socket_errc::already_open:
+      return "Already open";
+    case socket_errc::already_associated:
+      return "Already associated";
+  }
+  return "Unknown error";
+}
+
+
 class socket_category_impl_t
   : public std::error_category
 {
@@ -21,16 +35,10 @@ public:
 
   std::string message (int value) const final override
   {
-    switch (static_cast<socket_errc>(value))
-    {
-      case socket_errc::already_open:
-        return "Already open";
-      case socket_errc::already_associated:
-        return "Already associated";
-    }
-    return "Unknown error";
+    return to_message(value);
   }
 };
+
 
 } // namespace
 

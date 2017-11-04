@@ -55,11 +55,9 @@ template <> const std::string invalid_length_data<sal::base64> = "A";
 
 TYPED_TEST(encode, max_encoded_size_range)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-
+    auto &[decoded, encoded] = data;
     EXPECT_LE(
       encoded.size(),
       sal::max_encoded_size<TypeParam>(decoded.begin(), decoded.end())
@@ -70,11 +68,9 @@ TYPED_TEST(encode, max_encoded_size_range)
 
 TYPED_TEST(encode, max_encoded_size_buffer)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-
+    auto &[decoded, encoded] = data;
     EXPECT_LE(
       encoded.size(),
       sal::max_encoded_size<TypeParam>(decoded)
@@ -85,10 +81,9 @@ TYPED_TEST(encode, max_encoded_size_buffer)
 
 TYPED_TEST(encode, encode_range_into_range)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
+    auto &[decoded, encoded] = data;
 
     char buf[4096];
     auto result = std::string(buf,
@@ -102,10 +97,9 @@ TYPED_TEST(encode, encode_range_into_range)
 
 TYPED_TEST(encode, encode_buffer_into_range)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
+    auto &[decoded, encoded] = data;
 
     char buf[4096];
     auto result = std::string(buf, sal::encode<TypeParam>(decoded, buf));
@@ -117,11 +111,9 @@ TYPED_TEST(encode, encode_buffer_into_range)
 
 TYPED_TEST(encode, encode_range_into_string)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-
+    auto &[decoded, encoded] = data;
     EXPECT_EQ(encoded, sal::encode<TypeParam>(decoded.begin(), decoded.end()))
       << "Data: " << decoded;
   }
@@ -130,11 +122,9 @@ TYPED_TEST(encode, encode_range_into_string)
 
 TYPED_TEST(encode, encode_buffer_into_string)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-
+    auto &[decoded, encoded] = data;
     EXPECT_EQ(encoded, sal::encode<TypeParam>(decoded)) << "Data: " << decoded;
   }
 }
@@ -142,11 +132,9 @@ TYPED_TEST(encode, encode_buffer_into_string)
 
 TYPED_TEST(encode, max_decoded_size_range)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-
+    auto &[decoded, encoded] = data;
     std::error_code error;
     auto size = sal::max_decoded_size<TypeParam>(
       encoded.begin(),
@@ -165,11 +153,9 @@ TYPED_TEST(encode, max_decoded_size_range)
 
 TYPED_TEST(encode, max_decoded_size_buffer)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-
+    auto &[decoded, encoded] = data;
     std::error_code error;
     auto size = sal::max_decoded_size<TypeParam>(encoded, error);
     EXPECT_LE(decoded.size(), size) << "Data: " << decoded;
@@ -182,10 +168,9 @@ TYPED_TEST(encode, max_decoded_size_buffer)
 
 TYPED_TEST(encode, max_decoded_size_range_invalid)
 {
-  std::string decoded, encoded;
-  for (auto &data: test_data<TypeParam>)
+  for (auto data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
+    auto [decoded, encoded] = data;
     encoded += invalid_length_data<TypeParam>;
 
     std::error_code error;
@@ -202,10 +187,9 @@ TYPED_TEST(encode, max_decoded_size_range_invalid)
 
 TYPED_TEST(encode, max_decoded_size_buffer_invalid)
 {
-  std::string decoded, encoded;
-  for (auto &data: test_data<TypeParam>)
+  for (auto data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
+    auto [decoded, encoded] = data;
     encoded += invalid_length_data<TypeParam>;
 
     std::error_code error;
@@ -220,10 +204,9 @@ TYPED_TEST(encode, max_decoded_size_buffer_invalid)
 
 TYPED_TEST(encode, decode_range_into_range)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
+    auto &[decoded, encoded] = data;
 
     char buf[4096];
     std::error_code error;
@@ -243,11 +226,9 @@ TYPED_TEST(encode, decode_range_into_range)
 
 TYPED_TEST(encode, decode_range_into_range_invalid_length)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded += invalid_length_data<TypeParam>;
+    auto encoded = data.second + invalid_length_data<TypeParam>;
 
     char buf[4096];
     std::error_code error;
@@ -268,11 +249,9 @@ TYPED_TEST(encode, decode_range_into_range_invalid_length)
 
 TYPED_TEST(encode, decode_range_into_range_invalid_data_in_front)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded = invalid_data<TypeParam> + encoded;
+    auto encoded = invalid_data<TypeParam> + data.second;
 
     char buf[4096];
     std::error_code error;
@@ -293,20 +272,16 @@ TYPED_TEST(encode, decode_range_into_range_invalid_data_in_front)
 
 TYPED_TEST(encode, decode_range_into_range_invalid_data_in_back)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded += invalid_data<TypeParam>;
+    auto encoded = data.second + invalid_data<TypeParam>;
 
     char buf[4096];
     std::error_code error;
     auto result = std::string(buf,
       sal::decode<TypeParam>(encoded.begin(), encoded.end(), buf, error)
     );
-
     EXPECT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
-    EXPECT_EQ(decoded.size(), result.size());
 
     EXPECT_THROW(
       sal::decode<TypeParam>(encoded.begin(), encoded.end(), buf),
@@ -318,10 +293,9 @@ TYPED_TEST(encode, decode_range_into_range_invalid_data_in_back)
 
 TYPED_TEST(encode, decode_buffer_into_range)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
+    auto &[decoded, encoded] = data;
 
     char buf[4096];
     std::error_code error;
@@ -337,11 +311,9 @@ TYPED_TEST(encode, decode_buffer_into_range)
 
 TYPED_TEST(encode, decode_buffer_into_range_invalid_length)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded += invalid_length_data<TypeParam>;
+    auto encoded = data.second + invalid_length_data<TypeParam>;
 
     char buf[4096];
     std::error_code error;
@@ -360,11 +332,9 @@ TYPED_TEST(encode, decode_buffer_into_range_invalid_length)
 
 TYPED_TEST(encode, decode_buffer_into_range_invalid_data_in_front)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded = invalid_data<TypeParam> + encoded;
+    auto encoded = invalid_data<TypeParam> + data.second;
 
     char buf[4096];
     std::error_code error;
@@ -383,18 +353,14 @@ TYPED_TEST(encode, decode_buffer_into_range_invalid_data_in_front)
 
 TYPED_TEST(encode, decode_buffer_into_range_invalid_data_in_back)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded += invalid_data<TypeParam>;
+    auto encoded = data.second + invalid_data<TypeParam>;
 
     char buf[4096];
     std::error_code error;
     auto result = std::string(buf, sal::decode<TypeParam>(encoded, buf, error));
-
     EXPECT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
-    EXPECT_EQ(decoded.size(), result.size());
 
     EXPECT_THROW(
       sal::decode<TypeParam>(encoded, buf),
@@ -412,10 +378,9 @@ inline auto to_string (const std::vector<uint8_t> &in)
 
 TYPED_TEST(encode, decode_range_into_vector)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
+    auto &[decoded, encoded] = data;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded.begin(), encoded.end(), error);
@@ -430,11 +395,9 @@ TYPED_TEST(encode, decode_range_into_vector)
 
 TYPED_TEST(encode, decode_range_into_vector_invalid_length)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded += invalid_length_data<TypeParam>;
+    auto encoded = data.second + invalid_length_data<TypeParam>;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded.begin(), encoded.end(), error);
@@ -452,11 +415,9 @@ TYPED_TEST(encode, decode_range_into_vector_invalid_length)
 
 TYPED_TEST(encode, decode_range_into_vector_invalid_data_in_front)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded = invalid_data<TypeParam> + encoded;
+    auto encoded = invalid_data<TypeParam> + data.second;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded.begin(), encoded.end(), error);
@@ -474,17 +435,13 @@ TYPED_TEST(encode, decode_range_into_vector_invalid_data_in_front)
 
 TYPED_TEST(encode, decode_range_into_vector_invalid_data_in_back)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded += invalid_data<TypeParam>;
+    auto encoded = data.second + invalid_data<TypeParam>;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded.begin(), encoded.end(), error);
-
     EXPECT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
-    EXPECT_EQ(decoded.size(), result.size());
 
     EXPECT_THROW(
       sal::decode<TypeParam>(encoded.begin(), encoded.end()),
@@ -496,10 +453,9 @@ TYPED_TEST(encode, decode_range_into_vector_invalid_data_in_back)
 
 TYPED_TEST(encode, decode_buffer_into_vector)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
+    auto &[decoded, encoded] = data;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded, error);
@@ -514,11 +470,9 @@ TYPED_TEST(encode, decode_buffer_into_vector)
 
 TYPED_TEST(encode, decode_buffer_into_vector_invalid_length)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded += invalid_length_data<TypeParam>;
+    auto encoded = data.second + invalid_length_data<TypeParam>;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded, error);
@@ -536,11 +490,9 @@ TYPED_TEST(encode, decode_buffer_into_vector_invalid_length)
 
 TYPED_TEST(encode, decode_buffer_into_vector_invalid_data_in_front)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded = invalid_data<TypeParam> + encoded;
+    auto encoded = invalid_data<TypeParam> + data.second;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded, error);
@@ -558,17 +510,13 @@ TYPED_TEST(encode, decode_buffer_into_vector_invalid_data_in_front)
 
 TYPED_TEST(encode, decode_buffer_into_vector_invalid_data_in_back)
 {
-  std::string decoded, encoded;
   for (auto &data: test_data<TypeParam>)
   {
-    std::tie(decoded, encoded) = data;
-    encoded += invalid_data<TypeParam>;
+    auto encoded = data.second + invalid_data<TypeParam>;
 
     std::error_code error;
     auto result = sal::decode<TypeParam>(encoded, error);
-
     EXPECT_EQ(std::errc::illegal_byte_sequence, error) << error.message();
-    EXPECT_EQ(decoded.size(), result.size());
 
     EXPECT_THROW(
       sal::decode<TypeParam>(encoded),

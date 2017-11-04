@@ -22,14 +22,14 @@ env:
     - BUILD_TYPE=Debug
     - BUILD_TYPE=Release
 
-matrix:
-  include:
-    - os: linux
-      compiler: gcc
-      env: BUILD_TYPE=Coverage
-    - os: linux
-      compiler: gcc
-      env: BUILD_TYPE=Coverity
+#matrix:
+#  include:
+#    - os: linux
+#      compiler: gcc
+#      env: BUILD_TYPE=Coverage
+#    - os: linux
+#      compiler: gcc
+#      env: BUILD_TYPE=Coverity
 
 addons:
   apt:

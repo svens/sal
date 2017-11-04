@@ -218,7 +218,7 @@ public:
   size_t hash () const noexcept
   {
     return hash_128_to_64(AF_INET,
-      fnv_1a_64(addr_.bytes.data(), addr_.bytes.data() + addr_.bytes.size())
+      fnv_1a_64(addr_.bytes.begin(), addr_.bytes.end())
     );
   }
 

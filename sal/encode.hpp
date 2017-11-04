@@ -7,7 +7,8 @@
 
 
 #include <sal/config.hpp>
-#include <sal/__bits/encode.hpp>
+#include <sal/__bits/base64.hpp>
+#include <sal/__bits/hex.hpp>
 #include <sal/error.hpp>
 #include <memory>
 #include <string>
@@ -32,17 +33,10 @@ using base64 = __bits::base64;
  * Maximum size of output buffer (in bytes) required to encode data in range
  * [\a first, \a last).
  */
-template <typename Encoding, typename In>
-inline size_t max_encoded_size (In first, In last) noexcept
+template <typename Encoding, typename It>
+inline constexpr size_t max_encoded_size (It first, It last) noexcept
 {
-  if (first == last)
-  {
-    return 0;
-  }
-
-  auto begin = reinterpret_cast<const uint8_t *>(std::addressof(*first));
-  auto end = begin + (last - first) * sizeof(*first);
-  return Encoding::max_encoded_size(begin, end);
+  return Encoding::max_encoded_size(first, last);
 }
 
 
@@ -50,7 +44,7 @@ inline size_t max_encoded_size (In first, In last) noexcept
  * Maximum size of output buffer (in bytes) required to encode \a data
  */
 template <typename Encoding, typename InPtr>
-inline size_t max_encoded_size (const InPtr &data) noexcept
+inline constexpr size_t max_encoded_size (const InPtr &data) noexcept
 {
   return max_encoded_size<Encoding>(data.begin(), data.end());
 }
@@ -58,38 +52,28 @@ inline size_t max_encoded_size (const InPtr &data) noexcept
 
 /**
  * Encode data in range [\a first, \a last) using \a Encoding. Result is
- * stored into range [\a d_first, \a d_first + max_encoded_size)
+ * stored into range [\a out, \a out + max_encoded_size)
  *
  * \returns Iterator to one past final byte stored into output buffer.
  */
-template <typename Encoding, typename In, typename Out>
-inline Out encode (In first, In last, Out d_first) noexcept
+template <typename Encoding, typename InputIt, typename ForwardIt>
+inline constexpr ForwardIt encode (InputIt first, InputIt last, ForwardIt out)
+  noexcept
 {
-  if (first == last)
-  {
-    return d_first;
-  }
-
-  auto begin = reinterpret_cast<const uint8_t *>(std::addressof(*first));
-  auto end = begin + (last - first) * sizeof(*first);
-  return reinterpret_cast<Out>(
-    Encoding::encode(begin, end,
-      reinterpret_cast<uint8_t *>(std::addressof(*d_first))
-    )
-  );
+  return Encoding::encode(first, last, out);
 }
 
 
 /**
- * Encode data in \a data using \a Encoding. Result is stored into range [\a
- * d_first, \a d_first + max_encoded_size)
+ * Encode data in \a data using \a Encoding. Result is stored into range
+ * [\a out, \a out + max_encoded_size)
  *
  * \returns Iterator to one past final byte stored into output buffer.
  */
-template <typename Encoding, typename InPtr, typename Out>
-inline Out encode (const InPtr &data, Out d_first) noexcept
+template <typename Encoding, typename InPtr, typename ForwardIt>
+inline constexpr ForwardIt encode (const InPtr &data, ForwardIt out) noexcept
 {
-  return encode<Encoding>(data.begin(), data.end(), d_first);
+  return encode<Encoding>(data.begin(), data.end(), out);
 }
 
 
@@ -97,8 +81,8 @@ inline Out encode (const InPtr &data, Out d_first) noexcept
  * Conveniency wrapper for encoding, returning output data wrapped into
  * std::string.
  */
-template <typename Encoding, typename In>
-inline std::string encode (In first, In last)
+template <typename Encoding, typename It>
+inline std::string encode (It first, It last)
 {
   auto result = std::string(max_encoded_size<Encoding>(first, last), '\0');
   auto end = encode<Encoding>(first, last, &result[0]);
@@ -123,18 +107,11 @@ inline std::string encode (const InPtr &data)
  * [\a first, \a last). If input range has invalid number of bytes, \a error
  * is set to \c std::errc::message_size and 0 is returned
  */
-template <typename Encoding, typename In>
-inline size_t max_decoded_size (In first, In last, std::error_code &error)
-  noexcept
+template <typename Encoding, typename It>
+inline constexpr size_t max_decoded_size (It first, It last,
+  std::error_code &error) noexcept
 {
-  if (first == last)
-  {
-    return 0;
-  }
-
-  auto begin = reinterpret_cast<const uint8_t *>(std::addressof(*first));
-  auto end = begin + (last - first) * sizeof(*first);
-  return Encoding::max_decoded_size(begin, end, error);
+  return Encoding::max_decoded_size(first, last, error);
 }
 
 
@@ -144,8 +121,8 @@ inline size_t max_decoded_size (In first, In last, std::error_code &error)
  * \c std::errc::message_size and 0 is returned
  */
 template <typename Encoding, typename InPtr>
-inline size_t max_decoded_size (const InPtr &data, std::error_code &error)
-  noexcept
+inline constexpr size_t max_decoded_size (const InPtr &data,
+  std::error_code &error) noexcept
 {
   return max_decoded_size<Encoding>(data.begin(), data.end(), error);
 }
@@ -156,8 +133,8 @@ inline size_t max_decoded_size (const InPtr &data, std::error_code &error)
  * [\a first, \a last). If input range has invalid number of bytes, throws an
  * exception \c std::system_error.
  */
-template <typename Encoding, typename In>
-inline size_t max_decoded_size (In first, In last)
+template <typename Encoding, typename It>
+inline constexpr size_t max_decoded_size (It first, It last)
 {
   return max_decoded_size<Encoding>(first, last,
     throw_on_error("max_decoded_size")
@@ -171,7 +148,7 @@ inline size_t max_decoded_size (In first, In last)
  * \c std::system_error.
  */
 template <typename Encoding, typename InPtr>
-inline size_t max_decoded_size (const InPtr &data)
+inline constexpr size_t max_decoded_size (const InPtr &data)
 {
   return max_decoded_size<Encoding>(data, throw_on_error("max_decoded_size"));
 }
@@ -179,75 +156,63 @@ inline size_t max_decoded_size (const InPtr &data)
 
 /**
  * Decode data in range [\a first, \a last), storing output into buffer
- * starting with \a d_first. Output buffer should have room for at least
+ * starting with \a out. Output buffer should have room for at least
  * max_decoded_size() bytes.
  *
  * \returns Iterator to one past final byte stored in output buffer. On
  * decoding failure, sets \a error to std::errc::illegal_byte_sequence and
- * returned iterator points one past last successfully decoded byte.
+ * returned iterator has undefined value.
  */
-template <typename Encoding, typename In, typename Out>
-inline Out decode (In first, In last, Out d_first, std::error_code &error)
-  noexcept
+template <typename Encoding, typename InputIt, typename ForwardIt>
+inline constexpr ForwardIt decode (InputIt first, InputIt last, ForwardIt out,
+  std::error_code &error) noexcept
 {
-  if (first == last)
-  {
-    return d_first;
-  }
-
-  auto begin = reinterpret_cast<const uint8_t *>(std::addressof(*first));
-  auto end = begin + (last - first) * sizeof(*first);
-  return reinterpret_cast<Out>(
-    Encoding::decode(begin, end,
-      reinterpret_cast<uint8_t *>(std::addressof(*d_first)),
-      error
-    )
-  );
+  return Encoding::decode(first, last, out, error);
 }
 
 
 /**
  * Decode data in range [\a first, \a last), storing output into buffer
- * starting with \a d_first. Output buffer should have room for at least
+ * starting with \a out. Output buffer should have room for at least
  * max_decoded_size() bytes.
  *
  * \returns Iterator to one past final byte stored in output buffer. On
  * decoding failure, throws std::system_error
  */
-template <typename Encoding, typename In, typename Out>
-inline Out decode (In first, In last, Out d_first)
+template <typename Encoding, typename InputIt, typename ForwardIt>
+inline constexpr ForwardIt decode (InputIt first, InputIt last, ForwardIt out)
 {
-  return decode<Encoding>(first, last, d_first, throw_on_error("decode"));
+  return decode<Encoding>(first, last, out, throw_on_error("decode"));
 }
 
 
 /**
- * Decode \a data, storing output into buffer starting with \a d_first. Output
+ * Decode \a data, storing output into buffer starting with \a out. Output
  * buffer should have room for at least max_decoded_size() bytes.
  *
  * \returns Iterator to one past final byte stored in output buffer. On
  * decoding failure, sets \a error to std::errc::illegal_byte_sequence and
- * returned iterator points one past last successfully decoded byte.
+ * returned iterator has undefined value.
  */
-template <typename Encoding, typename InPtr, typename Out>
-inline Out decode (const InPtr &data, Out d_first, std::error_code &error)
-  noexcept
+template <typename Encoding, typename InPtr, typename ForwardIt>
+inline constexpr ForwardIt decode (const InPtr &data, ForwardIt out,
+  std::error_code &error) noexcept
 {
-  return decode<Encoding>(data.begin(), data.end(), d_first, error);
+  return decode<Encoding>(data.begin(), data.end(), out, error);
 }
 
 
 /**
- * Decode \a data, storing output into buffer starting with \a d_first. Output
+ * Decode \a data, storing output into buffer starting with \a out. Output
  * buffer should have room for at least max_decoded_size() bytes.
  *
  * \returns Iterator to one past final byte stored in output buffer. On
  * decoding failure, throws std::system_error
  */
-template <typename Encoding, typename InPtr, typename Out>
-inline Out decode (const InPtr &data, Out d_first)
+template <typename Encoding, typename InPtr, typename ForwardIt>
+inline constexpr ForwardIt decode (const InPtr &data, ForwardIt out)
 {
-  return decode<Encoding>(data, d_first, throw_on_error("decode"));
+  return decode<Encoding>(data, out, throw_on_error("decode"));
 }
 
 
@@ -255,8 +220,8 @@ inline Out decode (const InPtr &data, Out d_first)
  * Conveniency wrapper for decoding, returning output data wrapped into
  * std::vector<uint8_t>.
  */
-template <typename Encoding, typename In>
-inline std::vector<uint8_t> decode (In first, In last, std::error_code &error)
+template <typename Encoding, typename It>
+inline std::vector<uint8_t> decode (It first, It last, std::error_code &error)
   noexcept
 {
   std::vector<uint8_t> result;
@@ -275,8 +240,8 @@ inline std::vector<uint8_t> decode (In first, In last, std::error_code &error)
  * Conveniency wrapper for decoding, returning output data wrapped into
  * std::vector<uint8_t>.
  */
-template <typename Encoding, typename In>
-inline std::vector<uint8_t> decode (In first, In last)
+template <typename Encoding, typename It>
+inline std::vector<uint8_t> decode (It first, It last)
 {
   std::vector<uint8_t> result;
   if (auto size = max_decoded_size<Encoding>(first, last))

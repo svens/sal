@@ -7,6 +7,7 @@
 
 
 #include <sal/config.hpp>
+#include <memory>
 
 
 __sal_begin
@@ -30,6 +31,20 @@ template <typename Ptr>
 inline void random (const Ptr &data)
 {
   __bits::random(data.data(), data.size());
+}
+
+
+/**
+ * Fill range [\a first, \a last) with cryptographically strong random bytes
+ * suitable for cryptographic keys, nonces, etc.
+ */
+template <typename It>
+inline void random (It first, It last)
+{
+  __bits::random(
+    reinterpret_cast<uint8_t *>(std::addressof(*first)),
+    (last - first) * sizeof(*first)
+  );
 }
 
 
