@@ -43,6 +43,9 @@ addons:
       - g++-7
 
 before_install: |
+  if test "${TRAVIS_OS_NAME}" = "linux"; then
+    ip a
+  fi
   if test "${BUILD_TYPE}" = "Coverity"; then
     if test "${TRAVIS_BRANCH}" != "${COVERITY_SCAN_BRANCH_PATTERN}"; then
       exit 0
