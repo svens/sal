@@ -8,8 +8,8 @@ list(APPEND sal_sources
   sal/builtins.hpp
   sal/byte_order.hpp
   sal/char_array.hpp
-  sal/__bits/encode.hpp
-  sal/__bits/encode.cpp
+  sal/__bits/base64.hpp
+  sal/__bits/hex.hpp
   sal/encode.hpp
   sal/error.hpp
   sal/file.hpp
