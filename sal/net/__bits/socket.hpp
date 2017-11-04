@@ -392,14 +392,14 @@ struct async_op_t
   {
     static_assert(sizeof(T) <= sizeof(io->op_data));
     static_assert(std::is_trivially_destructible<T>());
-    io->op_id = type_id<T>();
+    io->op_id = type_v<T>;
     return reinterpret_cast<T *>(io->op_data);
   }
 
 
   static T *get_op (async_io_t *io) noexcept
   {
-    return io->op_id == type_id<T>()
+    return io->op_id == type_v<T>
       ? reinterpret_cast<T *>(io->op_data)
       : nullptr;
   }
@@ -407,7 +407,7 @@ struct async_op_t
 
   static T *result (async_io_t *io, std::error_code &error) noexcept
   {
-    if (io->op_id == type_id<T>())
+    if (io->op_id == type_v<T>)
     {
       error = io->error;
       return reinterpret_cast<T *>(io->op_data);
