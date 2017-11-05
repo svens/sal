@@ -22,5 +22,5 @@ var searchData=
   ['try_5fpoll',['try_poll',['../classsal_1_1net_1_1async__service__t_1_1context__t.html#a096d8773127c2fee2fd1663e623a220c',1,'sal::net::async_service_t::context_t::try_poll(std::error_code &amp;error) noexcept'],['../classsal_1_1net_1_1async__service__t_1_1context__t.html#a660113df4b302cc451f6a378f29a5d7f',1,'sal::net::async_service_t::context_t::try_poll()']]],
   ['try_5fpop',['try_pop',['../classsal_1_1intrusive__queue__t.html#adbef7021b05f1580b79df1275e7fe4ab',1,'sal::intrusive_queue_t::try_pop()'],['../classsal_1_1queue__t.html#a8b7d6d6680e15cd795a161e08bbd338d',1,'sal::queue_t::try_pop()']]],
   ['type',['type',['../classsal_1_1net_1_1ip_1_1tcp__t.html#afbf239b5f0074fd8229c03349ac101fa',1,'sal::net::ip::tcp_t::type()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#a664d522407e5283fb0ff2fdc4478ebbe',1,'sal::net::ip::udp_t::type()']]],
-  ['type_5fid',['type_id',['../type__id_8hpp.html#ac3dcbbc9ea4a12a191dc12ebc66f0400',1,'sal::type_id() noexcept'],['../type__id_8hpp.html#a984099f836e8912f838c9bab974d0e91',1,'sal::type_id(T) noexcept']]]
+  ['type_5fid',['type_id',['../type__id_8hpp.html#a97e0b8fab79ed69a2ea7c6a1b6f5aa40',1,'sal::type_id() noexcept'],['../type__id_8hpp.html#a0b2d258eb0e18de3693c6bbd5bcccb62',1,'sal::type_id(T) noexcept']]]
 ];

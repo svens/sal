@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['random',['random',['../namespacesal_1_1crypto.html#a9fff7a81c3f6dc47c3e5970fbe84320b',1,'sal::crypto']]],
+  ['random',['random',['../namespacesal_1_1crypto.html#a9fff7a81c3f6dc47c3e5970fbe84320b',1,'sal::crypto::random(const Ptr &amp;data)'],['../namespacesal_1_1crypto.html#adc1ff1db19042394b78778a5c6ef749a',1,'sal::crypto::random(It first, It last)']]],
   ['random_2ehpp',['random.hpp',['../random_8hpp.html',1,'']]],
   ['rdn',['rdn',['../structsal_1_1crypto_1_1certificate__t_1_1distinguished__name__format__t.html#a7dae3c31a2b6dadba5b0b2993acdf364',1,'sal::crypto::certificate_t::distinguished_name_format_t']]],
   ['read',['read',['../classsal_1_1file__t.html#ab6712b43cd08e3465e7542095aacab4a',1,'sal::file_t::read(const Ptr &amp;buf, std::error_code &amp;error) noexcept'],['../classsal_1_1file__t.html#af0b8edecb0c381c99ee6e4ac1317e75e',1,'sal::file_t::read(const Ptr &amp;buf)']]],

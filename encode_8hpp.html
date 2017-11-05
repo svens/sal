@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.19.0</span>
+   &#160;<span id="projectnumber">0.20.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -100,7 +100,8 @@ $(document).ready(function(){initNavTree('encode_8hpp.html','');});
 <p>Various formats encoding/decoding (hex, base64)  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
-<code>#include &lt;sal/__bits/encode.hpp&gt;</code><br />
+<code>#include &lt;sal/__bits/base64.hpp&gt;</code><br />
+<code>#include &lt;sal/__bits/hex.hpp&gt;</code><br />
 <code>#include &lt;<a class="el" href="error_8hpp_source.html">sal/error.hpp</a>&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
@@ -121,76 +122,76 @@ using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="enc
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:af9c286e092715baa72f8bc12ead900a5"><td class="memTemplParams" colspan="2"><a id="af9c286e092715baa72f8bc12ead900a5"></a>
-template&lt;typename Encoding , typename In &gt; </td></tr>
-<tr class="memitem:af9c286e092715baa72f8bc12ead900a5"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#af9c286e092715baa72f8bc12ead900a5">sal::max_encoded_size</a> (In first, In last) noexcept</td></tr>
-<tr class="memdesc:af9c286e092715baa72f8bc12ead900a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to encode data in range [<em>first</em>, <em>last</em>). <br /></td></tr>
-<tr class="separator:af9c286e092715baa72f8bc12ead900a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac651e8c9be22c53ea0e980f44a7f18f6"><td class="memTemplParams" colspan="2"><a id="ac651e8c9be22c53ea0e980f44a7f18f6"></a>
+<tr class="memitem:af974da0c2e1a8ff6c87574051d3669ba"><td class="memTemplParams" colspan="2"><a id="af974da0c2e1a8ff6c87574051d3669ba"></a>
+template&lt;typename Encoding , typename It &gt; </td></tr>
+<tr class="memitem:af974da0c2e1a8ff6c87574051d3669ba"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#af974da0c2e1a8ff6c87574051d3669ba">sal::max_encoded_size</a> (It first, It last) noexcept</td></tr>
+<tr class="memdesc:af974da0c2e1a8ff6c87574051d3669ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to encode data in range [<em>first</em>, <em>last</em>). <br /></td></tr>
+<tr class="separator:af974da0c2e1a8ff6c87574051d3669ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1596c24f905b65a6cd3355e4188639bf"><td class="memTemplParams" colspan="2"><a id="a1596c24f905b65a6cd3355e4188639bf"></a>
 template&lt;typename Encoding , typename InPtr &gt; </td></tr>
-<tr class="memitem:ac651e8c9be22c53ea0e980f44a7f18f6"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#ac651e8c9be22c53ea0e980f44a7f18f6">sal::max_encoded_size</a> (const InPtr &amp;data) noexcept</td></tr>
-<tr class="memdesc:ac651e8c9be22c53ea0e980f44a7f18f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to encode <em>data</em>. <br /></td></tr>
-<tr class="separator:ac651e8c9be22c53ea0e980f44a7f18f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c36135ac8d5d643f7302ccb95a13508"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename In , typename Out &gt; </td></tr>
-<tr class="memitem:a8c36135ac8d5d643f7302ccb95a13508"><td class="memTemplItemLeft" align="right" valign="top">Out&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a8c36135ac8d5d643f7302ccb95a13508">sal::encode</a> (In first, In last, Out d_first) noexcept</td></tr>
-<tr class="memdesc:a8c36135ac8d5d643f7302ccb95a13508"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode data in range [<em>first</em>, <em>last</em>) using <em>Encoding</em>.  <a href="encode_8hpp.html#a8c36135ac8d5d643f7302ccb95a13508">More...</a><br /></td></tr>
-<tr class="separator:a8c36135ac8d5d643f7302ccb95a13508"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a356200970d45842459e158163db6db36"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr , typename Out &gt; </td></tr>
-<tr class="memitem:a356200970d45842459e158163db6db36"><td class="memTemplItemLeft" align="right" valign="top">Out&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a356200970d45842459e158163db6db36">sal::encode</a> (const InPtr &amp;data, Out d_first) noexcept</td></tr>
-<tr class="memdesc:a356200970d45842459e158163db6db36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode data in <em>data</em> using <em>Encoding</em>.  <a href="encode_8hpp.html#a356200970d45842459e158163db6db36">More...</a><br /></td></tr>
-<tr class="separator:a356200970d45842459e158163db6db36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b2cf467803a9cc21cae00bfd042217b"><td class="memTemplParams" colspan="2"><a id="a7b2cf467803a9cc21cae00bfd042217b"></a>
-template&lt;typename Encoding , typename In &gt; </td></tr>
-<tr class="memitem:a7b2cf467803a9cc21cae00bfd042217b"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a7b2cf467803a9cc21cae00bfd042217b">sal::encode</a> (In first, In last)</td></tr>
-<tr class="memdesc:a7b2cf467803a9cc21cae00bfd042217b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conveniency wrapper for encoding, returning output data wrapped into std::string. <br /></td></tr>
-<tr class="separator:a7b2cf467803a9cc21cae00bfd042217b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1596c24f905b65a6cd3355e4188639bf"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a1596c24f905b65a6cd3355e4188639bf">sal::max_encoded_size</a> (const InPtr &amp;data) noexcept</td></tr>
+<tr class="memdesc:a1596c24f905b65a6cd3355e4188639bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to encode <em>data</em>. <br /></td></tr>
+<tr class="separator:a1596c24f905b65a6cd3355e4188639bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c8776168001132c8473124549d1b3f9"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InputIt , typename ForwardIt &gt; </td></tr>
+<tr class="memitem:a8c8776168001132c8473124549d1b3f9"><td class="memTemplItemLeft" align="right" valign="top">constexpr ForwardIt&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a8c8776168001132c8473124549d1b3f9">sal::encode</a> (InputIt first, InputIt last, ForwardIt out) noexcept</td></tr>
+<tr class="memdesc:a8c8776168001132c8473124549d1b3f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode data in range [<em>first</em>, <em>last</em>) using <em>Encoding</em>.  <a href="encode_8hpp.html#a8c8776168001132c8473124549d1b3f9">More...</a><br /></td></tr>
+<tr class="separator:a8c8776168001132c8473124549d1b3f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7781091c740ac31a5f2a98503b69e7f6"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr , typename ForwardIt &gt; </td></tr>
+<tr class="memitem:a7781091c740ac31a5f2a98503b69e7f6"><td class="memTemplItemLeft" align="right" valign="top">constexpr ForwardIt&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a7781091c740ac31a5f2a98503b69e7f6">sal::encode</a> (const InPtr &amp;data, ForwardIt out) noexcept</td></tr>
+<tr class="memdesc:a7781091c740ac31a5f2a98503b69e7f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode data in <em>data</em> using <em>Encoding</em>.  <a href="encode_8hpp.html#a7781091c740ac31a5f2a98503b69e7f6">More...</a><br /></td></tr>
+<tr class="separator:a7781091c740ac31a5f2a98503b69e7f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0545a1ca5027b9c87f665414038956a4"><td class="memTemplParams" colspan="2"><a id="a0545a1ca5027b9c87f665414038956a4"></a>
+template&lt;typename Encoding , typename It &gt; </td></tr>
+<tr class="memitem:a0545a1ca5027b9c87f665414038956a4"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a0545a1ca5027b9c87f665414038956a4">sal::encode</a> (It first, It last)</td></tr>
+<tr class="memdesc:a0545a1ca5027b9c87f665414038956a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conveniency wrapper for encoding, returning output data wrapped into std::string. <br /></td></tr>
+<tr class="separator:a0545a1ca5027b9c87f665414038956a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1029e9bb27d6e8d12f3aa87da5eb894d"><td class="memTemplParams" colspan="2"><a id="a1029e9bb27d6e8d12f3aa87da5eb894d"></a>
 template&lt;typename Encoding , typename InPtr &gt; </td></tr>
 <tr class="memitem:a1029e9bb27d6e8d12f3aa87da5eb894d"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a1029e9bb27d6e8d12f3aa87da5eb894d">sal::encode</a> (const InPtr &amp;data)</td></tr>
 <tr class="memdesc:a1029e9bb27d6e8d12f3aa87da5eb894d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conveniency wrapper for encoding, returning output data wrapped into std::string. <br /></td></tr>
 <tr class="separator:a1029e9bb27d6e8d12f3aa87da5eb894d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe396639ee6b4e2548c648c264f378f5"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename In &gt; </td></tr>
-<tr class="memitem:abe396639ee6b4e2548c648c264f378f5"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#abe396639ee6b4e2548c648c264f378f5">sal::max_decoded_size</a> (In first, In last, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:abe396639ee6b4e2548c648c264f378f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to decode data in range [<em>first</em>, <em>last</em>).  <a href="encode_8hpp.html#abe396639ee6b4e2548c648c264f378f5">More...</a><br /></td></tr>
-<tr class="separator:abe396639ee6b4e2548c648c264f378f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4195f8adfe156493fec7fef8b376cd7"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr &gt; </td></tr>
-<tr class="memitem:ad4195f8adfe156493fec7fef8b376cd7"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#ad4195f8adfe156493fec7fef8b376cd7">sal::max_decoded_size</a> (const InPtr &amp;data, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:ad4195f8adfe156493fec7fef8b376cd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to decode <em>data</em>.  <a href="encode_8hpp.html#ad4195f8adfe156493fec7fef8b376cd7">More...</a><br /></td></tr>
-<tr class="separator:ad4195f8adfe156493fec7fef8b376cd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac39f87f5266503fa76d1796806772ad4"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename In &gt; </td></tr>
-<tr class="memitem:ac39f87f5266503fa76d1796806772ad4"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#ac39f87f5266503fa76d1796806772ad4">sal::max_decoded_size</a> (In first, In last)</td></tr>
-<tr class="memdesc:ac39f87f5266503fa76d1796806772ad4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to decode data in range [<em>first</em>, <em>last</em>).  <a href="encode_8hpp.html#ac39f87f5266503fa76d1796806772ad4">More...</a><br /></td></tr>
-<tr class="separator:ac39f87f5266503fa76d1796806772ad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd1b0696f4152becfd8add8afdce97bf"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr &gt; </td></tr>
-<tr class="memitem:afd1b0696f4152becfd8add8afdce97bf"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#afd1b0696f4152becfd8add8afdce97bf">sal::max_decoded_size</a> (const InPtr &amp;data)</td></tr>
-<tr class="memdesc:afd1b0696f4152becfd8add8afdce97bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to decode <em>data</em>.  <a href="encode_8hpp.html#afd1b0696f4152becfd8add8afdce97bf">More...</a><br /></td></tr>
-<tr class="separator:afd1b0696f4152becfd8add8afdce97bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0114818c8d6f7a1abc3e1f5e6b00216"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename In , typename Out &gt; </td></tr>
-<tr class="memitem:ad0114818c8d6f7a1abc3e1f5e6b00216"><td class="memTemplItemLeft" align="right" valign="top">Out&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#ad0114818c8d6f7a1abc3e1f5e6b00216">sal::decode</a> (In first, In last, Out d_first, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:ad0114818c8d6f7a1abc3e1f5e6b00216"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode data in range [<em>first</em>, <em>last</em>), storing output into buffer starting with <em>d_first</em>.  <a href="encode_8hpp.html#ad0114818c8d6f7a1abc3e1f5e6b00216">More...</a><br /></td></tr>
-<tr class="separator:ad0114818c8d6f7a1abc3e1f5e6b00216"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2fa04c3ddab513b5b15c5ee3c124a71"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename In , typename Out &gt; </td></tr>
-<tr class="memitem:af2fa04c3ddab513b5b15c5ee3c124a71"><td class="memTemplItemLeft" align="right" valign="top">Out&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#af2fa04c3ddab513b5b15c5ee3c124a71">sal::decode</a> (In first, In last, Out d_first)</td></tr>
-<tr class="memdesc:af2fa04c3ddab513b5b15c5ee3c124a71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode data in range [<em>first</em>, <em>last</em>), storing output into buffer starting with <em>d_first</em>.  <a href="encode_8hpp.html#af2fa04c3ddab513b5b15c5ee3c124a71">More...</a><br /></td></tr>
-<tr class="separator:af2fa04c3ddab513b5b15c5ee3c124a71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3801b3b5224fd2d29a44a68401bb9349"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr , typename Out &gt; </td></tr>
-<tr class="memitem:a3801b3b5224fd2d29a44a68401bb9349"><td class="memTemplItemLeft" align="right" valign="top">Out&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a3801b3b5224fd2d29a44a68401bb9349">sal::decode</a> (const InPtr &amp;data, Out d_first, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a3801b3b5224fd2d29a44a68401bb9349"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode <em>data</em>, storing output into buffer starting with <em>d_first</em>.  <a href="encode_8hpp.html#a3801b3b5224fd2d29a44a68401bb9349">More...</a><br /></td></tr>
-<tr class="separator:a3801b3b5224fd2d29a44a68401bb9349"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe3ec7f00a0a9a075d2f07047fafc5db"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr , typename Out &gt; </td></tr>
-<tr class="memitem:afe3ec7f00a0a9a075d2f07047fafc5db"><td class="memTemplItemLeft" align="right" valign="top">Out&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#afe3ec7f00a0a9a075d2f07047fafc5db">sal::decode</a> (const InPtr &amp;data, Out d_first)</td></tr>
-<tr class="memdesc:afe3ec7f00a0a9a075d2f07047fafc5db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode <em>data</em>, storing output into buffer starting with <em>d_first</em>.  <a href="encode_8hpp.html#afe3ec7f00a0a9a075d2f07047fafc5db">More...</a><br /></td></tr>
-<tr class="separator:afe3ec7f00a0a9a075d2f07047fafc5db"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe5aff366d1bf5255f75c07d9cec02af"><td class="memTemplParams" colspan="2"><a id="afe5aff366d1bf5255f75c07d9cec02af"></a>
-template&lt;typename Encoding , typename In &gt; </td></tr>
-<tr class="memitem:afe5aff366d1bf5255f75c07d9cec02af"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; uint8_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#afe5aff366d1bf5255f75c07d9cec02af">sal::decode</a> (In first, In last, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:afe5aff366d1bf5255f75c07d9cec02af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conveniency wrapper for decoding, returning output data wrapped into std::vector&lt;uint8_t&gt;. <br /></td></tr>
-<tr class="separator:afe5aff366d1bf5255f75c07d9cec02af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade01829966169f303883f60abc77f093"><td class="memTemplParams" colspan="2"><a id="ade01829966169f303883f60abc77f093"></a>
-template&lt;typename Encoding , typename In &gt; </td></tr>
-<tr class="memitem:ade01829966169f303883f60abc77f093"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; uint8_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#ade01829966169f303883f60abc77f093">sal::decode</a> (In first, In last)</td></tr>
-<tr class="memdesc:ade01829966169f303883f60abc77f093"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conveniency wrapper for decoding, returning output data wrapped into std::vector&lt;uint8_t&gt;. <br /></td></tr>
-<tr class="separator:ade01829966169f303883f60abc77f093"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a827e58b94bdba863024ffe52b84657ed"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename It &gt; </td></tr>
+<tr class="memitem:a827e58b94bdba863024ffe52b84657ed"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a827e58b94bdba863024ffe52b84657ed">sal::max_decoded_size</a> (It first, It last, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a827e58b94bdba863024ffe52b84657ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to decode data in range [<em>first</em>, <em>last</em>).  <a href="encode_8hpp.html#a827e58b94bdba863024ffe52b84657ed">More...</a><br /></td></tr>
+<tr class="separator:a827e58b94bdba863024ffe52b84657ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9262977cb56c6d999adbcc511a812289"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr &gt; </td></tr>
+<tr class="memitem:a9262977cb56c6d999adbcc511a812289"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a9262977cb56c6d999adbcc511a812289">sal::max_decoded_size</a> (const InPtr &amp;data, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a9262977cb56c6d999adbcc511a812289"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to decode <em>data</em>.  <a href="encode_8hpp.html#a9262977cb56c6d999adbcc511a812289">More...</a><br /></td></tr>
+<tr class="separator:a9262977cb56c6d999adbcc511a812289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac07b8bfbf5f99dacadec2a8799035b63"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename It &gt; </td></tr>
+<tr class="memitem:ac07b8bfbf5f99dacadec2a8799035b63"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#ac07b8bfbf5f99dacadec2a8799035b63">sal::max_decoded_size</a> (It first, It last)</td></tr>
+<tr class="memdesc:ac07b8bfbf5f99dacadec2a8799035b63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to decode data in range [<em>first</em>, <em>last</em>).  <a href="encode_8hpp.html#ac07b8bfbf5f99dacadec2a8799035b63">More...</a><br /></td></tr>
+<tr class="separator:ac07b8bfbf5f99dacadec2a8799035b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4df49fa3e6017d2c34bca36026b361ce"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr &gt; </td></tr>
+<tr class="memitem:a4df49fa3e6017d2c34bca36026b361ce"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a4df49fa3e6017d2c34bca36026b361ce">sal::max_decoded_size</a> (const InPtr &amp;data)</td></tr>
+<tr class="memdesc:a4df49fa3e6017d2c34bca36026b361ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of output buffer (in bytes) required to decode <em>data</em>.  <a href="encode_8hpp.html#a4df49fa3e6017d2c34bca36026b361ce">More...</a><br /></td></tr>
+<tr class="separator:a4df49fa3e6017d2c34bca36026b361ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76b5dac8a53bfcceec450bec0e00a248"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InputIt , typename ForwardIt &gt; </td></tr>
+<tr class="memitem:a76b5dac8a53bfcceec450bec0e00a248"><td class="memTemplItemLeft" align="right" valign="top">constexpr ForwardIt&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a76b5dac8a53bfcceec450bec0e00a248">sal::decode</a> (InputIt first, InputIt last, ForwardIt out, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a76b5dac8a53bfcceec450bec0e00a248"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode data in range [<em>first</em>, <em>last</em>), storing output into buffer starting with <em>out</em>.  <a href="encode_8hpp.html#a76b5dac8a53bfcceec450bec0e00a248">More...</a><br /></td></tr>
+<tr class="separator:a76b5dac8a53bfcceec450bec0e00a248"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7fb33299c9deacff1653ea1c347ca0f3"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InputIt , typename ForwardIt &gt; </td></tr>
+<tr class="memitem:a7fb33299c9deacff1653ea1c347ca0f3"><td class="memTemplItemLeft" align="right" valign="top">constexpr ForwardIt&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a7fb33299c9deacff1653ea1c347ca0f3">sal::decode</a> (InputIt first, InputIt last, ForwardIt out)</td></tr>
+<tr class="memdesc:a7fb33299c9deacff1653ea1c347ca0f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode data in range [<em>first</em>, <em>last</em>), storing output into buffer starting with <em>out</em>.  <a href="encode_8hpp.html#a7fb33299c9deacff1653ea1c347ca0f3">More...</a><br /></td></tr>
+<tr class="separator:a7fb33299c9deacff1653ea1c347ca0f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9de1bd878ccbe8ba3a6d8efbc2c3bce7"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr , typename ForwardIt &gt; </td></tr>
+<tr class="memitem:a9de1bd878ccbe8ba3a6d8efbc2c3bce7"><td class="memTemplItemLeft" align="right" valign="top">constexpr ForwardIt&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#a9de1bd878ccbe8ba3a6d8efbc2c3bce7">sal::decode</a> (const InPtr &amp;data, ForwardIt out, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a9de1bd878ccbe8ba3a6d8efbc2c3bce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode <em>data</em>, storing output into buffer starting with <em>out</em>.  <a href="encode_8hpp.html#a9de1bd878ccbe8ba3a6d8efbc2c3bce7">More...</a><br /></td></tr>
+<tr class="separator:a9de1bd878ccbe8ba3a6d8efbc2c3bce7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affef3284eef07ba9249eb6a6a2681ef6"><td class="memTemplParams" colspan="2">template&lt;typename Encoding , typename InPtr , typename ForwardIt &gt; </td></tr>
+<tr class="memitem:affef3284eef07ba9249eb6a6a2681ef6"><td class="memTemplItemLeft" align="right" valign="top">constexpr ForwardIt&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#affef3284eef07ba9249eb6a6a2681ef6">sal::decode</a> (const InPtr &amp;data, ForwardIt out)</td></tr>
+<tr class="memdesc:affef3284eef07ba9249eb6a6a2681ef6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode <em>data</em>, storing output into buffer starting with <em>out</em>.  <a href="encode_8hpp.html#affef3284eef07ba9249eb6a6a2681ef6">More...</a><br /></td></tr>
+<tr class="separator:affef3284eef07ba9249eb6a6a2681ef6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af62d43d353ad44bdc03adae0ddebdbbb"><td class="memTemplParams" colspan="2"><a id="af62d43d353ad44bdc03adae0ddebdbbb"></a>
+template&lt;typename Encoding , typename It &gt; </td></tr>
+<tr class="memitem:af62d43d353ad44bdc03adae0ddebdbbb"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; uint8_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#af62d43d353ad44bdc03adae0ddebdbbb">sal::decode</a> (It first, It last, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:af62d43d353ad44bdc03adae0ddebdbbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conveniency wrapper for decoding, returning output data wrapped into std::vector&lt;uint8_t&gt;. <br /></td></tr>
+<tr class="separator:af62d43d353ad44bdc03adae0ddebdbbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdf0a3710618bae959115cc926626921"><td class="memTemplParams" colspan="2"><a id="abdf0a3710618bae959115cc926626921"></a>
+template&lt;typename Encoding , typename It &gt; </td></tr>
+<tr class="memitem:abdf0a3710618bae959115cc926626921"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; uint8_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#abdf0a3710618bae959115cc926626921">sal::decode</a> (It first, It last)</td></tr>
+<tr class="memdesc:abdf0a3710618bae959115cc926626921"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conveniency wrapper for decoding, returning output data wrapped into std::vector&lt;uint8_t&gt;. <br /></td></tr>
+<tr class="separator:abdf0a3710618bae959115cc926626921"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc3bad1e45eec18ee84890d6d7067bcb"><td class="memTemplParams" colspan="2"><a id="afc3bad1e45eec18ee84890d6d7067bcb"></a>
 template&lt;typename Encoding , typename InPtr &gt; </td></tr>
 <tr class="memitem:afc3bad1e45eec18ee84890d6d7067bcb"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; uint8_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="encode_8hpp.html#afc3bad1e45eec18ee84890d6d7067bcb">sal::decode</a> (const InPtr &amp;data, std::error_code &amp;error) noexcept</td></tr>
@@ -205,34 +206,34 @@ template&lt;typename Encoding , typename InPtr &gt; </td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Various formats encoding/decoding (hex, base64) </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_ad0114818c8d6f7a1abc3e1f5e6b00216"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_ad0114818c8d6f7a1abc3e1f5e6b00216">&#9670;&nbsp;</a></span>decode() <span class="overload">[1/4]</span></h2>
+<a id="file_a76b5dac8a53bfcceec450bec0e00a248"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a76b5dac8a53bfcceec450bec0e00a248">&#9670;&nbsp;</a></span>decode() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Encoding , typename In , typename Out &gt; </div>
+template&lt;typename Encoding , typename InputIt , typename ForwardIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Out sal::decode </td>
+          <td class="memname">constexpr ForwardIt sal::decode </td>
           <td>(</td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">InputIt&#160;</td>
           <td class="paramname"><em>first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">InputIt&#160;</td>
           <td class="paramname"><em>last</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Out&#160;</td>
-          <td class="paramname"><em>d_first</em>, </td>
+          <td class="paramtype">ForwardIt&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -253,40 +254,40 @@ template&lt;typename Encoding , typename In , typename Out &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Decode data in range [<em>first</em>, <em>last</em>), storing output into buffer starting with <em>d_first</em>. </p>
-<p>Output buffer should have room for at least <a class="el" href="encode_8hpp.html#afd1b0696f4152becfd8add8afdce97bf" title="Maximum size of output buffer (in bytes) required to decode data. ">max_decoded_size()</a> bytes.</p>
-<dl class="section return"><dt>Returns</dt><dd>Iterator to one past final byte stored in output buffer. On decoding failure, sets <em>error</em> to std::errc::illegal_byte_sequence and returned iterator points one past last successfully decoded byte. </dd></dl>
+<p>Decode data in range [<em>first</em>, <em>last</em>), storing output into buffer starting with <em>out</em>. </p>
+<p>Output buffer should have room for at least <a class="el" href="encode_8hpp.html#a4df49fa3e6017d2c34bca36026b361ce" title="Maximum size of output buffer (in bytes) required to decode data. ">max_decoded_size()</a> bytes.</p>
+<dl class="section return"><dt>Returns</dt><dd>Iterator to one past final byte stored in output buffer. On decoding failure, sets <em>error</em> to std::errc::illegal_byte_sequence and returned iterator has undefined value. </dd></dl>
 
 </div>
 </div>
-<a id="file_af2fa04c3ddab513b5b15c5ee3c124a71"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_af2fa04c3ddab513b5b15c5ee3c124a71">&#9670;&nbsp;</a></span>decode() <span class="overload">[2/4]</span></h2>
+<a id="file_a7fb33299c9deacff1653ea1c347ca0f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a7fb33299c9deacff1653ea1c347ca0f3">&#9670;&nbsp;</a></span>decode() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Encoding , typename In , typename Out &gt; </div>
+template&lt;typename Encoding , typename InputIt , typename ForwardIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Out sal::decode </td>
+          <td class="memname">constexpr ForwardIt sal::decode </td>
           <td>(</td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">InputIt&#160;</td>
           <td class="paramname"><em>first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">InputIt&#160;</td>
           <td class="paramname"><em>last</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Out&#160;</td>
-          <td class="paramname"><em>d_first</em>&#160;</td>
+          <td class="paramtype">ForwardIt&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -301,25 +302,25 @@ template&lt;typename Encoding , typename In , typename Out &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Decode data in range [<em>first</em>, <em>last</em>), storing output into buffer starting with <em>d_first</em>. </p>
-<p>Output buffer should have room for at least <a class="el" href="encode_8hpp.html#afd1b0696f4152becfd8add8afdce97bf" title="Maximum size of output buffer (in bytes) required to decode data. ">max_decoded_size()</a> bytes.</p>
+<p>Decode data in range [<em>first</em>, <em>last</em>), storing output into buffer starting with <em>out</em>. </p>
+<p>Output buffer should have room for at least <a class="el" href="encode_8hpp.html#a4df49fa3e6017d2c34bca36026b361ce" title="Maximum size of output buffer (in bytes) required to decode data. ">max_decoded_size()</a> bytes.</p>
 <dl class="section return"><dt>Returns</dt><dd>Iterator to one past final byte stored in output buffer. On decoding failure, throws std::system_error </dd></dl>
 
 </div>
 </div>
-<a id="file_a3801b3b5224fd2d29a44a68401bb9349"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a3801b3b5224fd2d29a44a68401bb9349">&#9670;&nbsp;</a></span>decode() <span class="overload">[3/4]</span></h2>
+<a id="file_a9de1bd878ccbe8ba3a6d8efbc2c3bce7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a9de1bd878ccbe8ba3a6d8efbc2c3bce7">&#9670;&nbsp;</a></span>decode() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
+template&lt;typename Encoding , typename InPtr , typename ForwardIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Out sal::decode </td>
+          <td class="memname">constexpr ForwardIt sal::decode </td>
           <td>(</td>
           <td class="paramtype">const InPtr &amp;&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -327,8 +328,8 @@ template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Out&#160;</td>
-          <td class="paramname"><em>d_first</em>, </td>
+          <td class="paramtype">ForwardIt&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -349,25 +350,25 @@ template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Decode <em>data</em>, storing output into buffer starting with <em>d_first</em>. </p>
-<p>Output buffer should have room for at least <a class="el" href="encode_8hpp.html#afd1b0696f4152becfd8add8afdce97bf" title="Maximum size of output buffer (in bytes) required to decode data. ">max_decoded_size()</a> bytes.</p>
-<dl class="section return"><dt>Returns</dt><dd>Iterator to one past final byte stored in output buffer. On decoding failure, sets <em>error</em> to std::errc::illegal_byte_sequence and returned iterator points one past last successfully decoded byte. </dd></dl>
+<p>Decode <em>data</em>, storing output into buffer starting with <em>out</em>. </p>
+<p>Output buffer should have room for at least <a class="el" href="encode_8hpp.html#a4df49fa3e6017d2c34bca36026b361ce" title="Maximum size of output buffer (in bytes) required to decode data. ">max_decoded_size()</a> bytes.</p>
+<dl class="section return"><dt>Returns</dt><dd>Iterator to one past final byte stored in output buffer. On decoding failure, sets <em>error</em> to std::errc::illegal_byte_sequence and returned iterator has undefined value. </dd></dl>
 
 </div>
 </div>
-<a id="file_afe3ec7f00a0a9a075d2f07047fafc5db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_afe3ec7f00a0a9a075d2f07047fafc5db">&#9670;&nbsp;</a></span>decode() <span class="overload">[4/4]</span></h2>
+<a id="file_affef3284eef07ba9249eb6a6a2681ef6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_affef3284eef07ba9249eb6a6a2681ef6">&#9670;&nbsp;</a></span>decode() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
+template&lt;typename Encoding , typename InPtr , typename ForwardIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Out sal::decode </td>
+          <td class="memname">constexpr ForwardIt sal::decode </td>
           <td>(</td>
           <td class="paramtype">const InPtr &amp;&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -375,8 +376,8 @@ template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Out&#160;</td>
-          <td class="paramname"><em>d_first</em>&#160;</td>
+          <td class="paramtype">ForwardIt&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -391,40 +392,40 @@ template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Decode <em>data</em>, storing output into buffer starting with <em>d_first</em>. </p>
-<p>Output buffer should have room for at least <a class="el" href="encode_8hpp.html#afd1b0696f4152becfd8add8afdce97bf" title="Maximum size of output buffer (in bytes) required to decode data. ">max_decoded_size()</a> bytes.</p>
+<p>Decode <em>data</em>, storing output into buffer starting with <em>out</em>. </p>
+<p>Output buffer should have room for at least <a class="el" href="encode_8hpp.html#a4df49fa3e6017d2c34bca36026b361ce" title="Maximum size of output buffer (in bytes) required to decode data. ">max_decoded_size()</a> bytes.</p>
 <dl class="section return"><dt>Returns</dt><dd>Iterator to one past final byte stored in output buffer. On decoding failure, throws std::system_error </dd></dl>
 
 </div>
 </div>
-<a id="file_a8c36135ac8d5d643f7302ccb95a13508"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a8c36135ac8d5d643f7302ccb95a13508">&#9670;&nbsp;</a></span>encode() <span class="overload">[1/2]</span></h2>
+<a id="file_a8c8776168001132c8473124549d1b3f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a8c8776168001132c8473124549d1b3f9">&#9670;&nbsp;</a></span>encode() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Encoding , typename In , typename Out &gt; </div>
+template&lt;typename Encoding , typename InputIt , typename ForwardIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Out sal::encode </td>
+          <td class="memname">constexpr ForwardIt sal::encode </td>
           <td>(</td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">InputIt&#160;</td>
           <td class="paramname"><em>first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">InputIt&#160;</td>
           <td class="paramname"><em>last</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Out&#160;</td>
-          <td class="paramname"><em>d_first</em>&#160;</td>
+          <td class="paramtype">ForwardIt&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -440,24 +441,24 @@ template&lt;typename Encoding , typename In , typename Out &gt; </div>
 </div><div class="memdoc">
 
 <p>Encode data in range [<em>first</em>, <em>last</em>) using <em>Encoding</em>. </p>
-<p>Result is stored into range [<em>d_first</em>, <em>d_first</em> + max_encoded_size)</p>
+<p>Result is stored into range [<em>out</em>, <em>out</em> + max_encoded_size)</p>
 <dl class="section return"><dt>Returns</dt><dd>Iterator to one past final byte stored into output buffer. </dd></dl>
 
 </div>
 </div>
-<a id="file_a356200970d45842459e158163db6db36"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a356200970d45842459e158163db6db36">&#9670;&nbsp;</a></span>encode() <span class="overload">[2/2]</span></h2>
+<a id="file_a7781091c740ac31a5f2a98503b69e7f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a7781091c740ac31a5f2a98503b69e7f6">&#9670;&nbsp;</a></span>encode() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
+template&lt;typename Encoding , typename InPtr , typename ForwardIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Out sal::encode </td>
+          <td class="memname">constexpr ForwardIt sal::encode </td>
           <td>(</td>
           <td class="paramtype">const InPtr &amp;&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -465,8 +466,8 @@ template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Out&#160;</td>
-          <td class="paramname"><em>d_first</em>&#160;</td>
+          <td class="paramtype">ForwardIt&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -482,32 +483,32 @@ template&lt;typename Encoding , typename InPtr , typename Out &gt; </div>
 </div><div class="memdoc">
 
 <p>Encode data in <em>data</em> using <em>Encoding</em>. </p>
-<p>Result is stored into range [<em>d_first</em>, <em>d_first</em> + max_encoded_size)</p>
+<p>Result is stored into range [<em>out</em>, <em>out</em> + max_encoded_size)</p>
 <dl class="section return"><dt>Returns</dt><dd>Iterator to one past final byte stored into output buffer. </dd></dl>
 
 </div>
 </div>
-<a id="file_abe396639ee6b4e2548c648c264f378f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_abe396639ee6b4e2548c648c264f378f5">&#9670;&nbsp;</a></span>max_decoded_size() <span class="overload">[1/4]</span></h2>
+<a id="file_a827e58b94bdba863024ffe52b84657ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a827e58b94bdba863024ffe52b84657ed">&#9670;&nbsp;</a></span>max_decoded_size() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Encoding , typename In &gt; </div>
+template&lt;typename Encoding , typename It &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">size_t sal::max_decoded_size </td>
+          <td class="memname">constexpr size_t sal::max_decoded_size </td>
           <td>(</td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">It&#160;</td>
           <td class="paramname"><em>first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">It&#160;</td>
           <td class="paramname"><em>last</em>, </td>
         </tr>
         <tr>
@@ -534,8 +535,8 @@ template&lt;typename Encoding , typename In &gt; </div>
 
 </div>
 </div>
-<a id="file_ad4195f8adfe156493fec7fef8b376cd7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_ad4195f8adfe156493fec7fef8b376cd7">&#9670;&nbsp;</a></span>max_decoded_size() <span class="overload">[2/4]</span></h2>
+<a id="file_a9262977cb56c6d999adbcc511a812289"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a9262977cb56c6d999adbcc511a812289">&#9670;&nbsp;</a></span>max_decoded_size() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -546,7 +547,7 @@ template&lt;typename Encoding , typename InPtr &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">size_t sal::max_decoded_size </td>
+          <td class="memname">constexpr size_t sal::max_decoded_size </td>
           <td>(</td>
           <td class="paramtype">const InPtr &amp;&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -575,27 +576,27 @@ template&lt;typename Encoding , typename InPtr &gt; </div>
 
 </div>
 </div>
-<a id="file_ac39f87f5266503fa76d1796806772ad4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_ac39f87f5266503fa76d1796806772ad4">&#9670;&nbsp;</a></span>max_decoded_size() <span class="overload">[3/4]</span></h2>
+<a id="file_ac07b8bfbf5f99dacadec2a8799035b63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_ac07b8bfbf5f99dacadec2a8799035b63">&#9670;&nbsp;</a></span>max_decoded_size() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Encoding , typename In &gt; </div>
+template&lt;typename Encoding , typename It &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">size_t sal::max_decoded_size </td>
+          <td class="memname">constexpr size_t sal::max_decoded_size </td>
           <td>(</td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">It&#160;</td>
           <td class="paramname"><em>first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">In&#160;</td>
+          <td class="paramtype">It&#160;</td>
           <td class="paramname"><em>last</em>&#160;</td>
         </tr>
         <tr>
@@ -616,8 +617,8 @@ template&lt;typename Encoding , typename In &gt; </div>
 
 </div>
 </div>
-<a id="file_afd1b0696f4152becfd8add8afdce97bf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_afd1b0696f4152becfd8add8afdce97bf">&#9670;&nbsp;</a></span>max_decoded_size() <span class="overload">[4/4]</span></h2>
+<a id="file_a4df49fa3e6017d2c34bca36026b361ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a4df49fa3e6017d2c34bca36026b361ce">&#9670;&nbsp;</a></span>max_decoded_size() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -628,7 +629,7 @@ template&lt;typename Encoding , typename InPtr &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">size_t sal::max_decoded_size </td>
+          <td class="memname">constexpr size_t sal::max_decoded_size </td>
           <td>(</td>
           <td class="paramtype">const InPtr &amp;&#160;</td>
           <td class="paramname"><em>data</em></td><td>)</td>

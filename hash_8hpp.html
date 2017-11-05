@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.19.0</span>
+   &#160;<span id="projectnumber">0.20.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -104,35 +104,38 @@ $(document).ready(function(){initNavTree('hash_8hpp.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae94e227d068993dbc34537d52b57093e"><td class="memItemLeft" align="right" valign="top">__sal_hash_constexpr uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash_8hpp.html#ae94e227d068993dbc34537d52b57093e">sal::hash_128_to_64</a> (uint64_t h, uint64_t l) noexcept</td></tr>
-<tr class="memdesc:ae94e227d068993dbc34537d52b57093e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash two 64bit values into single 64bit value.  <a href="hash_8hpp.html#ae94e227d068993dbc34537d52b57093e">More...</a><br /></td></tr>
-<tr class="separator:ae94e227d068993dbc34537d52b57093e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a40237a6a2a27fe4328516c279fb68033"><td class="memItemLeft" align="right" valign="top">__sal_hash_constexpr uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash_8hpp.html#a40237a6a2a27fe4328516c279fb68033">sal::fnv_1a_64</a> (const void *first, const void *last, uint64_t h=0xcbf29ce484222325ULL) noexcept</td></tr>
-<tr class="memdesc:a40237a6a2a27fe4328516c279fb68033"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fowler-Noll-Vo hashing function for 64bit result.  <a href="hash_8hpp.html#a40237a6a2a27fe4328516c279fb68033">More...</a><br /></td></tr>
-<tr class="separator:a40237a6a2a27fe4328516c279fb68033"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa38f7be6810cf634a08080ce1a398a2b"><td class="memItemLeft" align="right" valign="top">constexpr uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hash_8hpp.html#aa38f7be6810cf634a08080ce1a398a2b">sal::hash_128_to_64</a> (uint64_t h, uint64_t l) noexcept</td></tr>
+<tr class="memdesc:aa38f7be6810cf634a08080ce1a398a2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hash two 64bit values into single 64bit value.  <a href="hash_8hpp.html#aa38f7be6810cf634a08080ce1a398a2b">More...</a><br /></td></tr>
+<tr class="separator:aa38f7be6810cf634a08080ce1a398a2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1daf2bf66d197079853fed8a9934b16"><td class="memTemplParams" colspan="2">template&lt;typename It &gt; </td></tr>
+<tr class="memitem:aa1daf2bf66d197079853fed8a9934b16"><td class="memTemplItemLeft" align="right" valign="top">constexpr uint64_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="hash_8hpp.html#aa1daf2bf66d197079853fed8a9934b16">sal::fnv_1a_64</a> (It first, It last, uint64_t h=0xcbf29ce484222325ULL) noexcept</td></tr>
+<tr class="memdesc:aa1daf2bf66d197079853fed8a9934b16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fowler-Noll-Vo hashing function for 64bit result.  <a href="hash_8hpp.html#aa1daf2bf66d197079853fed8a9934b16">More...</a><br /></td></tr>
+<tr class="separator:aa1daf2bf66d197079853fed8a9934b16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Various non-cryptographic hash functions. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="file_a40237a6a2a27fe4328516c279fb68033"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a40237a6a2a27fe4328516c279fb68033">&#9670;&nbsp;</a></span>fnv_1a_64()</h2>
+<a id="file_aa1daf2bf66d197079853fed8a9934b16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_aa1daf2bf66d197079853fed8a9934b16">&#9670;&nbsp;</a></span>fnv_1a_64()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename It &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__sal_hash_constexpr uint64_t sal::fnv_1a_64 </td>
+          <td class="memname">constexpr uint64_t sal::fnv_1a_64 </td>
           <td>(</td>
-          <td class="paramtype">const void *&#160;</td>
+          <td class="paramtype">It&#160;</td>
           <td class="paramname"><em>first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const void *&#160;</td>
+          <td class="paramtype">It&#160;</td>
           <td class="paramname"><em>last</em>, </td>
         </tr>
         <tr>
@@ -160,8 +163,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="file_ae94e227d068993dbc34537d52b57093e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_ae94e227d068993dbc34537d52b57093e">&#9670;&nbsp;</a></span>hash_128_to_64()</h2>
+<a id="file_aa38f7be6810cf634a08080ce1a398a2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_aa38f7be6810cf634a08080ce1a398a2b">&#9670;&nbsp;</a></span>hash_128_to_64()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -170,7 +173,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">__sal_hash_constexpr uint64_t sal::hash_128_to_64 </td>
+          <td class="memname">constexpr uint64_t sal::hash_128_to_64 </td>
           <td>(</td>
           <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>h</em>, </td>

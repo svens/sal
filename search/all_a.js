@@ -8,7 +8,7 @@ var searchData=
   ['local_5fnow',['local_now',['../classsal_1_1logger_1_1sink__t.html#a1aca7e0e71e821a05f91d42c9cbce2df',1,'sal::logger::sink_t']]],
   ['local_5foffset',['local_offset',['../time_8hpp.html#a4cebc13cf35fe4667e18b2a429e14fa7',1,'sal']]],
   ['local_5ftime',['local_time',['../time_8hpp.html#afc9833293543089ad8ba2f57341fd3ea',1,'sal::local_time(const std::time_t &amp;time) noexcept'],['../time_8hpp.html#aae5c79620e2c78d3a96b1d1cc0d75949',1,'sal::local_time(const time_t &amp;time) noexcept'],['../time_8hpp.html#ac0a27f72d7bb82b990ea5c04cde78044',1,'sal::local_time() noexcept']]],
-  ['locality_5fname',['locality_name',['../oid_8hpp.html#a7c1a2d4d4972f5727040a0265bcbf03d',1,'sal::crypto::oid']]],
+  ['locality_5fname',['locality_name',['../oid_8hpp.html#a8a4d3a9e8c692f1b3abaf8e525f4fb6d',1,'sal::crypto::oid']]],
   ['lock',['lock',['../classsal_1_1lockable__t.html#a5451f2204a58194036bb0a94e97bad5c',1,'sal::lockable_t::lock()'],['../classsal_1_1lockable__t.html#a04199b7ab415325e0d8c54eaec332d51',1,'sal::lockable_t::lock() const'],['../classsal_1_1spinlock__t.html#af3d37a84762c88cda271b0f868e07970',1,'sal::spinlock_t::lock(SpinYield yield)'],['../classsal_1_1spinlock__t.html#ac8bb3b3775004517518ac2dab4daace4',1,'sal::spinlock_t::lock()']]],
   ['lockable_2ehpp',['lockable.hpp',['../lockable_8hpp.html',1,'']]],
   ['lockable_5ft',['lockable_t',['../classsal_1_1lockable__t.html',1,'sal::lockable_t&lt; T, Mutex &gt;'],['../classsal_1_1lockable__t.html#ad9d4b1f55ea352e2f84a9848d061bde6',1,'sal::lockable_t::lockable_t()']]],
