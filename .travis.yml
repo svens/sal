@@ -43,6 +43,10 @@ addons:
       - g++-7
 
 before_install: |
+  if test "${TRAVIS_OS_NAME}" = "linux"; then
+    # show addresses to find out when IPv6 will be fixed
+    ip addr show
+  fi
   if test "${BUILD_TYPE}" = "Coverity"; then
     if test "${TRAVIS_BRANCH}" != "${COVERITY_SCAN_BRANCH_PATTERN}"; then
       exit 0
