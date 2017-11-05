@@ -16,32 +16,6 @@ std::unique_ptr<worker_t> worker_t::default_{};
 namespace {
 
 
-#if __apple_build_version__
-// TODO drop this section once Xcode8 is released
-
-__thread event_t *this_thread_event_ = nullptr,
-  *this_thread_event_ptr_ = nullptr;
-
-inline event_t *this_thread_event_alloc ()
-{
-  if (!this_thread_event_)
-  {
-    this_thread_event_ptr_ = this_thread_event_ = new event_t;
-  }
-
-  auto result = this_thread_event_ptr_;
-  this_thread_event_ptr_ = nullptr;
-  return result;
-}
-
-inline void this_thread_event_release (event_t *event)
-{
-  sal_assert(this_thread_event_ == event);
-  this_thread_event_ptr_ = event;
-}
-
-#else // if __apple_build_version__
-
 thread_local event_t this_thread_event_{},
   *this_thread_event_ptr_ = &this_thread_event_;
 
@@ -52,6 +26,7 @@ inline event_t *this_thread_event_alloc ()
   return result;
 }
 
+
 inline void this_thread_event_release (event_t *event)
 {
   // note: this function is called from unique_ptr custom deleter that's not
@@ -60,8 +35,6 @@ inline void this_thread_event_release (event_t *event)
   sal_assert(&this_thread_event_ == event);
   this_thread_event_ptr_ = event;
 }
-
-#endif // else __apple_build_version__
 
 
 void write_and_release (event_t *event)
