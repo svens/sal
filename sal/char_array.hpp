@@ -344,9 +344,9 @@ private:
 
   void assign (const char *ptr, size_t length) noexcept
   {
-    if (length > Size)
+    if (length > max_size())
     {
-      length = Size;
+      length = max_size();
     }
     std::memcpy(data_, ptr, length);
     writer_.first = data_ + length;

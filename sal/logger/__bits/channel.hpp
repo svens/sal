@@ -35,7 +35,7 @@ struct channel_base_t
   sink_ptr sink = ostream_sink(std::cout);
 
 
-  channel_base_t (const std::string &name)
+  channel_base_t (std::string name)
     : name(name)
   {}
 
