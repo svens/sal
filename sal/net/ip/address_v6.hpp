@@ -14,6 +14,7 @@
 #include <sal/hash.hpp>
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <ostream>
 
 

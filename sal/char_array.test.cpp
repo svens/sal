@@ -5,7 +5,7 @@
 namespace {
 
 
-constexpr size_t size = 256;
+constexpr size_t buf_size = 256;
 
 
 struct char_array
@@ -31,8 +31,8 @@ TEST_F(char_array, ctor)
   EXPECT_TRUE(chars.empty());
 
   EXPECT_EQ(0U, chars.size());
-  EXPECT_EQ(size, chars.max_size());
-  EXPECT_EQ(size, chars.available());
+  EXPECT_EQ(buf_size, chars.max_size());
+  EXPECT_EQ(buf_size, chars.available());
 
   EXPECT_STREQ("", chars.c_str());
 }
@@ -68,14 +68,14 @@ TEST_F(char_array, ctor_assign_bad)
 TEST_F(char_array, ctor_assign_smaller)
 {
   ASSERT_TRUE(bool(chars << case_name));
-  sal::char_array_t<size / 2> a{chars};
+  sal::char_array_t<buf_size / 2> a{chars};
   EXPECT_EQ(case_name, a.c_str());
 }
 
 
 TEST_F(char_array, ctor_assign_smaller_empty)
 {
-  sal::char_array_t<size / 2> a{chars};
+  sal::char_array_t<buf_size / 2> a{chars};
   EXPECT_EQ("", a.to_view());
 }
 
@@ -86,7 +86,7 @@ TEST_F(char_array, ctor_assign_smaller_bad)
   EXPECT_FALSE(bool(chars << case_name));
   EXPECT_TRUE(chars.bad());
 
-  sal::char_array_t<size / 2> a{chars};
+  sal::char_array_t<buf_size / 2> a{chars};
   EXPECT_TRUE(a.good());
   std::string half_exact(exact, exact.size() / 2);
   EXPECT_EQ(half_exact, a.c_str());
@@ -96,14 +96,14 @@ TEST_F(char_array, ctor_assign_smaller_bad)
 TEST_F(char_array, ctor_assign_bigger)
 {
   ASSERT_TRUE(bool(chars << case_name));
-  sal::char_array_t<size * 2> a{chars};
+  sal::char_array_t<buf_size * 2> a{chars};
   EXPECT_EQ(case_name, a.c_str());
 }
 
 
 TEST_F(char_array, ctor_assign_bigger_empty)
 {
-  sal::char_array_t<size * 2> a{chars};
+  sal::char_array_t<buf_size * 2> a{chars};
   EXPECT_EQ("", a.to_view());
 }
 
@@ -114,7 +114,7 @@ TEST_F(char_array, ctor_assign_bigger_bad)
   EXPECT_FALSE(bool(chars << case_name));
   EXPECT_TRUE(chars.bad());
 
-  sal::char_array_t<size * 2> a{chars};
+  sal::char_array_t<buf_size * 2> a{chars};
   EXPECT_TRUE(a.good());
   EXPECT_EQ(exact, a.c_str());
 }
@@ -153,7 +153,7 @@ TEST_F(char_array, copy_assign_bad)
 TEST_F(char_array, copy_assign_smaller)
 {
   ASSERT_TRUE(bool(chars << case_name));
-  sal::char_array_t<size / 2> a;
+  sal::char_array_t<buf_size / 2> a;
   a = chars;
   EXPECT_EQ(case_name, a.c_str());
 }
@@ -161,7 +161,7 @@ TEST_F(char_array, copy_assign_smaller)
 
 TEST_F(char_array, copy_assign_smaller_empty)
 {
-  sal::char_array_t<size / 2> a;
+  sal::char_array_t<buf_size / 2> a;
   a = chars;
   EXPECT_EQ("", a.to_view());
 }
@@ -173,7 +173,7 @@ TEST_F(char_array, copy_assign_smaller_bad)
   EXPECT_FALSE(bool(chars << case_name));
   EXPECT_TRUE(chars.bad());
 
-  sal::char_array_t<size / 2> a;
+  sal::char_array_t<buf_size / 2> a;
   a = chars;
   EXPECT_TRUE(a.good());
   std::string half_exact(exact, exact.size() / 2);
@@ -184,7 +184,7 @@ TEST_F(char_array, copy_assign_smaller_bad)
 TEST_F(char_array, copy_assign_bigger)
 {
   ASSERT_TRUE(bool(chars << case_name));
-  sal::char_array_t<size * 2> a;
+  sal::char_array_t<buf_size * 2> a;
   a = chars;
   EXPECT_EQ(case_name, a.c_str());
 }
@@ -192,7 +192,7 @@ TEST_F(char_array, copy_assign_bigger)
 
 TEST_F(char_array, copy_assign_bigger_empty)
 {
-  sal::char_array_t<size * 2> a;
+  sal::char_array_t<buf_size * 2> a;
   a = chars;
   EXPECT_EQ("", a.to_view());
 }
@@ -204,7 +204,7 @@ TEST_F(char_array, copy_assign_bigger_bad)
   EXPECT_FALSE(bool(chars << case_name));
   EXPECT_TRUE(chars.bad());
 
-  sal::char_array_t<size * 2> a;
+  sal::char_array_t<buf_size * 2> a;
   a = chars;
   EXPECT_TRUE(a.good());
   EXPECT_EQ(exact, a.c_str());
@@ -396,7 +396,7 @@ TEST_F(char_array, insert_overflow)
 
 TEST_F(char_array, insert_char_array)
 {
-  sal::char_array_t<2 * size> a;
+  sal::char_array_t<2 * buf_size> a;
   EXPECT_TRUE(bool(a << case_name));
   EXPECT_TRUE(bool(chars << a));
   EXPECT_EQ(case_name, chars.c_str());
@@ -460,7 +460,7 @@ TEST_F(char_array, print_overflow)
 
 TEST_F(char_array, print_char_array)
 {
-  sal::char_array_t<2 * size> a;
+  sal::char_array_t<2 * buf_size> a;
   EXPECT_TRUE(bool(a << case_name));
   EXPECT_TRUE(bool(chars.print(a)));
   EXPECT_EQ(case_name, chars.c_str());
