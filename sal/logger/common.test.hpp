@@ -47,7 +47,7 @@ struct sink_t final
       throw_write = false;
       throw false;
     }
-    last_message = event.message.to_string();
+    last_message = event.message.to_view();
   }
 
   bool last_message_contains (const std::string &value)

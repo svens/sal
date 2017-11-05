@@ -32,9 +32,7 @@ __sal_begin
  *
  * This class is similar to C++17 std::string_view except it owns array and
  * allows to insert content there. Same time it is missing most of
- * std::string_view find/comparison/etc functionality. Once it is standardized
- * and included by g++/clang++/msvc, new getter will be added that returns
- * non-mutable std::string_view with internal array.
+ * std::string_view find/comparison/etc functionality.
  */
 template <size_t Size>
 class char_array_t
@@ -316,23 +314,13 @@ public:
 
 
   /**
-   * Create and return string with content from internal buffer.
-   * This call is valid only if object is good().
-   */
-  std::string to_string () const
-  {
-    return std::string{begin(), end()};
-  }
-
-
-  /**
    * Create and return string_view with content from internal buffer.
    * This call is valid only if object is good().
    *
    * \note Because returned object holds pointer to internal data, it's
    * content might change while returned object itself is still in scope.
    */
-  constexpr std::string_view to_string_view () const noexcept
+  constexpr std::string_view to_view () const noexcept
   {
     return std::string_view{begin(), size()};
   }

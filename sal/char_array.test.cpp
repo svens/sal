@@ -49,7 +49,7 @@ TEST_F(char_array, ctor_assign)
 TEST_F(char_array, ctor_assign_empty)
 {
   auto a{chars};
-  EXPECT_EQ("", a.to_string());
+  EXPECT_EQ("", a.to_view());
 }
 
 
@@ -76,7 +76,7 @@ TEST_F(char_array, ctor_assign_smaller)
 TEST_F(char_array, ctor_assign_smaller_empty)
 {
   sal::char_array_t<size / 2> a{chars};
-  EXPECT_EQ("", a.to_string());
+  EXPECT_EQ("", a.to_view());
 }
 
 
@@ -104,7 +104,7 @@ TEST_F(char_array, ctor_assign_bigger)
 TEST_F(char_array, ctor_assign_bigger_empty)
 {
   sal::char_array_t<size * 2> a{chars};
-  EXPECT_EQ("", a.to_string());
+  EXPECT_EQ("", a.to_view());
 }
 
 
@@ -133,7 +133,7 @@ TEST_F(char_array, copy_assign_empty)
 {
   decltype(chars) a;
   a = chars;
-  EXPECT_EQ("", a.to_string());
+  EXPECT_EQ("", a.to_view());
 }
 
 
@@ -163,7 +163,7 @@ TEST_F(char_array, copy_assign_smaller_empty)
 {
   sal::char_array_t<size / 2> a;
   a = chars;
-  EXPECT_EQ("", a.to_string());
+  EXPECT_EQ("", a.to_view());
 }
 
 
@@ -194,7 +194,7 @@ TEST_F(char_array, copy_assign_bigger_empty)
 {
   sal::char_array_t<size * 2> a;
   a = chars;
-  EXPECT_EQ("", a.to_string());
+  EXPECT_EQ("", a.to_view());
 }
 
 
@@ -483,51 +483,27 @@ TEST_F(char_array, print_user_defined_type)
 }
 
 
-TEST_F(char_array, to_string)
+TEST_F(char_array, to_view)
 {
   ASSERT_TRUE(bool(chars << case_name));
   EXPECT_TRUE(chars.good());
-  EXPECT_EQ(case_name, chars.to_string());
+  EXPECT_EQ(case_name, chars.to_view());
 }
 
 
-TEST_F(char_array, to_string_empty)
+TEST_F(char_array, to_view_empty)
 {
   ASSERT_TRUE(chars.good());
-  EXPECT_EQ("", chars.to_string());
+  EXPECT_EQ("", chars.to_view());
 }
 
 
-TEST_F(char_array, to_string_full)
+TEST_F(char_array, to_view_full)
 {
   ASSERT_TRUE(bool(chars << exact));
   EXPECT_TRUE(chars.good());
   EXPECT_TRUE(chars.full());
-  EXPECT_EQ(exact, chars.to_string());
-}
-
-
-TEST_F(char_array, to_string_view)
-{
-  ASSERT_TRUE(bool(chars << case_name));
-  EXPECT_TRUE(chars.good());
-  EXPECT_EQ(case_name, chars.to_string_view());
-}
-
-
-TEST_F(char_array, to_string_view_empty)
-{
-  ASSERT_TRUE(chars.good());
-  EXPECT_EQ("", chars.to_string_view());
-}
-
-
-TEST_F(char_array, to_string_view_full)
-{
-  ASSERT_TRUE(bool(chars << exact));
-  EXPECT_TRUE(chars.good());
-  EXPECT_TRUE(chars.full());
-  EXPECT_EQ(exact, chars.to_string_view());
+  EXPECT_EQ(exact, chars.to_view());
 }
 
 
