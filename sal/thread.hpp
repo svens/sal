@@ -38,17 +38,7 @@ thread_id make_id () noexcept;
  */
 inline thread_id get_id () noexcept
 {
-#if __apple_build_version__
-  // TODO: fix once Xcode8 is available
-  static __thread auto id_ = null_thread;
-  if (!id_)
-  {
-    id_ = __bits::make_id();
-  }
-#else
   static thread_local const auto id_ = __bits::make_id();
-#endif
-
   return id_;
 }
 

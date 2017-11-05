@@ -194,18 +194,18 @@ inline memory_writer_t &format_float (memory_writer_t &writer,
   const T &value) noexcept
 {
   constexpr auto max_result_size = 26U;
-  auto length = writer.second - writer.first;
-  if (length > max_result_size)
+  auto size = writer.second - writer.first;
+  if (size >= max_result_size)
   {
     // happy path, result will fit directly to buffer
-    writer.first += std::snprintf(writer.first, length, format, value);
+    writer.first += std::snprintf(writer.first, size, format, value);
   }
   else
   {
     // might not fit, go through temporary buffer
     char buffer[max_result_size + 1];
-    length = std::snprintf(buffer, sizeof(buffer), format, value);
-    writer.write(buffer, buffer + length);
+    size = std::snprintf(buffer, sizeof(buffer), format, value);
+    writer.write(buffer, buffer + size);
   }
   return writer;
 }

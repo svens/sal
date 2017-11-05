@@ -160,7 +160,7 @@ public:
   {
     char_array_t<sizeof("255.255.255.255")> buf;
     buf << *this;
-    return buf.to_string();
+    return {buf.begin(), buf.end()};
   }
 
 

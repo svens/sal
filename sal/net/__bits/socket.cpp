@@ -4,6 +4,7 @@
 #include <sal/net/error.hpp>
 
 #if __sal_os_macos || __sal_os_linux
+  #include <cstring>
   #include <fcntl.h>
   #include <poll.h>
   #include <signal.h>

@@ -111,8 +111,7 @@ private:
 
 namespace __bits {
 
-template <size_t MsgSize>
-inline void throw_if (bool condition, const char (&msg)[MsgSize])
+inline void throw_if (bool condition, const char msg[])
 {
   if (sal_unlikely(condition))
   {

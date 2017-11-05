@@ -3,6 +3,7 @@
 
 #if __sal_os_macos // {{{1
   #include <sal/__bits/ref.hpp>
+  #include <sal/char_array.hpp>
   #include <Security/SecBase.h>
   #include <CoreFoundation/CFString.h>
 #elif __sal_os_linux // {{{1
@@ -46,10 +47,9 @@ struct category_impl_t
       }
     }
 
-    std::string result = name();
-    result += ':';
-    result += std::to_string(value);
-    return result;
+    char_array_t<32> result;
+    result.print(name(), ':', value);
+    return {result.begin(), result.end()};
   }
 };
 

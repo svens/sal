@@ -9,7 +9,9 @@ list(APPEND sal_sources
   sal/byte_order.hpp
   sal/char_array.hpp
   sal/__bits/base64.hpp
+  sal/__bits/base64.cpp
   sal/__bits/hex.hpp
+  sal/__bits/hex.cpp
   sal/encode.hpp
   sal/error.hpp
   sal/file.hpp

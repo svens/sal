@@ -14,6 +14,7 @@
 #include <sal/hash.hpp>
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <ostream>
 
 
@@ -194,7 +195,7 @@ public:
   {
     char_array_t<INET6_ADDRSTRLEN> buf;
     buf << *this;
-    return buf.to_string();
+    return {buf.begin(), buf.end()};
   }
 
 

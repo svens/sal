@@ -56,8 +56,7 @@ __sal_begin
 namespace __bits {
 
 
-template <size_t Size>
-inline void check (bool cond, const char (&msg)[Size])
+inline void check (bool cond, const char msg[])
 {
 #if !defined(NDEBUG)
   if (!cond)
@@ -71,8 +70,8 @@ inline void check (bool cond, const char (&msg)[Size])
 }
 
 
-template <typename T, size_t Size>
-inline T *check_ptr (T *ptr, const char (&msg)[Size])
+template <typename T>
+inline T *check_ptr (T *ptr, const char msg[])
 {
 #if !defined(NDEBUG)
   if (!ptr)
@@ -86,8 +85,7 @@ inline T *check_ptr (T *ptr, const char (&msg)[Size])
 }
 
 
-template <size_t Size>
-inline void *check_ptr (std::nullptr_t, const char (&msg)[Size])
+inline void *check_ptr (std::nullptr_t, const char msg[])
 {
   return check_ptr<void>(nullptr, msg);
 }

@@ -41,8 +41,8 @@ public:
    * Construct memory writer using range [begin, end)
    */
   template <typename T>
-  constexpr memory_writer_t (T *begin, const T *end) noexcept
-    : pair{char_p(begin), char_p(end)}
+  memory_writer_t (T *begin, const T *end) noexcept
+    : pair{to_ptr(begin), to_ptr(end)}
   {}
 
 
@@ -50,7 +50,7 @@ public:
    * Construct memory writer using range [array, array + N)
    */
   template <typename T, size_t N>
-  constexpr memory_writer_t (T (&array)[N]) noexcept
+  memory_writer_t (T (&array)[N]) noexcept
     : memory_writer_t{array, array + N}
   {}
 
@@ -89,7 +89,7 @@ public:
    * Writer pointer being equal to upper limit is considered valid state as
    * well because whole range is still valid.
    */
-  constexpr bool good () const noexcept
+  bool good () const noexcept
   {
     return first <= second;
   }
@@ -98,7 +98,7 @@ public:
   /**
    * \see good()
    */
-  constexpr explicit operator bool () const noexcept
+  explicit operator bool () const noexcept
   {
     return good();
   }
@@ -109,7 +109,7 @@ public:
    * in bad() state, write() methods update write pointer but do not actually
    * add any new content.
    */
-  constexpr bool bad () const noexcept
+  bool bad () const noexcept
   {
     return first > second;
   }
@@ -120,7 +120,7 @@ public:
    * has moved past upper limit is considered as bad() state instead of
    * full().
    */
-  constexpr bool full () const noexcept
+  bool full () const noexcept
   {
     return first == second;
   }
@@ -130,7 +130,7 @@ public:
    * Return number of bytes between writer pointer and upper limit. While in
    * bad() state, this method's returned value is undefined.
    */
-  constexpr size_t size () const noexcept
+  size_t size () const noexcept
   {
     return second - first;
   }
@@ -140,7 +140,7 @@ public:
    * Return number of bytes between writer pointer and upper limit. In bad()
    * state it returns 0.
    */
-  constexpr size_t safe_size () const noexcept
+  size_t safe_size () const noexcept
   {
     return good() ? size() : 0;
   }
@@ -149,7 +149,7 @@ public:
   /**
    * Return current write pointer
    */
-  constexpr char *begin () const noexcept
+  char *begin () const noexcept
   {
     return first;
   }
@@ -158,7 +158,7 @@ public:
   /**
    * Return upper limit pointer (one byte past actual fillable memory area)
    */
-  constexpr const char *end () const noexcept
+  const char *end () const noexcept
   {
     return second;
   }
@@ -217,10 +217,10 @@ public:
   template <typename T>
   memory_writer_t &write (const T *begin, const T *end) noexcept
   {
-    auto size = char_p(end) - char_p(begin);
+    auto size = to_ptr(end) - to_ptr(begin);
     if (first + size <= second)
     {
-      std::memcpy(first, char_p(begin), size);
+      std::memcpy(first, to_ptr(begin), size);
     }
     first += size;
     return *this;
@@ -314,14 +314,14 @@ public:
 private:
 
   template <typename T>
-  constexpr char *char_p (T *p) const noexcept
+  static char *to_ptr (T *p) noexcept
   {
     static_assert(std::is_pod<T>::value);
     return reinterpret_cast<char *>(p);
   }
 
   template <typename T>
-  constexpr const char *char_p (const T *p) const noexcept
+  static const char *to_ptr (const T *p) noexcept
   {
     static_assert(std::is_pod<T>::value);
     return reinterpret_cast<const char *>(p);

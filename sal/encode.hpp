@@ -29,14 +29,38 @@ using hex_string = __bits::hex_string;
 using base64 = __bits::base64;
 
 
+namespace __bits {
+
+template <typename Ptr, typename It>
+inline Ptr to_ptr (It it) noexcept
+{
+  return reinterpret_cast<Ptr>(std::addressof(*it));
+}
+
+template <typename Ptr, typename It>
+inline Ptr to_end_ptr (It first, It last) noexcept
+{
+  return to_ptr<Ptr>(first) + (last - first) * sizeof(*first);
+}
+
+} // namespace __bits
+
+
 /**
  * Maximum size of output buffer (in bytes) required to encode data in range
  * [\a first, \a last).
  */
 template <typename Encoding, typename It>
-inline constexpr size_t max_encoded_size (It first, It last) noexcept
+inline size_t max_encoded_size (It first, It last) noexcept
 {
-  return Encoding::max_encoded_size(first, last);
+  if (first != last)
+  {
+    return Encoding::max_encoded_size(
+      __bits::to_ptr<const uint8_t *>(first),
+      __bits::to_end_ptr<const uint8_t *>(first, last)
+    );
+  }
+  return 0;
 }
 
 
@@ -44,7 +68,7 @@ inline constexpr size_t max_encoded_size (It first, It last) noexcept
  * Maximum size of output buffer (in bytes) required to encode \a data
  */
 template <typename Encoding, typename InPtr>
-inline constexpr size_t max_encoded_size (const InPtr &data) noexcept
+inline size_t max_encoded_size (const InPtr &data) noexcept
 {
   return max_encoded_size<Encoding>(data.begin(), data.end());
 }
@@ -57,10 +81,20 @@ inline constexpr size_t max_encoded_size (const InPtr &data) noexcept
  * \returns Iterator to one past final byte stored into output buffer.
  */
 template <typename Encoding, typename InputIt, typename ForwardIt>
-inline constexpr ForwardIt encode (InputIt first, InputIt last, ForwardIt out)
+inline ForwardIt encode (InputIt first, InputIt last, ForwardIt out)
   noexcept
 {
-  return Encoding::encode(first, last, out);
+  if (first != last)
+  {
+    return reinterpret_cast<ForwardIt>(
+      Encoding::encode(
+        __bits::to_ptr<const uint8_t *>(first),
+        __bits::to_end_ptr<const uint8_t *>(first, last),
+        __bits::to_ptr<uint8_t *>(out)
+      )
+    );
+  }
+  return out;
 }
 
 
@@ -71,7 +105,7 @@ inline constexpr ForwardIt encode (InputIt first, InputIt last, ForwardIt out)
  * \returns Iterator to one past final byte stored into output buffer.
  */
 template <typename Encoding, typename InPtr, typename ForwardIt>
-inline constexpr ForwardIt encode (const InPtr &data, ForwardIt out) noexcept
+inline ForwardIt encode (const InPtr &data, ForwardIt out) noexcept
 {
   return encode<Encoding>(data.begin(), data.end(), out);
 }
@@ -108,10 +142,18 @@ inline std::string encode (const InPtr &data)
  * is set to \c std::errc::message_size and 0 is returned
  */
 template <typename Encoding, typename It>
-inline constexpr size_t max_decoded_size (It first, It last,
+inline size_t max_decoded_size (It first, It last,
   std::error_code &error) noexcept
 {
-  return Encoding::max_decoded_size(first, last, error);
+  if (first != last)
+  {
+    return Encoding::max_decoded_size(
+      __bits::to_ptr<const uint8_t *>(first),
+      __bits::to_end_ptr<const uint8_t *>(first, last),
+      error
+    );
+  }
+  return 0;
 }
 
 
@@ -121,7 +163,7 @@ inline constexpr size_t max_decoded_size (It first, It last,
  * \c std::errc::message_size and 0 is returned
  */
 template <typename Encoding, typename InPtr>
-inline constexpr size_t max_decoded_size (const InPtr &data,
+inline size_t max_decoded_size (const InPtr &data,
   std::error_code &error) noexcept
 {
   return max_decoded_size<Encoding>(data.begin(), data.end(), error);
@@ -134,7 +176,7 @@ inline constexpr size_t max_decoded_size (const InPtr &data,
  * exception \c std::system_error.
  */
 template <typename Encoding, typename It>
-inline constexpr size_t max_decoded_size (It first, It last)
+inline size_t max_decoded_size (It first, It last)
 {
   return max_decoded_size<Encoding>(first, last,
     throw_on_error("max_decoded_size")
@@ -148,7 +190,7 @@ inline constexpr size_t max_decoded_size (It first, It last)
  * \c std::system_error.
  */
 template <typename Encoding, typename InPtr>
-inline constexpr size_t max_decoded_size (const InPtr &data)
+inline size_t max_decoded_size (const InPtr &data)
 {
   return max_decoded_size<Encoding>(data, throw_on_error("max_decoded_size"));
 }
@@ -164,10 +206,21 @@ inline constexpr size_t max_decoded_size (const InPtr &data)
  * returned iterator has undefined value.
  */
 template <typename Encoding, typename InputIt, typename ForwardIt>
-inline constexpr ForwardIt decode (InputIt first, InputIt last, ForwardIt out,
+inline ForwardIt decode (InputIt first, InputIt last, ForwardIt out,
   std::error_code &error) noexcept
 {
-  return Encoding::decode(first, last, out, error);
+  if (first != last)
+  {
+    return reinterpret_cast<ForwardIt>(
+      Encoding::decode(
+        __bits::to_ptr<const uint8_t *>(first),
+        __bits::to_end_ptr<const uint8_t *>(first, last),
+        __bits::to_ptr<uint8_t *>(out),
+        error
+      )
+    );
+  }
+  return out;
 }
 
 
@@ -180,7 +233,7 @@ inline constexpr ForwardIt decode (InputIt first, InputIt last, ForwardIt out,
  * decoding failure, throws std::system_error
  */
 template <typename Encoding, typename InputIt, typename ForwardIt>
-inline constexpr ForwardIt decode (InputIt first, InputIt last, ForwardIt out)
+inline ForwardIt decode (InputIt first, InputIt last, ForwardIt out)
 {
   return decode<Encoding>(first, last, out, throw_on_error("decode"));
 }
@@ -195,7 +248,7 @@ inline constexpr ForwardIt decode (InputIt first, InputIt last, ForwardIt out)
  * returned iterator has undefined value.
  */
 template <typename Encoding, typename InPtr, typename ForwardIt>
-inline constexpr ForwardIt decode (const InPtr &data, ForwardIt out,
+inline ForwardIt decode (const InPtr &data, ForwardIt out,
   std::error_code &error) noexcept
 {
   return decode<Encoding>(data.begin(), data.end(), out, error);
@@ -210,7 +263,7 @@ inline constexpr ForwardIt decode (const InPtr &data, ForwardIt out,
  * decoding failure, throws std::system_error
  */
 template <typename Encoding, typename InPtr, typename ForwardIt>
-inline constexpr ForwardIt decode (const InPtr &data, ForwardIt out)
+inline ForwardIt decode (const InPtr &data, ForwardIt out)
 {
   return decode<Encoding>(data, out, throw_on_error("decode"));
 }

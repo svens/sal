@@ -5,13 +5,13 @@
 namespace {
 
 
-constexpr size_t size = 4;
+constexpr size_t buf_size = 4;
 
 
 template <typename T>
 auto *pointer (const sal::buf_ptr &) noexcept //{{{1
 {
-  static T data_[size] = {};
+  static T data_[buf_size] = {};
   return &data_[0];
 }
 
@@ -19,7 +19,7 @@ auto *pointer (const sal::buf_ptr &) noexcept //{{{1
 template <typename T>
 auto *pointer (const sal::const_buf_ptr &) noexcept //{{{1
 {
-  static const T data_[size] = {};
+  static const T data_[buf_size] = {};
   return &data_[0];
 }
 
@@ -27,7 +27,7 @@ auto *pointer (const sal::const_buf_ptr &) noexcept //{{{1
 template <typename T>
 auto &array (const sal::buf_ptr &) noexcept //{{{1
 {
-  static T data_[size] = {};
+  static T data_[buf_size] = {};
   return data_;
 }
 
@@ -35,7 +35,7 @@ auto &array (const sal::buf_ptr &) noexcept //{{{1
 template <typename T>
 auto &array (const sal::const_buf_ptr &) noexcept //{{{1
 {
-  static const T data_[size] = {};
+  static const T data_[buf_size] = {};
   return data_;
 }
 
@@ -43,7 +43,7 @@ auto &array (const sal::const_buf_ptr &) noexcept //{{{1
 template <typename T>
 auto &std_array (const sal::buf_ptr &) noexcept //{{{1
 {
-  static std::array<T, size> data_{};
+  static std::array<T, buf_size> data_{};
   return data_;
 }
 
@@ -51,7 +51,7 @@ auto &std_array (const sal::buf_ptr &) noexcept //{{{1
 template <typename T>
 auto &std_array (const sal::const_buf_ptr &) noexcept //{{{1
 {
-  static const std::array<T, size> data_{};
+  static const std::array<T, buf_size> data_{};
   return data_;
 }
 
@@ -59,7 +59,7 @@ auto &std_array (const sal::const_buf_ptr &) noexcept //{{{1
 template <typename T>
 auto &std_vector (const sal::buf_ptr &) noexcept //{{{1
 {
-  static std::vector<T> data_(size);
+  static std::vector<T> data_(buf_size);
   return data_;
 }
 
@@ -67,7 +67,7 @@ auto &std_vector (const sal::buf_ptr &) noexcept //{{{1
 template <typename T>
 auto &std_vector (const sal::const_buf_ptr &) noexcept //{{{1
 {
-  static const std::vector<T> data_(size);
+  static const std::vector<T> data_(buf_size);
   return data_;
 }
 
@@ -108,62 +108,62 @@ TYPED_TEST(buf_ptr, ctor) //{{{1
 
 TYPED_TEST(buf_ptr, ctor_pointer) //{{{1
 {
-  TypeParam ptr(pointer<char>(TypeParam()), size);
+  TypeParam ptr(pointer<char>(TypeParam()), buf_size);
   EXPECT_EQ(pointer<char>(TypeParam()), ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, inc) //{{{1
 {
-  TypeParam ptr(pointer<char>(TypeParam()), size);
-  ptr += size / 2;
+  TypeParam ptr(pointer<char>(TypeParam()), buf_size);
+  ptr += buf_size / 2;
   EXPECT_EQ(pointer<char>(TypeParam()) + 2, ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, inc_invalid) //{{{1
 {
-  TypeParam ptr(pointer<char>(TypeParam()), size);
-  ptr += size * 2;
-  EXPECT_EQ(pointer<char>(TypeParam()) + size, ptr.data());
+  TypeParam ptr(pointer<char>(TypeParam()), buf_size);
+  ptr += buf_size * 2;
+  EXPECT_EQ(pointer<char>(TypeParam()) + buf_size, ptr.data());
   EXPECT_EQ(0U, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, add_ptr_and_size) //{{{1
 {
-  TypeParam a(pointer<char>(TypeParam()), size);
+  TypeParam a(pointer<char>(TypeParam()), buf_size);
   TypeParam b = a + 2;
   EXPECT_EQ(pointer<char>(TypeParam()) + 2, b.data());
-  EXPECT_EQ(size / 2, b.size());
+  EXPECT_EQ(buf_size / 2, b.size());
 }
 
 
 TYPED_TEST(buf_ptr, add_ptr_and_size_invalid) //{{{1
 {
-  TypeParam a(pointer<char>(TypeParam()), size);
-  TypeParam b = a + 2 * size;
-  EXPECT_EQ(pointer<char>(TypeParam()) + size, b.data());
+  TypeParam a(pointer<char>(TypeParam()), buf_size);
+  TypeParam b = a + 2 * buf_size;
+  EXPECT_EQ(pointer<char>(TypeParam()) + buf_size, b.data());
   EXPECT_EQ(0U, b.size());
 }
 
 
 TYPED_TEST(buf_ptr, add_size_and_ptr) //{{{1
 {
-  TypeParam a(pointer<char>(TypeParam()), size);
+  TypeParam a(pointer<char>(TypeParam()), buf_size);
   TypeParam b = 2 + a;
   EXPECT_EQ(pointer<char>(TypeParam()) + 2, b.data());
-  EXPECT_EQ(size / 2, b.size());
+  EXPECT_EQ(buf_size / 2, b.size());
 }
 
 
 TYPED_TEST(buf_ptr, add_size_and_ptr_invalid) //{{{1
 {
-  TypeParam a(pointer<char>(TypeParam()), size);
-  TypeParam b = 2 * size + a;
-  EXPECT_EQ(pointer<char>(TypeParam()) + size, b.data());
+  TypeParam a(pointer<char>(TypeParam()), buf_size);
+  TypeParam b = 2 * buf_size + a;
+  EXPECT_EQ(pointer<char>(TypeParam()) + buf_size, b.data());
   EXPECT_EQ(0U, b.size());
 }
 
@@ -171,18 +171,18 @@ TYPED_TEST(buf_ptr, add_size_and_ptr_invalid) //{{{1
 TYPED_TEST(buf_ptr, from_char_pointer) //{{{1
 {
   auto *d = pointer<char>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size);
+  TypeParam ptr = sal::make_buf(d, buf_size);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_int_pointer) //{{{1
 {
   auto *d = pointer<int>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size);
+  TypeParam ptr = sal::make_buf(d, buf_size);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
@@ -192,7 +192,7 @@ TYPED_TEST(buf_ptr, from_ptr) //{{{1
   TypeParam a = sal::make_buf(d);
   TypeParam ptr = sal::make_buf(a);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
@@ -202,7 +202,7 @@ TYPED_TEST(buf_ptr, from_ptr_half) //{{{1
   TypeParam a = sal::make_buf(d);
   TypeParam ptr = sal::make_buf(a, a.size() / 2);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
@@ -212,7 +212,7 @@ TYPED_TEST(buf_ptr, from_ptr_overflow) //{{{1
   TypeParam a = sal::make_buf(d);
   TypeParam ptr = sal::make_buf(a, a.size() * 2);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
@@ -221,25 +221,25 @@ TYPED_TEST(buf_ptr, from_char_array) //{{{1
   auto &d = array<char>(TypeParam());
   TypeParam ptr = sal::make_buf(d);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_char_array_half) //{{{1
 {
   auto &d = array<char>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size / 2);
+  TypeParam ptr = sal::make_buf(d, buf_size / 2);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_char_array_overflow) //{{{1
 {
   auto &d = array<char>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size * 1024);
+  TypeParam ptr = sal::make_buf(d, buf_size * 1024);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
@@ -248,25 +248,25 @@ TYPED_TEST(buf_ptr, from_int_array) //{{{1
   auto &d = array<int>(TypeParam());
   TypeParam ptr = sal::make_buf(d);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size * sizeof(int), ptr.size());
+  EXPECT_EQ(buf_size * sizeof(int), ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_int_array_half) //{{{1
 {
   auto &d = array<int>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size / 2);
+  TypeParam ptr = sal::make_buf(d, buf_size / 2);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_int_array_overflow) //{{{1
 {
   auto &d = array<int>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size * 1024);
+  TypeParam ptr = sal::make_buf(d, buf_size * 1024);
   EXPECT_EQ(d, ptr.data());
-  EXPECT_EQ(size * sizeof(int), ptr.size());
+  EXPECT_EQ(buf_size * sizeof(int), ptr.size());
 }
 
 
@@ -282,18 +282,18 @@ TYPED_TEST(buf_ptr, from_std_char_array) //{{{1
 TYPED_TEST(buf_ptr, from_std_char_array_half) //{{{1
 {
   auto &d = std_array<char>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size / 2);
+  TypeParam ptr = sal::make_buf(d, buf_size / 2);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_std_char_array_overflow) //{{{1
 {
   auto &d = std_array<char>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size * 1024);
+  TypeParam ptr = sal::make_buf(d, buf_size * 1024);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
@@ -309,18 +309,18 @@ TYPED_TEST(buf_ptr, from_std_int_array) //{{{1
 TYPED_TEST(buf_ptr, from_std_int_array_half) //{{{1
 {
   auto &d = std_array<int>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size / 2);
+  TypeParam ptr = sal::make_buf(d, buf_size / 2);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_std_int_array_overflow) //{{{1
 {
   auto &d = std_array<int>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size * 1024);
+  TypeParam ptr = sal::make_buf(d, buf_size * 1024);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size * sizeof(int), ptr.size());
+  EXPECT_EQ(buf_size * sizeof(int), ptr.size());
 }
 
 
@@ -336,18 +336,18 @@ TYPED_TEST(buf_ptr, from_std_char_vector) //{{{1
 TYPED_TEST(buf_ptr, from_std_char_vector_half) //{{{1
 {
   auto &d = std_vector<char>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size / 2);
+  TypeParam ptr = sal::make_buf(d, buf_size / 2);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_std_char_vector_overflow) //{{{1
 {
   auto &d = std_vector<char>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size * 1024);
+  TypeParam ptr = sal::make_buf(d, buf_size * 1024);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size, ptr.size());
+  EXPECT_EQ(buf_size, ptr.size());
 }
 
 
@@ -363,18 +363,18 @@ TYPED_TEST(buf_ptr, from_std_int_vector) //{{{1
 TYPED_TEST(buf_ptr, from_std_int_vector_half) //{{{1
 {
   auto &d = std_vector<int>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size / 2);
+  TypeParam ptr = sal::make_buf(d, buf_size / 2);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_std_int_vector_overflow) //{{{1
 {
   auto &d = std_vector<int>(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size * 1024);
+  TypeParam ptr = sal::make_buf(d, buf_size * 1024);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size * sizeof(int), ptr.size());
+  EXPECT_EQ(buf_size * sizeof(int), ptr.size());
 }
 
 
@@ -390,16 +390,16 @@ TYPED_TEST(buf_ptr, from_string) //{{{1
 TYPED_TEST(buf_ptr, from_string_half) //{{{1
 {
   auto &d = string(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size / 2);
+  TypeParam ptr = sal::make_buf(d, buf_size / 2);
   EXPECT_EQ(d.data(), ptr.data());
-  EXPECT_EQ(size / 2, ptr.size());
+  EXPECT_EQ(buf_size / 2, ptr.size());
 }
 
 
 TYPED_TEST(buf_ptr, from_string_overflow) //{{{1
 {
   auto &d = string(TypeParam());
-  TypeParam ptr = sal::make_buf(d, size * 1024);
+  TypeParam ptr = sal::make_buf(d, buf_size * 1024);
   EXPECT_EQ(d.data(), ptr.data());
   EXPECT_EQ(d.size(), ptr.size());
 }

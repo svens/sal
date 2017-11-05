@@ -9,6 +9,8 @@
 #include <sal/config.hpp>
 #include <sal/memory_writer.hpp>
 #include <sal/format.hpp>
+#include <algorithm>
+#include <memory>
 #include <string_view>
 
 
@@ -32,9 +34,7 @@ __sal_begin
  *
  * This class is similar to C++17 std::string_view except it owns array and
  * allows to insert content there. Same time it is missing most of
- * std::string_view find/comparison/etc functionality. Once it is standardized
- * and included by g++/clang++/msvc, new getter will be added that returns
- * non-mutable std::string_view with internal array.
+ * std::string_view find/comparison/etc functionality.
  */
 template <size_t Size>
 class char_array_t
@@ -93,14 +93,14 @@ public:
    * Return true if pointer to end of currently added content is valid.
    * \see memory_writer_t::good()
    */
-  constexpr bool good () const noexcept
+  bool good () const noexcept
   {
     return writer_.good();
   }
 
 
   /// \copydoc good()
-  constexpr explicit operator bool () const noexcept
+  explicit operator bool () const noexcept
   {
     return good();
   }
@@ -110,7 +110,7 @@ public:
    * Return true if pointer to end of currently added content is not valid.
    * \see memory_writer_t::bad()
    */
-  constexpr bool bad () const noexcept
+  bool bad () const noexcept
   {
     return writer_.bad();
   }
@@ -120,7 +120,7 @@ public:
    * Return true if internal buffer is full.
    * \see memory_writer_t::full()
    */
-  constexpr bool full () const noexcept
+  bool full () const noexcept
   {
     return writer_.full();
   }
@@ -129,7 +129,7 @@ public:
   /**
    * Return true if there is no content added to internal buffer.
    */
-  constexpr bool empty () const noexcept
+  bool empty () const noexcept
   {
     return writer_.first == data_;
   }
@@ -139,7 +139,7 @@ public:
    * Return number of bytes currently in internal buffer. Returned value is
    * valid only if object is good()
    */
-  constexpr size_t size () const noexcept
+  size_t size () const noexcept
   {
     return writer_.first - data_;
   }
@@ -148,7 +148,7 @@ public:
   /**
    * Return number of bytes internal buffer can hold.
    */
-  constexpr size_t max_size () const noexcept
+  static constexpr size_t max_size () noexcept
   {
     return Size;
   }
@@ -158,7 +158,7 @@ public:
    * Return number of bytes currently in internal buffer. If object is bad(),
    * then max_size() is returned
    */
-  constexpr size_t safe_size () const noexcept
+  size_t safe_size () const noexcept
   {
     return good() ? size() : max_size();
   }
@@ -168,7 +168,7 @@ public:
    * Return available number of bytes internal buffer can hold more. Returned
    * value is valid only if object is good()
    */
-  constexpr size_t available () const noexcept
+  size_t available () const noexcept
   {
     return writer_.size();
   }
@@ -197,7 +197,7 @@ public:
   /**
    * Return pointer to beginning of character array.
    */
-  constexpr const char *begin () const noexcept
+  const char *begin () const noexcept
   {
     return data_;
   }
@@ -207,7 +207,7 @@ public:
    * Return pointer to end of content in character array. Returned pointer is
    * valid only if object is good().
    */
-  constexpr const char *end () const noexcept
+  const char *end () const noexcept
   {
     return writer_.first;
   }
@@ -217,7 +217,7 @@ public:
    * Return reference to character at \a pos. Array bounds are not checked.
    * Attemp to access outside [begin(), end()) is undefined behaviour.
    */
-  constexpr const char &operator[] (size_t pos) const noexcept
+  const char &operator[] (size_t pos) const noexcept
   {
     return data_[pos];
   }
@@ -226,7 +226,7 @@ public:
   /**
    * Return reference to first character
    */
-  constexpr const char &front () const noexcept
+  const char &front () const noexcept
   {
     return data_[0];
   }
@@ -236,7 +236,7 @@ public:
    * Return reference to last added character. Valid only object is good() and
    * it is not empty().
    */
-  constexpr const char &back () const noexcept
+  const char &back () const noexcept
   {
     return writer_.first[-1];
   }
@@ -262,7 +262,7 @@ public:
    * revert() later end pointer to same position. Returned value is valid only
    * if object is good()
    */
-  constexpr uintptr_t mark () const noexcept
+  uintptr_t mark () const noexcept
   {
     return writer_.first - data_;
   }
@@ -316,23 +316,13 @@ public:
 
 
   /**
-   * Create and return string with content from internal buffer.
-   * This call is valid only if object is good().
-   */
-  std::string to_string () const
-  {
-    return std::string{begin(), end()};
-  }
-
-
-  /**
    * Create and return string_view with content from internal buffer.
    * This call is valid only if object is good().
    *
    * \note Because returned object holds pointer to internal data, it's
    * content might change while returned object itself is still in scope.
    */
-  constexpr std::string_view to_string_view () const noexcept
+  std::string_view to_view () const noexcept
   {
     return std::string_view{begin(), size()};
   }
@@ -351,17 +341,14 @@ public:
 
 private:
 
-  char data_[Size + 1];
-  memory_writer_t writer_{data_, data_ + Size};
+  char data_[max_size() + 1];
+  memory_writer_t writer_{data_, data_ + max_size()};
 
   void assign (const char *ptr, size_t length) noexcept
   {
-    if (length > Size)
-    {
-      length = Size;
-    }
-    std::memcpy(data_, ptr, length);
-    writer_.first = data_ + length;
+    writer_.first = std::uninitialized_copy_n(
+      ptr, (std::min)(length, max_size()), data_
+    );
   }
 };
 
