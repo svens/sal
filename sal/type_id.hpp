@@ -13,8 +13,17 @@ __sal_begin
 
 namespace __bits {
 
-template <typename T>
-const T *unique_address_for{};
+
+inline constexpr uint64_t fnv_1a_32 (const char *p) noexcept
+{
+  uint64_t h = 0x811c9dc5;
+  while (*p)
+  {
+    h ^= *p++;
+    h += static_cast<uint32_t>((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24));
+  }
+  return h;
+}
 
 
 template <typename T>
@@ -28,18 +37,6 @@ struct type_t
     return fnv_1a_32(__FUNCSIG__);
 #endif
   }
-
-  template <size_t N>
-  static constexpr uint64_t fnv_1a_32 (const char (&buf)[N]) noexcept
-  {
-    uint64_t h = 0x811c9dc5;
-    for (auto x = buf;  x != buf + N - 1;  ++x)
-    {
-      h ^= *x;
-      h += static_cast<uint32_t>((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24));
-    }
-    return h;
-  }
 };
 
 
@@ -52,7 +49,7 @@ struct type_t
 template <typename T>
 inline uintptr_t type_id () noexcept
 {
-  return reinterpret_cast<uintptr_t>(&__bits::unique_address_for<T>);
+  return reinterpret_cast<uintptr_t>(&__bits::type_t<T>::id);
 }
 
 
@@ -62,7 +59,7 @@ inline uintptr_t type_id () noexcept
 template <typename T>
 inline uintptr_t type_id (T) noexcept
 {
-  return reinterpret_cast<uintptr_t>(&__bits::unique_address_for<T>);
+  return reinterpret_cast<uintptr_t>(&__bits::type_t<T>::id);
 }
 
 

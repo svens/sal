@@ -59,6 +59,11 @@ TEST(type_id, same_in_different_namespace)
   EXPECT_EQ(sal::type_id(a_foo), sal::type_id(b_foo));
   EXPECT_EQ(sal::type_id(a_bar), sal::type_id(b_bar));
 
+  EXPECT_EQ(sal::type_id(a_foo), sal::type_id<ns_a::foo>());
+  EXPECT_EQ(sal::type_id(a_bar), sal::type_id<ns_a::bar>());
+  EXPECT_EQ(sal::type_id(b_foo), sal::type_id<ns_b::foo>());
+  EXPECT_EQ(sal::type_id(b_bar), sal::type_id<ns_b::bar>());
+
   EXPECT_EQ(sal::type_v<ns_a::foo>, sal::type_v<ns_b::foo>);
   EXPECT_EQ(sal::type_v<ns_a::bar>, sal::type_v<ns_b::bar>);
 }
@@ -226,6 +231,21 @@ TEST(type_id, unique_type_id_for_var)
     sal::type_id(c_bar_),               // 33: same as short
   };
   EXPECT_EQ(32U, type_set.size());
+}
+
+
+template <uintptr_t V>
+struct type_v_value
+{
+  static constexpr const auto value = V;
+};
+
+
+TEST(type_id, type_v_constexpr)
+{
+  // this is compilation test actually: if type_v can be passed as template
+  // parameter, it is truly constexpr
+  EXPECT_EQ(type_v_value<sal::type_v<int>>::value, sal::type_v<int>);
 }
 
 
