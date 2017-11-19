@@ -97,7 +97,10 @@ public:
   template <typename It>
   void update (It first, It last)
   {
-    update(to_ptr(first), range_size(first, last));
+    if (first < last)
+    {
+      update(to_ptr(first), range_size(first, last));
+    }
   }
 
 
