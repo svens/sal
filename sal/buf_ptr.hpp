@@ -33,7 +33,7 @@ public:
    * Construct buf_ptr pointing to \a region with \a size.
    */
   buf_ptr (void *region, size_t size) noexcept
-    : begin_(static_cast<char *>(region))
+    : begin_(static_cast<uint8_t *>(region))
     , end_(begin_ + size)
   {}
 
@@ -43,7 +43,7 @@ public:
    */
   uint8_t *begin () const noexcept
   {
-    return reinterpret_cast<uint8_t *>(begin_);
+    return begin_;
   }
 
 
@@ -52,7 +52,7 @@ public:
    */
   uint8_t *end () const noexcept
   {
-    return reinterpret_cast<uint8_t *>(end_);
+    return end_;
   }
 
 
@@ -99,7 +99,7 @@ public:
 
 private:
 
-  char *begin_{}, * const end_{};
+  uint8_t *begin_{}, * const end_{};
 };
 
 
@@ -160,7 +160,7 @@ inline buf_ptr make_buf (const buf_ptr &ptr, size_t max_bytes) noexcept
 template <size_t N>
 inline buf_ptr make_buf (char_array_t<N> &data) noexcept
 {
-  // not nice, but ok: returned area is initialized
+  // not nice, but ok: returned pointer is initialized known size area
   return buf_ptr(const_cast<char *>(data.data()), data.size());
 }
 
@@ -217,7 +217,7 @@ inline buf_ptr make_buf (std::basic_string<T, Traits, Allocator> &data)
 template <size_t N>
 inline buf_ptr make_buf (char_array_t<N> &data, size_t max_bytes) noexcept
 {
-  // not nice, but ok: returned area is initialized
+  // not nice, but ok: returned pointer is initialized known size area
   return buf_ptr(const_cast<char *>(data.data()),
     (std::min)(max_bytes, data.size())
   );
@@ -288,7 +288,7 @@ public:
    * Construct const_buf_ptr pointing to \a region with \a size.
    */
   const_buf_ptr (const void *region, size_t size) noexcept
-    : begin_(static_cast<const char *>(region))
+    : begin_(static_cast<const uint8_t *>(region))
     , end_(begin_ + size)
   {}
 
@@ -298,7 +298,7 @@ public:
    */
   const uint8_t *begin () const noexcept
   {
-    return reinterpret_cast<const uint8_t *>(begin_);
+    return begin_;
   }
 
 
@@ -307,7 +307,7 @@ public:
    */
   const uint8_t *end () const noexcept
   {
-    return reinterpret_cast<const uint8_t *>(end_);
+    return end_;
   }
 
 
@@ -354,7 +354,7 @@ public:
 
 private:
 
-  const char *begin_{}, * const end_{};
+  const uint8_t *begin_{}, * const end_{};
 };
 
 
