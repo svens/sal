@@ -22,6 +22,7 @@ var dir_bd06d863670d5f8d05622f532d229dd1 =
       [ "intrusive_queue_t", "classsal_1_1intrusive__queue__t.html", "classsal_1_1intrusive__queue__t" ]
     ] ],
     [ "lockable.hpp", "lockable_8hpp.html", "lockable_8hpp" ],
+    [ "memory.hpp", "memory_8hpp.html", "memory_8hpp" ],
     [ "memory_writer.hpp", "memory__writer_8hpp.html", [
       [ "memory_writer_t", "classsal_1_1memory__writer__t.html", "classsal_1_1memory__writer__t" ]
     ] ],

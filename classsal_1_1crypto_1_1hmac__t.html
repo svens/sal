@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.21.0</span>
+   &#160;<span id="projectnumber">0.22.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -109,6 +109,11 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a0d4b8b244aa17076f2765eb5aca8ff28">hmac_t</a> ()</td></tr>
 <tr class="memdesc:a0d4b8b244aa17076f2765eb5aca8ff28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize HMAC object using empty key. <br /></td></tr>
 <tr class="separator:a0d4b8b244aa17076f2765eb5aca8ff28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a9663557451e9013ff263deec5de86e"><td class="memTemplParams" colspan="2"><a id="a3a9663557451e9013ff263deec5de86e"></a>
+template&lt;typename It &gt; </td></tr>
+<tr class="memitem:a3a9663557451e9013ff263deec5de86e"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a3a9663557451e9013ff263deec5de86e">hmac_t</a> (It first, It last)</td></tr>
+<tr class="memdesc:a3a9663557451e9013ff263deec5de86e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize HMAC object using key in range [<em>first</em>, <em>last</em>). <br /></td></tr>
+<tr class="separator:a3a9663557451e9013ff263deec5de86e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92a21edb550e11d56ffc1b6f789609b4"><td class="memTemplParams" colspan="2"><a id="a92a21edb550e11d56ffc1b6f789609b4"></a>
 template&lt;typename Ptr &gt; </td></tr>
 <tr class="memitem:a92a21edb550e11d56ffc1b6f789609b4"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a92a21edb550e11d56ffc1b6f789609b4">hmac_t</a> (const Ptr &amp;key)</td></tr>
@@ -128,11 +133,20 @@ template&lt;typename Ptr &gt; </td></tr>
 <tr class="memitem:a16323c9d31f3348a127f666b4095453e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html">hmac_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a16323c9d31f3348a127f666b4095453e">operator=</a> (<a class="el" href="classsal_1_1crypto_1_1hmac__t.html">hmac_t</a> &amp;&amp;that)=default</td></tr>
 <tr class="memdesc:a16323c9d31f3348a127f666b4095453e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drop current state of this and move state of <em>that</em> into this.  <a href="#a16323c9d31f3348a127f666b4095453e">More...</a><br /></td></tr>
 <tr class="separator:a16323c9d31f3348a127f666b4095453e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4e90f8b10c478d98de5d8faf6fd6d24"><td class="memTemplParams" colspan="2"><a id="ac4e90f8b10c478d98de5d8faf6fd6d24"></a>
+template&lt;typename It &gt; </td></tr>
+<tr class="memitem:ac4e90f8b10c478d98de5d8faf6fd6d24"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#ac4e90f8b10c478d98de5d8faf6fd6d24">update</a> (It first, It last)</td></tr>
+<tr class="memdesc:ac4e90f8b10c478d98de5d8faf6fd6d24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add region [<em>first</em>, <em>last</em>) into hasher. <br /></td></tr>
+<tr class="separator:ac4e90f8b10c478d98de5d8faf6fd6d24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac7ed480283a0a610d82de207e4ded5ed"><td class="memTemplParams" colspan="2"><a id="ac7ed480283a0a610d82de207e4ded5ed"></a>
 template&lt;typename Ptr &gt; </td></tr>
 <tr class="memitem:ac7ed480283a0a610d82de207e4ded5ed"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#ac7ed480283a0a610d82de207e4ded5ed">update</a> (const Ptr &amp;data)</td></tr>
 <tr class="memdesc:ac7ed480283a0a610d82de207e4ded5ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add more <em>data</em> into hasher. <br /></td></tr>
 <tr class="separator:ac7ed480283a0a610d82de207e4ded5ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9624b17d50dc508303ccc7aec25f3812"><td class="memTemplParams" colspan="2">template&lt;typename It &gt; </td></tr>
+<tr class="memitem:a9624b17d50dc508303ccc7aec25f3812"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a9624b17d50dc508303ccc7aec25f3812">finish</a> (It first, It last)</td></tr>
+<tr class="memdesc:a9624b17d50dc508303ccc7aec25f3812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC of previously added data and store into region starting at <em>first</em>.  <a href="#a9624b17d50dc508303ccc7aec25f3812">More...</a><br /></td></tr>
+<tr class="separator:a9624b17d50dc508303ccc7aec25f3812"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf75907f35c14e244e5de25b256de593"><td class="memTemplParams" colspan="2">template&lt;typename Ptr &gt; </td></tr>
 <tr class="memitem:acf75907f35c14e244e5de25b256de593"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#acf75907f35c14e244e5de25b256de593">finish</a> (const Ptr &amp;digest)</td></tr>
 <tr class="memdesc:acf75907f35c14e244e5de25b256de593"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC of previously added data and store it into <em>digest</em>.  <a href="#acf75907f35c14e244e5de25b256de593">More...</a><br /></td></tr>
@@ -192,8 +206,51 @@ template&lt;typename Algorithm &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a9624b17d50dc508303ccc7aec25f3812"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9624b17d50dc508303ccc7aec25f3812">&#9670;&nbsp;</a></span>finish() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Algorithm &gt; </div>
+<div class="memtemplate">
+template&lt;typename It &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classsal_1_1crypto_1_1hmac__t.html">sal::crypto::hmac_t</a>&lt; Algorithm &gt;::finish </td>
+          <td>(</td>
+          <td class="paramtype">It&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">It&#160;</td>
+          <td class="paramname"><em>last</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calculate HMAC of previously added data and store into region starting at <em>first</em>. </p>
+<p>If size of region [<em>first</em>, <em>last</em>) is less than <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a5e53750aadc4a3bfd516f443ecdee39b" title="Return number of bytes in HMAC digest. ">digest_size()</a>, throw std::logic_error </p>
+
+</div>
+</div>
 <a id="acf75907f35c14e244e5de25b256de593"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acf75907f35c14e244e5de25b256de593">&#9670;&nbsp;</a></span>finish()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#acf75907f35c14e244e5de25b256de593">&#9670;&nbsp;</a></span>finish() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">

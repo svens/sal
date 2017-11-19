@@ -19,6 +19,7 @@ var searchData=
   ['max_5fmessage_5fsize',['max_message_size',['../structsal_1_1logger_1_1event__t.html#aca8aa527e14544dd949d4825dd20781a',1,'sal::logger::event_t']]],
   ['max_5fsize',['max_size',['../classsal_1_1char__array__t.html#af138f5a27833c6a1e5311bb207643e4d',1,'sal::char_array_t::max_size()'],['../classsal_1_1net_1_1async__service__t_1_1io__t.html#a1dc84e282af097f0e27b16d4f0500113',1,'sal::net::async_service_t::io_t::max_size()']]],
   ['md5',['md5',['../namespacesal_1_1crypto.html#a9b455cb533fe886c5f7e69376678e00f',1,'sal::crypto']]],
+  ['memory_2ehpp',['memory.hpp',['../memory_8hpp.html',1,'']]],
   ['memory_5fwriter_2ehpp',['memory_writer.hpp',['../memory__writer_8hpp.html',1,'']]],
   ['memory_5fwriter_5ft',['memory_writer_t',['../classsal_1_1memory__writer__t.html',1,'sal::memory_writer_t'],['../classsal_1_1memory__writer__t.html#a0ba5501acb9cc33021601fd06bbfeff7',1,'sal::memory_writer_t::memory_writer_t(T *begin, const T *end) noexcept'],['../classsal_1_1memory__writer__t.html#a92749a6a78f3ae53198f2f96044bd92a',1,'sal::memory_writer_t::memory_writer_t(T(&amp;array)[N]) noexcept'],['../classsal_1_1memory__writer__t.html#acd9e2748e1212254400b79b7458487a1',1,'sal::memory_writer_t::memory_writer_t(memory_writer_t &amp;&amp;that) noexcept']]],
   ['merge',['merge',['../classsal_1_1program__options_1_1option__set__t.html#a50deaf23e3540ce7226668f22aff67db',1,'sal::program_options::option_set_t']]],
