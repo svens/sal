@@ -356,6 +356,32 @@ TYPED_TEST(crypto_hmac, multiple_instances_with_key)
 }
 
 
+TYPED_TEST(crypto_hmac, range)
+{
+  sal::crypto::hmac_t<TypeParam> hmac;
+  for (auto &kv: expected<TypeParam>)
+  {
+    hmac.update(kv.first.cbegin(), kv.first.cend());
+    std::array<uint8_t, hmac.digest_size()> result;
+    hmac.finish(result.begin(), result.end());
+    EXPECT_EQ(kv.second, to_string(result));
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, range_with_key)
+{
+  sal::crypto::hmac_t<TypeParam> hmac(key.cbegin(), key.cend());
+  for (auto &kv: expected_with_key<TypeParam>)
+  {
+    hmac.update(kv.first.cbegin(), kv.first.cend());
+    std::array<uint8_t, hmac.digest_size()> result;
+    hmac.finish(result.begin(), result.end());
+    EXPECT_EQ(kv.second, to_string(result));
+  }
+}
+
+
 TYPED_TEST(crypto_hmac, string)
 {
   sal::crypto::hmac_t<TypeParam> hmac;

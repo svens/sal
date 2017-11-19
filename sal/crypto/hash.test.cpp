@@ -208,6 +208,19 @@ TYPED_TEST(crypto_hash, multiple_instances)
 }
 
 
+TYPED_TEST(crypto_hash, range)
+{
+  sal::crypto::hash_t<TypeParam> hash;
+  for (auto &kv: expected<TypeParam>)
+  {
+    hash.update(kv.first.begin(), kv.first.end());
+    std::array<uint8_t, hash.digest_size()> result;
+    hash.finish(result.begin(), result.end());
+    EXPECT_EQ(kv.second, to_string(result));
+  }
+}
+
+
 TYPED_TEST(crypto_hash, string)
 {
   sal::crypto::hash_t<TypeParam> hash;

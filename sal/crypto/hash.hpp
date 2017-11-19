@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/crypto/__bits/digest.hpp>
 #include <sal/error.hpp>
+#include <sal/memory.hpp>
 #include <vector>
 
 
@@ -91,12 +92,38 @@ public:
 
 
   /**
+   * Add region [\a first, \a last) into hasher.
+   */
+  template <typename It>
+  void update (It first, It last)
+  {
+    if (first < last)
+    {
+      update(to_ptr(first), range_size(first, last));
+    }
+  }
+
+
+  /**
    * Add more \a data into hasher.
    */
   template <typename Ptr>
   void update (const Ptr &data)
   {
     update(data.data(), data.size());
+  }
+
+
+  /**
+   * Calculate hash of previously added data and store into region starting at
+   * \a first. If size of region [\a first, \a last) is less than
+   * digest_size(), throw std::logic_error
+   */
+  template <typename It>
+  void finish (It first, It last)
+  {
+    sal_throw_if(range_size(first, last) < digest_size());
+    finish(to_ptr(first), range_size(first, last));
   }
 
 

@@ -8,7 +8,7 @@
  */
 
 #include <sal/config.hpp>
-#include <cstring>
+#include <sal/memory.hpp>
 #include <utility>
 
 
@@ -42,7 +42,10 @@ public:
    */
   template <typename T>
   memory_writer_t (T *begin, const T *end) noexcept
-    : pair{to_ptr(begin), to_ptr(end)}
+    : pair{
+        reinterpret_cast<char *>(to_ptr(begin)),
+        reinterpret_cast<const char *>(to_ptr(end))
+      }
   {}
 
 
@@ -217,10 +220,12 @@ public:
   template <typename T>
   memory_writer_t &write (const T *begin, const T *end) noexcept
   {
-    auto size = to_ptr(end) - to_ptr(begin);
+    auto size = range_size(begin, end);
     if (first + size <= second)
     {
-      std::memcpy(first, to_ptr(begin), size);
+      std::uninitialized_copy_n(begin, size,
+        __bits::make_output_iterator(first, first + (second - first))
+      );
     }
     first += size;
     return *this;
@@ -308,23 +313,6 @@ public:
     bool unused[] = { (*this << arg, false), (*this << args, false)... };
     (void)unused;
     return *this;
-  }
-
-
-private:
-
-  template <typename T>
-  static char *to_ptr (T *p) noexcept
-  {
-    static_assert(std::is_pod<T>::value);
-    return reinterpret_cast<char *>(p);
-  }
-
-  template <typename T>
-  static const char *to_ptr (const T *p) noexcept
-  {
-    static_assert(std::is_pod<T>::value);
-    return reinterpret_cast<const char *>(p);
   }
 };
 

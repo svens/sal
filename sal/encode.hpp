@@ -10,7 +10,7 @@
 #include <sal/__bits/base64.hpp>
 #include <sal/__bits/hex.hpp>
 #include <sal/error.hpp>
-#include <memory>
+#include <sal/memory.hpp>
 #include <string>
 #include <vector>
 
@@ -29,23 +29,6 @@ using hex_string = __bits::hex_string;
 using base64 = __bits::base64;
 
 
-namespace __bits {
-
-template <typename Ptr, typename It>
-inline Ptr to_ptr (It it) noexcept
-{
-  return reinterpret_cast<Ptr>(std::addressof(*it));
-}
-
-template <typename Ptr, typename It>
-inline Ptr to_end_ptr (It first, It last) noexcept
-{
-  return to_ptr<Ptr>(first) + (last - first) * sizeof(*first);
-}
-
-} // namespace __bits
-
-
 /**
  * Maximum size of output buffer (in bytes) required to encode data in range
  * [\a first, \a last).
@@ -55,10 +38,7 @@ inline size_t max_encoded_size (It first, It last) noexcept
 {
   if (first != last)
   {
-    return Encoding::max_encoded_size(
-      __bits::to_ptr<const uint8_t *>(first),
-      __bits::to_end_ptr<const uint8_t *>(first, last)
-    );
+    return Encoding::max_encoded_size(to_ptr(first), to_end_ptr(first, last));
   }
   return 0;
 }
@@ -87,11 +67,7 @@ inline ForwardIt encode (InputIt first, InputIt last, ForwardIt out)
   if (first != last)
   {
     return reinterpret_cast<ForwardIt>(
-      Encoding::encode(
-        __bits::to_ptr<const uint8_t *>(first),
-        __bits::to_end_ptr<const uint8_t *>(first, last),
-        __bits::to_ptr<uint8_t *>(out)
-      )
+      Encoding::encode(to_ptr(first), to_end_ptr(first, last), to_ptr(out))
     );
   }
   return out;
@@ -148,9 +124,7 @@ inline size_t max_decoded_size (It first, It last,
   if (first != last)
   {
     return Encoding::max_decoded_size(
-      __bits::to_ptr<const uint8_t *>(first),
-      __bits::to_end_ptr<const uint8_t *>(first, last),
-      error
+      to_ptr(first), to_end_ptr(first, last), error
     );
   }
   return 0;
@@ -212,12 +186,7 @@ inline ForwardIt decode (InputIt first, InputIt last, ForwardIt out,
   if (first != last)
   {
     return reinterpret_cast<ForwardIt>(
-      Encoding::decode(
-        __bits::to_ptr<const uint8_t *>(first),
-        __bits::to_end_ptr<const uint8_t *>(first, last),
-        __bits::to_ptr<uint8_t *>(out),
-        error
-      )
+      Encoding::decode(to_ptr(first), to_end_ptr(first, last), to_ptr(out), error)
     );
   }
   return out;
