@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <memory>
+#include <sal/memory.hpp>
 
 
 __sal_begin
@@ -24,27 +24,29 @@ void random (void *data, size_t size);
 
 
 /**
- * Fill \a data with cryptographically strong random bytes suitable for
- * cryptographic keys, nonces, etc.
- */
-template <typename Ptr>
-inline void random (const Ptr &data)
-{
-  __bits::random(data.data(), data.size());
-}
-
-
-/**
  * Fill range [\a first, \a last) with cryptographically strong random bytes
  * suitable for cryptographic keys, nonces, etc.
  */
 template <typename It>
 inline void random (It first, It last)
 {
-  __bits::random(
-    reinterpret_cast<uint8_t *>(std::addressof(*first)),
-    (last - first) * sizeof(*first)
-  );
+  if (first != last)
+  {
+    __bits::random(to_ptr(first), range_size(first, last));
+  }
+}
+
+
+/**
+ * Fill \a data with cryptographically strong random bytes suitable for
+ * cryptographic keys, nonces, etc.
+ */
+template <typename Data>
+inline void random (Data &data)
+{
+  using std::begin;
+  using std::end;
+  random(begin(data), end(data));
 }
 
 
