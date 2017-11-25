@@ -1,5 +1,6 @@
 #include <sal/crypto/certificate.hpp>
 #include <sal/crypto/common.test.hpp>
+#include <sal/buf_ptr.hpp>
 #include <map>
 
 

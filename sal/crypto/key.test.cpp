@@ -1,4 +1,5 @@
 #include <sal/crypto/key.hpp>
+#include <sal/buf_ptr.hpp>
 #include <sal/crypto/certificate.hpp>
 #include <sal/crypto/common.test.hpp>
 

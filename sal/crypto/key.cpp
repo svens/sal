@@ -4,7 +4,6 @@
 #if __sal_os_macos //{{{1
   #include <Security/SecItem.h>
 #elif __sal_os_windows //{{{1
-  #include <sal/buf_ptr.hpp>
   #include <sal/crypto/hash.hpp>
 #endif //}}}1
 
@@ -458,15 +457,12 @@ template <typename Digest>
 inline DWORD make_digest (const uint8_t *first, const uint8_t *last,
   uint8_t *buf, DWORD size) noexcept
 {
-  constexpr auto digest_size = static_cast<DWORD>(hash_t<Digest>::digest_size());
+  constexpr auto digest_size = static_cast<DWORD>(hash_t<Digest>::digest_size);
   if (size >= digest_size)
   {
     try
     {
-      hash_t<Digest>::one_shot(
-        make_buf(first, last - first),
-        make_buf(buf, digest_size)
-      );
+      hash_t<Digest>::one_shot(first, last, buf, buf + digest_size);
       return digest_size;
     }
     catch (...)

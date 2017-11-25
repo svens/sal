@@ -13,7 +13,6 @@
 #include <sal/crypto/hash.hpp>
 #include <sal/crypto/key.hpp>
 #include <sal/crypto/oid.hpp>
-#include <sal/buf_ptr.hpp>
 #include <sal/char_array.hpp>
 #include <sal/time.hpp>
 #include <ostream>
@@ -642,13 +641,18 @@ private:
     const noexcept;
 
   template <typename Algorithm>
-  static std::vector<uint8_t> digest_fn (const void *data, size_t size)
+  static std::vector<uint8_t> digest_fn (const uint8_t *data, size_t size)
   {
-    return hash_t<Algorithm>::one_shot(make_buf(data, size));
+    std::vector<uint8_t> digest(hash_t<Algorithm>::digest_size);
+    hash_t<Algorithm>::one_shot(
+      data, data + size,
+      digest.begin(), digest.end()
+    );
+    return digest;
   }
 
   std::vector<uint8_t> apply (
-    std::vector<uint8_t>(*fn)(const void *, size_t),
+    std::vector<uint8_t>(*fn)(const uint8_t *, size_t),
     std::error_code &error
   ) const noexcept;
 };
