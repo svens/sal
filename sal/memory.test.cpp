@@ -281,4 +281,11 @@ TEST_F(memory, range_size_int_vector)
 }
 
 
+TEST_F(memory, range_size_empty_vector)
+{
+  std::vector<char> data;
+  EXPECT_EQ(0U, sal::range_size(data.begin(), data.end()));
+}
+
+
 } // namespace
