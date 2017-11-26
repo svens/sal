@@ -1,6 +1,5 @@
 #include <sal/crypto/certificate.hpp>
 #include <sal/crypto/common.test.hpp>
-#include <sal/buf_ptr.hpp>
 #include <map>
 
 
@@ -1171,7 +1170,7 @@ TEST_F(crypto_certificate, to_der) //{{{1
 
   uint8_t data[8192];
   std::error_code error;
-  auto data_end = cert.to_der(sal::make_buf(data), error);
+  auto data_end = cert.to_der(data, error);
   ASSERT_TRUE(!error);
   ASSERT_NE(nullptr, data_end);
   std::vector<uint8_t> der(data, data_end);
@@ -1180,7 +1179,7 @@ TEST_F(crypto_certificate, to_der) //{{{1
   EXPECT_EQ(expected_der, der);
 
   EXPECT_NO_THROW(
-    (void)cert.to_der(sal::make_buf(data))
+    (void)cert.to_der(data)
   );
 }
 
@@ -1192,11 +1191,11 @@ TEST_F(crypto_certificate, to_der_from_null) //{{{1
 
   uint8_t data[8192];
   std::error_code error;
-  EXPECT_EQ(nullptr, cert.to_der(sal::make_buf(data), error));
+  EXPECT_EQ(nullptr, cert.to_der(data, error));
   EXPECT_EQ(std::errc::bad_address, error);
 
   EXPECT_THROW(
-    (void)cert.to_der(sal::make_buf(data)),
+    (void)cert.to_der(data),
     std::system_error
   );
 }
@@ -1209,13 +1208,15 @@ TEST_F(crypto_certificate, to_der_result_exact_range) //{{{1
 
   uint8_t data[8192];
   std::error_code error;
-  auto data_end = cert.to_der(sal::make_buf(data), error);
+  auto data_end = cert.to_der(data, error);
   ASSERT_TRUE(!error);
   ASSERT_NE(nullptr, data_end);
 
-  auto end = cert.to_der(sal::make_buf(data, data_end - data), error);
+  std::vector<uint8_t> der(data_end - data);
+  auto end = cert.to_der(der, error);
   EXPECT_TRUE(!error);
-  EXPECT_EQ(data_end, end);
+  EXPECT_EQ(end, der.data() + der.size());
+  EXPECT_EQ(size_t(data_end - data), der.size());
 }
 
 
@@ -1226,11 +1227,28 @@ TEST_F(crypto_certificate, to_der_result_out_of_range) //{{{1
 
   uint8_t data[1];
   std::error_code error;
-  EXPECT_EQ(nullptr, cert.to_der(sal::make_buf(data), error));
+  EXPECT_EQ(nullptr, cert.to_der(data, error));
   EXPECT_EQ(std::errc::result_out_of_range, error);
 
   EXPECT_THROW(
-    (void)cert.to_der(sal::make_buf(data)),
+    (void)cert.to_der(data),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, to_der_empty_vector)
+{
+  auto cert = cert_t::from_pem(to_pem(cert::root));
+  ASSERT_FALSE(cert.is_null());
+
+  std::vector<uint8_t> data;
+  std::error_code error;
+  EXPECT_EQ(nullptr, cert.to_der(data, error));
+  EXPECT_EQ(std::errc::result_out_of_range, error);
+
+  EXPECT_THROW(
+    (void)cert.to_der(data),
     std::system_error
   );
 }

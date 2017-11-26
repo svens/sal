@@ -1,6 +1,5 @@
 #include <sal/crypto/hmac.hpp>
 #include <sal/common.test.hpp>
-#include <sal/buf_ptr.hpp>
 #include <map>
 #include <string>
 #include <vector>
