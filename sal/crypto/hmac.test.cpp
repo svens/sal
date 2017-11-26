@@ -1,6 +1,5 @@
 #include <sal/crypto/hmac.hpp>
 #include <sal/common.test.hpp>
-#include <sal/buf_ptr.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -23,7 +22,7 @@ using types = ::testing::Types<
 TYPED_TEST_CASE(crypto_hmac, types);
 
 
-std::string key = "key",
+std::string hmac_key = "key",
   empty = "",
   lazy_dog = "The quick brown fox jumps over the lazy dog",
   lazy_cog = "The quick brown fox jumps over the lazy cog";
@@ -139,15 +138,6 @@ std::string to_string (const Ptr &data)
 }
 
 
-template <typename Algorithm>
-std::string finish (sal::crypto::hmac_t<Algorithm> &hmac)
-{
-  uint8_t result[sal::crypto::hmac_t<Algorithm>::digest_size()];
-  hmac.finish(sal::make_buf(result));
-  return to_string(sal::make_buf(result));
-}
-
-
 TYPED_TEST(crypto_hmac, copy_ctor)
 {
   sal::crypto::hmac_t<TypeParam> h1;
@@ -157,22 +147,22 @@ TYPED_TEST(crypto_hmac, copy_ctor)
   h1.update(lazy_cog);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h1));
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h1.finish()));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, copy_ctor_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> h1{key};
+  sal::crypto::hmac_t<TypeParam> h1{hmac_key};
   h1.update(lazy_dog);
   auto h2 = h1;
 
   h1.update(lazy_cog);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h1));
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(h1.finish()));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
@@ -185,22 +175,22 @@ TYPED_TEST(crypto_hmac, copy_assign)
   h1.update(lazy_cog);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h1));
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h1.finish()));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, copy_assign_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> h1{key}, h2;
+  sal::crypto::hmac_t<TypeParam> h1{hmac_key}, h2;
   h1.update(lazy_dog);
   h2 = h1;
 
   h1.update(lazy_cog);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h1));
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(h1.finish()));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
@@ -212,19 +202,19 @@ TYPED_TEST(crypto_hmac, move_ctor)
   auto h2{std::move(h1)};
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, move_ctor_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> h1{key};
+  sal::crypto::hmac_t<TypeParam> h1{hmac_key};
   h1.update(lazy_dog);
 
   auto h2{std::move(h1)};
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
@@ -236,43 +226,46 @@ TYPED_TEST(crypto_hmac, move_assign)
   h2 = std::move(h1);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, move_assign_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> h1{key}, h2;
+  sal::crypto::hmac_t<TypeParam> h1{hmac_key}, h2;
   h1.update(lazy_dog);
 
   h2 = std::move(h1);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, no_add)
 {
   sal::crypto::hmac_t<TypeParam> hmac;
-  EXPECT_NE(0U, hmac.digest_size());
-  EXPECT_EQ(expected<TypeParam>[empty], finish(hmac));
+  EXPECT_NE(0U, hmac.digest_size);
+  EXPECT_EQ(expected<TypeParam>[empty], to_string(hmac.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, no_add_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> hmac{key};
-  EXPECT_NE(0U, hmac.digest_size());
-  EXPECT_EQ(expected_with_key<TypeParam>[empty], finish(hmac));
+  sal::crypto::hmac_t<TypeParam> hmac{hmac_key};
+  EXPECT_NE(0U, hmac.digest_size);
+  EXPECT_EQ(expected_with_key<TypeParam>[empty], to_string(hmac.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, invalid_result_size)
 {
   sal::crypto::hmac_t<TypeParam> hmac;
-  uint8_t result[sal::crypto::hmac_t<TypeParam>::digest_size() / 2];
-  EXPECT_THROW(hmac.finish(sal::make_buf(result)), std::logic_error);
+  uint8_t result[sal::crypto::hmac_t<TypeParam>::digest_size / 2];
+  EXPECT_THROW(
+    hmac.finish(std::begin(result), std::end(result)),
+    std::logic_error
+  );
 }
 
 
@@ -280,29 +273,29 @@ TYPED_TEST(crypto_hmac, reuse_object)
 {
   sal::crypto::hmac_t<TypeParam> hmac;
 
-  hmac.update(sal::make_buf(empty));
-  EXPECT_EQ(expected<TypeParam>[empty], finish(hmac));
+  hmac.update(empty);
+  EXPECT_EQ(expected<TypeParam>[empty], to_string(hmac.finish()));
 
   hmac.update(lazy_dog);
-  EXPECT_EQ(expected<TypeParam>[lazy_dog], finish(hmac));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog], to_string(hmac.finish()));
 
-  hmac.update(std::vector<uint8_t>(lazy_cog.begin(), lazy_cog.end()));
-  EXPECT_EQ(expected<TypeParam>[lazy_cog], finish(hmac));
+  hmac.update(lazy_cog);
+  EXPECT_EQ(expected<TypeParam>[lazy_cog], to_string(hmac.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, reuse_object_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> hmac{key};
+  sal::crypto::hmac_t<TypeParam> hmac{hmac_key};
 
-  hmac.update(sal::make_buf(empty));
-  EXPECT_EQ(expected_with_key<TypeParam>[empty], finish(hmac));
+  hmac.update(empty);
+  EXPECT_EQ(expected_with_key<TypeParam>[empty], to_string(hmac.finish()));
 
   hmac.update(lazy_dog);
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog], finish(hmac));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog], to_string(hmac.finish()));
 
-  hmac.update(std::vector<uint8_t>(lazy_cog.begin(), lazy_cog.end()));
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_cog], finish(hmac));
+  hmac.update(lazy_cog);
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_cog], to_string(hmac.finish()));
 }
 
 
@@ -312,23 +305,23 @@ TYPED_TEST(crypto_hmac, multiple_update)
 
   hmac.update(lazy_dog);
   hmac.update(lazy_cog);
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(hmac));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(hmac.finish()));
 
   hmac.update(lazy_dog + lazy_cog);
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(hmac));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(hmac.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, multiple_update_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> hmac{key};
+  sal::crypto::hmac_t<TypeParam> hmac{hmac_key};
 
   hmac.update(lazy_dog);
   hmac.update(lazy_cog);
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(hmac));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(hmac.finish()));
 
   hmac.update(lazy_dog + lazy_cog);
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], finish(hmac));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(hmac.finish()));
 }
 
 
@@ -339,67 +332,115 @@ TYPED_TEST(crypto_hmac, multiple_instances)
   dog.update(lazy_dog);
   cog.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog], finish(dog));
-  EXPECT_EQ(expected<TypeParam>[lazy_cog], finish(cog));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog], to_string(dog.finish()));
+  EXPECT_EQ(expected<TypeParam>[lazy_cog], to_string(cog.finish()));
 }
 
 
 TYPED_TEST(crypto_hmac, multiple_instances_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> dog{key}, cog{key};
+  sal::crypto::hmac_t<TypeParam> dog{hmac_key}, cog{hmac_key};
 
   dog.update(lazy_dog);
   cog.update(lazy_cog);
 
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog], finish(dog));
-  EXPECT_EQ(expected_with_key<TypeParam>[lazy_cog], finish(cog));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog], to_string(dog.finish()));
+  EXPECT_EQ(expected_with_key<TypeParam>[lazy_cog], to_string(cog.finish()));
 }
 
 
-TYPED_TEST(crypto_hmac, range)
+TYPED_TEST(crypto_hmac, input_range_output_range)
 {
   sal::crypto::hmac_t<TypeParam> hmac;
   for (auto &kv: expected<TypeParam>)
   {
     hmac.update(kv.first.cbegin(), kv.first.cend());
-    std::array<uint8_t, hmac.digest_size()> result;
+    std::array<uint8_t, hmac.digest_size> result;
     hmac.finish(result.begin(), result.end());
     EXPECT_EQ(kv.second, to_string(result));
   }
 }
 
 
-TYPED_TEST(crypto_hmac, range_with_key)
+TYPED_TEST(crypto_hmac, input_range_output_range_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> hmac(key.cbegin(), key.cend());
+  sal::crypto::hmac_t<TypeParam> hmac(hmac_key.cbegin(), hmac_key.cend());
   for (auto &kv: expected_with_key<TypeParam>)
   {
     hmac.update(kv.first.cbegin(), kv.first.cend());
-    std::array<uint8_t, hmac.digest_size()> result;
+    std::array<uint8_t, hmac.digest_size> result;
     hmac.finish(result.begin(), result.end());
     EXPECT_EQ(kv.second, to_string(result));
   }
 }
 
 
-TYPED_TEST(crypto_hmac, string)
+TYPED_TEST(crypto_hmac, input_range_output_array)
+{
+  sal::crypto::hmac_t<TypeParam> hmac;
+  for (auto &kv: expected<TypeParam>)
+  {
+    hmac.update(kv.first.cbegin(), kv.first.cend());
+    EXPECT_EQ(kv.second, to_string(hmac.finish()));
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, input_range_output_array_with_key)
+{
+  sal::crypto::hmac_t<TypeParam> hmac(hmac_key.cbegin(), hmac_key.cend());
+  for (auto &kv: expected_with_key<TypeParam>)
+  {
+    hmac.update(kv.first.cbegin(), kv.first.cend());
+    EXPECT_EQ(kv.second, to_string(hmac.finish()));
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, input_string_output_range)
 {
   sal::crypto::hmac_t<TypeParam> hmac;
   for (auto &kv: expected<TypeParam>)
   {
     hmac.update(kv.first);
-    EXPECT_EQ(kv.second, finish(hmac));
+    std::array<uint8_t, hmac.digest_size> result;
+    hmac.finish(result.begin(), result.end());
+    EXPECT_EQ(kv.second, to_string(result));
   }
 }
 
 
-TYPED_TEST(crypto_hmac, string_with_key)
+TYPED_TEST(crypto_hmac, input_string_output_range_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> hmac{key};
+  sal::crypto::hmac_t<TypeParam> hmac{hmac_key};
   for (auto &kv: expected_with_key<TypeParam>)
   {
     hmac.update(kv.first);
-    EXPECT_EQ(kv.second, finish(hmac));
+    std::array<uint8_t, hmac.digest_size> result;
+    hmac.finish(result.begin(), result.end());
+    EXPECT_EQ(kv.second, to_string(result));
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, inpupt_string_output_array)
+{
+  sal::crypto::hmac_t<TypeParam> hmac;
+  for (auto &kv: expected<TypeParam>)
+  {
+    hmac.update(kv.first);
+    EXPECT_EQ(kv.second, to_string(hmac.finish()));
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, input_string_output_array_with_key)
+{
+  sal::crypto::hmac_t<TypeParam> hmac{hmac_key};
+  for (auto &kv: expected_with_key<TypeParam>)
+  {
+    hmac.update(kv.first);
+    EXPECT_EQ(kv.second, to_string(hmac.finish()));
   }
 }
 
@@ -410,64 +451,71 @@ TYPED_TEST(crypto_hmac, vector)
   for (auto &kv: expected<TypeParam>)
   {
     hmac.update(std::vector<uint8_t>{kv.first.begin(), kv.first.end()});
-    EXPECT_EQ(kv.second, finish(hmac));
+    EXPECT_EQ(kv.second, to_string(hmac.finish()));
   }
 }
 
 
 TYPED_TEST(crypto_hmac, vector_with_key)
 {
-  sal::crypto::hmac_t<TypeParam> hmac{key};
+  sal::crypto::hmac_t<TypeParam> hmac{hmac_key};
   for (auto &kv: expected_with_key<TypeParam>)
   {
     hmac.update(std::vector<uint8_t>{kv.first.begin(), kv.first.end()});
-    EXPECT_EQ(kv.second, finish(hmac));
+    EXPECT_EQ(kv.second, to_string(hmac.finish()));
   }
 }
 
 
-TYPED_TEST(crypto_hmac, buf_ptr)
-{
-  sal::crypto::hmac_t<TypeParam> hmac;
-  for (auto &kv: expected<TypeParam>)
-  {
-    hmac.update(sal::make_buf(kv.first));
-    EXPECT_EQ(kv.second, finish(hmac));
-  }
-}
-
-
-TYPED_TEST(crypto_hmac, buf_ptr_with_key)
-{
-  sal::crypto::hmac_t<TypeParam> hmac{key};
-  for (auto &kv: expected_with_key<TypeParam>)
-  {
-    hmac.update(sal::make_buf(kv.first));
-    EXPECT_EQ(kv.second, finish(hmac));
-  }
-}
-
-
-TYPED_TEST(crypto_hmac, one_shot)
+TYPED_TEST(crypto_hmac, one_shot_range)
 {
   for (auto &kv: expected<TypeParam>)
   {
-    uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size()];
-    sal::crypto::hmac_t<TypeParam>::one_shot(kv.first, sal::make_buf(result));
-    EXPECT_EQ(kv.second, to_string(sal::make_buf(result)))
-      << "   Input: " << kv.first;
+    uint8_t result[sal::crypto::hmac_t<TypeParam>::digest_size];
+    sal::crypto::hmac_t<TypeParam>::one_shot(
+      kv.first.cbegin(), kv.first.cend(),
+      std::begin(result), std::end(result)
+    );
+    EXPECT_EQ(kv.second, to_string(result));
   }
 }
 
 
-TYPED_TEST(crypto_hmac, one_shot_with_key)
+TYPED_TEST(crypto_hmac, one_shot_range_with_key)
 {
   for (auto &kv: expected_with_key<TypeParam>)
   {
-    uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size()];
-    sal::crypto::hmac_t<TypeParam>::one_shot(key, kv.first, sal::make_buf(result));
-    EXPECT_EQ(kv.second, to_string(sal::make_buf(result)))
-      << "   Input: " << kv.first;
+    uint8_t result[sal::crypto::hmac_t<TypeParam>::digest_size];
+    sal::crypto::hmac_t<TypeParam>::one_shot(
+      hmac_key.cbegin(), hmac_key.cend(),
+      kv.first.cbegin(), kv.first.cend(),
+      std::begin(result), std::end(result)
+    );
+    EXPECT_EQ(kv.second, to_string(result));
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, one_shot_string)
+{
+  for (auto &kv: expected<TypeParam>)
+  {
+    EXPECT_EQ(
+      kv.second,
+      to_string(sal::crypto::hmac_t<TypeParam>::one_shot(kv.first))
+    );
+  }
+}
+
+
+TYPED_TEST(crypto_hmac, one_shot_string_with_key)
+{
+  for (auto &kv: expected_with_key<TypeParam>)
+  {
+    EXPECT_EQ(
+      kv.second,
+      to_string(sal::crypto::hmac_t<TypeParam>::one_shot(hmac_key, kv.first))
+    );
   }
 }
 

@@ -1,6 +1,5 @@
 #include <sal/crypto/hash.hpp>
 #include <sal/common.test.hpp>
-#include <sal/buf_ptr.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -93,15 +92,6 @@ std::string to_string (const Ptr &data)
 }
 
 
-template <typename Algorithm>
-std::string finish (sal::crypto::hash_t<Algorithm> &hash)
-{
-  uint8_t result[sal::crypto::hash_t<Algorithm>::digest_size()];
-  hash.finish(sal::make_buf(result));
-  return to_string(sal::make_buf(result));
-}
-
-
 TYPED_TEST(crypto_hash, copy_ctor)
 {
   sal::crypto::hash_t<TypeParam> h1;
@@ -111,8 +101,8 @@ TYPED_TEST(crypto_hash, copy_ctor)
   h1.update(lazy_cog);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h1));
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h1.finish()));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
@@ -125,8 +115,8 @@ TYPED_TEST(crypto_hash, copy_assign)
   h1.update(lazy_cog);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h1));
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h1.finish()));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
@@ -138,7 +128,7 @@ TYPED_TEST(crypto_hash, move_ctor)
   auto h2{std::move(h1)};
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
@@ -150,23 +140,26 @@ TYPED_TEST(crypto_hash, move_assign)
   h2 = std::move(h1);
   h2.update(lazy_cog);
 
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(h2));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(h2.finish()));
 }
 
 
 TYPED_TEST(crypto_hash, no_add)
 {
   sal::crypto::hash_t<TypeParam> hash;
-  EXPECT_NE(0U, hash.digest_size());
-  EXPECT_EQ(expected<TypeParam>[empty], finish(hash));
+  EXPECT_NE(0U, hash.digest_size);
+  EXPECT_EQ(expected<TypeParam>[empty], to_string(hash.finish()));
 }
 
 
 TYPED_TEST(crypto_hash, invalid_result_size)
 {
   sal::crypto::hash_t<TypeParam> hash;
-  uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size() / 2];
-  EXPECT_THROW(hash.finish(sal::make_buf(result)), std::logic_error);
+  uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size / 2];
+  EXPECT_THROW(
+    hash.finish(std::begin(result), std::end(result)),
+    std::logic_error
+  );
 }
 
 
@@ -174,14 +167,14 @@ TYPED_TEST(crypto_hash, reuse_object)
 {
   sal::crypto::hash_t<TypeParam> hash;
 
-  hash.update(sal::make_buf(empty));
-  EXPECT_EQ(expected<TypeParam>[empty], finish(hash));
+  hash.update(empty);
+  EXPECT_EQ(expected<TypeParam>[empty], to_string(hash.finish()));
 
   hash.update(lazy_dog);
-  EXPECT_EQ(expected<TypeParam>[lazy_dog], finish(hash));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog], to_string(hash.finish()));
 
-  hash.update(std::vector<uint8_t>(lazy_cog.begin(), lazy_cog.end()));
-  EXPECT_EQ(expected<TypeParam>[lazy_cog], finish(hash));
+  hash.update(lazy_cog);
+  EXPECT_EQ(expected<TypeParam>[lazy_cog], to_string(hash.finish()));
 }
 
 
@@ -191,10 +184,10 @@ TYPED_TEST(crypto_hash, multiple_updates)
 
   hash.update(lazy_dog);
   hash.update(lazy_cog);
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(hash));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(hash.finish()));
 
   hash.update(lazy_dog + lazy_cog);
-  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], finish(hash));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(hash.finish()));
 }
 
 
@@ -203,31 +196,55 @@ TYPED_TEST(crypto_hash, multiple_instances)
   sal::crypto::hash_t<TypeParam> dog, cog;
   dog.update(lazy_dog);
   cog.update(lazy_cog);
-  EXPECT_EQ(expected<TypeParam>[lazy_dog], finish(dog));
-  EXPECT_EQ(expected<TypeParam>[lazy_cog], finish(cog));
+  EXPECT_EQ(expected<TypeParam>[lazy_dog], to_string(dog.finish()));
+  EXPECT_EQ(expected<TypeParam>[lazy_cog], to_string(cog.finish()));
 }
 
 
-TYPED_TEST(crypto_hash, range)
+TYPED_TEST(crypto_hash, input_range_output_range)
 {
   sal::crypto::hash_t<TypeParam> hash;
   for (auto &kv: expected<TypeParam>)
   {
     hash.update(kv.first.begin(), kv.first.end());
-    std::array<uint8_t, hash.digest_size()> result;
+    std::array<uint8_t, hash.digest_size> result;
     hash.finish(result.begin(), result.end());
     EXPECT_EQ(kv.second, to_string(result));
   }
 }
 
 
-TYPED_TEST(crypto_hash, string)
+TYPED_TEST(crypto_hash, input_range_output_array)
+{
+  sal::crypto::hash_t<TypeParam> hash;
+  for (auto &kv: expected<TypeParam>)
+  {
+    hash.update(kv.first.begin(), kv.first.end());
+    EXPECT_EQ(kv.second, to_string(hash.finish()));
+  }
+}
+
+
+TYPED_TEST(crypto_hash, input_string_output_range)
 {
   sal::crypto::hash_t<TypeParam> hash;
   for (auto &kv: expected<TypeParam>)
   {
     hash.update(kv.first);
-    EXPECT_EQ(kv.second, finish(hash));
+    std::array<uint8_t, hash.digest_size> result;
+    hash.finish(result.begin(), result.end());
+    EXPECT_EQ(kv.second, to_string(result));
+  }
+}
+
+
+TYPED_TEST(crypto_hash, input_string_output_array)
+{
+  sal::crypto::hash_t<TypeParam> hash;
+  for (auto &kv: expected<TypeParam>)
+  {
+    hash.update(kv.first);
+    EXPECT_EQ(kv.second, to_string(hash.finish()));
   }
 }
 
@@ -238,41 +255,48 @@ TYPED_TEST(crypto_hash, vector)
   for (auto &kv: expected<TypeParam>)
   {
     hash.update(std::vector<uint8_t>{kv.first.begin(), kv.first.end()});
-    EXPECT_EQ(kv.second, finish(hash));
+    EXPECT_EQ(kv.second, to_string(hash.finish()));
   }
 }
 
 
-TYPED_TEST(crypto_hash, buf_ptr)
+TYPED_TEST(crypto_hash, one_shot_input_range_output_range)
 {
-  sal::crypto::hash_t<TypeParam> hash;
   for (auto &kv: expected<TypeParam>)
   {
-    hash.update(sal::make_buf(kv.first));
-    EXPECT_EQ(kv.second, finish(hash));
+    uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size];
+    sal::crypto::hash_t<TypeParam>::one_shot(
+      kv.first.cbegin(), kv.first.cend(),
+      std::begin(result), std::end(result)
+    );
+    EXPECT_EQ(kv.second, to_string(result));
   }
 }
 
 
-TYPED_TEST(crypto_hash, one_shot)
+TYPED_TEST(crypto_hash, one_shot_input_range_output_array)
 {
   for (auto &kv: expected<TypeParam>)
   {
-    uint8_t result[sal::crypto::hash_t<TypeParam>::digest_size()];
-    sal::crypto::hash_t<TypeParam>::one_shot(kv.first, sal::make_buf(result));
-    EXPECT_EQ(kv.second, to_string(sal::make_buf(result)))
-      << "   Input: " << kv.first;
+    EXPECT_EQ(kv.second,
+      to_string(
+        sal::crypto::hash_t<TypeParam>::one_shot(
+          kv.first.cbegin(),
+          kv.first.cend()
+        )
+      )
+    );
   }
 }
 
 
-TYPED_TEST(crypto_hash, one_shot_vector)
+TYPED_TEST(crypto_hash, one_shot_input_string_output_array)
 {
   for (auto &kv: expected<TypeParam>)
   {
-    auto result = sal::crypto::hash_t<TypeParam>::one_shot(kv.first);
-    EXPECT_EQ(kv.second, to_string(result))
-      << "   Input: " << kv.first;
+    EXPECT_EQ(kv.second,
+      to_string(sal::crypto::hash_t<TypeParam>::one_shot(kv.first))
+    );
   }
 }
 

@@ -31,12 +31,9 @@ class hmac_t
 public:
 
   /**
-   * Return number of bytes in HMAC digest.
+   * Number of bytes in hash digest result.
    */
-  static constexpr size_t digest_size () noexcept
-  {
-    return __bits::digest_size_v<Algorithm>;
-  }
+  static constexpr size_t digest_size = __bits::digest_size_v<Algorithm>;
 
 
   /**
@@ -59,9 +56,9 @@ public:
   /**
    * Initialize HMAC object using \a key.
    */
-  template <typename Ptr>
-  hmac_t (const Ptr &key)
-    : hmac_t(key.data(), key.size())
+  template <typename Data>
+  hmac_t (const Data &key)
+    : hmac_t(std::cbegin(key), std::cend(key))
   {}
 
 
@@ -99,7 +96,7 @@ public:
   template <typename It>
   void update (It first, It last)
   {
-    if (first < last)
+    if (first != last)
     {
       update(to_ptr(first), range_size(first, last));
     }
@@ -109,67 +106,133 @@ public:
   /**
    * Add more \a data into hasher.
    */
-  template <typename Ptr>
-  void update (const Ptr &data)
+  template <typename Data>
+  void update (const Data &data)
   {
-    update(data.data(), data.size());
+    using std::cbegin;
+    using std::cend;
+    update(cbegin(data), cend(data));
   }
 
 
   /**
    * Calculate HMAC of previously added data and store into region starting at
    * \a first. If size of region [\a first, \a last) is less than
-   * digest_size(), throw std::logic_error
+   * digest_size, throw std::logic_error
    */
   template <typename It>
   void finish (It first, It last)
   {
-    sal_throw_if(range_size(first, last) < digest_size());
-    finish(to_ptr(first), range_size(first, last));
+    auto result_size = range_size(first, last);
+    sal_throw_if(result_size < digest_size);
+    finish(to_ptr(first), result_size);
   }
 
 
   /**
-   * Calculate HMAC of previously added data and store it into \a digest.
-   * \throws std::logic_error if digest.size() < digest_size()
+   * Calculate HMAC of previously added data and return result as array.
    */
-  template <typename Ptr>
-  void finish (const Ptr &digest)
+  std::array<uint8_t, digest_size> finish ()
   {
-    sal_throw_if(digest.size() < digest_size());
-    finish(digest.data(), digest.size());
+    std::array<uint8_t, digest_size> result;
+    finish(result.begin(), result.end());
+    return result;
   }
 
 
   /**
-   * Calculate HMAC of \a data using \a key and store result into \a digest.
-   * \throws std::logic_error if digest.size() < digest_size()
+   * Calculate HMAC over [\a data_first, \a data_last) without key and write
+   * result into [\a digest_first, \a digest_last).
+   *
+   * \throws std::logic_error if area [\a digest_first, \a digest_last) is
+   * less than digest_size
    */
-  template <typename KeyPtr, typename DataPtr, typename DigestPtr>
-  static void one_shot (const KeyPtr &key,
-    const DataPtr &data,
-    const DigestPtr &digest)
+  template <typename DataIt, typename DigestIt>
+  static void one_shot (DataIt data_first,
+    DataIt data_last,
+    DigestIt digest_first,
+    DigestIt digest_last)
   {
-    sal_throw_if(digest.size() < digest_size());
-    one_shot(key.data(), key.size(),
-      data.data(), data.size(),
-      digest.data(), digest.size()
+    auto result_size = range_size(digest_first, digest_last);
+    sal_throw_if(result_size < digest_size);
+    auto result = to_ptr(digest_first);
+    if (data_first != data_last)
+    {
+      auto data = to_ptr(data_first);
+      auto data_size = range_size(data_first, data_last);
+      one_shot(nullptr, 0, data, data_size, result, result_size);
+    }
+    else
+    {
+      one_shot(nullptr, 0, nullptr, 0, result, result_size);
+    }
+  }
+
+
+  /**
+   * Calculate HMAC over [\a data_first, \a data_last) using key in
+   * [\a key_first, \a key_last) and write result into [\a digest_first,
+   * \a digest_last).
+   *
+   * \throws std::logic_error if area [\a digest_first, \a digest_last) is
+   * less than digest_size
+   */
+  template <typename KeyIt, typename DataIt, typename DigestIt>
+  static void one_shot (KeyIt key_first,
+    KeyIt key_last,
+    DataIt data_first,
+    DataIt data_last,
+    DigestIt digest_first,
+    DigestIt digest_last)
+  {
+    auto result_size = range_size(digest_first, digest_last);
+    sal_throw_if(result_size < digest_size);
+    auto result = to_ptr(digest_first);
+    auto key = to_ptr(key_first);
+    auto key_size = range_size(key_first, key_last);
+    if (data_first != data_last)
+    {
+      auto data = to_ptr(data_first);
+      auto data_size = range_size(data_first, data_last);
+      one_shot(key, key_size, data, data_size, result, result_size);
+    }
+    else
+    {
+      one_shot(key, key_size, nullptr, 0, result, result_size);
+    }
+  }
+
+
+  /**
+   * Calculate HMAC over \a data without key and return result as std::array
+   */
+  template <typename Data>
+  static std::array<uint8_t, digest_size> one_shot (const Data &data)
+  {
+    std::array<uint8_t, digest_size> result;
+    using std::cbegin;
+    using std::cend;
+    one_shot(cbegin(data), cend(data), result.begin(), result.end());
+    return result;
+  }
+
+
+  /**
+   * Calculate HMAC over \a data with \a key and return result as std::array
+   */
+  template <typename Key, typename Data>
+  static std::array<uint8_t, digest_size> one_shot (const Key &key,
+    const Data &data)
+  {
+    std::array<uint8_t, digest_size> result;
+    using std::cbegin;
+    using std::cend;
+    one_shot(
+      cbegin(key), cend(key),
+      cbegin(data), cend(data),
+      result.begin(), result.end()
     );
-  }
-
-
-  /**
-   * Calculate HMAC of \a data without key and store result into \a digest.
-   * \throws std::logic_error if digest.size() < digest_size()
-   */
-  template <typename DataPtr, typename DigestPtr>
-  static void one_shot (const DataPtr &data, const DigestPtr &digest)
-  {
-    sal_throw_if(digest.size() < digest_size());
-    one_shot(nullptr, 0U,
-      data.data(), data.size(),
-      digest.data(), digest.size()
-    );
+    return result;
   }
 
 

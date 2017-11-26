@@ -13,7 +13,6 @@
 #include <sal/crypto/hash.hpp>
 #include <sal/crypto/key.hpp>
 #include <sal/crypto/oid.hpp>
-#include <sal/buf_ptr.hpp>
 #include <sal/char_array.hpp>
 #include <sal/time.hpp>
 #include <ostream>
@@ -122,15 +121,19 @@ public:
    * Load and construct new certificate from DER encoded blob in \a data. On
    * failure, return null certificate and set \a error.
    */
-  template <typename Ptr>
-  static certificate_t from_der (const Ptr &data, std::error_code &error)
+  template <typename Data>
+  static certificate_t from_der (const Data &data, std::error_code &error)
     noexcept
   {
-    return from_der(
-      reinterpret_cast<const uint8_t *>(data.data()),
-      reinterpret_cast<const uint8_t *>(data.data()) + data.size(),
-      error
-    );
+    using std::cbegin;
+    using std::cend;
+    auto first = cbegin(data), last = cend(data);
+    if (first != last)
+    {
+      return from_der(to_ptr(first), to_end_ptr(first, last), error);
+    }
+    error = std::make_error_code(std::errc::invalid_argument);
+    return {};
   }
 
 
@@ -138,8 +141,8 @@ public:
    * Load and construct new certificate from DER encoded blob in \a data. On
    * failure, throws std::system_error
    */
-  template <typename Ptr>
-  static certificate_t from_der (const Ptr &data)
+  template <typename Data>
+  static certificate_t from_der (const Data &data)
   {
     return from_der(data, throw_on_error("certificate::from_der"));
   }
@@ -159,15 +162,19 @@ public:
    * Load and construct new certificate from PEM encoded blob in \a data. On
    * failure, return null certificate and set \a error.
    */
-  template <typename Ptr>
-  static certificate_t from_pem (const Ptr &data, std::error_code &error)
+  template <typename Data>
+  static certificate_t from_pem (const Data &data, std::error_code &error)
     noexcept
   {
-    return from_pem(
-      reinterpret_cast<const uint8_t *>(data.data()),
-      reinterpret_cast<const uint8_t *>(data.data()) + data.size(),
-      error
-    );
+    using std::cbegin;
+    using std::cend;
+    auto first = cbegin(data), last = cend(data);
+    if (first != last)
+    {
+      return from_pem(to_ptr(first), to_end_ptr(first, last), error);
+    }
+    error = std::make_error_code(std::errc::invalid_argument);
+    return {};
   }
 
 
@@ -175,7 +182,8 @@ public:
    * Load and construct new certificate from DER encoded blob in \a data. On
    * failure, throws std::system_error
    */
-  static certificate_t from_pem (const std::string &data)
+  template <typename Data>
+  static certificate_t from_pem (const Data &data)
   {
     return from_pem(data, throw_on_error("certificate::from_pem"));
   }
@@ -189,14 +197,18 @@ public:
    * - std::errc::bad_address: certificate is null
    * - std::errc::result_out_of_range: blob wouldn't fit into \a data
    */
-  template <typename Ptr>
-  uint8_t *to_der (const Ptr &data, std::error_code &error) const noexcept
+  template <typename Data>
+  uint8_t *to_der (Data &data, std::error_code &error) const noexcept
   {
-    return to_der(
-      reinterpret_cast<uint8_t *>(data.data()),
-      reinterpret_cast<uint8_t *>(data.data()) + data.size(),
-      error
-    );
+    using std::begin;
+    using std::end;
+    auto first = begin(data), last = end(data);
+    if (first != last)
+    {
+      return to_der(to_ptr(first), to_end_ptr(first, last), error);
+    }
+    error = std::make_error_code(std::errc::result_out_of_range);
+    return {};
   }
 
 
@@ -206,8 +218,8 @@ public:
    *
    * \throw std::system_error on failure.
    */
-  template <typename Ptr>
-  uint8_t *to_der (const Ptr &data) const
+  template <typename Data>
+  uint8_t *to_der (Data &data) const
   {
     return to_der(data, throw_on_error("certificate::to_der"));
   }
@@ -642,13 +654,18 @@ private:
     const noexcept;
 
   template <typename Algorithm>
-  static std::vector<uint8_t> digest_fn (const void *data, size_t size)
+  static std::vector<uint8_t> digest_fn (const uint8_t *data, size_t size)
   {
-    return hash_t<Algorithm>::one_shot(make_buf(data, size));
+    std::vector<uint8_t> digest(hash_t<Algorithm>::digest_size);
+    hash_t<Algorithm>::one_shot(
+      data, data + size,
+      digest.begin(), digest.end()
+    );
+    return digest;
   }
 
   std::vector<uint8_t> apply (
-    std::vector<uint8_t>(*fn)(const void *, size_t),
+    std::vector<uint8_t>(*fn)(const uint8_t *, size_t),
     std::error_code &error
   ) const noexcept;
 };

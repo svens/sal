@@ -1,6 +1,5 @@
 #include <sal/crypto/random.hpp>
 #include <sal/common.test.hpp>
-#include <sal/buf_ptr.hpp>
 
 
 namespace {
@@ -13,7 +12,7 @@ TEST_F(crypto_random, vector)
 {
   std::vector<unsigned> expected{ 3, 1, 4, 1, 5, 9, 2, 6 };
   auto data = expected;
-  sal::crypto::random(sal::make_buf(data));
+  sal::crypto::random(data);
   EXPECT_NE(expected, data);
 }
 
@@ -21,10 +20,7 @@ TEST_F(crypto_random, vector)
 TEST_F(crypto_random, empty_vector)
 {
   std::vector<unsigned> data;
-  EXPECT_THROW(
-    sal::crypto::random(sal::make_buf(data)),
-    std::logic_error
-  );
+  EXPECT_NO_THROW(sal::crypto::random(data));
   EXPECT_TRUE(data.empty());
 }
 
@@ -40,29 +36,24 @@ TEST_F(crypto_random, range)
 
 TEST_F(crypto_random, empty_range)
 {
-  char x;
-  EXPECT_THROW(
-    sal::crypto::random(&x, &x),
-    std::logic_error
-  );
+  char x = 'a';
+  EXPECT_NO_THROW(sal::crypto::random(&x, &x));
+  EXPECT_EQ('a', x);
 }
 
 
 TEST_F(crypto_random, string)
 {
   auto data = case_name;
-  sal::crypto::random(sal::make_buf(data));
+  sal::crypto::random(data);
   EXPECT_NE(case_name, data);
 }
 
 
 TEST_F(crypto_random, empty_string)
 {
-  std::vector<unsigned> data;
-  EXPECT_THROW(
-    sal::crypto::random(sal::make_buf(data)),
-    std::logic_error
-  );
+  std::string data;
+  EXPECT_NO_THROW(sal::crypto::random(data));
   EXPECT_TRUE(data.empty());
 }
 

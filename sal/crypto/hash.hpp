@@ -10,7 +10,7 @@
 #include <sal/crypto/__bits/digest.hpp>
 #include <sal/error.hpp>
 #include <sal/memory.hpp>
-#include <vector>
+#include <array>
 
 
 __sal_begin
@@ -49,12 +49,9 @@ class hash_t
 public:
 
   /**
-   * Return number of bytes in hash digest.
+   * Number of bytes in hash digest result.
    */
-  static constexpr size_t digest_size () noexcept
-  {
-    return __bits::digest_size_v<Algorithm>;
-  }
+  static constexpr size_t digest_size = __bits::digest_size_v<Algorithm>;
 
 
   /**
@@ -97,9 +94,9 @@ public:
   template <typename It>
   void update (It first, It last)
   {
-    if (first < last)
+    if (first != last)
     {
-      update(to_ptr(first), range_size(first, last));
+      update(to_ptr(first), std::distance(first, last));
     }
   }
 
@@ -107,60 +104,86 @@ public:
   /**
    * Add more \a data into hasher.
    */
-  template <typename Ptr>
-  void update (const Ptr &data)
+  template <typename Data>
+  void update (const Data &data)
   {
-    update(data.data(), data.size());
+    using std::cbegin;
+    using std::cend;
+    update(cbegin(data), cend(data));
   }
 
 
   /**
    * Calculate hash of previously added data and store into region starting at
    * \a first. If size of region [\a first, \a last) is less than
-   * digest_size(), throw std::logic_error
+   * digest_size, throw std::logic_error
    */
   template <typename It>
   void finish (It first, It last)
   {
-    sal_throw_if(range_size(first, last) < digest_size());
-    finish(to_ptr(first), range_size(first, last));
+    auto result_size = range_size(first, last);
+    sal_throw_if(result_size < digest_size);
+    finish(to_ptr(first), result_size);
   }
 
 
   /**
-   * Calculate hash of previously added data and store it into \a digest.
-   * \throws std::logic_error if digest.size() < digest_size()
+   * Calculate hash of previously added data and return result as array.
    */
-  template <typename Ptr>
-  void finish (const Ptr &digest)
+  std::array<uint8_t, digest_size> finish ()
   {
-    sal_throw_if(digest.size() < digest_size());
-    finish(digest.data(), digest.size());
-  }
-
-
-  /**
-   * Calculate hash of \a data and store result into \a digest.
-   * \throws std::logic_error if digest.size() < digest_size()
-   */
-  template <typename DataPtr, typename DigestPtr>
-  static void one_shot (const DataPtr &data, const DigestPtr &digest)
-  {
-    sal_throw_if(digest.size() < digest_size());
-    one_shot(data.data(), data.size(), digest.data(), digest.size());
-  }
-
-
-  /**
-   * Convenience wrapper for one_shot() to preallocate, fill and return digest
-   * in vector of bytes.
-   */
-  template <typename DataPtr>
-  static std::vector<uint8_t> one_shot (const DataPtr &data)
-  {
-    std::vector<uint8_t> result(digest_size());
-    one_shot(data.data(), data.size(), result.data(), result.size());
+    std::array<uint8_t, digest_size> result;
+    finish(result.begin(), result.end());
     return result;
+  }
+
+
+  /**
+   * Calculate hash of range [\a first, \a last) and store result into range
+   * [\a digest_first, \a digest_last).
+   * \throws std::logic_error if size of [\a digest_first, \a digest_last) <
+   * digest_size
+   */
+  template <typename It, typename DigestIt>
+  static void one_shot (It first, It last,
+    DigestIt digest_first, DigestIt digest_last)
+  {
+    auto result_size = range_size(digest_first, digest_last);
+    sal_throw_if(result_size < digest_size);
+    if (first != last)
+    {
+      one_shot(to_ptr(first), range_size(first, last),
+        to_ptr(digest_first), result_size
+      );
+    }
+    else
+    {
+      one_shot(to_ptr(digest_first), 0, to_ptr(digest_first), result_size);
+    }
+  }
+
+
+  /**
+   * Calculate hash of range [\a first, \a last) and return result as array.
+   */
+  template <typename It>
+  static std::array<uint8_t, digest_size> one_shot (It first, It last)
+  {
+    std::array<uint8_t, digest_size> result;
+    one_shot(first, last, result.begin(), result.end());
+    return result;
+  }
+
+
+  /**
+   * Calculate hash of \a data and return result as array.
+   */
+  template <typename Data>
+  static std::array<uint8_t, digest_size> one_shot (const Data &data)
+  {
+    using std::cbegin;
+    using std::cend;
+    return one_shot(cbegin(data), cend(data));
   }
 
 

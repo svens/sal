@@ -98,19 +98,63 @@ public:
 
 
   /**
+   * Verify if signature [\a signature_first, \a signature_last) is valid for
+   * [\a first, \a last) signed with corresponding private key using \a Digest
+   * algorithm.
+   *
+   * \returns True if \a signature is valid
+   */
+  template <typename Digest, typename DataIt, typename SignatureIt>
+  bool verify_signature (Digest,
+    DataIt first, DataIt last,
+    SignatureIt signature_first, SignatureIt signature_last,
+    std::error_code &error) noexcept
+  {
+    return verify_signature(__bits::digest_type_v<Digest>,
+      first != last ? to_ptr(first) : nullptr,
+      range_size(first, last),
+      to_ptr(signature_first),
+      range_size(signature_first, signature_last),
+      error
+    );
+  }
+
+
+  /**
+   * Verify if signature [\a signature_first, \a signature_last) is valid for
+   * [\a first, \a last) signed with corresponding private key using \a Digest
+   * algorithm.
+   *
+   * \returns True if \a signature is valid
+   */
+  template <typename Digest, typename DataIt, typename SignatureIt>
+  bool verify_signature (Digest digest,
+    DataIt first, DataIt last,
+    SignatureIt signature_first, SignatureIt signature_last)
+  {
+    return verify_signature(digest,
+      first, last, signature_first, signature_last,
+      throw_on_error("public_key::verify_signature")
+    );
+  }
+
+
+  /**
    * Verify if \a signature is valid for \a data signed with corresponding
    * private key using \a digest.
    * \returns True if \a signature is valid
    */
   template <typename Digest, typename Data, typename Signature>
-  bool verify_signature (Digest,
+  bool verify_signature (Digest digest,
     const Data &data,
     const Signature &signature,
     std::error_code &error) noexcept
   {
-    return verify_signature(__bits::digest_type_v<Digest>,
-      data.data(), data.size(),
-      signature.data(), signature.size(),
+    using std::cbegin;
+    using std::cend;
+    return verify_signature(digest,
+      cbegin(data), cend(data),
+      cbegin(signature), cend(signature),
       error
     );
   }
@@ -119,12 +163,15 @@ public:
   /**
    * Verify if \a signature is valid for \a data signed with corresponding
    * private key using \a digest.
+   * \returns True if \a signature is valid
    */
   template <typename Digest, typename Data, typename Signature>
   bool verify_signature (Digest digest,
     const Data &data,
-    const Signature &signature)
+    const Signature &signature) noexcept
   {
+    using std::cbegin;
+    using std::cend;
     return verify_signature(digest, data, signature,
       throw_on_error("public_key::verify_signature")
     );
@@ -218,48 +265,56 @@ public:
 
 
   /**
-   * Sign \a data and write result into \a signature.
+   * Sign data in [\a first, \a last) using \a Digest algorithm and write
+   * result into [\a signature_first, \a signature_last).
+   *
    * \returns Size of signature or undefined value on error.
    */
-  template <typename Digest, typename Data, typename Signature>
+  template <typename Digest, typename DataIt, typename SignatureIt>
   size_t sign (Digest,
-    const Data &data,
-    const Signature &signature,
+    DataIt first, DataIt last,
+    SignatureIt signature_first, SignatureIt signature_last,
     std::error_code &error) noexcept
   {
     return sign(__bits::digest_type_v<Digest>,
-      data.data(), data.size(),
-      signature.data(), signature.size(),
+      first != last ? to_ptr(first) : nullptr,
+      range_size(first, last),
+      to_ptr(signature_first),
+      range_size(signature_first, signature_last),
       error
     );
   }
 
 
   /**
-   * Sign \a data using \a digest and write result into \a signature.
+   * Sign data in [\a first, \a last) using \a digest algorithm and write
+   * result into [\a signature_first, \a signature_last).
+   *
    * \returns Size of signature
    */
-  template <typename Digest, typename Data, typename Signature>
-  size_t sign (Digest digest, const Data &data, const Signature &signature)
+  template <typename Digest, typename DataIt, typename SignatureIt>
+  size_t sign (Digest digest,
+    DataIt first, DataIt last,
+    SignatureIt signature_first, SignatureIt signature_last)
   {
-    return sign(digest, data, signature, throw_on_error("private_key::sign"));
+    return sign(digest, first, last, signature_first, signature_last,
+      throw_on_error("private_key::sign")
+    );
   }
 
 
   /**
-   * Sign \a data using \a digest and return signature as vector.
+   * Sign \a data using \a digest algorithm and return signature as vector.
    * \throws std::system_error on signing failure
    * \throws std::bad_alloc on vector allocation failure
    */
   template <typename Digest, typename Data>
-  std::vector<uint8_t> sign (Digest, const Data &data)
+  std::vector<uint8_t> sign (Digest digest, const Data &data)
   {
     std::vector<uint8_t> result(block_size());
-    sign(__bits::digest_type_v<Digest>,
-      data.data(), data.size(),
-      result.data(), result.size(),
-      throw_on_error("private_key::sign")
-    );
+    using std::cbegin;
+    using std::cend;
+    sign(digest, cbegin(data), cend(data), result.begin(), result.end());
     return result;
   }
 

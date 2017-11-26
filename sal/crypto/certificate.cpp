@@ -50,8 +50,8 @@ std::string normalized_ip_string (const uint8_t *first, size_t size)
 
 
 std::vector<uint8_t> calculate_digest (
-  const void *data, size_t size,
-  std::vector<uint8_t>(*fn)(const void *, size_t),
+  const uint8_t *data, size_t size,
+  std::vector<uint8_t>(*fn)(const uint8_t *, size_t),
   std::error_code &error) noexcept
 {
   try
@@ -678,7 +678,7 @@ certificate_t::subject_alt_names (std::error_code &error) const noexcept
 
 
 std::vector<uint8_t> certificate_t::apply (
-  std::vector<uint8_t>(*fn)(const void *, size_t),
+  std::vector<uint8_t>(*fn)(const uint8_t *, size_t),
   std::error_code &error) const noexcept
 {
   if (impl_.ref)
@@ -1373,7 +1373,7 @@ certificate_t::subject_alt_names (std::error_code &error) const noexcept
 
 
 std::vector<uint8_t> certificate_t::apply (
-  std::vector<uint8_t>(*fn)(const void *, size_t),
+  std::vector<uint8_t>(*fn)(const uint8_t *, size_t),
   std::error_code &error) const noexcept
 {
   if (impl_.ref)
@@ -2045,7 +2045,7 @@ certificate_t::subject_alt_names (std::error_code &error) const noexcept
 
 
 std::vector<uint8_t> certificate_t::apply (
-  std::vector<uint8_t>(*fn)(const void *, size_t),
+  std::vector<uint8_t>(*fn)(const uint8_t *, size_t),
   std::error_code &error) const noexcept
 {
   if (impl_.ref)
