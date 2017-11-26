@@ -96,7 +96,7 @@ public:
   {
     if (first != last)
     {
-      update(to_ptr(first), range_size(first, last));
+      update(to_ptr(first), std::distance(first, last));
     }
   }
 

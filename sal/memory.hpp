@@ -21,17 +21,15 @@ template <typename T> constexpr const bool is_const_ref_v<const T &> = true;
 template <typename It>
 inline constexpr void ensure_iterator_constraints (It) noexcept
 {
-  using it_traits = std::iterator_traits<It>;
-
   static_assert(
-    std::is_pod_v<typename it_traits::value_type>,
+    std::is_pod_v<typename std::iterator_traits<It>::value_type>,
     "expected iterator to point to POD type"
   );
 
   static_assert(
     std::is_base_of_v<
       std::random_access_iterator_tag,
-      typename it_traits::iterator_category
+      typename std::iterator_traits<It>::iterator_category
     >,
     "expected random access iterator"
   );
@@ -79,7 +77,8 @@ inline constexpr size_t range_size (It first, It last) noexcept
 {
   __bits::ensure_iterator_constraints(first);
   __bits::ensure_iterator_constraints(last);
-  return (last - first) * sizeof(*first);
+  return std::distance(first, last)
+    * sizeof(typename std::iterator_traits<It>::value_type);
 }
 
 
