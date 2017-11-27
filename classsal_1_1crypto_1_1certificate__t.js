@@ -50,8 +50,8 @@ var classsal_1_1crypto_1_1certificate__t =
     [ "subject_key_identifier", "classsal_1_1crypto_1_1certificate__t.html#ab4f013d34fcd708aeb3b4206f9edc2e4", null ],
     [ "subject_key_identifier", "classsal_1_1crypto_1_1certificate__t.html#af417b026d37b19e71a765784527d58e3", null ],
     [ "swap", "classsal_1_1crypto_1_1certificate__t.html#a5ed69cdf9f7208db3d00a1d7455d70c3", null ],
-    [ "to_der", "classsal_1_1crypto_1_1certificate__t.html#a3c29bbdc6a60b815d6ad4a4d1bf5356a", null ],
-    [ "to_der", "classsal_1_1crypto_1_1certificate__t.html#aca849ed5fae4c7533cf0177de7a26b13", null ],
+    [ "to_der", "classsal_1_1crypto_1_1certificate__t.html#ab297350e3a7a8f5db6ed7dd3b0a446e6", null ],
+    [ "to_der", "classsal_1_1crypto_1_1certificate__t.html#ab918380daf4a558c243d573935efd688", null ],
     [ "to_der", "classsal_1_1crypto_1_1certificate__t.html#a319229f903a8b65f4b9a92eba54e8bd5", null ],
     [ "to_der", "classsal_1_1crypto_1_1certificate__t.html#a9642cef2678515e344b336340dbe5595", null ],
     [ "version", "classsal_1_1crypto_1_1certificate__t.html#ab82bbf71f095f0ef29b11be461713cec", null ]

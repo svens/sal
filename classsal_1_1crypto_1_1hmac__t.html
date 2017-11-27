@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.22.0</span>
+   &#160;<span id="projectnumber">0.23.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -92,6 +92,7 @@ $(document).ready(function(){initNavTree('classsal_1_1crypto_1_1hmac__t.html',''
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="classsal_1_1crypto_1_1hmac__t-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">sal::crypto::hmac_t&lt; Algorithm &gt; Class Template Reference</div>  </div>
@@ -114,11 +115,11 @@ template&lt;typename It &gt; </td></tr>
 <tr class="memitem:a3a9663557451e9013ff263deec5de86e"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a3a9663557451e9013ff263deec5de86e">hmac_t</a> (It first, It last)</td></tr>
 <tr class="memdesc:a3a9663557451e9013ff263deec5de86e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize HMAC object using key in range [<em>first</em>, <em>last</em>). <br /></td></tr>
 <tr class="separator:a3a9663557451e9013ff263deec5de86e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92a21edb550e11d56ffc1b6f789609b4"><td class="memTemplParams" colspan="2"><a id="a92a21edb550e11d56ffc1b6f789609b4"></a>
-template&lt;typename Ptr &gt; </td></tr>
-<tr class="memitem:a92a21edb550e11d56ffc1b6f789609b4"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a92a21edb550e11d56ffc1b6f789609b4">hmac_t</a> (const Ptr &amp;key)</td></tr>
-<tr class="memdesc:a92a21edb550e11d56ffc1b6f789609b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize HMAC object using <em>key</em>. <br /></td></tr>
-<tr class="separator:a92a21edb550e11d56ffc1b6f789609b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23ad7111258bfa587bc051b0f69c225b"><td class="memTemplParams" colspan="2"><a id="a23ad7111258bfa587bc051b0f69c225b"></a>
+template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:a23ad7111258bfa587bc051b0f69c225b"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a23ad7111258bfa587bc051b0f69c225b">hmac_t</a> (const Data &amp;key)</td></tr>
+<tr class="memdesc:a23ad7111258bfa587bc051b0f69c225b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize HMAC object using <em>key</em>. <br /></td></tr>
+<tr class="separator:a23ad7111258bfa587bc051b0f69c225b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae92a5822f4331001980aed42b137b5eb"><td class="memItemLeft" align="right" valign="top"><a id="ae92a5822f4331001980aed42b137b5eb"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#ae92a5822f4331001980aed42b137b5eb">hmac_t</a> (const <a class="el" href="classsal_1_1crypto_1_1hmac__t.html">hmac_t</a> &amp;that)=default</td></tr>
 <tr class="memdesc:ae92a5822f4331001980aed42b137b5eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create this as copy of <em>that</em>. <br /></td></tr>
@@ -138,34 +139,47 @@ template&lt;typename It &gt; </td></tr>
 <tr class="memitem:ac4e90f8b10c478d98de5d8faf6fd6d24"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#ac4e90f8b10c478d98de5d8faf6fd6d24">update</a> (It first, It last)</td></tr>
 <tr class="memdesc:ac4e90f8b10c478d98de5d8faf6fd6d24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add region [<em>first</em>, <em>last</em>) into hasher. <br /></td></tr>
 <tr class="separator:ac4e90f8b10c478d98de5d8faf6fd6d24"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac7ed480283a0a610d82de207e4ded5ed"><td class="memTemplParams" colspan="2"><a id="ac7ed480283a0a610d82de207e4ded5ed"></a>
-template&lt;typename Ptr &gt; </td></tr>
-<tr class="memitem:ac7ed480283a0a610d82de207e4ded5ed"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#ac7ed480283a0a610d82de207e4ded5ed">update</a> (const Ptr &amp;data)</td></tr>
-<tr class="memdesc:ac7ed480283a0a610d82de207e4ded5ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add more <em>data</em> into hasher. <br /></td></tr>
-<tr class="separator:ac7ed480283a0a610d82de207e4ded5ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa152c5a7a5a35c75d1612da11f88dce5"><td class="memTemplParams" colspan="2"><a id="aa152c5a7a5a35c75d1612da11f88dce5"></a>
+template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:aa152c5a7a5a35c75d1612da11f88dce5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#aa152c5a7a5a35c75d1612da11f88dce5">update</a> (const Data &amp;data)</td></tr>
+<tr class="memdesc:aa152c5a7a5a35c75d1612da11f88dce5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add more <em>data</em> into hasher. <br /></td></tr>
+<tr class="separator:aa152c5a7a5a35c75d1612da11f88dce5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9624b17d50dc508303ccc7aec25f3812"><td class="memTemplParams" colspan="2">template&lt;typename It &gt; </td></tr>
 <tr class="memitem:a9624b17d50dc508303ccc7aec25f3812"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a9624b17d50dc508303ccc7aec25f3812">finish</a> (It first, It last)</td></tr>
 <tr class="memdesc:a9624b17d50dc508303ccc7aec25f3812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC of previously added data and store into region starting at <em>first</em>.  <a href="#a9624b17d50dc508303ccc7aec25f3812">More...</a><br /></td></tr>
 <tr class="separator:a9624b17d50dc508303ccc7aec25f3812"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf75907f35c14e244e5de25b256de593"><td class="memTemplParams" colspan="2">template&lt;typename Ptr &gt; </td></tr>
-<tr class="memitem:acf75907f35c14e244e5de25b256de593"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#acf75907f35c14e244e5de25b256de593">finish</a> (const Ptr &amp;digest)</td></tr>
-<tr class="memdesc:acf75907f35c14e244e5de25b256de593"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC of previously added data and store it into <em>digest</em>.  <a href="#acf75907f35c14e244e5de25b256de593">More...</a><br /></td></tr>
-<tr class="separator:acf75907f35c14e244e5de25b256de593"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0ee2cd6047483f5f1bbb7d774968ac1"><td class="memItemLeft" align="right" valign="top"><a id="ab0ee2cd6047483f5f1bbb7d774968ac1"></a>
+std::array&lt; uint8_t, <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#af3f3058db43f5ea9b1353e4eb9ab6def">digest_size</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#ab0ee2cd6047483f5f1bbb7d774968ac1">finish</a> ()</td></tr>
+<tr class="memdesc:ab0ee2cd6047483f5f1bbb7d774968ac1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC of previously added data and return result as array. <br /></td></tr>
+<tr class="separator:ab0ee2cd6047483f5f1bbb7d774968ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a5e53750aadc4a3bfd516f443ecdee39b"><td class="memItemLeft" align="right" valign="top"><a id="a5e53750aadc4a3bfd516f443ecdee39b"></a>
-static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a5e53750aadc4a3bfd516f443ecdee39b">digest_size</a> () noexcept</td></tr>
-<tr class="memdesc:a5e53750aadc4a3bfd516f443ecdee39b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes in HMAC digest. <br /></td></tr>
-<tr class="separator:a5e53750aadc4a3bfd516f443ecdee39b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4bad345284c2d77590abbc16473660a"><td class="memTemplParams" colspan="2">template&lt;typename KeyPtr , typename DataPtr , typename DigestPtr &gt; </td></tr>
-<tr class="memitem:aa4bad345284c2d77590abbc16473660a"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#aa4bad345284c2d77590abbc16473660a">one_shot</a> (const KeyPtr &amp;key, const DataPtr &amp;data, const DigestPtr &amp;digest)</td></tr>
-<tr class="memdesc:aa4bad345284c2d77590abbc16473660a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC of <em>data</em> using <em>key</em> and store result into <em>digest</em>.  <a href="#aa4bad345284c2d77590abbc16473660a">More...</a><br /></td></tr>
-<tr class="separator:aa4bad345284c2d77590abbc16473660a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d6296cb4b00b1f2d4463a2025cc0b5c"><td class="memTemplParams" colspan="2">template&lt;typename DataPtr , typename DigestPtr &gt; </td></tr>
-<tr class="memitem:a6d6296cb4b00b1f2d4463a2025cc0b5c"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a6d6296cb4b00b1f2d4463a2025cc0b5c">one_shot</a> (const DataPtr &amp;data, const DigestPtr &amp;digest)</td></tr>
-<tr class="memdesc:a6d6296cb4b00b1f2d4463a2025cc0b5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC of <em>data</em> without key and store result into <em>digest</em>.  <a href="#a6d6296cb4b00b1f2d4463a2025cc0b5c">More...</a><br /></td></tr>
-<tr class="separator:a6d6296cb4b00b1f2d4463a2025cc0b5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ae6efcdc2576496aada071e622d5378"><td class="memTemplParams" colspan="2">template&lt;typename DataIt , typename DigestIt &gt; </td></tr>
+<tr class="memitem:a6ae6efcdc2576496aada071e622d5378"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a6ae6efcdc2576496aada071e622d5378">one_shot</a> (DataIt data_first, DataIt data_last, DigestIt digest_first, DigestIt digest_last)</td></tr>
+<tr class="memdesc:a6ae6efcdc2576496aada071e622d5378"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC over [<em>data_first</em>, <em>data_last</em>) without key and write result into [<em>digest_first</em>, <em>digest_last</em>).  <a href="#a6ae6efcdc2576496aada071e622d5378">More...</a><br /></td></tr>
+<tr class="separator:a6ae6efcdc2576496aada071e622d5378"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a028f7673e250dcb553583c827adf3f1e"><td class="memTemplParams" colspan="2">template&lt;typename KeyIt , typename DataIt , typename DigestIt &gt; </td></tr>
+<tr class="memitem:a028f7673e250dcb553583c827adf3f1e"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a028f7673e250dcb553583c827adf3f1e">one_shot</a> (KeyIt key_first, KeyIt key_last, DataIt data_first, DataIt data_last, DigestIt digest_first, DigestIt digest_last)</td></tr>
+<tr class="memdesc:a028f7673e250dcb553583c827adf3f1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC over [<em>data_first</em>, <em>data_last</em>) using key in [<em>key_first</em>, <em>key_last</em>) and write result into [<em>digest_first</em>, <em>digest_last</em>).  <a href="#a028f7673e250dcb553583c827adf3f1e">More...</a><br /></td></tr>
+<tr class="separator:a028f7673e250dcb553583c827adf3f1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedde4d7eeeedcfb4f6a91e509eaa0524"><td class="memTemplParams" colspan="2"><a id="aedde4d7eeeedcfb4f6a91e509eaa0524"></a>
+template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:aedde4d7eeeedcfb4f6a91e509eaa0524"><td class="memTemplItemLeft" align="right" valign="top">static std::array&lt; uint8_t, <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#af3f3058db43f5ea9b1353e4eb9ab6def">digest_size</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#aedde4d7eeeedcfb4f6a91e509eaa0524">one_shot</a> (const Data &amp;data)</td></tr>
+<tr class="memdesc:aedde4d7eeeedcfb4f6a91e509eaa0524"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC over <em>data</em> without key and return result as std::array. <br /></td></tr>
+<tr class="separator:aedde4d7eeeedcfb4f6a91e509eaa0524"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9022e066aacd555e1fffe73ef673ac6"><td class="memTemplParams" colspan="2"><a id="ab9022e066aacd555e1fffe73ef673ac6"></a>
+template&lt;typename Key , typename Data &gt; </td></tr>
+<tr class="memitem:ab9022e066aacd555e1fffe73ef673ac6"><td class="memTemplItemLeft" align="right" valign="top">static std::array&lt; uint8_t, <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#af3f3058db43f5ea9b1353e4eb9ab6def">digest_size</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#ab9022e066aacd555e1fffe73ef673ac6">one_shot</a> (const Key &amp;key, const Data &amp;data)</td></tr>
+<tr class="memdesc:ab9022e066aacd555e1fffe73ef673ac6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate HMAC over <em>data</em> with <em>key</em> and return result as std::array. <br /></td></tr>
+<tr class="separator:ab9022e066aacd555e1fffe73ef673ac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:af3f3058db43f5ea9b1353e4eb9ab6def"><td class="memItemLeft" align="right" valign="top"><a id="af3f3058db43f5ea9b1353e4eb9ab6def"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html#af3f3058db43f5ea9b1353e4eb9ab6def">digest_size</a> = __bits::digest_size_v&lt;Algorithm&gt;</td></tr>
+<tr class="memdesc:af3f3058db43f5ea9b1353e4eb9ab6def"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of bytes in hash digest result. <br /></td></tr>
+<tr class="separator:af3f3058db43f5ea9b1353e4eb9ab6def"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename Algorithm&gt;<br />
@@ -207,7 +221,7 @@ template&lt;typename Algorithm &gt; </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a9624b17d50dc508303ccc7aec25f3812"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9624b17d50dc508303ccc7aec25f3812">&#9670;&nbsp;</a></span>finish() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a9624b17d50dc508303ccc7aec25f3812">&#9670;&nbsp;</a></span>finish()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -245,57 +259,19 @@ template&lt;typename It &gt; </div>
 </div><div class="memdoc">
 
 <p>Calculate HMAC of previously added data and store into region starting at <em>first</em>. </p>
-<p>If size of region [<em>first</em>, <em>last</em>) is less than <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a5e53750aadc4a3bfd516f443ecdee39b" title="Return number of bytes in HMAC digest. ">digest_size()</a>, throw std::logic_error </p>
+<p>If size of region [<em>first</em>, <em>last</em>) is less than digest_size, throw std::logic_error </p>
 
 </div>
 </div>
-<a id="acf75907f35c14e244e5de25b256de593"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acf75907f35c14e244e5de25b256de593">&#9670;&nbsp;</a></span>finish() <span class="overload">[2/2]</span></h2>
+<a id="a6ae6efcdc2576496aada071e622d5378"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ae6efcdc2576496aada071e622d5378">&#9670;&nbsp;</a></span>one_shot() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Algorithm &gt; </div>
 <div class="memtemplate">
-template&lt;typename Ptr &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1crypto_1_1hmac__t.html">sal::crypto::hmac_t</a>&lt; Algorithm &gt;::finish </td>
-          <td>(</td>
-          <td class="paramtype">const Ptr &amp;&#160;</td>
-          <td class="paramname"><em>digest</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Calculate HMAC of previously added data and store it into <em>digest</em>. </p>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if digest.size() &lt; <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a5e53750aadc4a3bfd516f443ecdee39b" title="Return number of bytes in HMAC digest. ">digest_size()</a> </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="aa4bad345284c2d77590abbc16473660a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa4bad345284c2d77590abbc16473660a">&#9670;&nbsp;</a></span>one_shot() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Algorithm &gt; </div>
-<div class="memtemplate">
-template&lt;typename KeyPtr , typename DataPtr , typename DigestPtr &gt; </div>
+template&lt;typename DataIt , typename DigestIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -303,20 +279,26 @@ template&lt;typename KeyPtr , typename DataPtr , typename DigestPtr &gt; </div>
         <tr>
           <td class="memname">static void <a class="el" href="classsal_1_1crypto_1_1hmac__t.html">sal::crypto::hmac_t</a>&lt; Algorithm &gt;::one_shot </td>
           <td>(</td>
-          <td class="paramtype">const KeyPtr &amp;&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
+          <td class="paramtype">DataIt&#160;</td>
+          <td class="paramname"><em>data_first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const DataPtr &amp;&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
+          <td class="paramtype">DataIt&#160;</td>
+          <td class="paramname"><em>data_last</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const DigestPtr &amp;&#160;</td>
-          <td class="paramname"><em>digest</em>&#160;</td>
+          <td class="paramtype">DigestIt&#160;</td>
+          <td class="paramname"><em>digest_first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DigestIt&#160;</td>
+          <td class="paramname"><em>digest_last</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -331,25 +313,25 @@ template&lt;typename KeyPtr , typename DataPtr , typename DigestPtr &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Calculate HMAC of <em>data</em> using <em>key</em> and store result into <em>digest</em>. </p>
+<p>Calculate HMAC over [<em>data_first</em>, <em>data_last</em>) without key and write result into [<em>digest_first</em>, <em>digest_last</em>). </p>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if digest.size() &lt; <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a5e53750aadc4a3bfd516f443ecdee39b" title="Return number of bytes in HMAC digest. ">digest_size()</a> </td></tr>
+    <tr><td class="paramname">std::logic_error</td><td>if area [<em>digest_first</em>, <em>digest_last</em>) is less than digest_size </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a6d6296cb4b00b1f2d4463a2025cc0b5c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6d6296cb4b00b1f2d4463a2025cc0b5c">&#9670;&nbsp;</a></span>one_shot() <span class="overload">[2/2]</span></h2>
+<a id="a028f7673e250dcb553583c827adf3f1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a028f7673e250dcb553583c827adf3f1e">&#9670;&nbsp;</a></span>one_shot() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Algorithm &gt; </div>
 <div class="memtemplate">
-template&lt;typename DataPtr , typename DigestPtr &gt; </div>
+template&lt;typename KeyIt , typename DataIt , typename DigestIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -357,14 +339,38 @@ template&lt;typename DataPtr , typename DigestPtr &gt; </div>
         <tr>
           <td class="memname">static void <a class="el" href="classsal_1_1crypto_1_1hmac__t.html">sal::crypto::hmac_t</a>&lt; Algorithm &gt;::one_shot </td>
           <td>(</td>
-          <td class="paramtype">const DataPtr &amp;&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
+          <td class="paramtype">KeyIt&#160;</td>
+          <td class="paramname"><em>key_first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const DigestPtr &amp;&#160;</td>
-          <td class="paramname"><em>digest</em>&#160;</td>
+          <td class="paramtype">KeyIt&#160;</td>
+          <td class="paramname"><em>key_last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DataIt&#160;</td>
+          <td class="paramname"><em>data_first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DataIt&#160;</td>
+          <td class="paramname"><em>data_last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DigestIt&#160;</td>
+          <td class="paramname"><em>digest_first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DigestIt&#160;</td>
+          <td class="paramname"><em>digest_last</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -379,10 +385,10 @@ template&lt;typename DataPtr , typename DigestPtr &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Calculate HMAC of <em>data</em> without key and store result into <em>digest</em>. </p>
+<p>Calculate HMAC over [<em>data_first</em>, <em>data_last</em>) using key in [<em>key_first</em>, <em>key_last</em>) and write result into [<em>digest_first</em>, <em>digest_last</em>). </p>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if digest.size() &lt; <a class="el" href="classsal_1_1crypto_1_1hmac__t.html#a5e53750aadc4a3bfd516f443ecdee39b" title="Return number of bytes in HMAC digest. ">digest_size()</a> </td></tr>
+    <tr><td class="paramname">std::logic_error</td><td>if area [<em>digest_first</em>, <em>digest_last</em>) is less than digest_size </td></tr>
   </table>
   </dd>
 </dl>

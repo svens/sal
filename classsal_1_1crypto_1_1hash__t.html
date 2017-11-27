@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.22.0</span>
+   &#160;<span id="projectnumber">0.23.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -92,6 +92,7 @@ $(document).ready(function(){initNavTree('classsal_1_1crypto_1_1hash__t.html',''
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="classsal_1_1crypto_1_1hash__t-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">sal::crypto::hash_t&lt; Algorithm &gt; Class Template Reference</div>  </div>
@@ -128,43 +129,51 @@ template&lt;typename It &gt; </td></tr>
 <tr class="memitem:abba70fdcde89a3097e060e91ed27f887"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#abba70fdcde89a3097e060e91ed27f887">update</a> (It first, It last)</td></tr>
 <tr class="memdesc:abba70fdcde89a3097e060e91ed27f887"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add region [<em>first</em>, <em>last</em>) into hasher. <br /></td></tr>
 <tr class="separator:abba70fdcde89a3097e060e91ed27f887"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5f0a12238aa0d977bfaf3b70a7fed1e"><td class="memTemplParams" colspan="2"><a id="ad5f0a12238aa0d977bfaf3b70a7fed1e"></a>
-template&lt;typename Ptr &gt; </td></tr>
-<tr class="memitem:ad5f0a12238aa0d977bfaf3b70a7fed1e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#ad5f0a12238aa0d977bfaf3b70a7fed1e">update</a> (const Ptr &amp;data)</td></tr>
-<tr class="memdesc:ad5f0a12238aa0d977bfaf3b70a7fed1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add more <em>data</em> into hasher. <br /></td></tr>
-<tr class="separator:ad5f0a12238aa0d977bfaf3b70a7fed1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab28e9de02c8085273446063f0b98ab1f"><td class="memTemplParams" colspan="2"><a id="ab28e9de02c8085273446063f0b98ab1f"></a>
+template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:ab28e9de02c8085273446063f0b98ab1f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#ab28e9de02c8085273446063f0b98ab1f">update</a> (const Data &amp;data)</td></tr>
+<tr class="memdesc:ab28e9de02c8085273446063f0b98ab1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add more <em>data</em> into hasher. <br /></td></tr>
+<tr class="separator:ab28e9de02c8085273446063f0b98ab1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a62468ede749370a0afb2e45312487ce9"><td class="memTemplParams" colspan="2">template&lt;typename It &gt; </td></tr>
 <tr class="memitem:a62468ede749370a0afb2e45312487ce9"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#a62468ede749370a0afb2e45312487ce9">finish</a> (It first, It last)</td></tr>
 <tr class="memdesc:a62468ede749370a0afb2e45312487ce9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate hash of previously added data and store into region starting at <em>first</em>.  <a href="#a62468ede749370a0afb2e45312487ce9">More...</a><br /></td></tr>
 <tr class="separator:a62468ede749370a0afb2e45312487ce9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad3cef5109666f697be6db84e64ae5c14"><td class="memTemplParams" colspan="2">template&lt;typename Ptr &gt; </td></tr>
-<tr class="memitem:ad3cef5109666f697be6db84e64ae5c14"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#ad3cef5109666f697be6db84e64ae5c14">finish</a> (const Ptr &amp;digest)</td></tr>
-<tr class="memdesc:ad3cef5109666f697be6db84e64ae5c14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate hash of previously added data and store it into <em>digest</em>.  <a href="#ad3cef5109666f697be6db84e64ae5c14">More...</a><br /></td></tr>
-<tr class="separator:ad3cef5109666f697be6db84e64ae5c14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b473480f1ab72946e4fb3a082cb03b2"><td class="memItemLeft" align="right" valign="top"><a id="a3b473480f1ab72946e4fb3a082cb03b2"></a>
+std::array&lt; uint8_t, <a class="el" href="classsal_1_1crypto_1_1hash__t.html#aadda9face41201c439e527561e1fa857">digest_size</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#a3b473480f1ab72946e4fb3a082cb03b2">finish</a> ()</td></tr>
+<tr class="memdesc:a3b473480f1ab72946e4fb3a082cb03b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate hash of previously added data and return result as array. <br /></td></tr>
+<tr class="separator:a3b473480f1ab72946e4fb3a082cb03b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a94a76a33f57cd7c9eb1e1ac98b6030a2"><td class="memItemLeft" align="right" valign="top"><a id="a94a76a33f57cd7c9eb1e1ac98b6030a2"></a>
-static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#a94a76a33f57cd7c9eb1e1ac98b6030a2">digest_size</a> () noexcept</td></tr>
-<tr class="memdesc:a94a76a33f57cd7c9eb1e1ac98b6030a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes in hash digest. <br /></td></tr>
-<tr class="separator:a94a76a33f57cd7c9eb1e1ac98b6030a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab441599ac3742760c47cbe372db4759e"><td class="memTemplParams" colspan="2">template&lt;typename DataPtr , typename DigestPtr &gt; </td></tr>
-<tr class="memitem:ab441599ac3742760c47cbe372db4759e"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#ab441599ac3742760c47cbe372db4759e">one_shot</a> (const DataPtr &amp;data, const DigestPtr &amp;digest)</td></tr>
-<tr class="memdesc:ab441599ac3742760c47cbe372db4759e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate hash of <em>data</em> and store result into <em>digest</em>.  <a href="#ab441599ac3742760c47cbe372db4759e">More...</a><br /></td></tr>
-<tr class="separator:ab441599ac3742760c47cbe372db4759e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb34b0f357c6dea2423155d0d6379778"><td class="memTemplParams" colspan="2"><a id="abb34b0f357c6dea2423155d0d6379778"></a>
-template&lt;typename DataPtr &gt; </td></tr>
-<tr class="memitem:abb34b0f357c6dea2423155d0d6379778"><td class="memTemplItemLeft" align="right" valign="top">static std::vector&lt; uint8_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#abb34b0f357c6dea2423155d0d6379778">one_shot</a> (const DataPtr &amp;data)</td></tr>
-<tr class="memdesc:abb34b0f357c6dea2423155d0d6379778"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience wrapper for <a class="el" href="classsal_1_1crypto_1_1hash__t.html#ab441599ac3742760c47cbe372db4759e" title="Calculate hash of data and store result into digest. ">one_shot()</a> to preallocate, fill and return digest in vector of bytes. <br /></td></tr>
-<tr class="separator:abb34b0f357c6dea2423155d0d6379778"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b78ed38c72b2e639b95982abc476bda"><td class="memTemplParams" colspan="2">template&lt;typename It , typename DigestIt &gt; </td></tr>
+<tr class="memitem:a7b78ed38c72b2e639b95982abc476bda"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#a7b78ed38c72b2e639b95982abc476bda">one_shot</a> (It first, It last, DigestIt digest_first, DigestIt digest_last)</td></tr>
+<tr class="memdesc:a7b78ed38c72b2e639b95982abc476bda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate hash of range [<em>first</em>, <em>last</em>) and store result into range [<em>digest_first</em>, <em>digest_last</em>).  <a href="#a7b78ed38c72b2e639b95982abc476bda">More...</a><br /></td></tr>
+<tr class="separator:a7b78ed38c72b2e639b95982abc476bda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a006462c547e15aa139cdb16e7bd948f3"><td class="memTemplParams" colspan="2"><a id="a006462c547e15aa139cdb16e7bd948f3"></a>
+template&lt;typename It &gt; </td></tr>
+<tr class="memitem:a006462c547e15aa139cdb16e7bd948f3"><td class="memTemplItemLeft" align="right" valign="top">static std::array&lt; uint8_t, <a class="el" href="classsal_1_1crypto_1_1hash__t.html#aadda9face41201c439e527561e1fa857">digest_size</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#a006462c547e15aa139cdb16e7bd948f3">one_shot</a> (It first, It last)</td></tr>
+<tr class="memdesc:a006462c547e15aa139cdb16e7bd948f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate hash of range [<em>first</em>, <em>last</em>) and return result as array. <br /></td></tr>
+<tr class="separator:a006462c547e15aa139cdb16e7bd948f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8c4ea278ef4a0054b843436c55b3ed2"><td class="memTemplParams" colspan="2"><a id="ad8c4ea278ef4a0054b843436c55b3ed2"></a>
+template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:ad8c4ea278ef4a0054b843436c55b3ed2"><td class="memTemplItemLeft" align="right" valign="top">static std::array&lt; uint8_t, <a class="el" href="classsal_1_1crypto_1_1hash__t.html#aadda9face41201c439e527561e1fa857">digest_size</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#ad8c4ea278ef4a0054b843436c55b3ed2">one_shot</a> (const Data &amp;data)</td></tr>
+<tr class="memdesc:ad8c4ea278ef4a0054b843436c55b3ed2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate hash of <em>data</em> and return result as array. <br /></td></tr>
+<tr class="separator:ad8c4ea278ef4a0054b843436c55b3ed2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aadda9face41201c439e527561e1fa857"><td class="memItemLeft" align="right" valign="top"><a id="aadda9face41201c439e527561e1fa857"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html#aadda9face41201c439e527561e1fa857">digest_size</a> = __bits::digest_size_v&lt;Algorithm&gt;</td></tr>
+<tr class="memdesc:aadda9face41201c439e527561e1fa857"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of bytes in hash digest result. <br /></td></tr>
+<tr class="separator:aadda9face41201c439e527561e1fa857"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename Algorithm&gt;<br />
 class sal::crypto::hash_t&lt; Algorithm &gt;</h3>
 
 <p>One way <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic hashing</a> using <em>Algorithm</em>. </p>
-<p>If full data is already in continuous memory region, call static <a class="el" href="classsal_1_1crypto_1_1hash__t.html#ab441599ac3742760c47cbe372db4759e" title="Calculate hash of data and store result into digest. ">one_shot()</a> to calculate digest immediately.</p>
-<p>If data is not completely stored in memory, instantiate this class and add new data in one or more calls to <a class="el" href="classsal_1_1crypto_1_1hash__t.html#abba70fdcde89a3097e060e91ed27f887" title="Add region [first, last) into hasher. ">update()</a>. Once full data has been fed into hasher, call <a class="el" href="classsal_1_1crypto_1_1hash__t.html#a62468ede749370a0afb2e45312487ce9" title="Calculate hash of previously added data and store into region starting at first. ">finish()</a> to fetch calculated digest. Application can immediately reuse instance after call to <a class="el" href="classsal_1_1crypto_1_1hash__t.html#a62468ede749370a0afb2e45312487ce9" title="Calculate hash of previously added data and store into region starting at first. ">finish()</a>, it is re-initialized internally. </p>
+<p>If full data is already in continuous memory region, call static <a class="el" href="classsal_1_1crypto_1_1hash__t.html#a7b78ed38c72b2e639b95982abc476bda" title="Calculate hash of range [first, last) and store result into range [digest_first, digest_last). ">one_shot()</a> to calculate digest immediately.</p>
+<p>If data is not completely stored in memory, instantiate this class and add new data in one or more calls to <a class="el" href="classsal_1_1crypto_1_1hash__t.html#abba70fdcde89a3097e060e91ed27f887" title="Add region [first, last) into hasher. ">update()</a>. Once full data has been fed into hasher, call <a class="el" href="classsal_1_1crypto_1_1hash__t.html#a3b473480f1ab72946e4fb3a082cb03b2" title="Calculate hash of previously added data and return result as array. ">finish()</a> to fetch calculated digest. Application can immediately reuse instance after call to <a class="el" href="classsal_1_1crypto_1_1hash__t.html#a3b473480f1ab72946e4fb3a082cb03b2" title="Calculate hash of previously added data and return result as array. ">finish()</a>, it is re-initialized internally. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ad363a7c2282a26b70bb7bdd05616a32d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad363a7c2282a26b70bb7bdd05616a32d">&#9670;&nbsp;</a></span>hash_t()</h2>
@@ -172,7 +181,7 @@ class sal::crypto::hash_t&lt; Algorithm &gt;</h3>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Algorithm &gt; </div>
+template&lt;typename Algorithm&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -199,12 +208,12 @@ template&lt;typename Algorithm &gt; </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a62468ede749370a0afb2e45312487ce9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a62468ede749370a0afb2e45312487ce9">&#9670;&nbsp;</a></span>finish() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a62468ede749370a0afb2e45312487ce9">&#9670;&nbsp;</a></span>finish()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Algorithm &gt; </div>
+template&lt;typename Algorithm&gt; </div>
 <div class="memtemplate">
 template&lt;typename It &gt; </div>
 <table class="mlabels">
@@ -237,57 +246,19 @@ template&lt;typename It &gt; </div>
 </div><div class="memdoc">
 
 <p>Calculate hash of previously added data and store into region starting at <em>first</em>. </p>
-<p>If size of region [<em>first</em>, <em>last</em>) is less than <a class="el" href="classsal_1_1crypto_1_1hash__t.html#a94a76a33f57cd7c9eb1e1ac98b6030a2" title="Return number of bytes in hash digest. ">digest_size()</a>, throw std::logic_error </p>
+<p>If size of region [<em>first</em>, <em>last</em>) is less than digest_size, throw std::logic_error </p>
 
 </div>
 </div>
-<a id="ad3cef5109666f697be6db84e64ae5c14"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad3cef5109666f697be6db84e64ae5c14">&#9670;&nbsp;</a></span>finish() <span class="overload">[2/2]</span></h2>
+<a id="a7b78ed38c72b2e639b95982abc476bda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b78ed38c72b2e639b95982abc476bda">&#9670;&nbsp;</a></span>one_shot()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Algorithm &gt; </div>
+template&lt;typename Algorithm&gt; </div>
 <div class="memtemplate">
-template&lt;typename Ptr &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1crypto_1_1hash__t.html">sal::crypto::hash_t</a>&lt; Algorithm &gt;::finish </td>
-          <td>(</td>
-          <td class="paramtype">const Ptr &amp;&#160;</td>
-          <td class="paramname"><em>digest</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Calculate hash of previously added data and store it into <em>digest</em>. </p>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if digest.size() &lt; <a class="el" href="classsal_1_1crypto_1_1hash__t.html#a94a76a33f57cd7c9eb1e1ac98b6030a2" title="Return number of bytes in hash digest. ">digest_size()</a> </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ab441599ac3742760c47cbe372db4759e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab441599ac3742760c47cbe372db4759e">&#9670;&nbsp;</a></span>one_shot()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Algorithm &gt; </div>
-<div class="memtemplate">
-template&lt;typename DataPtr , typename DigestPtr &gt; </div>
+template&lt;typename It , typename DigestIt &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -295,14 +266,26 @@ template&lt;typename DataPtr , typename DigestPtr &gt; </div>
         <tr>
           <td class="memname">static void <a class="el" href="classsal_1_1crypto_1_1hash__t.html">sal::crypto::hash_t</a>&lt; Algorithm &gt;::one_shot </td>
           <td>(</td>
-          <td class="paramtype">const DataPtr &amp;&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
+          <td class="paramtype">It&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const DigestPtr &amp;&#160;</td>
-          <td class="paramname"><em>digest</em>&#160;</td>
+          <td class="paramtype">It&#160;</td>
+          <td class="paramname"><em>last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DigestIt&#160;</td>
+          <td class="paramname"><em>digest_first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DigestIt&#160;</td>
+          <td class="paramname"><em>digest_last</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -317,10 +300,10 @@ template&lt;typename DataPtr , typename DigestPtr &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Calculate hash of <em>data</em> and store result into <em>digest</em>. </p>
+<p>Calculate hash of range [<em>first</em>, <em>last</em>) and store result into range [<em>digest_first</em>, <em>digest_last</em>). </p>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if digest.size() &lt; <a class="el" href="classsal_1_1crypto_1_1hash__t.html#a94a76a33f57cd7c9eb1e1ac98b6030a2" title="Return number of bytes in hash digest. ">digest_size()</a> </td></tr>
+    <tr><td class="paramname">std::logic_error</td><td>if size of [<em>digest_first</em>, <em>digest_last</em>) &lt; digest_size </td></tr>
   </table>
   </dd>
 </dl>
@@ -333,7 +316,7 @@ template&lt;typename DataPtr , typename DigestPtr &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Algorithm &gt; </div>
+template&lt;typename Algorithm&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">

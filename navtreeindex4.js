@@ -1,5 +1,7 @@
 var NAVTREEINDEX4 =
 {
+"functions_func_b.html":[7,3,1,1],
+"functions_func_c.html":[7,3,1,2],
 "functions_func_d.html":[7,3,1,3],
 "functions_func_e.html":[7,3,1,4],
 "functions_func_f.html":[7,3,1,5],
@@ -111,12 +113,12 @@ var NAVTREEINDEX4 =
 "namespacesal_1_1crypto.html":[6,0,0,0],
 "namespacesal_1_1logger.html":[6,0,0,1],
 "namespacesal_1_1logger.html":[7,0,0,1],
-"namespacesal_1_1net.html":[7,0,0,2],
 "namespacesal_1_1net.html":[6,0,0,2],
+"namespacesal_1_1net.html":[7,0,0,2],
 "namespacesal_1_1net_1_1ip.html":[6,0,0,2,0],
 "namespacesal_1_1net_1_1ip.html":[7,0,0,2,0],
-"namespacesal_1_1program__options.html":[7,0,0,3],
 "namespacesal_1_1program__options.html":[6,0,0,3],
+"namespacesal_1_1program__options.html":[7,0,0,3],
 "namespacesal_1_1this__thread.html":[6,0,0,4],
 "net_2error_8hpp.html":[8,0,0,2,6],
 "net_2error_8hpp.html#a2339c77f561c747e51a31ed6c401015c":[8,0,0,2,6,4],
@@ -170,8 +172,8 @@ var NAVTREEINDEX4 =
 "queue_8hpp.html":[8,0,0,18],
 "queue_8hpp_source.html":[8,0,0,18],
 "random_8hpp.html":[8,0,0,0,6],
-"random_8hpp.html#a9fff7a81c3f6dc47c3e5970fbe84320b":[8,0,0,0,6,0],
-"random_8hpp.html#adc1ff1db19042394b78778a5c6ef749a":[8,0,0,0,6,1],
+"random_8hpp.html#a05aa6ad00796312e52fbcb3c0ced40f4":[8,0,0,0,6,1],
+"random_8hpp.html#adc1ff1db19042394b78778a5c6ef749a":[8,0,0,0,6,0],
 "random_8hpp_source.html":[8,0,0,0,6],
 "resolver_8hpp.html":[8,0,0,2,0,8],
 "resolver_8hpp_source.html":[8,0,0,2,0,8],
@@ -247,7 +249,5 @@ var NAVTREEINDEX4 =
 "structsal_1_1program__options_1_1empty__option__name__error.html":[7,0,0,3,4],
 "structsal_1_1program__options_1_1invalid__option__name__error.html":[7,0,0,3,5],
 "structsal_1_1program__options_1_1no__option__name__error.html":[7,0,0,3,6],
-"structsal_1_1program__options_1_1option__rejects__argument__error.html":[7,0,0,3,7],
-"structsal_1_1program__options_1_1option__requires__argument__error.html":[7,0,0,3,8],
-"structsal_1_1program__options_1_1option__t.html":[7,0,0,3,10]
+"structsal_1_1program__options_1_1option__rejects__argument__error.html":[7,0,0,3,7]
 };

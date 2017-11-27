@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.22.0</span>
+   &#160;<span id="projectnumber">0.23.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -141,15 +141,22 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a59a5ce59ca7d44cd80bf1570a93b6a17"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html#a59a5ce59ca7d44cd80bf1570a93b6a17">block_size</a> () const noexcept</td></tr>
 <tr class="memdesc:a59a5ce59ca7d44cd80bf1570a93b6a17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return block length associated with key.  <a href="#a59a5ce59ca7d44cd80bf1570a93b6a17">More...</a><br /></td></tr>
 <tr class="separator:a59a5ce59ca7d44cd80bf1570a93b6a17"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d1f3a74ff52be253c2942f70a8cd9b9"><td class="memTemplParams" colspan="2">template&lt;typename Digest , typename Data , typename Signature &gt; </td></tr>
-<tr class="memitem:a5d1f3a74ff52be253c2942f70a8cd9b9"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html#a5d1f3a74ff52be253c2942f70a8cd9b9">verify_signature</a> (Digest, const Data &amp;data, const Signature &amp;signature, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a5d1f3a74ff52be253c2942f70a8cd9b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify if <em>signature</em> is valid for <em>data</em> signed with corresponding private key using <em>digest</em>.  <a href="#a5d1f3a74ff52be253c2942f70a8cd9b9">More...</a><br /></td></tr>
-<tr class="separator:a5d1f3a74ff52be253c2942f70a8cd9b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adedaf9c2198bd0c26d393b59ce6b9142"><td class="memTemplParams" colspan="2"><a id="adedaf9c2198bd0c26d393b59ce6b9142"></a>
-template&lt;typename Digest , typename Data , typename Signature &gt; </td></tr>
-<tr class="memitem:adedaf9c2198bd0c26d393b59ce6b9142"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html#adedaf9c2198bd0c26d393b59ce6b9142">verify_signature</a> (Digest digest, const Data &amp;data, const Signature &amp;signature)</td></tr>
-<tr class="memdesc:adedaf9c2198bd0c26d393b59ce6b9142"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify if <em>signature</em> is valid for <em>data</em> signed with corresponding private key using <em>digest</em>. <br /></td></tr>
-<tr class="separator:adedaf9c2198bd0c26d393b59ce6b9142"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b8ccfc0e332b5422f52af98d15c35d5"><td class="memTemplParams" colspan="2">template&lt;typename Digest , typename DataIt , typename SignatureIt &gt; </td></tr>
+<tr class="memitem:a4b8ccfc0e332b5422f52af98d15c35d5"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html#a4b8ccfc0e332b5422f52af98d15c35d5">verify_signature</a> (Digest, DataIt first, DataIt last, SignatureIt signature_first, SignatureIt signature_last, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a4b8ccfc0e332b5422f52af98d15c35d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify if signature [<em>signature_first</em>, <em>signature_last</em>) is valid for [<em>first</em>, <em>last</em>) signed with corresponding private key using <em>Digest</em> algorithm.  <a href="#a4b8ccfc0e332b5422f52af98d15c35d5">More...</a><br /></td></tr>
+<tr class="separator:a4b8ccfc0e332b5422f52af98d15c35d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b5e850a60d8fc3083a6521aa9bb1588"><td class="memTemplParams" colspan="2">template&lt;typename Digest , typename DataIt , typename SignatureIt &gt; </td></tr>
+<tr class="memitem:a5b5e850a60d8fc3083a6521aa9bb1588"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html#a5b5e850a60d8fc3083a6521aa9bb1588">verify_signature</a> (Digest digest, DataIt first, DataIt last, SignatureIt signature_first, SignatureIt signature_last)</td></tr>
+<tr class="memdesc:a5b5e850a60d8fc3083a6521aa9bb1588"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify if signature [<em>signature_first</em>, <em>signature_last</em>) is valid for [<em>first</em>, <em>last</em>) signed with corresponding private key using <em>Digest</em> algorithm.  <a href="#a5b5e850a60d8fc3083a6521aa9bb1588">More...</a><br /></td></tr>
+<tr class="separator:a5b5e850a60d8fc3083a6521aa9bb1588"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa79771c7b307b3866a8c656ad4757165"><td class="memTemplParams" colspan="2">template&lt;typename Digest , typename Data , typename Signature &gt; </td></tr>
+<tr class="memitem:aa79771c7b307b3866a8c656ad4757165"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html#aa79771c7b307b3866a8c656ad4757165">verify_signature</a> (Digest digest, const Data &amp;data, const Signature &amp;signature, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:aa79771c7b307b3866a8c656ad4757165"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify if <em>signature</em> is valid for <em>data</em> signed with corresponding private key using <em>digest</em>.  <a href="#aa79771c7b307b3866a8c656ad4757165">More...</a><br /></td></tr>
+<tr class="separator:aa79771c7b307b3866a8c656ad4757165"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82d45577eaaa6cfa3023804cc493ce60"><td class="memTemplParams" colspan="2">template&lt;typename Digest , typename Data , typename Signature &gt; </td></tr>
+<tr class="memitem:a82d45577eaaa6cfa3023804cc493ce60"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html#a82d45577eaaa6cfa3023804cc493ce60">verify_signature</a> (Digest digest, const Data &amp;data, const Signature &amp;signature) noexcept</td></tr>
+<tr class="memdesc:a82d45577eaaa6cfa3023804cc493ce60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify if <em>signature</em> is valid for <em>data</em> signed with corresponding private key using <em>digest</em>.  <a href="#a82d45577eaaa6cfa3023804cc493ce60">More...</a><br /></td></tr>
+<tr class="separator:a82d45577eaaa6cfa3023804cc493ce60"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -216,8 +223,132 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>certificate_t</b></t
 
 </div>
 </div>
-<a id="a5d1f3a74ff52be253c2942f70a8cd9b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5d1f3a74ff52be253c2942f70a8cd9b9">&#9670;&nbsp;</a></span>verify_signature()</h2>
+<a id="a4b8ccfc0e332b5422f52af98d15c35d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b8ccfc0e332b5422f52af98d15c35d5">&#9670;&nbsp;</a></span>verify_signature() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Digest , typename DataIt , typename SignatureIt &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool sal::crypto::public_key_t::verify_signature </td>
+          <td>(</td>
+          <td class="paramtype">Digest&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DataIt&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DataIt&#160;</td>
+          <td class="paramname"><em>last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">SignatureIt&#160;</td>
+          <td class="paramname"><em>signature_first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">SignatureIt&#160;</td>
+          <td class="paramname"><em>signature_last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::error_code &amp;&#160;</td>
+          <td class="paramname"><em>error</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify if signature [<em>signature_first</em>, <em>signature_last</em>) is valid for [<em>first</em>, <em>last</em>) signed with corresponding private key using <em>Digest</em> algorithm. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if <em>signature</em> is valid </dd></dl>
+
+</div>
+</div>
+<a id="a5b5e850a60d8fc3083a6521aa9bb1588"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b5e850a60d8fc3083a6521aa9bb1588">&#9670;&nbsp;</a></span>verify_signature() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Digest , typename DataIt , typename SignatureIt &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool sal::crypto::public_key_t::verify_signature </td>
+          <td>(</td>
+          <td class="paramtype">Digest&#160;</td>
+          <td class="paramname"><em>digest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DataIt&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DataIt&#160;</td>
+          <td class="paramname"><em>last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">SignatureIt&#160;</td>
+          <td class="paramname"><em>signature_first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">SignatureIt&#160;</td>
+          <td class="paramname"><em>signature_last</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify if signature [<em>signature_first</em>, <em>signature_last</em>) is valid for [<em>first</em>, <em>last</em>) signed with corresponding private key using <em>Digest</em> algorithm. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if <em>signature</em> is valid </dd></dl>
+
+</div>
+</div>
+<a id="aa79771c7b307b3866a8c656ad4757165"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa79771c7b307b3866a8c656ad4757165">&#9670;&nbsp;</a></span>verify_signature() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -231,7 +362,7 @@ template&lt;typename Digest , typename Data , typename Signature &gt; </div>
           <td class="memname">bool sal::crypto::public_key_t::verify_signature </td>
           <td>(</td>
           <td class="paramtype">Digest&#160;</td>
-          <td class="paramname">, </td>
+          <td class="paramname"><em>digest</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -250,6 +381,53 @@ template&lt;typename Digest , typename Data , typename Signature &gt; </div>
           <td></td>
           <td class="paramtype">std::error_code &amp;&#160;</td>
           <td class="paramname"><em>error</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify if <em>signature</em> is valid for <em>data</em> signed with corresponding private key using <em>digest</em>. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if <em>signature</em> is valid </dd></dl>
+
+</div>
+</div>
+<a id="a82d45577eaaa6cfa3023804cc493ce60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82d45577eaaa6cfa3023804cc493ce60">&#9670;&nbsp;</a></span>verify_signature() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Digest , typename Data , typename Signature &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool sal::crypto::public_key_t::verify_signature </td>
+          <td>(</td>
+          <td class="paramtype">Digest&#160;</td>
+          <td class="paramname"><em>digest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Data &amp;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Signature &amp;&#160;</td>
+          <td class="paramname"><em>signature</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

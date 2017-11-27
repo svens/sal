@@ -10,7 +10,9 @@ var classsal_1_1crypto_1_1public__key__t =
     [ "operator=", "classsal_1_1crypto_1_1public__key__t.html#a6eccfd3cfd41d8c898237ac4b95e6893", null ],
     [ "operator=", "classsal_1_1crypto_1_1public__key__t.html#a00f3a7c0eb15b960f331c93b39917147", null ],
     [ "swap", "classsal_1_1crypto_1_1public__key__t.html#a6d2c6adbdf8ce006102ec9edaa089dcb", null ],
-    [ "verify_signature", "classsal_1_1crypto_1_1public__key__t.html#a5d1f3a74ff52be253c2942f70a8cd9b9", null ],
-    [ "verify_signature", "classsal_1_1crypto_1_1public__key__t.html#adedaf9c2198bd0c26d393b59ce6b9142", null ],
+    [ "verify_signature", "classsal_1_1crypto_1_1public__key__t.html#a4b8ccfc0e332b5422f52af98d15c35d5", null ],
+    [ "verify_signature", "classsal_1_1crypto_1_1public__key__t.html#a5b5e850a60d8fc3083a6521aa9bb1588", null ],
+    [ "verify_signature", "classsal_1_1crypto_1_1public__key__t.html#aa79771c7b307b3866a8c656ad4757165", null ],
+    [ "verify_signature", "classsal_1_1crypto_1_1public__key__t.html#a82d45577eaaa6cfa3023804cc493ce60", null ],
     [ "certificate_t", "classsal_1_1crypto_1_1public__key__t.html#a7481a5378d8db0088a1c0504da1bfc8a", null ]
 ];

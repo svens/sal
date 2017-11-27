@@ -32,7 +32,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.22.0</span>
+   &#160;<span id="projectnumber">0.23.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('random_8hpp.html','');});
 <p>Cryptographic random generation.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
-<code>#include &lt;memory&gt;</code><br />
+<code>#include &lt;<a class="el" href="memory_8hpp_source.html">sal/memory.hpp</a>&gt;</code><br />
 </div>
 <p><a href="random_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -112,16 +112,16 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a9fff7a81c3f6dc47c3e5970fbe84320b"><td class="memTemplParams" colspan="2"><a id="a9fff7a81c3f6dc47c3e5970fbe84320b"></a>
-template&lt;typename Ptr &gt; </td></tr>
-<tr class="memitem:a9fff7a81c3f6dc47c3e5970fbe84320b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a9fff7a81c3f6dc47c3e5970fbe84320b">sal::crypto::random</a> (const Ptr &amp;data)</td></tr>
-<tr class="memdesc:a9fff7a81c3f6dc47c3e5970fbe84320b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill <em>data</em> with cryptographically strong random bytes suitable for cryptographic keys, nonces, etc. <br /></td></tr>
-<tr class="separator:a9fff7a81c3f6dc47c3e5970fbe84320b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc1ff1db19042394b78778a5c6ef749a"><td class="memTemplParams" colspan="2"><a id="adc1ff1db19042394b78778a5c6ef749a"></a>
 template&lt;typename It &gt; </td></tr>
 <tr class="memitem:adc1ff1db19042394b78778a5c6ef749a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#adc1ff1db19042394b78778a5c6ef749a">sal::crypto::random</a> (It first, It last)</td></tr>
 <tr class="memdesc:adc1ff1db19042394b78778a5c6ef749a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill range [<em>first</em>, <em>last</em>) with cryptographically strong random bytes suitable for cryptographic keys, nonces, etc. <br /></td></tr>
 <tr class="separator:adc1ff1db19042394b78778a5c6ef749a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05aa6ad00796312e52fbcb3c0ced40f4"><td class="memTemplParams" colspan="2"><a id="a05aa6ad00796312e52fbcb3c0ced40f4"></a>
+template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:a05aa6ad00796312e52fbcb3c0ced40f4"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a05aa6ad00796312e52fbcb3c0ced40f4">sal::crypto::random</a> (Data &amp;data)</td></tr>
+<tr class="memdesc:a05aa6ad00796312e52fbcb3c0ced40f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill <em>data</em> with cryptographically strong random bytes suitable for cryptographic keys, nonces, etc. <br /></td></tr>
+<tr class="separator:a05aa6ad00796312e52fbcb3c0ced40f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Cryptographic random generation. </p>
