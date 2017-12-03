@@ -1,4 +1,5 @@
 find_package(Doxygen)
+
 if(DOXYGEN_FOUND)
   configure_file(
     ${PROJECT_SOURCE_DIR}/cmake/Doxyfile.in
