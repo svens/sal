@@ -24,7 +24,7 @@ __sal_begin
 namespace version {
 
 /// SAL version as C-string
-constexpr const char *c_str = "@version@";
+constexpr const char *c_str = "@PROJECT_VERSION@";
 
 /// Pack \a major, \a minor and \a patch into single integer
 constexpr uint64_t make (uint32_t major, uint16_t minor, uint16_t patch)
@@ -42,7 +42,7 @@ constexpr uint64_t make (uint32_t major, uint16_t minor, uint16_t patch)
  * }
  * \endcode
  */
-constexpr uint64_t number = make(@version_major@, @version_minor@, @version_patch@);
+constexpr uint64_t number = make(@PROJECT_VERSION_MAJOR@, @PROJECT_VERSION_MINOR@, @PROJECT_VERSION_PATCH@);
 
 } // namespace version
 
