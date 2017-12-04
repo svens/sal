@@ -44,7 +44,7 @@ int main (int argc, const char *argv[])
     }
     else if (config.has("version"))
     {
-      std::cout << "sal " << sal::version::c_str << std::endl;
+      std::cout << "sal " << sal::version << std::endl;
       return EXIT_SUCCESS;
     }
 

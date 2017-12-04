@@ -12,6 +12,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string_view>
 
 
 #define __sal_begin namespace sal { inline namespace v0 {
@@ -21,30 +22,16 @@
 __sal_begin
 
 
-namespace version {
+namespace __bits {
 
-/// SAL version as C-string
-constexpr const char *c_str = "@PROJECT_VERSION@";
+using namespace std::string_view_literals;
+constexpr const auto version = "@PROJECT_VERSION@"sv;
 
-/// Pack \a major, \a minor and \a patch into single integer
-constexpr uint64_t make (uint32_t major, uint16_t minor, uint16_t patch)
-{
-  return (static_cast<uint64_t>(major) << 32)
-    | (static_cast<uint64_t>(minor) << 16)
-    | patch;
-}
+} // namespace __bits
 
-/**
- * SAL version as packed integer. It allows easy version comparison:
- * \code
- * if (sal::version::number >= sal::version::make(1, 2, 3)) {
- *      // ...
- * }
- * \endcode
- */
-constexpr uint64_t number = make(@PROJECT_VERSION_MAJOR@, @PROJECT_VERSION_MINOR@, @PROJECT_VERSION_PATCH@);
 
-} // namespace version
+/// SAL version
+constexpr const std::string_view version = __bits::version;
 
 
 //

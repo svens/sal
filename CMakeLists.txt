@@ -1,7 +1,8 @@
-cmake_policy(VERSION 3.2)
 cmake_minimum_required(VERSION 3.2)
 
-project(sal VERSION 0.23.0)
+project(sal)
+include(cmake/project_version.cmake)
+message(STATUS "Version: ${PROJECT_VERSION}")
 
 
 # Settings {{{1
