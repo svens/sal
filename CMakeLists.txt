@@ -71,30 +71,16 @@ if(UNITTESTS)
   message(STATUS "Building unittests")
   include(cmake/gtest.cmake)
 
-  # build sal unittests
   enable_testing()
-  add_executable(unittests ${sal_unittests})
-  include_directories(${GTEST_INCLUDE_DIRS})
-  if(NOT GTEST_FOUND)
-    add_dependencies(unittests gtest)
-  endif()
 
-  # relax compiler warnings for tests, intentionally creating unhappy paths
-  if(CMAKE_COMPILER_IS_GNUCXX)
-    set_source_files_properties(${sal_unittests}
-      PROPERTIES COMPILE_FLAGS "-Wno-effc++"
-    )
-  elseif(MSVC)
-    set_source_files_properties(${sal_unittests}
-      PROPERTIES COMPILE_FLAGS "/analyze-"
-    )
-  endif()
+  add_executable(unittests ${sal_unittests})
   target_link_libraries(unittests
     sal
-    ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
+    gtest_main
     ${SAL_DEP_LIBS}
   )
+  add_dependencies(unittests gtest)
+
   add_test(unittests unittests)
 endif()
 

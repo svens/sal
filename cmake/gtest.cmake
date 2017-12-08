@@ -1,33 +1,19 @@
-find_package(Threads)
-find_package(GTest QUIET)
-if(NOT GTEST_FOUND)
-  message(STATUS "Building own gtest")
+find_package(Git)
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} submodule update --init tps/googletest
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
-  # download and build
-  include(ExternalProject)
-  ExternalProject_Add(gtest
-    URL https://github.com/google/googletest/archive/release-1.7.0.zip
-    URL_HASH SHA256=b58cb7547a28b2c718d1e38aee18a3659c9e3ff52440297e965f5edffe34b6d0
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest-1.7.0
-    CMAKE_ARGS
-      -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-      -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-      -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND ""
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
+add_subdirectory(tps/googletest)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tps/googletest/include)
+
+# relax compiler checks for tests, intentionally creating unappy paths
+if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+  target_compile_options(gtest
+    PUBLIC -Wno-effc++ -Wno-extra
   )
-
-  # gtest headers
-  ExternalProject_Get_Property(gtest source_dir)
-  set(GTEST_INCLUDE_DIRS ${source_dir}/include)
-
-  # gtest libs
-  ExternalProject_Get_Property(gtest binary_dir)
-  link_directories(${binary_dir})
-  set(GTEST_BOTH_LIBRARIES
-    ${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}
+elseif(MSVC)
+  target_compile_options(gtest
+    PUBLIC /DGTEST_HAS_TR1_TUPLE=0 /DGTEST_HAS_STD_TUPLE=1 /analyze-
   )
 endif()
