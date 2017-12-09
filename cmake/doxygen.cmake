@@ -5,7 +5,7 @@ if(DOXYGEN_FOUND)
     ${PROJECT_SOURCE_DIR}/cmake/Doxyfile.in
     ${CMAKE_BINARY_DIR}/Doxyfile
   )
-  add_custom_target(gen-doc
+  add_custom_target(${PROJECT_NAME}-doc
     ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Generating documentation"

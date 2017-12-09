@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 
 project(sal)
 include(cmake/project_version.cmake)
-message(STATUS "Version: ${PROJECT_VERSION}")
+message(STATUS "sal: ${PROJECT_VERSION}")
 
 
 # Settings {{{1
