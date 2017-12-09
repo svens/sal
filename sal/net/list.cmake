@@ -33,7 +33,7 @@ list(APPEND sal_sources
 
 
 # unittests
-list(APPEND sal_unittests
+list(APPEND sal_unittests_sources
   sal/net/init.test.cpp
   sal/net/async_service.test.cpp
   sal/net/error.test.cpp

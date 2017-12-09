@@ -18,7 +18,7 @@ list(APPEND sal_sources
 
 
 # unittests
-list(APPEND sal_unittests
+list(APPEND sal_unittests_sources
   sal/logger/common.test.hpp
   sal/logger/channel.test.cpp
   sal/logger/file_sink.test.cpp

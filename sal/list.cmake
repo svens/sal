@@ -36,7 +36,7 @@ list(APPEND sal_sources
 
 
 # unittests
-list(APPEND sal_unittests
+list(APPEND sal_unittests_sources
   sal/assert.test.cpp
   sal/buf_ptr.test.cpp
   sal/builtins.test.cpp

@@ -1,4 +1,4 @@
-list(APPEND sal_bench
+list(APPEND sal_bench_sources
   # main
   bench/bench.hpp
   bench/main.cpp

@@ -35,7 +35,7 @@ set_source_files_properties(${CMAKE_BINARY_DIR}/sal/config.hpp
 
 # collect sources from sal/
 set(sal_sources "${CMAKE_BINARY_DIR}/sal/config.hpp")
-set(sal_unittests "")
+set(sal_unittests_sources "")
 include(sal/list.cmake)
 
 # set compiler flags
@@ -73,7 +73,7 @@ if(sal_unittests)
 
   enable_testing()
 
-  add_executable(unittests ${sal_unittests})
+  add_executable(unittests ${sal_unittests_sources})
   target_link_libraries(unittests
     sal
     gtest_main
@@ -92,7 +92,7 @@ if(sal_bench)
 
   find_package(Threads)
 
-  set(sal_bench "")
+  set(sal_bench_sources "")
   set(sal_bench_modules "")
   include(bench/list.cmake)
 
@@ -100,7 +100,7 @@ if(sal_bench)
     get_filename_component(name ${module} NAME_WE)
     set(bench_name "bench_${name}")
     add_executable(${bench_name}
-      ${sal_bench}
+      ${sal_bench_sources}
       ${module}
     )
     target_link_libraries(${bench_name}

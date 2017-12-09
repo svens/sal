@@ -21,7 +21,7 @@ list(APPEND sal_sources
 
 
 # unittests
-list(APPEND sal_unittests
+list(APPEND sal_unittests_sources
   sal/crypto/common.test.hpp
   sal/crypto/common.test.cpp
   sal/crypto/certificate.test.cpp

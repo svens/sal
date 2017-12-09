@@ -12,7 +12,7 @@ list(APPEND sal_sources
 
 
 # unittests
-list(APPEND sal_unittests
+list(APPEND sal_unittests_sources
   sal/program_options/common.test.hpp
   sal/program_options/command_line.test.cpp
   sal/program_options/config_reader.test.cpp
