@@ -8,16 +8,16 @@ message(STATUS "Version: ${PROJECT_VERSION}")
 # Settings {{{1
 
 # optional features
-option(UNITTESTS "Build unittests" ON)
-option(BENCH "Build benchmarking application" OFF)
-option(DOCS "Generate documentation" OFF)
+option(sal_unittests "Build unittests" ON)
+option(sal_bench "Build benchmarking application" OFF)
+option(sal_docs "Generate documentation" OFF)
 
 if(CMAKE_BUILD_TYPE MATCHES Coverage)
   # special case of coverage build
   set(CMAKE_BUILD_TYPE "Debug")
   set(COVERAGE ON)
-  set(UNITTESTS ON)
-  set(BENCH OFF)
+  set(sal_unittests ON)
+  set(sal_bench OFF)
 endif()
 
 
@@ -67,7 +67,7 @@ add_library(sal ${sal_sources})
 
 # Testing targets {{{1
 
-if(UNITTESTS)
+if(sal_unittests)
   message(STATUS "Building unittests")
   include(cmake/gtest.cmake)
 
@@ -87,7 +87,7 @@ endif()
 
 # Benchmarking application {{{1
 
-if(BENCH)
+if(sal_bench)
   message(STATUS "Building benchmarking applications")
 
   find_package(Threads)
@@ -114,7 +114,7 @@ endif()
 
 # Generate documentation {{{1
 
-if(DOCS)
+if(sal_docs)
   message(STATUS "Generate documentation")
   include(cmake/doxygen.cmake)
 endif()
