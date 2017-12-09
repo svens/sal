@@ -70,8 +70,8 @@ var NAVTREEINDEX =
 "classsal_1_1crypto_1_1certificate__t.html#ab82bbf71f095f0ef29b11be461713cec",
 "classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c",
 "classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a515def2af60e747035892a392c99eeed",
-"functions_func_b.html",
-"structsal_1_1program__options_1_1option__requires__argument__error.html"
+"functions_func.html",
+"structsal_1_1program__options_1_1no__option__name__error.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

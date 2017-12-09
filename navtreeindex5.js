@@ -1,5 +1,7 @@
 var NAVTREEINDEX5 =
 {
+"structsal_1_1program__options_1_1no__option__name__error.html":[7,0,0,3,6],
+"structsal_1_1program__options_1_1option__rejects__argument__error.html":[7,0,0,3,7],
 "structsal_1_1program__options_1_1option__requires__argument__error.html":[7,0,0,3,8],
 "structsal_1_1program__options_1_1option__t.html":[7,0,0,3,10],
 "structsal_1_1program__options_1_1option__t.html#a0005a60191c30b646aa12bea9e57d2c7":[7,0,0,3,10,9],

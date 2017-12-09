@@ -1,5 +1,7 @@
 var NAVTREEINDEX4 =
 {
+"functions_func.html":[7,3,1],
+"functions_func_0x7e.html":[7,3,1,21],
 "functions_func_b.html":[7,3,1,1],
 "functions_func_c.html":[7,3,1,2],
 "functions_func_d.html":[7,3,1,3],
@@ -111,8 +113,8 @@ var NAVTREEINDEX4 =
 "namespaces.html":[6,0],
 "namespacesal_1_1crypto.html":[7,0,0,0],
 "namespacesal_1_1crypto.html":[6,0,0,0],
-"namespacesal_1_1logger.html":[6,0,0,1],
 "namespacesal_1_1logger.html":[7,0,0,1],
+"namespacesal_1_1logger.html":[6,0,0,1],
 "namespacesal_1_1net.html":[6,0,0,2],
 "namespacesal_1_1net.html":[7,0,0,2],
 "namespacesal_1_1net_1_1ip.html":[6,0,0,2,0],
@@ -247,7 +249,5 @@ var NAVTREEINDEX4 =
 "structsal_1_1no__sync__t.html#a3482d5b45551e5a51ba750467b2398b5":[7,0,0,13,0],
 "structsal_1_1program__options_1_1duplicate__option__name__error.html":[7,0,0,3,3],
 "structsal_1_1program__options_1_1empty__option__name__error.html":[7,0,0,3,4],
-"structsal_1_1program__options_1_1invalid__option__name__error.html":[7,0,0,3,5],
-"structsal_1_1program__options_1_1no__option__name__error.html":[7,0,0,3,6],
-"structsal_1_1program__options_1_1option__rejects__argument__error.html":[7,0,0,3,7]
+"structsal_1_1program__options_1_1invalid__option__name__error.html":[7,0,0,3,5]
 };
