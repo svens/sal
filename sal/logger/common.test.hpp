@@ -11,9 +11,9 @@ namespace sal_test {
 struct sink_t final
   : public sal::logger::sink_t
 {
-  bool init_called, write_called;
-  bool throw_init, throw_write;
-  std::string last_message;
+  bool init_called{}, write_called{};
+  bool throw_init{}, throw_write{};
+  std::string last_message{};
 
   sink_t ()
   {

@@ -13,7 +13,7 @@ Linux, Windows and OSX platforms.
 ## Compiling and installing
 
     $ mkdir build && cd build
-    $ cmake .. [-DUNITTESTS=yes|no] [-DBENCH=yes|no] [-DDOCS=yes|no]
+    $ cmake .. [-Dsal_unittests=yes|no] [-Dsal_bench=yes|no] [-Dsal_docs=yes|no]
     $ make && make test && make install
 
 

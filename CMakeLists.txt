@@ -8,16 +8,16 @@ message(STATUS "Version: ${PROJECT_VERSION}")
 # Settings {{{1
 
 # optional features
-option(UNITTESTS "Build unittests" ON)
-option(BENCH "Build benchmarking application" OFF)
-option(DOCS "Generate documentation" OFF)
+option(sal_unittests "Build unittests" ON)
+option(sal_bench "Build benchmarking application" OFF)
+option(sal_docs "Generate documentation" OFF)
 
 if(CMAKE_BUILD_TYPE MATCHES Coverage)
   # special case of coverage build
   set(CMAKE_BUILD_TYPE "Debug")
   set(COVERAGE ON)
-  set(UNITTESTS ON)
-  set(BENCH OFF)
+  set(sal_unittests ON)
+  set(sal_bench OFF)
 endif()
 
 
@@ -67,41 +67,27 @@ add_library(sal ${sal_sources})
 
 # Testing targets {{{1
 
-if(UNITTESTS)
+if(sal_unittests)
   message(STATUS "Building unittests")
   include(cmake/gtest.cmake)
 
-  # build sal unittests
   enable_testing()
-  add_executable(unittests ${sal_unittests})
-  include_directories(${GTEST_INCLUDE_DIRS})
-  if(NOT GTEST_FOUND)
-    add_dependencies(unittests gtest)
-  endif()
 
-  # relax compiler warnings for tests, intentionally creating unhappy paths
-  if(CMAKE_COMPILER_IS_GNUCXX)
-    set_source_files_properties(${sal_unittests}
-      PROPERTIES COMPILE_FLAGS "-Wno-effc++"
-    )
-  elseif(MSVC)
-    set_source_files_properties(${sal_unittests}
-      PROPERTIES COMPILE_FLAGS "/analyze-"
-    )
-  endif()
+  add_executable(unittests ${sal_unittests})
   target_link_libraries(unittests
     sal
-    ${GTEST_BOTH_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
+    gtest_main
     ${SAL_DEP_LIBS}
   )
+  add_dependencies(unittests gtest)
+
   add_test(unittests unittests)
 endif()
 
 
 # Benchmarking application {{{1
 
-if(BENCH)
+if(sal_bench)
   message(STATUS "Building benchmarking applications")
 
   find_package(Threads)
@@ -128,7 +114,7 @@ endif()
 
 # Generate documentation {{{1
 
-if(DOCS)
+if(sal_docs)
   message(STATUS "Generate documentation")
   include(cmake/doxygen.cmake)
 endif()

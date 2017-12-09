@@ -31,8 +31,8 @@ auto import ()
 struct crypto_key
   : public sal_test::fixture
 {
-  public_key_t public_key;
-  private_key_t private_key;
+  public_key_t public_key{};
+  private_key_t private_key{};
 
   void SetUp ()
   {
@@ -47,8 +47,8 @@ template <typename Digest>
 struct crypto_key_with_digest
   : public sal_test::with_type<Digest>
 {
-  public_key_t public_key;
-  private_key_t private_key;
+  public_key_t public_key{};
+  private_key_t private_key{};
 
   void SetUp ()
   {

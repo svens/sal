@@ -14,7 +14,7 @@ template <typename Socket>
 struct net_async_service
   : public sal_test::with_type<Socket>
 {
-  sal::net::async_service_t svc;
+  sal::net::async_service_t svc{};
 };
 
 using types = ::testing::Types<
@@ -91,7 +91,7 @@ TYPED_TEST(net_async_service, make_context_too_big_completion_count)
 struct net_async_io
   : public sal_test::fixture
 {
-  sal::net::async_service_t svc;
+  sal::net::async_service_t svc{};
   sal::net::async_service_t::context_t ctx = svc.make_context();
 };
 
@@ -215,7 +215,7 @@ TEST_F(net_async_io, reset)
 struct net_async_context
   : public sal_test::fixture
 {
-  sal::net::async_service_t svc;
+  sal::net::async_service_t svc{};
 
   using protocol_t = sal::net::ip::udp_t;
   using socket_t = protocol_t::socket_t;

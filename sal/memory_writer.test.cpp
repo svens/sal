@@ -16,6 +16,9 @@ struct memory_writer
   {
     std::fill_n(data, sizeof(data), '.');
   }
+
+  memory_writer (const memory_writer &) = delete;
+  memory_writer &operator= (const memory_writer &) = delete;
 };
 constexpr size_t memory_writer::size;
 

@@ -16,6 +16,9 @@ struct format
   {
     std::fill_n(data, sizeof(data), '.');
   }
+
+  format (const format &) = delete;
+  format &operator= (const format &) = delete;
 };
 constexpr size_t format::size;
 
