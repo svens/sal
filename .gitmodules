@@ -1,3 +1,3 @@
-[submodule "tps/googletest"]
-	path = tps/googletest
+[submodule "tps/gtest"]
+	path = tps/gtest
 	url = https://github.com/google/googletest
