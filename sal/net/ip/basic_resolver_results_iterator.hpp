@@ -96,7 +96,7 @@ public:
 private:
 
   addrinfo *it_{};
-  basic_resolver_entry_t<Protocol> entry_;
+  basic_resolver_entry_t<Protocol> entry_{};
 
   basic_resolver_results_iterator_t (addrinfo *it,
       const char *host_name,

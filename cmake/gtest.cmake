@@ -8,12 +8,12 @@ if(NOT EXISTS ${GTEST_INCLUDE_DIR}/gtest/gtest.h)
   )
 endif()
 
-include_directories(${GTEST_INCLUDE_DIR})
+include_directories(SYSTEM ${GTEST_INCLUDE_DIR})
 add_subdirectory(tps/gtest)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
   target_compile_options(gtest
-    PUBLIC -Wno-effc++ -Wno-extra
+    PRIVATE -Wno-effc++ -Wno-extra
   )
 elseif(MSVC)
   target_compile_options(gtest

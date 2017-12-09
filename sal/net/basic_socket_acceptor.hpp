@@ -548,7 +548,7 @@ public:
 
 private:
 
-  __bits::socket_t socket_;
+  __bits::socket_t socket_{};
   int family_ = AF_UNSPEC;
   bool enable_connection_aborted_ = false;
 };

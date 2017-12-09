@@ -53,6 +53,10 @@ public:
   constexpr basic_resolver_results_t () = default;
 
 
+  basic_resolver_results_t (const basic_resolver_results_t &) = delete;
+  basic_resolver_results_t &operator= (const basic_resolver_results_t &) = delete;
+
+
   /// Destruct resolver result set and release used resources (if not empty)
   ~basic_resolver_results_t () noexcept
   {
@@ -190,7 +194,7 @@ public:
 
 private:
 
-  std::string host_name_, service_name_;
+  std::string host_name_{}, service_name_{};
   addrinfo *results_{};
   size_t size_{};
 

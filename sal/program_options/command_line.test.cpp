@@ -10,7 +10,7 @@ namespace po = sal::program_options;
 struct command_line
   : public sal_test::with_value<bool>
 {
-  po::option_set_t options;
+  po::option_set_t options{};
 
 
   void SetUp ()

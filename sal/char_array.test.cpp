@@ -15,7 +15,8 @@ struct char_array
   std::string exact, overflow;
 
   char_array ()
-    : exact(chars.max_size(), '.')
+    : chars()
+    , exact(chars.max_size(), '.')
     , overflow(exact + exact)
   {}
 };
