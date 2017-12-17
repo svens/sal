@@ -90,26 +90,29 @@ public:
 
   /**
    * Add region [\a first, \a last) into hasher.
+   * \returns \a this for convenience chaining.
    */
   template <typename It>
-  void update (It first, It last)
+  hash_t &update (It first, It last)
   {
     if (first != last)
     {
       update(to_ptr(first), std::distance(first, last));
     }
+    return *this;
   }
 
 
   /**
    * Add more \a data into hasher.
+   * \returns \a this for convenience chaining.
    */
   template <typename Data>
-  void update (const Data &data)
+  hash_t &update (const Data &data)
   {
     using std::cbegin;
     using std::cend;
-    update(cbegin(data), cend(data));
+    return update(cbegin(data), cend(data));
   }
 
 

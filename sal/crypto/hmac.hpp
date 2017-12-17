@@ -94,12 +94,13 @@ public:
    * Add region [\a first, \a last) into hasher.
    */
   template <typename It>
-  void update (It first, It last)
+  hmac_t &update (It first, It last)
   {
     if (first != last)
     {
       update(to_ptr(first), range_size(first, last));
     }
+    return *this;
   }
 
 
@@ -107,11 +108,11 @@ public:
    * Add more \a data into hasher.
    */
   template <typename Data>
-  void update (const Data &data)
+  hmac_t &update (const Data &data)
   {
     using std::cbegin;
     using std::cend;
-    update(cbegin(data), cend(data));
+    return update(cbegin(data), cend(data));
   }
 
 

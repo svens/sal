@@ -303,8 +303,7 @@ TYPED_TEST(crypto_hmac, multiple_update)
 {
   sal::crypto::hmac_t<TypeParam> hmac;
 
-  hmac.update(lazy_dog);
-  hmac.update(lazy_cog);
+  hmac.update(lazy_dog).update(lazy_cog);
   EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(hmac.finish()));
 
   hmac.update(lazy_dog + lazy_cog);
@@ -316,8 +315,7 @@ TYPED_TEST(crypto_hmac, multiple_update_with_key)
 {
   sal::crypto::hmac_t<TypeParam> hmac{hmac_key};
 
-  hmac.update(lazy_dog);
-  hmac.update(lazy_cog);
+  hmac.update(lazy_dog).update(lazy_cog);
   EXPECT_EQ(expected_with_key<TypeParam>[lazy_dog + lazy_cog], to_string(hmac.finish()));
 
   hmac.update(lazy_dog + lazy_cog);

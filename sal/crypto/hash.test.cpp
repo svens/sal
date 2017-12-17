@@ -182,8 +182,7 @@ TYPED_TEST(crypto_hash, multiple_updates)
 {
   sal::crypto::hash_t<TypeParam> hash;
 
-  hash.update(lazy_dog);
-  hash.update(lazy_cog);
+  hash.update(lazy_dog).update(lazy_cog);
   EXPECT_EQ(expected<TypeParam>[lazy_dog + lazy_cog], to_string(hash.finish()));
 
   hash.update(lazy_dog + lazy_cog);
