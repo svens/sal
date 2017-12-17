@@ -9,6 +9,6 @@ var classsal_1_1crypto_1_1hmac__t =
     [ "finish", "classsal_1_1crypto_1_1hmac__t.html#ab0ee2cd6047483f5f1bbb7d774968ac1", null ],
     [ "operator=", "classsal_1_1crypto_1_1hmac__t.html#a78818dd428086067caeaa928fe538e21", null ],
     [ "operator=", "classsal_1_1crypto_1_1hmac__t.html#a16323c9d31f3348a127f666b4095453e", null ],
-    [ "update", "classsal_1_1crypto_1_1hmac__t.html#ac4e90f8b10c478d98de5d8faf6fd6d24", null ],
-    [ "update", "classsal_1_1crypto_1_1hmac__t.html#aa152c5a7a5a35c75d1612da11f88dce5", null ]
+    [ "update", "classsal_1_1crypto_1_1hmac__t.html#a34e34b972b9228cfea5f73586c04b2ca", null ],
+    [ "update", "classsal_1_1crypto_1_1hmac__t.html#a5dc4e47b9849a9dbf71b602f25c942c8", null ]
 ];

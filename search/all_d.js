@@ -34,8 +34,8 @@ var searchData=
   ['option_5fset_5ft',['option_set_t',['../classsal_1_1program__options_1_1option__set__t.html',1,'sal::program_options']]],
   ['option_5ft',['option_t',['../structsal_1_1program__options_1_1option__t.html',1,'sal::program_options']]],
   ['optional_5fargument',['optional_argument',['../structsal_1_1program__options_1_1option__t.html#a8f8bad14ba6275045236958b5f33c0a5',1,'sal::program_options::option_t::optional_argument()'],['../namespacesal_1_1program__options.html#a449a6921f9b98ec4c207eba38019284f',1,'sal::program_options::optional_argument(const std::string &amp;unit)'],['../namespacesal_1_1program__options.html#a2059a2d3c7a74e052e736c1d7c2430ba',1,'sal::program_options::optional_argument(const std::string &amp;unit, const T &amp;default_value)']]],
-  ['organization_5fname',['organization_name',['../oid_8hpp.html#aa10fd7574b45199a64e9f553485357c9',1,'sal::crypto::oid']]],
-  ['organizational_5funit_5fname',['organizational_unit_name',['../oid_8hpp.html#ac40b53f426fb63491aa0b47d365d0564',1,'sal::crypto::oid']]],
+  ['organization_5fname',['organization_name',['../oid_8hpp.html#a283f6f6eff5307245568b46292bf1f7f',1,'sal::crypto::oid']]],
+  ['organizational_5funit_5fname',['organizational_unit_name',['../oid_8hpp.html#ad279726db6c5fbe88c2605dea685e303',1,'sal::crypto::oid']]],
   ['ostream_5fsink',['ostream_sink',['../namespacesal_1_1logger.html#a0ba4408de19849eee61485cc0130396f',1,'sal::logger']]],
   ['out_5fof_5fband',['out_of_band',['../classsal_1_1net_1_1socket__base__t.html#ab609507b4e1ca8a3d098d90ece68677c',1,'sal::net::socket_base_t']]]
 ];
