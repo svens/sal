@@ -29,7 +29,7 @@ namespace oid {
  * \see https://en.wikipedia.org/wiki/Object_identifier
  */
 
-__sal_inline_var const oid_t
+inline const oid_t
 
   /// http://www.oid-info.com/cgi-bin/display?action=display&oid=2.5.4.8.1
   collective_state_or_province_name = "2.5.4.8.1",

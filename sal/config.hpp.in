@@ -82,15 +82,4 @@ constexpr const std::string_view version = __bits::version;
 #endif
 
 
-//
-// Bleeding edge C++ features
-//
-
-#if _MSC_VER
-  #define __sal_inline_var
-#else
-  #define __sal_inline_var inline
-#endif
-
-
 __sal_end
