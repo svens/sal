@@ -14,6 +14,7 @@
   #include <windows.h>
   #include <bcrypt.h>
   #include <algorithm>
+  #pragma comment(lib, "bcrypt")
 #else
   #error Unsupported platform
 #endif
