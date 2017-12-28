@@ -70,8 +70,7 @@ struct channel_t final
     : channel_base_t(name)
     , worker(worker)
   {
-    bool unused[] = { set_option(std::forward<Options>(options))..., false };
-    (void)unused;
+    (set_option(std::forward<Options>(options)), ...);
   }
 };
 

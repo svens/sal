@@ -310,9 +310,7 @@ public:
   template <typename Arg, typename... Args>
   memory_writer_t &print (Arg &&arg, Args &&...args) noexcept
   {
-    bool unused[] = { (*this << arg, false), (*this << args, false)... };
-    (void)unused;
-    return *this;
+    return ((*this << arg) << ... << args);
   }
 };
 

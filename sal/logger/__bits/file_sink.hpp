@@ -43,9 +43,7 @@ public:
   file_sink_t (const std::string &label, Options &&...options)
     : suffix_('_' + label + ".log")
   {
-    bool unused[] = { set_option(std::forward<Options>(options))..., false };
-    (void)unused;
-
+    (set_option(std::forward<Options>(options)), ...);
     auto file = make_file();
     swap_file(file);
   }

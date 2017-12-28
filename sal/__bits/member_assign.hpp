@@ -34,8 +34,7 @@ struct member_assign_t
 template <typename Class, typename... Args>
 inline void assign_members (Class *object, Args &&...args)
 {
-  bool unused[] = { (std::forward<Args>(args)(object), false)... };
-  (void)unused;
+  (std::forward<Args>(args)(object), ...);
 }
 
 
