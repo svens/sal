@@ -14,6 +14,11 @@ if(GIT_EXECUTABLE)
     PROJECT_VERSION
     ${PROJECT_VERSION}
   )
+  string(REGEX
+    REPLACE "^v(.*)" "\\1"
+    PROJECT_VERSION
+    ${PROJECT_VERSION}
+  )
 else()
   set(PROJECT_VERSION "0.0.0")
 endif()
