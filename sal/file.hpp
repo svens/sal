@@ -6,7 +6,7 @@
  */
 
 #include <sal/config.hpp>
-#include <sal/buf_ptr.hpp>
+#include <sal/memory.hpp>
 #include <sal/error.hpp>
 #include <ios>
 #include <string>
@@ -165,10 +165,14 @@ public:
 
   /// Attempt to write \a buf to file.
   /// \returns number of bytes actually written.
-  template <typename Ptr>
-  size_t write (const Ptr &buf, std::error_code &error) noexcept
+  template <typename Data>
+  size_t write (const Data &buf, std::error_code &error) noexcept
   {
-    return write((const char *)buf.data(), buf.size(), error);
+    using std::cbegin;
+    using std::cend;
+    auto first = cbegin(buf);
+    auto size = range_size(first, cend(buf));
+    return write(to_ptr(first), size, error);
   }
 
 
@@ -177,8 +181,8 @@ public:
    * \returns number of bytes actually written.
    * \throws std::system_error on write error
    */
-  template <typename Ptr>
-  size_t write (const Ptr &buf)
+  template <typename Data>
+  size_t write (const Data &buf)
   {
     return write(buf, throw_on_error("file::write"));
   }
@@ -188,10 +192,14 @@ public:
    * Attempt to read data into \a buf (but not more than buf.size() bytes)
    * \returns number of bytes actually read.
    */
-  template <typename Ptr>
-  size_t read (const Ptr &buf, std::error_code &error) noexcept
+  template <typename Data>
+  size_t read (Data &&buf, std::error_code &error) noexcept
   {
-    return read(buf.data(), buf.size(), error);
+    using std::begin;
+    using std::end;
+    auto first = begin(buf);
+    auto size = range_size(first, end(buf));
+    return read(to_ptr(first), size, error);
   }
 
 
@@ -200,8 +208,8 @@ public:
    * \returns number of bytes actually read.
    * \throws std::system_error on read error
    */
-  template <typename Ptr>
-  size_t read (const Ptr &buf)
+  template <typename Data>
+  size_t read (Data &&buf)
   {
     return read(buf, throw_on_error("file::read"));
   }

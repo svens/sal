@@ -137,7 +137,7 @@ private:
   {
     if (buffer_ && buffer_->size())
     {
-      file_.write(make_buf(*buffer_));
+      file_.write(*buffer_);
       buffer_->clear();
     }
   }
