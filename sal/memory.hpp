@@ -19,7 +19,7 @@ template <typename T> constexpr const bool is_const_ref_v = false;
 template <typename T> constexpr const bool is_const_ref_v<const T &> = true;
 
 template <typename It>
-inline constexpr void ensure_iterator_constraints (It) noexcept
+inline constexpr void ensure_iterator_constraints () noexcept
 {
   static_assert(
     std::is_pod_v<typename std::iterator_traits<It>::value_type>,
@@ -56,7 +56,7 @@ inline auto make_output_iterator (It first, It) noexcept
 template <typename It>
 inline auto to_ptr (It it) noexcept
 {
-  __bits::ensure_iterator_constraints(it);
+  __bits::ensure_iterator_constraints<It>();
   if constexpr (__bits::is_const_ref_v<decltype(*it)>)
   {
     return reinterpret_cast<const uint8_t *>(std::addressof(*it));
@@ -75,8 +75,7 @@ inline auto to_ptr (It it) noexcept
 template <typename It>
 inline constexpr size_t range_size (It first, It last) noexcept
 {
-  __bits::ensure_iterator_constraints(first);
-  __bits::ensure_iterator_constraints(last);
+  __bits::ensure_iterator_constraints<It>();
   return std::distance(first, last)
     * sizeof(typename std::iterator_traits<It>::value_type);
 }
