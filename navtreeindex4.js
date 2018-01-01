@@ -1,6 +1,7 @@
 var NAVTREEINDEX4 =
 {
 "functions_func.html":[7,3,1],
+"functions_func.html":[7,3,1,0],
 "functions_func_0x7e.html":[7,3,1,21],
 "functions_func_b.html":[7,3,1,1],
 "functions_func_c.html":[7,3,1,2],
@@ -111,16 +112,16 @@ var NAVTREEINDEX4 =
 "namespacemembers_func.html":[6,1,1],
 "namespacemembers_type.html":[6,1,2],
 "namespaces.html":[6,0],
-"namespacesal_1_1crypto.html":[7,0,0,0],
 "namespacesal_1_1crypto.html":[6,0,0,0],
+"namespacesal_1_1crypto.html":[7,0,0,0],
 "namespacesal_1_1logger.html":[7,0,0,1],
 "namespacesal_1_1logger.html":[6,0,0,1],
 "namespacesal_1_1net.html":[6,0,0,2],
 "namespacesal_1_1net.html":[7,0,0,2],
 "namespacesal_1_1net_1_1ip.html":[6,0,0,2,0],
 "namespacesal_1_1net_1_1ip.html":[7,0,0,2,0],
-"namespacesal_1_1program__options.html":[6,0,0,3],
 "namespacesal_1_1program__options.html":[7,0,0,3],
+"namespacesal_1_1program__options.html":[6,0,0,3],
 "namespacesal_1_1this__thread.html":[6,0,0,4],
 "net_2error_8hpp.html":[8,0,0,2,6],
 "net_2error_8hpp.html#a2339c77f561c747e51a31ed6c401015c":[8,0,0,2,6,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX4 =
 "structsal_1_1no__sync__t.html":[7,0,0,13],
 "structsal_1_1no__sync__t.html#a3482d5b45551e5a51ba750467b2398b5":[7,0,0,13,0],
 "structsal_1_1program__options_1_1duplicate__option__name__error.html":[7,0,0,3,3],
-"structsal_1_1program__options_1_1empty__option__name__error.html":[7,0,0,3,4],
-"structsal_1_1program__options_1_1invalid__option__name__error.html":[7,0,0,3,5]
+"structsal_1_1program__options_1_1empty__option__name__error.html":[7,0,0,3,4]
 };
