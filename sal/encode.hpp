@@ -47,10 +47,12 @@ inline size_t max_encoded_size (It first, It last) noexcept
 /**
  * Maximum size of output buffer (in bytes) required to encode \a data
  */
-template <typename Encoding, typename InPtr>
-inline size_t max_encoded_size (const InPtr &data) noexcept
+template <typename Encoding, typename Data>
+inline size_t max_encoded_size (const Data &data) noexcept
 {
-  return max_encoded_size<Encoding>(data.begin(), data.end());
+  using std::cbegin;
+  using std::cend;
+  return max_encoded_size<Encoding>(cbegin(data), cend(data));
 }
 
 
@@ -80,10 +82,12 @@ inline ForwardIt encode (InputIt first, InputIt last, ForwardIt out)
  *
  * \returns Iterator to one past final byte stored into output buffer.
  */
-template <typename Encoding, typename InPtr, typename ForwardIt>
-inline ForwardIt encode (const InPtr &data, ForwardIt out) noexcept
+template <typename Encoding, typename Data, typename ForwardIt>
+inline ForwardIt encode (const Data &data, ForwardIt out) noexcept
 {
-  return encode<Encoding>(data.begin(), data.end(), out);
+  using std::cbegin;
+  using std::cend;
+  return encode<Encoding>(cbegin(data), cend(data), out);
 }
 
 
@@ -105,10 +109,12 @@ inline std::string encode (It first, It last)
  * Conveniency wrapper for encoding, returning output data wrapped into
  * std::string.
  */
-template <typename Encoding, typename InPtr>
-inline std::string encode (const InPtr &data)
+template <typename Encoding, typename Data>
+inline std::string encode (const Data &data)
 {
-  return encode<Encoding>(data.begin(), data.end());
+  using std::cbegin;
+  using std::cend;
+  return encode<Encoding>(cbegin(data), cend(data));
 }
 
 
@@ -136,11 +142,13 @@ inline size_t max_decoded_size (It first, It last,
  * input range has invalid number of bytes, \a error is set to
  * \c std::errc::message_size and 0 is returned
  */
-template <typename Encoding, typename InPtr>
-inline size_t max_decoded_size (const InPtr &data,
-  std::error_code &error) noexcept
+template <typename Encoding, typename Data>
+inline size_t max_decoded_size (const Data &data, std::error_code &error)
+  noexcept
 {
-  return max_decoded_size<Encoding>(data.begin(), data.end(), error);
+  using std::cbegin;
+  using std::cend;
+  return max_decoded_size<Encoding>(cbegin(data), cend(data), error);
 }
 
 
@@ -163,8 +171,8 @@ inline size_t max_decoded_size (It first, It last)
  * input range has invalid number of bytes, throws an exception
  * \c std::system_error.
  */
-template <typename Encoding, typename InPtr>
-inline size_t max_decoded_size (const InPtr &data)
+template <typename Encoding, typename Data>
+inline size_t max_decoded_size (const Data &data)
 {
   return max_decoded_size<Encoding>(data, throw_on_error("max_decoded_size"));
 }
@@ -216,11 +224,13 @@ inline ForwardIt decode (InputIt first, InputIt last, ForwardIt out)
  * decoding failure, sets \a error to std::errc::illegal_byte_sequence and
  * returned iterator has undefined value.
  */
-template <typename Encoding, typename InPtr, typename ForwardIt>
-inline ForwardIt decode (const InPtr &data, ForwardIt out,
+template <typename Encoding, typename Data, typename ForwardIt>
+inline ForwardIt decode (const Data &data, ForwardIt out,
   std::error_code &error) noexcept
 {
-  return decode<Encoding>(data.begin(), data.end(), out, error);
+  using std::cbegin;
+  using std::cend;
+  return decode<Encoding>(cbegin(data), cend(data), out, error);
 }
 
 
@@ -231,8 +241,8 @@ inline ForwardIt decode (const InPtr &data, ForwardIt out,
  * \returns Iterator to one past final byte stored in output buffer. On
  * decoding failure, throws std::system_error
  */
-template <typename Encoding, typename InPtr, typename ForwardIt>
-inline ForwardIt decode (const InPtr &data, ForwardIt out)
+template <typename Encoding, typename Data, typename ForwardIt>
+inline ForwardIt decode (const Data &data, ForwardIt out)
 {
   return decode<Encoding>(data, out, throw_on_error("decode"));
 }
@@ -280,11 +290,13 @@ inline std::vector<uint8_t> decode (It first, It last)
  * Conveniency wrapper for decoding, returning output data wrapped into
  * std::vector<uint8_t>.
  */
-template <typename Encoding, typename InPtr>
-inline std::vector<uint8_t> decode (const InPtr &data, std::error_code &error)
+template <typename Encoding, typename Data>
+inline std::vector<uint8_t> decode (const Data &data, std::error_code &error)
   noexcept
 {
-  return decode<Encoding>(data.begin(), data.end(), error);
+  using std::cbegin;
+  using std::cend;
+  return decode<Encoding>(cbegin(data), cend(data), error);
 }
 
 
@@ -292,10 +304,12 @@ inline std::vector<uint8_t> decode (const InPtr &data, std::error_code &error)
  * Conveniency wrapper for decoding, returning output data wrapped into
  * std::vector<uint8_t>.
  */
-template <typename Encoding, typename InPtr>
-inline std::vector<uint8_t> decode (const InPtr &data)
+template <typename Encoding, typename Data>
+inline std::vector<uint8_t> decode (const Data &data)
 {
-  return decode<Encoding>(data.begin(), data.end());
+  using std::cbegin;
+  using std::cend;
+  return decode<Encoding>(cbegin(data), cend(data));
 }
 
 

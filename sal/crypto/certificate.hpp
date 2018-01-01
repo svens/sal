@@ -674,29 +674,38 @@ private:
 /**
  * \see certificate_t::import_pkcs12
  */
-template <typename DataPtr>
-inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
+template <typename Data>
+inline certificate_t import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
   private_key_t &private_key,
   std::vector<certificate_t> &chain,
   std::error_code &error) noexcept
 {
-  return certificate_t::import_pkcs12(
-    reinterpret_cast<const uint8_t *>(pkcs12.data()),
-    reinterpret_cast<const uint8_t *>(pkcs12.data()) + pkcs12.size(),
-    passphrase,
-    &private_key,
-    &chain,
-    error
-  );
+  using std::cbegin;
+  using std::cend;
+  auto first = cbegin(pkcs12);
+  auto last = cend(pkcs12);
+  if (first != last)
+  {
+    return certificate_t::import_pkcs12(
+      to_ptr(first),
+      to_end_ptr(first, last),
+      passphrase,
+      &private_key,
+      &chain,
+      error
+    );
+  }
+  error = std::make_error_code(std::errc::invalid_argument);
+  return {};
 }
 
 
 /**
  * \see certificate_t::import_pkcs12
  */
-template <typename DataPtr>
-inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
+template <typename Data>
+inline certificate_t import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
   private_key_t &private_key,
   std::vector<certificate_t> &chain)
@@ -710,28 +719,37 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 /**
  * \see certificate_t::import_pkcs12
  */
-template <typename DataPtr>
-inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
+template <typename Data>
+inline certificate_t import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
   private_key_t &private_key,
   std::error_code &error) noexcept
 {
-  return certificate_t::import_pkcs12(
-    reinterpret_cast<const uint8_t *>(pkcs12.data()),
-    reinterpret_cast<const uint8_t *>(pkcs12.data()) + pkcs12.size(),
-    passphrase,
-    &private_key,
-    nullptr,
-    error
-  );
+  using std::cbegin;
+  using std::cend;
+  auto first = cbegin(pkcs12);
+  auto last = cend(pkcs12);
+  if (first != last)
+  {
+    return certificate_t::import_pkcs12(
+      to_ptr(first),
+      to_end_ptr(first, last),
+      passphrase,
+      &private_key,
+      nullptr,
+      error
+    );
+  }
+  error = std::make_error_code(std::errc::invalid_argument);
+  return {};
 }
 
 
 /**
  * \see certificate_t::import_pkcs12
  */
-template <typename DataPtr>
-inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
+template <typename Data>
+inline certificate_t import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
   private_key_t &private_key)
 {
@@ -744,28 +762,37 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 /**
  * \see certificate_t::import_pkcs12
  */
-template <typename DataPtr>
-inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
+template <typename Data>
+inline certificate_t import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
   std::vector<certificate_t> &chain,
   std::error_code &error) noexcept
 {
-  return certificate_t::import_pkcs12(
-    reinterpret_cast<const uint8_t *>(pkcs12.data()),
-    reinterpret_cast<const uint8_t *>(pkcs12.data()) + pkcs12.size(),
-    passphrase,
-    nullptr,
-    &chain,
-    error
-  );
+  using std::cbegin;
+  using std::cend;
+  auto first = cbegin(pkcs12);
+  auto last = cend(pkcs12);
+  if (first != last)
+  {
+    return certificate_t::import_pkcs12(
+      to_ptr(first),
+      to_end_ptr(first, last),
+      passphrase,
+      nullptr,
+      &chain,
+      error
+    );
+  }
+  error = std::make_error_code(std::errc::invalid_argument);
+  return {};
 }
 
 
 /**
  * \see certificate_t::import_pkcs12
  */
-template <typename DataPtr>
-inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
+template <typename Data>
+inline certificate_t import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
   std::vector<certificate_t> &chain)
 {
@@ -778,27 +805,36 @@ inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
 /**
  * \see certificate_t::import_pkcs12
  */
-template <typename DataPtr>
-inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
+template <typename Data>
+inline certificate_t import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
   std::error_code &error) noexcept
 {
-  return certificate_t::import_pkcs12(
-    reinterpret_cast<const uint8_t *>(pkcs12.data()),
-    reinterpret_cast<const uint8_t *>(pkcs12.data()) + pkcs12.size(),
-    passphrase,
-    nullptr,
-    nullptr,
-    error
-  );
+  using std::cbegin;
+  using std::cend;
+  auto first = cbegin(pkcs12);
+  auto last = cend(pkcs12);
+  if (first != last)
+  {
+    return certificate_t::import_pkcs12(
+      to_ptr(first),
+      to_end_ptr(first, last),
+      passphrase,
+      nullptr,
+      nullptr,
+      error
+    );
+  }
+  error = std::make_error_code(std::errc::invalid_argument);
+  return {};
 }
 
 
 /**
  * \see certificate_t::import_pkcs12
  */
-template <typename DataPtr>
-inline certificate_t import_pkcs12 (const DataPtr &pkcs12,
+template <typename Data>
+inline certificate_t import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase)
 {
   return import_pkcs12(pkcs12, passphrase, throw_on_error("import_pkcs12"));
