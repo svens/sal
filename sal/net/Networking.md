@@ -24,11 +24,11 @@ sal::net::ip::tcp_t::socket_t channel;
 channel.connect(server_endpoint);
 
 // Send data to server ('hello\0')
-auto sent_size = channel.send(sal::make_buf("hello"));
+auto sent_size = channel.send("hello");
 
 // Receive data from server (up to 1024B)
 char data[1024];
-auto received_size = channel.receive(sal::make_buf(data));
+auto received_size = channel.receive(data);
 ```
 
 Same session from server side:
@@ -41,7 +41,7 @@ auto channel = acceptor.accept();
 
 // Echo data from client back to it
 char data[1024];
-auto size = channel.receive(sal::make_buf(data));
+auto size = channel.receive(data);
 channel.send(sal::make_buf(data, size));
 ```
 

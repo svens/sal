@@ -628,7 +628,7 @@ TEST_P(socket_acceptor, async_accept_close_before_accept)
   // but receive should fail
   auto b = result->accepted();
   char buf[1024];
-  b.receive(sal::make_buf(buf), error);
+  b.receive(buf, error);
   EXPECT_EQ(std::errc::broken_pipe, error);
 }
 

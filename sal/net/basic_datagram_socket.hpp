@@ -7,7 +7,7 @@
 
 
 #include <sal/config.hpp>
-#include <sal/buf_ptr.hpp>
+#include <sal/memory.hpp>
 #include <sal/net/basic_socket.hpp>
 
 
@@ -77,14 +77,18 @@ public:
    * bytes received and stores sender address into \a endpoint. On failure,
    * set \a error and return 0.
    */
-  template <typename Ptr>
-  size_t receive_from (const Ptr &buf,
+  template <typename Data>
+  size_t receive_from (Data &&buf,
     endpoint_t &endpoint,
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
+    using std::begin;
+    using std::end;
+    auto first = begin(buf);
+    auto buf_size = range_size(first, end(buf));
     auto endpoint_size = endpoint.capacity();
-    auto size = base_t::socket_.receive_from(buf.data(), buf.size(),
+    auto size = base_t::socket_.receive_from(to_ptr(first), buf_size,
       endpoint.data(), &endpoint_size,
       static_cast<int>(flags),
       error
@@ -102,8 +106,8 @@ public:
    * bytes received and stores sender address into \a endpoint. On failure,
    * throw std::system_error.
    */
-  template <typename Ptr>
-  size_t receive_from (const Ptr &buf,
+  template <typename Data>
+  size_t receive_from (Data &&buf,
     endpoint_t &endpoint,
     socket_base_t::message_flags_t flags)
   {
@@ -118,10 +122,9 @@ public:
    * bytes received and stores sender address into \a endpoint. On failure,
    * set \a error and return 0.
    */
-  template <typename Ptr>
-  size_t receive_from (const Ptr &buf,
-    endpoint_t &endpoint,
-    std::error_code &error) noexcept
+  template <typename Data>
+  size_t receive_from (Data &&buf, endpoint_t &endpoint, std::error_code &error)
+    noexcept
   {
     return receive_from(buf, endpoint, socket_base_t::message_flags_t{}, error);
   }
@@ -132,8 +135,8 @@ public:
    * bytes received and stores sender address into \a endpoint. On failure,
    * throw std::system_error.
    */
-  template <typename Ptr>
-  size_t receive_from (const Ptr &buf, endpoint_t &endpoint)
+  template <typename Data>
+  size_t receive_from (Data &&buf, endpoint_t &endpoint)
   {
     return receive_from(buf, endpoint,
       throw_on_error("basic_datagram_socket::receive_from")
@@ -145,13 +148,17 @@ public:
    * Receive data from this socket into \a buf. On success, returns number of
    * bytes received. On failure, set \a error and return 0.
    */
-  template <typename Ptr>
-  size_t receive (const Ptr &buf,
+  template <typename Data>
+  size_t receive (Data &&buf,
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
+    using std::begin;
+    using std::end;
+    auto first = begin(buf);
+    auto buf_size = range_size(first, end(buf));
     size_t endpoint_size = 0;
-    return base_t::socket_.receive_from(buf.data(), buf.size(),
+    return base_t::socket_.receive_from(to_ptr(first), buf_size,
       nullptr, &endpoint_size,
       static_cast<int>(flags),
       error
@@ -163,8 +170,8 @@ public:
    * Receive data from this socket into \a buf. On success, returns number of
    * bytes received. On failure, throw std::system_error
    */
-  template <typename Ptr>
-  size_t receive (const Ptr &buf, socket_base_t::message_flags_t flags)
+  template <typename Data>
+  size_t receive (Data &&buf, socket_base_t::message_flags_t flags)
   {
     return receive(buf, flags, throw_on_error("basic_datagram_socket::receive"));
   }
@@ -174,8 +181,8 @@ public:
    * Receive data from this socket into \a buf. On success, returns number of
    * bytes received. On failure, set \a error and return 0.
    */
-  template <typename Ptr>
-  size_t receive (const Ptr &buf, std::error_code &error) noexcept
+  template <typename Data>
+  size_t receive (Data &&buf, std::error_code &error) noexcept
   {
     return receive(buf, socket_base_t::message_flags_t{}, error);
   }
@@ -185,8 +192,8 @@ public:
    * Receive data from this socket into \a buf. On success, returns number of
    * bytes received. On failure, throw std::system_error
    */
-  template <typename Ptr>
-  size_t receive (const Ptr &buf)
+  template <typename Data>
+  size_t receive (Data &&buf)
   {
     return receive(buf, throw_on_error("basic_datagram_socket::receive"));
   }
@@ -197,13 +204,17 @@ public:
    * success, returns number of bytes sent. On failure, set \a error and
    * return 0.
    */
-  template <typename Ptr>
-  size_t send_to (const Ptr &buf,
+  template <typename Data>
+  size_t send_to (const Data &buf,
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::socket_.send_to(buf.data(), buf.size(),
+    using std::cbegin;
+    using std::cend;
+    auto first = cbegin(buf);
+    auto buf_size = range_size(first, cend(buf));
+    return base_t::socket_.send_to(to_ptr(first), buf_size,
       endpoint.data(), endpoint.size(),
       static_cast<int>(flags),
       error
@@ -216,8 +227,8 @@ public:
    * success, returns number of bytes sent. On failure, throw
    * std::system_error
    */
-  template <typename Ptr>
-  size_t send_to (const Ptr &buf,
+  template <typename Data>
+  size_t send_to (const Data &buf,
     const endpoint_t &endpoint,
     socket_base_t::message_flags_t flags)
   {
@@ -232,8 +243,8 @@ public:
    * success, returns number of bytes sent. On failure, set \a error and
    * return 0.
    */
-  template <typename Ptr>
-  size_t send_to (const Ptr &buf,
+  template <typename Data>
+  size_t send_to (const Data &buf,
     const endpoint_t &endpoint,
     std::error_code &error) noexcept
   {
@@ -246,8 +257,8 @@ public:
    * success, returns number of bytes sent. On failure, throw
    * std::system_error
    */
-  template <typename Ptr>
-  size_t send_to (const Ptr &buf, const endpoint_t &endpoint)
+  template <typename Data>
+  size_t send_to (const Data &buf, const endpoint_t &endpoint)
   {
     return send_to(buf, endpoint,
       throw_on_error("basic_datagram_socket::send_to")
@@ -260,12 +271,16 @@ public:
    * endpoint. On success, returns number of bytes sent. On failure, set
    * \a error and return 0.
    */
-  template <typename Ptr>
-  size_t send (const Ptr &buf,
+  template <typename Data>
+  size_t send (const Data &buf,
     socket_base_t::message_flags_t flags,
     std::error_code &error) noexcept
   {
-    return base_t::socket_.send_to(buf.data(), buf.size(),
+    using std::cbegin;
+    using std::cend;
+    auto first = cbegin(buf);
+    auto buf_size = range_size(first, cend(buf));
+    return base_t::socket_.send_to(to_ptr(first), buf_size,
       nullptr, 0,
       static_cast<int>(flags),
       error
@@ -278,8 +293,8 @@ public:
    * endpoint. On success, returns number of bytes sent. On failure, throw
    * std::system_error
    */
-  template <typename Ptr>
-  size_t send (const Ptr &buf, socket_base_t::message_flags_t flags)
+  template <typename Data>
+  size_t send (const Data &buf, socket_base_t::message_flags_t flags)
   {
     return send(buf, flags, throw_on_error("basic_datagram_socket::send"));
   }
@@ -290,8 +305,8 @@ public:
    * endpoint. On success, returns number of bytes sent. On failure, set
    * \a error and return 0.
    */
-  template <typename Ptr>
-  size_t send (const Ptr &buf, std::error_code &error) noexcept
+  template <typename Data>
+  size_t send (const Data &buf, std::error_code &error) noexcept
   {
     return send(buf, socket_base_t::message_flags_t{}, error);
   }
@@ -302,8 +317,8 @@ public:
    * endpoint. On success, returns number of bytes sent. On failure, throw
    * std::system_error
    */
-  template <typename Ptr>
-  size_t send (const Ptr &buf)
+  template <typename Data>
+  size_t send (const Data &buf)
   {
     return send(buf, throw_on_error("basic_datagram_socket::send"));
   }

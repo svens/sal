@@ -1,5 +1,6 @@
 #include <sal/net/ip/tcp.hpp>
 #include <sal/common.test.hpp>
+#include <sal/buf_ptr.hpp>
 #include <thread>
 
 
@@ -142,12 +143,12 @@ TEST_P(stream_socket, receive_invalid)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive(sal::make_buf(buf), error));
+    EXPECT_EQ(0U, socket.receive(buf, error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(socket.receive(sal::make_buf(buf)), std::system_error);
+    EXPECT_THROW(socket.receive(buf), std::system_error);
   }
 }
 
@@ -158,12 +159,12 @@ TEST_P(stream_socket, send_invalid)
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.send(sal::make_buf(case_name), error));
+    EXPECT_EQ(0U, socket.send(case_name, error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(socket.send(sal::make_buf(case_name)), std::system_error);
+    EXPECT_THROW(socket.send(case_name), std::system_error);
   }
 }
 
@@ -174,7 +175,7 @@ TEST_P(stream_socket, send_not_connected)
 
   {
     std::error_code error;
-    socket.send(sal::make_buf(case_name), error);
+    socket.send(case_name, error);
 #if __sal_os_linux
     EXPECT_EQ(std::errc::broken_pipe, error);
 #else
@@ -183,7 +184,7 @@ TEST_P(stream_socket, send_not_connected)
   }
 
   {
-    EXPECT_THROW(socket.send(sal::make_buf(case_name)), std::system_error);
+    EXPECT_THROW(socket.send(case_name), std::system_error);
   }
 }
 
@@ -196,12 +197,12 @@ TEST_P(stream_socket, send_and_receive)
   a.connect(loopback(GetParam()));
   auto b = acceptor.accept();
 
-  EXPECT_EQ(case_name.size(), a.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), a.send(case_name));
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
 
-  EXPECT_EQ(case_name.size(), b.receive(sal::make_buf(buf)));
+  EXPECT_EQ(case_name.size(), b.receive(buf));
   EXPECT_EQ(case_name, buf);
 }
 
@@ -218,7 +219,7 @@ TEST_P(stream_socket, receive_no_sender_non_blocking)
 
   char buf[1024];
   std::error_code error;
-  EXPECT_EQ(0U, b.receive(sal::make_buf(buf), error));
+  EXPECT_EQ(0U, b.receive(buf, error));
   EXPECT_EQ(std::errc::operation_would_block, error);
 }
 
@@ -231,7 +232,7 @@ TEST_P(stream_socket, receive_less_than_send)
   a.connect(loopback(GetParam()));
   auto b = acceptor.accept();
 
-  EXPECT_EQ(case_name.size(), a.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), a.send(case_name));
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
@@ -243,9 +244,7 @@ TEST_P(stream_socket, receive_less_than_send)
 
   EXPECT_TRUE(b.wait(b.wait_read, 0s));
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size() - (case_name.size() / 2),
-    b.receive(sal::make_buf(buf))
-  );
+  EXPECT_EQ(case_name.size() - (case_name.size() / 2), b.receive(buf));
   EXPECT_EQ(std::string(case_name, case_name.size() / 2), buf);
 }
 
@@ -258,16 +257,16 @@ TEST_P(stream_socket, receive_peek)
   a.connect(loopback(GetParam()));
   auto b = acceptor.accept();
 
-  EXPECT_EQ(case_name.size(), a.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), a.send(case_name));
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), b.receive(sal::make_buf(buf), b.peek));
+  EXPECT_EQ(case_name.size(), b.receive(buf, b.peek));
   EXPECT_EQ(case_name, buf);
 
   EXPECT_TRUE(b.wait(b.wait_read, 0s));
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), b.receive(sal::make_buf(buf)));
+  EXPECT_EQ(case_name.size(), b.receive(buf));
   EXPECT_EQ(case_name, buf);
 }
 
@@ -284,12 +283,12 @@ TEST_P(stream_socket, send_after_shutdown)
 
   {
     std::error_code error;
-    a.send(sal::make_buf(case_name), error);
+    a.send(case_name, error);
     EXPECT_EQ(std::errc::broken_pipe, error);
   }
 
   {
-    EXPECT_THROW(a.send(sal::make_buf(case_name)), std::system_error);
+    EXPECT_THROW(a.send(case_name), std::system_error);
   }
 }
 
@@ -310,7 +309,7 @@ TEST_P(stream_socket, send_after_remote_close)
 
   {
     std::error_code error;
-    b.send(sal::make_buf(case_name), error);
+    b.send(case_name, error);
 #if __sal_os_macos
     EXPECT_EQ(std::errc::broken_pipe, error);
 #else
@@ -319,7 +318,7 @@ TEST_P(stream_socket, send_after_remote_close)
   }
 
   {
-    EXPECT_THROW(b.send(sal::make_buf(case_name)), std::system_error);
+    EXPECT_THROW(b.send(case_name), std::system_error);
   }
 }
 
@@ -337,12 +336,12 @@ TEST_P(stream_socket, receive_after_shutdown)
   char buf[1024];
   {
     std::error_code error;
-    b.receive(sal::make_buf(buf), error);
+    b.receive(buf, error);
     EXPECT_EQ(std::errc::broken_pipe, error);
   }
 
   {
-    EXPECT_THROW(b.receive(sal::make_buf(buf)), std::system_error);
+    EXPECT_THROW(b.receive(buf), std::system_error);
   }
 }
 
@@ -361,12 +360,12 @@ TEST_P(stream_socket, receive_after_remote_close)
 
   {
     std::error_code error;
-    b.receive(sal::make_buf(buf), error);
+    b.receive(buf, error);
     EXPECT_EQ(std::errc::broken_pipe, error);
   }
 
   {
-    EXPECT_THROW(b.receive(sal::make_buf(buf)), std::system_error);
+    EXPECT_THROW(b.receive(buf), std::system_error);
   }
 }
 
@@ -379,12 +378,12 @@ TEST_P(stream_socket, send_do_not_route)
   a.connect(loopback(GetParam()));
   auto b = acceptor.accept();
 
-  EXPECT_EQ(case_name.size(), a.send(sal::make_buf(case_name), a.do_not_route));
+  EXPECT_EQ(case_name.size(), a.send(case_name, a.do_not_route));
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
 
-  EXPECT_EQ(case_name.size(), b.receive(sal::make_buf(buf)));
+  EXPECT_EQ(case_name.size(), b.receive(buf));
   EXPECT_EQ(case_name, buf);
 }
 
@@ -605,7 +604,7 @@ TEST_P(stream_socket, async_receive)
 
   a.associate(svc);
   a.async_receive(ctx.make_io());
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
 
   auto io = ctx.poll();
   ASSERT_NE(nullptr, io);
@@ -630,7 +629,7 @@ TEST_P(stream_socket, async_receive_immediate_completion)
   auto b = acceptor.accept();
 
   a.associate(svc);
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
   a.async_receive(ctx.make_io());
 
   auto io = ctx.poll();
@@ -656,8 +655,8 @@ TEST_P(stream_socket, async_receive_two_send)
   auto b = acceptor.accept();
   a.associate(svc);
 
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
   a.async_receive(ctx.make_io());
 
   auto io = ctx.poll();
@@ -686,8 +685,8 @@ TEST_P(stream_socket, async_receive_two_send_immediate_completion)
 
   a.async_receive(ctx.make_io());
   a.async_receive(ctx.make_io());
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
 
   for (int i = 0;  i < 2;  ++i)
   {
@@ -730,7 +729,7 @@ TEST_P(stream_socket, async_receive_less_than_send)
   io->resize(case_name.size() - case_name.size() / 2);
   a.async_receive(std::move(io));
 
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
 
   std::string data;
   for (auto i = 0;  i < 2;  ++i)
@@ -757,7 +756,7 @@ TEST_P(stream_socket, async_receive_less_than_send_immediate_completion)
   auto b = acceptor.accept();
   a.associate(svc);
 
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
 
   auto io = ctx.make_io();
   io->resize(case_name.size() / 2);
@@ -847,7 +846,7 @@ TEST_P(stream_socket, async_receive_peek)
 
   a.associate(svc);
   a.async_receive(ctx.make_io(), a.peek);
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
 
   // receive with peek
   auto io = ctx.poll();
@@ -878,7 +877,7 @@ TEST_P(stream_socket, async_receive_peek_immediate_completion)
   auto b = acceptor.accept();
 
   a.associate(svc);
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
   a.async_receive(ctx.make_io(), a.peek);
 
   // receive with peek
@@ -913,7 +912,7 @@ TEST_P(stream_socket, async_receive_before_shutdown)
   a.async_receive(ctx.make_io());
   a.shutdown(a.shutdown_receive);
 
-  EXPECT_EQ(case_name.size(), b.send(sal::make_buf(case_name)));
+  EXPECT_EQ(case_name.size(), b.send(case_name));
 
   auto io = ctx.poll();
   ASSERT_NE(nullptr, io);
@@ -986,7 +985,7 @@ TEST_P(stream_socket, async_send)
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), b.receive(sal::make_buf(buf)));
+  EXPECT_EQ(case_name.size(), b.receive(buf));
   EXPECT_EQ(case_name, buf);
 
   auto io = ctx.poll();
@@ -1042,7 +1041,7 @@ TEST_P(stream_socket, async_send_before_shutdown)
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), b.receive(sal::make_buf(buf)));
+  EXPECT_EQ(case_name.size(), b.receive(buf));
   EXPECT_EQ(case_name, buf);
 
   auto io = ctx.poll();
