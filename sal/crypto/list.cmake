@@ -15,6 +15,9 @@ list(APPEND sal_sources
   sal/crypto/key.cpp
   sal/crypto/oid.hpp
   sal/crypto/oid.cpp
+  sal/crypto/__bits/pipe.hpp
+  sal/crypto/__bits/pipe.cpp
+  sal/crypto/pipe.hpp
   sal/crypto/random.hpp
   sal/crypto/random.cpp
 )
@@ -29,5 +32,6 @@ list(APPEND sal_unittests_sources
   sal/crypto/hmac.test.cpp
   sal/crypto/key.test.cpp
   sal/crypto/oid.test.cpp
+  sal/crypto/pipe.test.cpp
   sal/crypto/random.test.cpp
 )

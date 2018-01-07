@@ -642,6 +642,16 @@ public:
   }
 
 
+  /**
+   * Return native handle.
+   * \internal
+   */
+  __bits::certificate_t native_handle () const noexcept
+  {
+    return impl_;
+  }
+
+
 private:
 
   __bits::certificate_t impl_{};
