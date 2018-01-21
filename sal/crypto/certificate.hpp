@@ -652,6 +652,16 @@ public:
   }
 
 
+  /**
+   * Create certificate from native handle
+   * \internal
+   */
+  static certificate_t from_native_handle (__bits::certificate_t &&that) noexcept
+  {
+    return {std::move(that)};
+  }
+
+
 private:
 
   __bits::certificate_t impl_{};
