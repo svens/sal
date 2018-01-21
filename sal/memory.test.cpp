@@ -10,6 +10,24 @@ namespace {
 using memory = sal_test::fixture;
 
 
+TEST_F(memory, to_ptr_nullptr)
+{
+  EXPECT_EQ(nullptr, sal::to_ptr(nullptr));
+}
+
+
+TEST_F(memory, range_size_nullptr)
+{
+  EXPECT_EQ(0U, sal::range_size(nullptr, nullptr));
+}
+
+
+TEST_F(memory, to_end_ptr_nullptr)
+{
+  EXPECT_EQ(nullptr, sal::to_end_ptr(nullptr, nullptr));
+}
+
+
 TEST_F(memory, to_ptr_char_array)
 {
   uint8_t data[] = { 1 };

@@ -69,6 +69,16 @@ inline auto to_ptr (It it) noexcept
 
 
 /**
+ * Return \a it as pointer casted to uint8_t pointer. \a it can be iterator or
+ * unrelated type of pointer.
+ */
+constexpr std::nullptr_t to_ptr (std::nullptr_t) noexcept
+{
+  return nullptr;
+}
+
+
+/**
  * Return memory region [\a first, \a last) size in bytes.
  * If \a first > \a last, result is undefined.
  */
@@ -82,6 +92,16 @@ inline constexpr size_t range_size (It first, It last) noexcept
 
 
 /**
+ * Return memory region [\a first, \a last) size in bytes.
+ * If \a first > \a last, result is undefined.
+ */
+constexpr size_t range_size (std::nullptr_t, std::nullptr_t) noexcept
+{
+  return 0;
+}
+
+
+/**
  * Return iterator casted to uint8_t pointer to past last item in range
  * [\a first, \a last).
  */
@@ -89,6 +109,16 @@ template <typename It>
 inline auto to_end_ptr (It first, It last) noexcept
 {
   return to_ptr(first) + range_size(first, last);
+}
+
+
+/**
+ * Return iterator casted to uint8_t pointer to past last item in range
+ * [\a first, \a last).
+ */
+constexpr std::nullptr_t to_end_ptr (std::nullptr_t, std::nullptr_t) noexcept
+{
+  return nullptr;
 }
 
 
