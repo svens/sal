@@ -8,12 +8,8 @@
 
 #include <sal/config.hpp>
 #include <sal/crypto/__bits/pipe.hpp>
-#include <sal/crypto/certificate.hpp>
+#include <sal/crypto/pipe_options.hpp>
 #include <sal/crypto/error.hpp>
-#include <variant>
-
-
-#include <iostream>
 
 
 __sal_begin
@@ -22,276 +18,186 @@ __sal_begin
 namespace crypto {
 
 
-/**
- */
 class pipe_t
 {
 public:
 
-  pipe_t () noexcept = default;
-
-
-  void encrypt ()
+  bool is_connected () const noexcept
   {
-  }
-
-
-  void decrypt ()
-  {
-  }
-
-
-private:
-
-  __bits::pipe_ptr impl_{};
-
-  pipe_t (__bits::pipe_ptr &&pipe) noexcept
-    : impl_(std::move(pipe))
-  {}
-
-  template <typename Send>
-  friend class pipe_handshake_t;
-};
-
-
-/**
- */
-template <typename Send>
-class pipe_handshake_t
-  : private __bits::pipe_event_handler_t
-{
-public:
-
-  template <typename It>
-  void process (It first, It last, std::error_code &error) noexcept
-  {
-    if (impl_)
-    {
-      impl_->process(to_ptr(first), to_end_ptr(first, last), error);
-    }
-    else
-    {
-      error = std::make_error_code(std::errc::already_connected);
-    }
+    return impl_ && impl_->state == &__bits::pipe_t::connected;
   }
 
 
   template <typename It>
-  void process (It first, It last)
+  pipe_t &receive_buffer (It first, It last) noexcept
   {
-    process(first, last, throw_on_error("pipe_handshake::process"));
+    impl_->recv_first = to_ptr(first);
+    impl_->recv_last = to_end_ptr(first, last);
+    return *this;
   }
 
 
   template <typename Data>
-  void process (const Data &data, std::error_code &error) noexcept
+  pipe_t &receive_buffer (const Data &data) noexcept
   {
     using std::cbegin;
     using std::cend;
-    process(cbegin(data), cend(data), error);
+    return receive_buffer(cbegin(data), cend(data));
+  }
+
+
+  pipe_t &receive_buffer (
+    const std::pair<const uint8_t *, const uint8_t *> &buffer) noexcept
+  {
+    impl_->recv_first = buffer.first;
+    impl_->recv_last = buffer.second;
+    return *this;
+  }
+
+
+  template <typename It>
+  pipe_t &send_buffer (It first, It last) noexcept
+  {
+    impl_->send_first = impl_->send_ptr = to_ptr(first);
+    impl_->send_last = to_end_ptr(first, last);
+    return *this;
   }
 
 
   template <typename Data>
-  void process (const Data &data)
+  pipe_t &send_buffer (Data &data) noexcept
   {
-    using std::cbegin;
-    using std::cend;
-    process(cbegin(data), cend(data));
+    using std::begin;
+    using std::end;
+    return send_buffer(begin(data), end(data));
   }
 
 
-  pipe_t pipe (std::error_code &error) noexcept
+  pipe_t &send_buffer (const std::pair<uint8_t *, uint8_t *> &buffer)
+    noexcept
   {
-    if (impl_ && impl_->max_message_size_ > 0)
-    {
-      return std::move(impl_);
-    }
-    error = std::make_error_code(std::errc::not_connected);
-    return {};
+    impl_->send_first = impl_->send_ptr = buffer.first;
+    impl_->send_last = buffer.second;
+    return *this;
   }
 
 
-  pipe_t pipe ()
+  void process (std::error_code &error) noexcept
   {
-    return pipe(throw_on_error("pipe_handshake::pipe"));
+    impl_->process(error);
+  }
+
+
+  void process ()
+  {
+    process(throw_on_error("pipe::process"));
+  }
+
+
+  std::pair<const uint8_t *, const uint8_t *> receive_buffer () const noexcept
+  {
+    return {impl_->recv_first, impl_->recv_last};
+  }
+
+
+  std::pair<const uint8_t *, const uint8_t *> send_buffer () const noexcept
+  {
+    return {impl_->send_first, impl_->send_ptr};
   }
 
 
 private:
 
   __bits::pipe_ptr impl_;
-  Send send_;
 
-  template <typename Data>
-  pipe_handshake_t (__bits::pipe_ptr &&pipe, Data &send_buffer, Send send)
+  pipe_t (__bits::pipe_ptr &&pipe) noexcept
     : impl_(std::move(pipe))
-    , send_(send)
-  {
-    using std::begin;
-    using std::end;
-    auto first = to_ptr(begin(send_buffer));
-    auto last = to_end_ptr(begin(send_buffer), end(send_buffer));
-    impl_->start_handshake(this, first, last,
-      throw_on_error("pipe_handshake")
-    );
-  }
+  {}
 
-  void pipe_on_send (const uint8_t *first, const uint8_t *last,
-    std::error_code &error) noexcept final override
-  {
-    send_(first, last, error);
-  }
-
-  friend class pipe_factory_t;
+  template <bool Server>
+  friend class basic_pipe_factory_t;
 };
 
 
-/**
- */
-class pipe_factory_t
+template <bool Server>
+class basic_pipe_factory_t
 {
 public:
 
-  template <typename Option>
-  struct option_t {};
-
-
-  struct inbound_t: public option_t<inbound_t> {};
-  struct outbound_t: public option_t<outbound_t> {};
-  struct mutual_auth_t: public option_t<mutual_auth_t> {};
-
-
-  struct with_certificate_t
-    : option_t<with_certificate_t>
+  template <typename... Option>
+  basic_pipe_factory_t (const pipe_factory_option_t<Option> &...option)
   {
-    certificate_t certificate;
-
-    with_certificate_t (const certificate_t &certificate) noexcept
-      : certificate(certificate)
-    {}
-  };
-
-
-  template <typename Validator>
-  struct manual_certificate_check_t
-    : option_t<manual_certificate_check_t<Validator>>
-  {
-    Validator validator;
-
-    manual_certificate_check_t (Validator validator) noexcept
-      : validator(validator)
-    {}
-  };
+    (set_option(static_cast<const Option &>(option)), ...);
+    impl_->ctor(throw_on_error("basic_pipe_factory"));
+  }
 
 
   template <typename... Option>
-  pipe_factory_t (const option_t<Option> &...option)
+  pipe_t make_stream_pipe (const pipe_option_t<Option> &...option)
   {
-    (set_option(static_cast<const Option &>(option)), ...);
-    impl_->ctor(throw_on_error("pipe_factory"));
+    auto pipe = impl_->make_pipe(true);
+    (set_option(*pipe, static_cast<const Option &>(option)), ...);
+    pipe->ctor(throw_on_error("basic_pipe_factory::make_stream_pipe"));
+    return pipe;
   }
 
 
-  template <typename Data, typename Send>
-  pipe_handshake_t<Send> make_stream_pipe (Data &send_buffer, Send send)
+  template <typename... Option>
+  pipe_t make_datagram_pipe (const pipe_option_t<Option> &...option)
   {
-    return
-    {
-      std::make_unique<__bits::pipe_t>(impl_, true),
-      send_buffer,
-      send
-    };
-  }
-
-
-  template <typename Data, typename Send>
-  pipe_handshake_t<Send> make_datagram_pipe (Data &send_buffer, Send send)
-  {
-    return
-    {
-      std::make_unique<__bits::pipe_t>(impl_, false),
-      send_buffer,
-      send
-    };
+    auto pipe = impl_->make_pipe(false);
+    (set_option(*pipe, static_cast<const Option &>(option)), ...);
+    pipe->ctor(throw_on_error("basic_pipe_factory::make_datagram_pipe"));
+    return pipe;
   }
 
 
 private:
 
-  __bits::pipe_factory_ptr impl_ = std::make_shared<__bits::pipe_factory_t>();
-
-
-  void set_option (const with_certificate_t &option) noexcept
-  {
-    impl_->certificate_ = option.certificate.native_handle();
-  }
+  __bits::pipe_factory_ptr impl_ = std::make_shared<__bits::pipe_factory_t>(Server);
 
 
   void set_option (const mutual_auth_t &) noexcept
   {
-    impl_->mutual_auth_ = true;
+    impl_->mutual_auth = true;
   }
 
 
-  void set_option (const inbound_t &) noexcept
+  void set_option (const with_certificate_t &option) noexcept
   {
-    impl_->inbound_ = true;
+    impl_->certificate = option.certificate.native_handle();
   }
 
 
-  void set_option (const outbound_t &) noexcept
+  template <typename Check>
+  void set_option (const manual_certificate_check_t<Check> &option) noexcept
   {
-    impl_->inbound_ = false;
+    impl_->certificate_check = option.check;
   }
 
 
-  template <typename Validator>
-  void set_option (const manual_certificate_check_t<Validator> &option) noexcept
+  void set_option (__bits::pipe_t &pipe, const peer_name_t &option)
   {
-    impl_->manual_certificate_check_ = option.validator;
+    pipe.peer_name = option.peer_name;
   }
 };
 
 
-/**
- */
-inline constexpr const pipe_factory_t::inbound_t inbound{};
-inline constexpr const pipe_factory_t::outbound_t outbound{};
-inline constexpr const pipe_factory_t::mutual_auth_t mutual_auth{};
+using client_pipe_factory_t = basic_pipe_factory_t<false>;
+using server_pipe_factory_t = basic_pipe_factory_t<true>;
 
 
-/**
- */
-inline pipe_factory_t::with_certificate_t with_certificate (
-  const certificate_t &certificate) noexcept
-{
-  return {certificate};
-}
-
-
-/**
- */
-template <typename Validator>
-inline pipe_factory_t::manual_certificate_check_t<Validator>
-  manual_certificate_check (Validator validator) noexcept
-{
-  return {validator};
-}
-
-
-inline const auto no_certificate_check = manual_certificate_check(
-  [](const certificate_t &) noexcept
-  {
-    return true;
-  }
-);
-
-
-/**
- */
 template <typename... Option>
-inline pipe_factory_t pipe_factory (const pipe_factory_t::option_t<Option> &...options)
+server_pipe_factory_t server_pipe_factory (
+  const pipe_factory_option_t<Option> &...options)
+{
+  return {options...};
+}
+
+
+template <typename... Option>
+client_pipe_factory_t client_pipe_factory (
+  const pipe_factory_option_t<Option> &...options)
 {
   return {options...};
 }

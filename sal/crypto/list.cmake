@@ -18,6 +18,7 @@ list(APPEND sal_sources
   sal/crypto/__bits/pipe.hpp
   sal/crypto/__bits/pipe.cpp
   sal/crypto/pipe.hpp
+  sal/crypto/pipe_options.hpp
   sal/crypto/random.hpp
   sal/crypto/random.cpp
 )
