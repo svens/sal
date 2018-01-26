@@ -104,6 +104,12 @@ private:
 
 
 /**
+ * Nullptr buf_ptr with no size.
+ */
+inline const buf_ptr null_buf;
+
+
+/**
  * Create and return new ptr from \a p with beginning of region moved
  * toward end by \a n bytes.
  */
@@ -356,6 +362,12 @@ private:
 
   const uint8_t *begin_{}, * const end_{};
 };
+
+
+/**
+ * Nullptr const_buf_ptr with no size.
+ */
+inline const const_buf_ptr const_null_buf;
 
 
 /**
