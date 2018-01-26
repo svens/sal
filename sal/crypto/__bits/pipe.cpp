@@ -5,9 +5,6 @@
 #endif
 
 
-#include <iostream>
-
-
 __sal_begin
 
 
@@ -18,6 +15,9 @@ namespace crypto::__bits {
 
 
 #elif __sal_os_macos //{{{1
+
+
+#define LOG(x) //x
 
 
 namespace {
@@ -32,20 +32,29 @@ inline pipe_t &to_pipe (::SSLConnectionRef connection) noexcept
 OSStatus pipe_read (::SSLConnectionRef connection, void *data, size_t *size)
   noexcept
 {
+  LOG(std::cout << "    read: " << *size);
   auto &pipe = to_pipe(connection);
-  if (pipe.recv_first < pipe.recv_last)
+  if (pipe.in_first < pipe.in_last)
   {
-    size_t have = pipe.recv_last - pipe.recv_first;
-    if (*size > have)
+    OSStatus result = errSecSuccess;
+    size_t have = pipe.in_last - pipe.in_first;
+    if (have < *size)
     {
       *size = have;
+      result = errSSLWouldBlock;
+      LOG(std::cout << ", block: " << have << '\n');
+    }
+    else
+    {
+      LOG(std::cout << ", ok\n");
     }
     std::uninitialized_copy_n(
-      pipe.recv_first, *size, static_cast<uint8_t *>(data)
+      pipe.in_first, *size, static_cast<uint8_t *>(data)
     );
-    pipe.recv_first += *size;
-    return errSecSuccess;
+    pipe.in_first += *size;
+    return result;
   }
+  LOG(std::cout << ", block: none\n");
   *size = 0;
   return errSSLWouldBlock;
 }
@@ -54,19 +63,28 @@ OSStatus pipe_read (::SSLConnectionRef connection, void *data, size_t *size)
 OSStatus pipe_write (::SSLConnectionRef connection, const void *data, size_t *size)
   noexcept
 {
+  LOG(std::cout << "    write: " << *size);
   auto &pipe = to_pipe(connection);
-  if (pipe.send_ptr < pipe.send_last)
+  if (pipe.out_ptr < pipe.out_last)
   {
-    size_t room = pipe.send_last - pipe.send_ptr;
+    OSStatus result = errSecSuccess;
+    size_t room = pipe.out_last - pipe.out_ptr;
     if (*size > room)
     {
       *size = room;
+      result = errSSLWouldBlock;
+      LOG(std::cout << ", block: " << room << '\n');
     }
-    pipe.send_ptr = std::uninitialized_copy_n(
-      static_cast<const uint8_t *>(data), *size, pipe.send_ptr
+    else
+    {
+      LOG(std::cout << ", ok\n");
+    }
+    pipe.out_ptr = std::uninitialized_copy_n(
+      static_cast<const uint8_t *>(data), *size, pipe.out_ptr
     );
-    return errSecSuccess;
+    return result;
   }
+  LOG(std::cout << ", none\n");
   *size = 0;
   return errSSLWouldBlock;
 }
@@ -221,6 +239,7 @@ void pipe_t::ctor (std::error_code &error) noexcept
     return;
   }
 
+  side = factory->inbound ? 'S' : 'C';
   if (set_io(*this, error)
     && set_connection(*this, error)
     && set_peer_name(*this, error)
@@ -228,57 +247,137 @@ void pipe_t::ctor (std::error_code &error) noexcept
     && set_certificate(*this, error)
     && set_certificate_check(*this, error))
   {
-    state = factory->inbound
-      ? &pipe_t::server_handshake
-      : &pipe_t::client_handshake;
     error.clear();
   }
 }
 
 
-void pipe_t::client_handshake (std::error_code &error) noexcept
+void pipe_t::handshake (std::error_code &error) noexcept
 {
+  if (handshake_result)
+  {
+    error = handshake_result;
+    return;
+  }
+
+  LOG(std::cout << side
+    << "> handshake, IN: " << (in_last - in_first)
+    << ", OUT: " << (out_last - out_ptr) << '\n');
+
   auto status = ::SSLHandshake(context.ref);
+
+  LOG(std::cout
+    << "    < IN: " << (in_last - in_first)
+    << ", OUT: " << (out_ptr - out_first) << '\n');
+
   if (status == errSecSuccess)
   {
-    state = &pipe_t::connected;
+    LOG(std::cout << side << "> connected\n");
+    handshake_result = std::make_error_code(std::errc::already_connected);
     error.clear();
   }
   else if (status == errSSLWouldBlock)
   {
+    LOG(std::cout << side << "> blocked\n");
     error.clear();
   }
   else if (status == errSSLPeerAuthCompleted)
   {
+    LOG(std::cout << side << "> certificate_check\n");
     if (is_trusted_peer_certificate(*this, error))
     {
-      error.clear();
+      handshake(error);
     }
     else
     {
-      state = {};
-      error.assign(errSSLPeerCertUnknown, category());
+      handshake_result = std::make_error_code(std::errc::connection_aborted);
     }
   }
   else
   {
-    state = {};
+    handshake_result = std::make_error_code(std::errc::connection_aborted);
     error.assign(status, category());
+    LOG(std::cout << side << "> error\n");
   }
 }
 
 
-void pipe_t::server_handshake (std::error_code &error) noexcept
+void pipe_t::encrypt (std::error_code &error) noexcept
 {
-  // for Apple's SecureTransport, same SSLHandshake
-  client_handshake(error);
+  if (handshake_result != std::errc::already_connected)
+  {
+    error = std::make_error_code(std::errc::not_connected);
+    return;
+  }
+
+  LOG(std::cout << side
+    << "> encrypt, IN: " << (in_last - in_first)
+    << ", OUT: " << (out_last - out_ptr) << '\n');
+
+  size_t processed = 0U;
+  auto status = ::SSLWrite(context.ref,
+    in_first,
+    (in_last - in_first),
+    &processed
+  );
+  in_first += processed;
+
+  LOG(std::cout
+    << "    < IN: " << (in_last - in_first)
+    << ", OUT: " << (out_ptr - out_first) << '\n');
+
+  if (status == errSecSuccess)
+  {
+    LOG(std::cout << side << "> ok\n");
+    error.clear();
+  }
+  else
+  {
+    error.assign(status, category());
+    LOG(std::cout << side << "> error\n");
+  }
 }
 
 
-void pipe_t::connected (std::error_code &error) noexcept
+void pipe_t::decrypt (std::error_code &error) noexcept
 {
-  std::cout << "running(" << std::string(recv_first, recv_last) << ")\n";
-  error.clear();
+  if (handshake_result != std::errc::already_connected)
+  {
+    error = std::make_error_code(std::errc::not_connected);
+    return;
+  }
+
+  LOG(std::cout << side
+    << "> decrypt, IN: " << (in_last - in_first)
+    << ", OUT: " << (out_last - out_ptr) << '\n');
+
+  size_t processed = 0U;
+  auto status = ::SSLRead(context.ref,
+    out_ptr,
+    (out_last - out_ptr),
+    &processed
+  );
+  out_ptr += processed;
+
+  LOG(std::cout
+    << "    < IN: " << (in_last - in_first)
+    << ", OUT: " << (out_ptr - out_first) << '\n');
+
+  if (status == errSecSuccess)
+  {
+    LOG(std::cout << side << "> ok\n");
+    error.clear();
+  }
+  else if (status == errSSLWouldBlock)
+  {
+    LOG(std::cout << side << "> blocked\n");
+    error.clear();
+  }
+  else
+  {
+    error.assign(status, category());
+    LOG(std::cout << side << "> error\n");
+  }
 }
 
 

@@ -24,85 +24,76 @@ public:
 
   bool is_connected () const noexcept
   {
-    return impl_ && impl_->state == &__bits::pipe_t::connected;
+    return impl_->handshake_result == std::errc::already_connected;
   }
 
 
-  template <typename It>
-  pipe_t &receive_buffer (It first, It last) noexcept
-  {
-    impl_->recv_first = to_ptr(first);
-    impl_->recv_last = to_end_ptr(first, last);
-    return *this;
-  }
-
-
-  template <typename Data>
-  pipe_t &receive_buffer (const Data &data) noexcept
-  {
-    using std::cbegin;
-    using std::cend;
-    return receive_buffer(cbegin(data), cend(data));
-  }
-
-
-  pipe_t &receive_buffer (
-    const std::pair<const uint8_t *, const uint8_t *> &buffer) noexcept
-  {
-    impl_->recv_first = buffer.first;
-    impl_->recv_last = buffer.second;
-    return *this;
-  }
-
-
-  template <typename It>
-  pipe_t &send_buffer (It first, It last) noexcept
-  {
-    impl_->send_first = impl_->send_ptr = to_ptr(first);
-    impl_->send_last = to_end_ptr(first, last);
-    return *this;
-  }
-
-
-  template <typename Data>
-  pipe_t &send_buffer (Data &data) noexcept
+  template <typename In, typename Out>
+  std::pair<size_t, size_t> handshake (const In &in, Out &&out,
+    std::error_code &error) noexcept
   {
     using std::begin;
     using std::end;
-    return send_buffer(begin(data), end(data));
+    using std::cbegin;
+    using std::cend;
+    return impl_->handshake(
+      to_ptr(cbegin(in)), to_end_ptr(cbegin(in), cend(in)),
+      to_ptr(begin(out)), to_end_ptr(begin(out), end(out)),
+      error
+    );
   }
 
 
-  pipe_t &send_buffer (const std::pair<uint8_t *, uint8_t *> &buffer)
-    noexcept
+  template <typename In, typename Out>
+  std::pair<size_t, size_t> handshake (const In &in, Out &&out)
   {
-    impl_->send_first = impl_->send_ptr = buffer.first;
-    impl_->send_last = buffer.second;
-    return *this;
+    return handshake(in, out, throw_on_error("pipe::handshake"));
   }
 
 
-  void process (std::error_code &error) noexcept
+  template <typename In, typename Out>
+  std::pair<size_t, size_t> encrypt (const In &in, Out &&out,
+    std::error_code &error) noexcept
   {
-    impl_->process(error);
+    using std::begin;
+    using std::end;
+    using std::cbegin;
+    using std::cend;
+    return impl_->encrypt(
+      to_ptr(cbegin(in)), to_end_ptr(cbegin(in), cend(in)),
+      to_ptr(begin(out)), to_end_ptr(begin(out), end(out)),
+      error
+    );
   }
 
 
-  void process ()
+  template <typename In, typename Out>
+  std::pair<size_t, size_t> encrypt (const In &in, Out &&out)
   {
-    process(throw_on_error("pipe::process"));
+    return encrypt(in, out, throw_on_error("pipe::encrypt"));
   }
 
 
-  std::pair<const uint8_t *, const uint8_t *> receive_buffer () const noexcept
+  template <typename In, typename Out>
+  std::pair<size_t, size_t> decrypt (const In &in, Out &&out,
+    std::error_code &error) noexcept
   {
-    return {impl_->recv_first, impl_->recv_last};
+    using std::begin;
+    using std::end;
+    using std::cbegin;
+    using std::cend;
+    return impl_->decrypt(
+      to_ptr(cbegin(in)), to_end_ptr(cbegin(in), cend(in)),
+      to_ptr(begin(out)), to_end_ptr(begin(out), end(out)),
+      error
+    );
   }
 
 
-  std::pair<const uint8_t *, const uint8_t *> send_buffer () const noexcept
+  template <typename In, typename Out>
+  std::pair<size_t, size_t> decrypt (const In &in, Out &&out)
   {
-    return {impl_->send_first, impl_->send_ptr};
+    return decrypt(in, out, throw_on_error("pipe::decrypt"));
   }
 
 
