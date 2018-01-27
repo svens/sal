@@ -9,69 +9,9 @@ namespace {
 using namespace sal::crypto;
 
 
-struct crypto_pipe
-  : public sal_test::fixture
+struct pipe
+  : public sal_test::with_value<bool>
 {
-
-
-  std::pair<pipe_t, pipe_t> handshake (pipe_t &&client, pipe_t &&server)
-  {
-    SCOPED_TRACE("handshake");
-    EXPECT_FALSE(client.is_connected());
-    EXPECT_FALSE(server.is_connected());
-
-    uint8_t client_buf[2048], server_buf[2048];
-
-    // generate client_hello
-    auto [consumed, produced] = client.handshake(sal::const_null_buf, server_buf);
-    EXPECT_EQ(0U, consumed);
-    EXPECT_NE(0U, produced);
-
-    // server <- client_hello
-    // generate server_hello
-    auto expected_consumed = produced;
-    std::tie(consumed, produced) = server.handshake(
-      sal::make_buf(server_buf, produced),
-      client_buf
-    );
-    EXPECT_EQ(expected_consumed, consumed);
-    EXPECT_NE(0U, produced);
-
-    // client <- server_hello
-    // generate key_exchange
-    expected_consumed = produced;
-    std::tie(consumed, produced) = client.handshake(
-      sal::make_buf(client_buf, produced),
-      server_buf
-    );
-    EXPECT_EQ(expected_consumed, consumed);
-    EXPECT_NE(0U, produced);
-
-    // server <- key_exchange
-    // generate server_fnished
-    expected_consumed = produced;
-    std::tie(consumed, produced) = server.handshake(
-      sal::make_buf(server_buf, produced),
-      client_buf
-    );
-    EXPECT_EQ(expected_consumed, consumed);
-    EXPECT_NE(0U, produced);
-    EXPECT_TRUE(server.is_connected());
-
-    // client <- server_finished
-    expected_consumed = produced;
-    std::tie(consumed, produced) = client.handshake(
-      sal::make_buf(client_buf, produced),
-      server_buf
-    );
-    EXPECT_EQ(expected_consumed, consumed);
-    EXPECT_EQ(0U, produced);
-    EXPECT_TRUE(client.is_connected());
-
-    return {std::move(client), std::move(server)};
-  }
-
-
   std::pair<pipe_t, pipe_t> make_pipe_pair (
     client_pipe_factory_t &&client_factory,
     server_pipe_factory_t &&server_factory,
@@ -80,21 +20,82 @@ struct crypto_pipe
     if (stream_oriented)
     {
       SCOPED_TRACE("make_stream_pipe");
-      return handshake(
+      return
+      {
         client_factory.make_stream_pipe(),
         server_factory.make_stream_pipe()
-      );
+      };
     }
     else
     {
       SCOPED_TRACE("make_datagram_pipe");
-      return handshake(
+      return
+      {
         client_factory.make_datagram_pipe(),
         server_factory.make_datagram_pipe()
-      );
+      };
     }
   }
+
+
+  void handshake (pipe_t &client, pipe_t &server)
+  {
+    SCOPED_TRACE("handshake");
+    ASSERT_FALSE(client.is_connected());
+    ASSERT_FALSE(server.is_connected());
+
+    uint8_t client_buf[2048], server_buf[2048];
+
+    // generate client_hello
+    auto [consumed, produced] = client.handshake(sal::const_null_buf, server_buf);
+    ASSERT_EQ(0U, consumed);
+    ASSERT_NE(0U, produced);
+
+    // server <- client_hello
+    // generate server_hello
+    auto expected_consumed = produced;
+    std::tie(consumed, produced) = server.handshake(
+      sal::make_buf(server_buf, produced),
+      client_buf
+    );
+    ASSERT_EQ(expected_consumed, consumed);
+    ASSERT_NE(0U, produced);
+
+    // client <- server_hello
+    // generate key_exchange
+    expected_consumed = produced;
+    std::tie(consumed, produced) = client.handshake(
+      sal::make_buf(client_buf, produced),
+      server_buf
+    );
+    ASSERT_EQ(expected_consumed, consumed);
+    ASSERT_NE(0U, produced);
+
+    // server <- key_exchange
+    // generate server_fnished
+    expected_consumed = produced;
+    std::tie(consumed, produced) = server.handshake(
+      sal::make_buf(server_buf, produced),
+      client_buf
+    );
+    ASSERT_EQ(expected_consumed, consumed);
+    ASSERT_NE(0U, produced);
+    ASSERT_TRUE(server.is_connected());
+
+    // client <- server_finished
+    expected_consumed = produced;
+    std::tie(consumed, produced) = client.handshake(
+      sal::make_buf(client_buf, produced),
+      server_buf
+    );
+    ASSERT_EQ(expected_consumed, consumed);
+    ASSERT_EQ(0U, produced);
+    ASSERT_TRUE(client.is_connected());
+  }
 };
+
+
+INSTANTIATE_TEST_CASE_P(crypto, pipe, ::testing::Bool());
 
 
 inline auto certificate () noexcept
@@ -104,59 +105,25 @@ inline auto certificate () noexcept
 }
 
 
-TEST_F(crypto_pipe, stream_handshake)
-{
-  (void)make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    true
-  );
-}
-
-
-TEST_F(crypto_pipe, datagram_handshake)
-{
-  (void)make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    false
-  );
-}
-
-
-TEST_F(crypto_pipe, stream_handshake_after_connected)
+TEST_P(pipe, handshake)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
     server_pipe_factory(certificate()),
-    true
+    GetParam()
   );
-  EXPECT_TRUE(client.is_connected());
-  EXPECT_TRUE(server.is_connected());
-
-  uint8_t in[2048], out[2048];
-  std::error_code error;
-
-  client.handshake(in, out, error);
-  EXPECT_EQ(std::errc::already_connected, error);
-
-  server.handshake(in, out, error);
-  EXPECT_EQ(std::errc::already_connected, error);
-
-  EXPECT_TRUE(client.is_connected());
-  EXPECT_TRUE(server.is_connected());
+  handshake(client, server);
 }
 
 
-TEST_F(crypto_pipe, datagram_handshake_after_connected)
+TEST_P(pipe, handshake_after_connected)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
     server_pipe_factory(certificate()),
-    false
+    GetParam()
   );
-  EXPECT_TRUE(client.is_connected());
-  EXPECT_TRUE(server.is_connected());
+  handshake(client, server);
 
   uint8_t in[2048], out[2048];
   std::error_code error;
@@ -191,12 +158,15 @@ void chunked_receive (const char phase[],
 }
 
 
-TEST_F(crypto_pipe, stream_handshake_chunked_receive)
+TEST_P(pipe, handshake_chunked_receive)
 {
-  uint8_t client_buf[2048], server_buf[2048];
-  auto client = client_pipe_factory(no_certificate_check).make_stream_pipe();
-  auto server = server_pipe_factory(certificate()).make_stream_pipe();
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
 
+  uint8_t client_buf[2048], server_buf[2048];
   auto [consumed, produced] = client.handshake(sal::const_null_buf, server_buf);
   EXPECT_EQ(0U, consumed);
   EXPECT_FALSE(client.is_connected());
@@ -252,10 +222,13 @@ void chunked_send (const char phase[], pipe_t &receiver, pipe_t &sender)
 }
 
 
-TEST_F(crypto_pipe, stream_handshake_chunked_send)
+TEST_P(pipe, handshake_chunked_send)
 {
-  auto client = client_pipe_factory(no_certificate_check).make_stream_pipe();
-  auto server = server_pipe_factory(certificate()).make_stream_pipe();
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
 
   chunked_send("server <- client_hello", server, client);
   chunked_send("client <- server_hello", client, server);
@@ -282,12 +255,15 @@ void trash (uint8_t *ptr, size_t size)
 }
 
 
-TEST_F(crypto_pipe, handshake_fail_on_invalid_client_hello)
+TEST_P(pipe, handshake_fail_on_invalid_client_hello)
 {
-  uint8_t client_buf[2048], server_buf[2048];
-  auto client = client_pipe_factory(no_certificate_check).make_stream_pipe();
-  auto server = server_pipe_factory(certificate()).make_stream_pipe();
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
 
+  uint8_t client_buf[2048], server_buf[2048];
   auto [consumed, produced] = client.handshake(sal::const_null_buf, server_buf);
   trash(server_buf, produced);
   (void)consumed;
@@ -298,13 +274,16 @@ TEST_F(crypto_pipe, handshake_fail_on_invalid_client_hello)
 }
 
 
-TEST_F(crypto_pipe, handshake_fail_on_invalid_server_hello)
+TEST_P(pipe, handshake_fail_on_invalid_server_hello)
 {
-  uint8_t client_buf[2048], server_buf[2048];
-  auto client = client_pipe_factory(no_certificate_check).make_stream_pipe();
-  auto server = server_pipe_factory(certificate()).make_stream_pipe();
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
 
   // server <- client_hello
+  uint8_t client_buf[2048], server_buf[2048];
   auto [consumed, produced] = client.handshake(sal::const_null_buf, server_buf);
   std::tie(consumed, produced) = server.handshake(
     sal::make_buf(server_buf, produced),
@@ -318,13 +297,16 @@ TEST_F(crypto_pipe, handshake_fail_on_invalid_server_hello)
 }
 
 
-TEST_F(crypto_pipe, handshake_fail_on_invalid_key_exchange)
+TEST_P(pipe, handshake_fail_on_invalid_key_exchange)
 {
-  uint8_t client_buf[2048], server_buf[2048];
-  auto client = client_pipe_factory(no_certificate_check).make_stream_pipe();
-  auto server = server_pipe_factory(certificate()).make_stream_pipe();
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
 
   // server <- client_hello
+  uint8_t client_buf[2048], server_buf[2048];
   auto [consumed, produced] = client.handshake(sal::const_null_buf, server_buf);
   std::tie(consumed, produced) = server.handshake(
     sal::make_buf(server_buf, produced),
@@ -344,18 +326,19 @@ TEST_F(crypto_pipe, handshake_fail_on_invalid_key_exchange)
 }
 
 
-TEST_F(crypto_pipe, stream_client_encrypt_message)
+TEST_P(pipe, client_encrypt_message)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
     server_pipe_factory(certificate()),
-    true
+    GetParam()
   );
+  handshake(client, server);
 
   uint8_t secret[2048];
   auto [consumed, produced] = client.encrypt(case_name, secret);
-  EXPECT_EQ(case_name.size(), consumed);
-  EXPECT_LT(0U, produced);
+  ASSERT_EQ(case_name.size(), consumed);
+  ASSERT_LT(0U, produced);
 
   std::string message(secret, secret + produced);
   EXPECT_EQ(std::string::npos, message.find(case_name));
@@ -367,41 +350,19 @@ TEST_F(crypto_pipe, stream_client_encrypt_message)
 }
 
 
-TEST_F(crypto_pipe, datagram_client_encrypt_message)
+TEST_P(pipe, server_encrypt_message)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
     server_pipe_factory(certificate()),
-    false
+    GetParam()
   );
-
-  uint8_t secret[2048];
-  auto [consumed, produced] = client.encrypt(case_name, secret);
-  EXPECT_EQ(case_name.size(), consumed);
-  EXPECT_LT(0U, produced);
-
-  std::string message(secret, secret + produced);
-  EXPECT_EQ(std::string::npos, message.find(case_name));
-
-  uint8_t plain[2048];
-  std::tie(consumed, produced) = server.decrypt(message, plain);
-  EXPECT_EQ(case_name, std::string(plain, plain + produced));
-  EXPECT_EQ(consumed, message.size());
-}
-
-
-TEST_F(crypto_pipe, stream_server_encrypt_message)
-{
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    true
-  );
+  handshake(client, server);
 
   uint8_t secret[2048];
   auto [consumed, produced] = server.encrypt(case_name, secret);
-  EXPECT_EQ(case_name.size(), consumed);
-  EXPECT_LT(0U, produced);
+  ASSERT_EQ(case_name.size(), consumed);
+  ASSERT_LT(0U, produced);
 
   std::string message(secret, secret + produced);
   EXPECT_EQ(std::string::npos, message.find(case_name));
@@ -413,200 +374,114 @@ TEST_F(crypto_pipe, stream_server_encrypt_message)
 }
 
 
-TEST_F(crypto_pipe, datagram_server_encrypt_message)
+TEST_P(pipe, encrypt_not_connected)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
     server_pipe_factory(certificate()),
-    false
+    GetParam()
   );
 
-  uint8_t secret[2048];
-  auto [consumed, produced] = server.encrypt(case_name, secret);
-  EXPECT_EQ(case_name.size(), consumed);
-  EXPECT_LT(0U, produced);
-
-  std::string message(secret, secret + produced);
-  EXPECT_EQ(std::string::npos, message.find(case_name));
-
-  uint8_t plain[2048];
-  std::tie(consumed, produced) = client.decrypt(message, plain);
-  EXPECT_EQ(case_name, std::string(plain, plain + produced));
-  EXPECT_EQ(consumed, message.size());
-}
-
-
-TEST_F(crypto_pipe, stream_client_encrypt_not_connected)
-{
-  auto client = client_pipe_factory(no_certificate_check).make_stream_pipe();
   char buffer[2048];
   std::error_code error;
-  auto [consumed, produced] = client.encrypt(case_name, buffer, error);
-  EXPECT_EQ(std::errc::not_connected, error);
-  EXPECT_EQ(0U, consumed);
-  EXPECT_EQ(0U, produced);
-}
 
-
-TEST_F(crypto_pipe, stream_server_encrypt_not_connected)
-{
-  auto server = server_pipe_factory(certificate()).make_stream_pipe();
-  char buffer[2048];
-  std::error_code error;
-  auto [consumed, produced] = server.encrypt(case_name, buffer, error);
-  EXPECT_EQ(std::errc::not_connected, error);
-  EXPECT_EQ(0U, consumed);
-  EXPECT_EQ(0U, produced);
-}
-
-
-TEST_F(crypto_pipe, datagram_client_encrypt_not_connected)
-{
-  auto client = client_pipe_factory(no_certificate_check).make_datagram_pipe();
-  char buffer[2048];
-  std::error_code error;
-  auto [consumed, produced] = client.encrypt(case_name, buffer, error);
-  EXPECT_EQ(std::errc::not_connected, error);
-  EXPECT_EQ(0U, consumed);
-  EXPECT_EQ(0U, produced);
-}
-
-
-TEST_F(crypto_pipe, datagram_server_encrypt_not_connected)
-{
-  auto server = server_pipe_factory(certificate()).make_datagram_pipe();
-  char buffer[2048];
-  std::error_code error;
-  auto [consumed, produced] = server.encrypt(case_name, buffer, error);
-  EXPECT_EQ(std::errc::not_connected, error);
-  EXPECT_EQ(0U, consumed);
-  EXPECT_EQ(0U, produced);
-}
-
-
-TEST_F(crypto_pipe, stream_encrypt_decrypt_coalesced_messages)
-{
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    true
-  );
-
-  uint8_t secret[2048];
-  std::string first("first");
-  auto [consumed_1, produced_1] = client.encrypt(first, secret);
-  EXPECT_EQ(first.size(), consumed_1);
-  EXPECT_LT(0U, produced_1);
-
-  std::string second("second");
-  auto [consumed_2, produced_2] = client.encrypt(second,
-    sal::make_buf(secret + produced_1, sizeof(secret) - produced_1)
-  );
-  EXPECT_EQ(second.size(), consumed_2);
-  EXPECT_LT(0U, produced_2);
-
-  uint8_t plain[2048];
-  auto [consumed_3, produced_3] = server.decrypt(
-    sal::make_buf(secret, produced_1 + produced_2),
-    plain
-  );
-  EXPECT_EQ(produced_1, consumed_3);
-  EXPECT_EQ(first.size(), produced_3);
-
-  auto [consumed_4, produced_4] = server.decrypt(
-    sal::make_buf(secret + consumed_3, produced_2),
-    sal::make_buf(plain + produced_3, sizeof(plain) - produced_3)
-  );
-  EXPECT_EQ(produced_2, consumed_4);
-  EXPECT_EQ(second.size(), produced_4);
-
-  EXPECT_EQ(first + second, std::string(plain, plain + produced_3 + produced_4));
-}
-
-
-TEST_F(crypto_pipe, datagram_encrypt_decrypt_coalesced_messages)
-{
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    false
-  );
-
-  uint8_t secret[2048];
-  std::string first("first");
-  auto [consumed_1, produced_1] = client.encrypt(first, secret);
-  EXPECT_EQ(first.size(), consumed_1);
-  EXPECT_LT(0U, produced_1);
-
-  std::string second("second");
-  auto [consumed_2, produced_2] = client.encrypt(second,
-    sal::make_buf(secret + produced_1, sizeof(secret) - produced_1)
-  );
-  EXPECT_EQ(second.size(), consumed_2);
-  EXPECT_LT(0U, produced_2);
-
-  uint8_t plain[2048];
-  auto [consumed_3, produced_3] = server.decrypt(
-    sal::make_buf(secret, produced_1 + produced_2),
-    plain
-  );
-  EXPECT_EQ(produced_1, consumed_3);
-  EXPECT_EQ(first.size(), produced_3);
-
-  auto [consumed_4, produced_4] = server.decrypt(
-    sal::make_buf(secret + consumed_3, produced_2),
-    sal::make_buf(plain + produced_3, sizeof(plain) - produced_3)
-  );
-  EXPECT_EQ(produced_2, consumed_4);
-  EXPECT_EQ(second.size(), produced_4);
-
-  EXPECT_EQ(first + second, std::string(plain, plain + produced_3 + produced_4));
-}
-
-
-TEST_F(crypto_pipe, stream_encrypt_decrypt_chunked)
-{
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    true
-  );
-
-  uint8_t secret[2048];
-  auto [consumed, produced] = client.encrypt(case_name, secret);
-  EXPECT_EQ(case_name.size(), consumed);
-  EXPECT_LT(0U, produced);
-
-  uint8_t plain[2048];
-  for (auto it = secret;  it != secret + produced;  ++it)
   {
-    auto [chunk_consume, chunk_produce] = server.decrypt(
-      sal::make_buf(it, 1),
-      plain
-    );
-    EXPECT_EQ(1U, chunk_consume);
-    if (chunk_produce)
-    {
-      EXPECT_EQ(produced, it - secret + 1);
-      EXPECT_EQ(case_name.size(), chunk_produce);
-      EXPECT_EQ(case_name, std::string(plain, plain + chunk_produce));
-    }
+    auto [consumed, produced] = client.encrypt(case_name, buffer, error);
+    EXPECT_EQ(std::errc::not_connected, error);
+    EXPECT_EQ(0U, consumed);
+    EXPECT_EQ(0U, produced);
+  }
+
+  {
+    auto [consumed, produced] = server.encrypt(case_name, buffer, error);
+    EXPECT_EQ(std::errc::not_connected, error);
+    EXPECT_EQ(0U, consumed);
+    EXPECT_EQ(0U, produced);
   }
 }
 
 
-TEST_F(crypto_pipe, datagram_encrypt_decrypt_chunked)
+TEST_P(pipe, decrypt_not_connected)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
     server_pipe_factory(certificate()),
-    true
+    GetParam()
   );
+
+  char buffer[2048];
+  std::error_code error;
+
+  {
+    auto [consumed, produced] = client.decrypt(case_name, buffer, error);
+    EXPECT_EQ(std::errc::not_connected, error);
+    EXPECT_EQ(0U, consumed);
+    EXPECT_EQ(0U, produced);
+  }
+
+  {
+    auto [consumed, produced] = server.decrypt(case_name, buffer, error);
+    EXPECT_EQ(std::errc::not_connected, error);
+    EXPECT_EQ(0U, consumed);
+    EXPECT_EQ(0U, produced);
+  }
+}
+
+
+TEST_P(pipe, decrypt_coalesced)
+{
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
+  handshake(client, server);
+
+  uint8_t secret[2048];
+  std::string first("first");
+  auto [consumed_1, produced_1] = client.encrypt(first, secret);
+  ASSERT_EQ(first.size(), consumed_1);
+  ASSERT_LT(0U, produced_1);
+
+  std::string second("second");
+  auto [consumed_2, produced_2] = client.encrypt(second,
+    sal::make_buf(secret + produced_1, sizeof(secret) - produced_1)
+  );
+  ASSERT_EQ(second.size(), consumed_2);
+  ASSERT_LT(0U, produced_2);
+
+  uint8_t plain[2048];
+  auto [consumed_3, produced_3] = server.decrypt(
+    sal::make_buf(secret, produced_1 + produced_2),
+    plain
+  );
+  ASSERT_EQ(produced_1, consumed_3);
+  ASSERT_EQ(first.size(), produced_3);
+
+  auto [consumed_4, produced_4] = server.decrypt(
+    sal::make_buf(secret + consumed_3, produced_2),
+    sal::make_buf(plain + produced_3, sizeof(plain) - produced_3)
+  );
+  ASSERT_EQ(produced_2, consumed_4);
+  ASSERT_EQ(second.size(), produced_4);
+
+  EXPECT_EQ(first + second, std::string(plain, plain + produced_3 + produced_4));
+}
+
+
+TEST_P(pipe, decrypt_chunked)
+{
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
+  handshake(client, server);
 
   uint8_t secret[2048];
   auto [consumed, produced] = client.encrypt(case_name, secret);
-  EXPECT_EQ(case_name.size(), consumed);
-  EXPECT_LT(0U, produced);
+  ASSERT_EQ(case_name.size(), consumed);
+  ASSERT_LT(0U, produced);
 
   uint8_t plain[2048];
   for (auto it = secret;  it != secret + produced;  ++it)
@@ -618,8 +493,8 @@ TEST_F(crypto_pipe, datagram_encrypt_decrypt_chunked)
     EXPECT_EQ(1U, chunk_consume);
     if (chunk_produce)
     {
-      EXPECT_EQ(produced, it - secret + 1);
-      EXPECT_EQ(case_name.size(), chunk_produce);
+      ASSERT_EQ(produced, it - secret + 1);
+      ASSERT_EQ(case_name.size(), chunk_produce);
       EXPECT_EQ(case_name, std::string(plain, plain + chunk_produce));
     }
   }
