@@ -8,10 +8,12 @@
 #if __sal_os_macos
   #include <sal/__bits/ref.hpp>
   #include <Security/SecureTransport.h>
+#elif __sal_os_windows
+  #define SECURITY_WIN32
+  #include <windows.h>
+  #include <sspi.h>
+  #include <vector>
 #endif
-
-
-#include <iostream>
 
 
 __sal_begin
@@ -37,12 +39,31 @@ struct pipe_t
   std::error_code handshake_result{};
 
 #if __sal_os_macos
+
   unique_ref<SSLContextRef> context{};
+
+#elif __sal_os_windows
+
+  ::CtxtHandle context{};
+  ULONG context_request{}, context_flags{};
+
+  bool is_valid () const noexcept
+  {
+    return context.dwLower || context.dwUpper;
+  }
+
+  size_t complete_message_size{};
+  std::vector<uint8_t> incomplete_message;
+  bool buffer_while_incomplete_message ();
+
+  size_t header_size, trailer_size, max_message_size;
+
 #endif
 
   // I/O
   const uint8_t *in_first{};
   const uint8_t *in_last{};
+  const uint8_t *in_ptr{};
   uint8_t *out_first{};
   uint8_t *out_last{};
   uint8_t *out_ptr{};
@@ -53,58 +74,81 @@ struct pipe_t
     , stream_oriented(stream_oriented)
   {}
 
+  ~pipe_t () noexcept;
+
   pipe_t (const pipe_t &) = delete;
   pipe_t &operator= (const pipe_t &) = delete;
 
   void ctor (std::error_code &error) noexcept;
 
-  void handshake (std::error_code &error) noexcept;
-  void encrypt (std::error_code &error) noexcept;
-  void decrypt (std::error_code &error) noexcept;
+  std::pair<size_t, size_t> handshake (std::error_code &error);
+  std::pair<size_t, size_t> encrypt (std::error_code &error);
+  std::pair<size_t, size_t> decrypt (std::error_code &error);
 
 
-  std::pair<size_t, size_t> handshake (const uint8_t *in_first,
-    const uint8_t *in_last,
-    uint8_t *out_first,
-    uint8_t *out_last,
+  std::pair<size_t, size_t> handshake (const uint8_t *ifirst,
+    const uint8_t *ilast,
+    uint8_t *ofirst,
+    uint8_t *olast,
     std::error_code &error) noexcept
   {
-    this->in_first = in_first;
-    this->in_last = in_last;
-    this->out_first = out_ptr = out_first;
-    this->out_last = out_last;
-    handshake(error);
-    return {this->in_first - in_first, out_ptr - this->out_first};
+    try
+    {
+      in_first = in_ptr = ifirst;
+      in_last = ilast;
+      out_first = out_ptr = ofirst;
+      out_last = olast;
+      return handshake(error);
+    }
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+      return {};
+    }
   }
 
 
-  std::pair<size_t, size_t> encrypt (const uint8_t *in_first,
-    const uint8_t *in_last,
-    uint8_t *out_first,
-    uint8_t *out_last,
+  std::pair<size_t, size_t> encrypt (const uint8_t *ifirst,
+    const uint8_t *ilast,
+    uint8_t *ofirst,
+    uint8_t *olast,
     std::error_code &error) noexcept
   {
-    this->in_first = in_first;
-    this->in_last = in_last;
-    this->out_first = out_ptr = out_first;
-    this->out_last = out_last;
-    encrypt(error);
-    return {this->in_first - in_first, out_ptr - this->out_first};
+    try
+    {
+      in_first = in_ptr = ifirst;
+      in_last = ilast;
+      out_first = out_ptr = ofirst;
+      out_last = olast;
+      return encrypt(error);
+    }
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+      return {};
+    }
   }
 
 
-  std::pair<size_t, size_t> decrypt (const uint8_t *in_first,
-    const uint8_t *in_last,
-    uint8_t *out_first,
-    uint8_t *out_last,
+  std::pair<size_t, size_t> decrypt (const uint8_t *ifirst,
+    const uint8_t *ilast,
+    uint8_t *ofirst,
+    uint8_t *olast,
     std::error_code &error) noexcept
   {
-    this->in_first = in_first;
-    this->in_last = in_last;
-    this->out_first = out_ptr = out_first;
-    this->out_last = out_last;
-    decrypt(error);
-    return {this->in_first - in_first, out_ptr - this->out_first};
+    try
+    {
+      in_first = in_ptr = ifirst;
+      in_last = ilast;
+      out_first = out_ptr = ofirst;
+      out_last = olast;
+      return decrypt(error);
+    }
+    catch (const std::bad_alloc &)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+      return {};
+    }
   }
 };
 using pipe_ptr = std::unique_ptr<pipe_t>;
@@ -122,9 +166,15 @@ struct pipe_factory_t
   certificate_t certificate{};
   std::function<bool(const crypto::certificate_t &)> certificate_check{};
 
+#if __sal_os_windows
+  ::CredHandle credentials{};
+#endif
+
   pipe_factory_t (bool inbound)
     : inbound(inbound)
   {}
+
+  ~pipe_factory_t () noexcept;
 
   void ctor (std::error_code &error) noexcept;
 
