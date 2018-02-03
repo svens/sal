@@ -127,16 +127,19 @@ size_t chunked_receive (pipe_t &receiver,
   std::error_code error;
   while (in_size && !::testing::Test::HasFailure())
   {
-    auto chunk_size = 1;
+    size_t chunk_size = 1U;
 
 #if __sal_os_windows
     if (phase == 100'000
       || phase == 100'216)
     {
       chunk_size = 13;
+      if (chunk_size > in_size)
+      {
+        chunk_size = in_size;
+      }
     }
 #endif
-    EXPECT_LE(chunk_size, in_size);
 
     auto [consumed, produced] = receiver.handshake(
       sal::make_buf(in_ptr, chunk_size),
