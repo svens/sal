@@ -1,5 +1,11 @@
 language: cpp
 
+group: travis_latest
+
+git:
+  # definitely using submodules but let buildsystem figure it out
+  submodules: false
+
 env:
   global:
     - COVERITY_SCAN_PROJECT_NAME="svens/sal"
@@ -24,8 +30,8 @@ matrix:
 
 addons:
   apt:
-    sources: [ ubuntu-toolchain-r-test, llvm-toolchain-trusty-5.0 ]
-    packages: [ clang-5.0, cmake, g++-7 ]
+    sources: ubuntu-toolchain-r-test
+    packages: g++-7
 
 before_install: |
   if test "${TRAVIS_OS_NAME}" = "linux"; then
