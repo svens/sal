@@ -3,13 +3,14 @@
 #if __sal_os_macos
   #include <Security/SecIdentity.h>
 #elif __sal_os_windows
+  #include <sal/memory.hpp>
   #include <schannel.h>
   #include <security.h>
   #pragma comment(lib, "secur32")
 #endif
 
 
-#define WITH_LOGGING 1
+#define WITH_LOGGING 0
 #if WITH_LOGGING
   #include <iostream>
   #include <sstream>
@@ -268,12 +269,6 @@ pipe_t::~pipe_t () noexcept
 
 std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
 {
-  if (handshake_result)
-  {
-    error = handshake_result;
-    return {};
-  }
-
   LOG(std::cout << side
     << "> handshake, IN: " << (in_last - in_ptr)
     << ", OUT: " << (out_last - out_ptr) << '\n');
@@ -307,6 +302,12 @@ std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
       handshake_result = std::make_error_code(std::errc::connection_aborted);
     }
   }
+  else if (status == errSSLRecordOverflow)
+  {
+    LOG(std::cout << side << "> overflow\n");
+    handshake_result = std::make_error_code(std::errc::no_buffer_space);
+    error = handshake_result;
+  }
   else
   {
     handshake_result = std::make_error_code(std::errc::connection_aborted);
@@ -320,12 +321,6 @@ std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
 
 std::pair<size_t, size_t> pipe_t::encrypt (std::error_code &error)
 {
-  if (handshake_result != std::errc::already_connected)
-  {
-    error = std::make_error_code(std::errc::not_connected);
-    return {};
-  }
-
   LOG(std::cout << side
     << "> encrypt, IN: " << (in_last - in_ptr)
     << ", OUT: " << (out_last - out_ptr) << '\n');
@@ -359,12 +354,6 @@ std::pair<size_t, size_t> pipe_t::encrypt (std::error_code &error)
 
 std::pair<size_t, size_t> pipe_t::decrypt (std::error_code &error)
 {
-  if (handshake_result != std::errc::already_connected)
-  {
-    error = std::make_error_code(std::errc::not_connected);
-    return {};
-  }
-
   LOG(std::cout << side
     << "> decrypt, IN: " << (in_last - in_ptr)
     << ", OUT: " << (out_last - out_ptr) << '\n');
@@ -390,6 +379,11 @@ std::pair<size_t, size_t> pipe_t::decrypt (std::error_code &error)
   {
     LOG(std::cout << side << "> blocked\n");
     error.clear();
+  }
+  else if (status == errSSLRecordOverflow)
+  {
+    LOG(std::cout << side << "> overflow\n");
+    error = std::make_error_code(std::errc::no_buffer_space);
   }
   else
   {
@@ -476,18 +470,18 @@ inline auto handle_result (SECURITY_STATUS status, const char *func)
 struct buffer_t
   : public ::SecBuffer
 {
-  buffer_t (int type, uint8_t *first, uint8_t *last) noexcept
+  buffer_t (int type, uint8_t *p, size_t size) noexcept
   {
     BufferType = type;
-    pvBuffer = first;
-    cbBuffer = static_cast<ULONG>(last - first);
+    pvBuffer = p;
+    cbBuffer = static_cast<ULONG>(size);
   }
 
   struct list_t
     : public ::SecBufferDesc
   {
     template <ULONG N>
-    list_t (buffer_t (&&bufs)[N]) noexcept
+    list_t (buffer_t (&bufs)[N]) noexcept
     {
       ulVersion = SECBUFFER_VERSION;
       pBuffers = bufs;
@@ -506,15 +500,15 @@ struct basic_buffer_t
   : public buffer_t
 {
   basic_buffer_t () noexcept
-    : buffer_t(Type, nullptr, nullptr)
+    : buffer_t(Type, nullptr, 0U)
   { }
 
-  basic_buffer_t (uint8_t *first, uint8_t *last) noexcept
-    : buffer_t(Type, first, last)
+  basic_buffer_t (uint8_t *p, size_t size) noexcept
+    : buffer_t(Type, p, size)
   {}
 
-  basic_buffer_t (const uint8_t *first, const uint8_t *last) noexcept
-    : basic_buffer_t(const_cast<uint8_t *>(first), const_cast<uint8_t *>(last))
+  basic_buffer_t (const uint8_t *p, size_t size) noexcept
+    : basic_buffer_t(const_cast<uint8_t *>(p), size)
   {}
 };
 
@@ -599,9 +593,10 @@ inline void handle_out (pipe_t &pipe, buffer_t::list_t &out) noexcept
 }
 
 
-inline void handle_extra (pipe_t &pipe, buffer_t::list_t &in) noexcept
+size_t handle_extra (pipe_t &pipe, buffer_t::list_t &in, size_t index)
+  noexcept
 {
-  auto &extra = in[1];
+  auto &extra = in[index];
   if (extra.BufferType == SECBUFFER_EXTRA && extra.cbBuffer > 0)
   {
     LOG(std::cout << "    - extra (TODO)" << extra.cbBuffer << "\n");
@@ -611,17 +606,30 @@ inline void handle_extra (pipe_t &pipe, buffer_t::list_t &in) noexcept
     pipe.incomplete_message.clear();
     pipe.in_ptr = pipe.in_last;
   }
+  return extra.cbBuffer;
 }
 
 
-inline void handle_missing (pipe_t &pipe, buffer_t::list_t &in) noexcept
+bool handle_missing (pipe_t &pipe, buffer_t::list_t &in, std::error_code &error)
+  noexcept
 {
   auto &missing = in[1];
   if (missing.BufferType == SECBUFFER_MISSING && missing.cbBuffer > 0)
   {
     pipe.complete_message_size = missing.cbBuffer + pipe.incomplete_message.size();
+    if (sal_unlikely(pipe.complete_message_size > pipe.max_message_size))
+    {
+      error = std::make_error_code(std::errc::no_buffer_space);
+      return false;
+    }
     pipe.incomplete_message.reserve(pipe.complete_message_size);
   }
+  if (pipe.incomplete_message.empty())
+  {
+    // buffer first chunk, following chunks should be buffered by caller
+    pipe.buffer_while_incomplete_message();
+  }
+  return true;
 }
 
 
@@ -765,12 +773,6 @@ bool pipe_t::buffer_while_incomplete_message ()
 
 std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
 {
-  if (handshake_result)
-  {
-    error = handshake_result;
-    return {};
-  }
-
   const size_t consumed = in_last - in_first;
   if (!incomplete_message.empty() && buffer_while_incomplete_message())
   {
@@ -784,19 +786,20 @@ std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
   SECURITY_STATUS status;
   do
   {
-    buffer_t::list_t in =
-    {{
-      token_t{in_ptr, in_last},
+    buffer_t in_[] =
+    {
+      token_t{in_ptr, size_t(in_last - in_ptr)},
       empty_t{},
       extra_t{},
-    }};
+    };
 
     uint8_t alert[64];
-    buffer_t::list_t out =
-    {{
-      token_t{out_ptr, out_last},
-      alert_t{alert, alert + sizeof(alert)},
-    }};
+    buffer_t out_[] =
+    {
+      token_t{out_ptr, size_t(out_last - out_ptr)},
+      alert_t{alert, sizeof(alert)},
+    };
+    buffer_t::list_t in(in_), out(out_);
 
     if (factory->inbound)
     {
@@ -844,19 +847,18 @@ std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
       case SEC_I_CONTINUE_NEEDED:
       case SEC_I_MESSAGE_FRAGMENT:
         handle_out(*this, out);
-        handle_extra(*this, in);
+        handle_extra(*this, in, 1);
         break;
 
       case SEC_E_BUFFER_TOO_SMALL:
       case SEC_E_INSUFFICIENT_MEMORY:
-        error = std::make_error_code(std::errc::not_enough_memory);
+        error = std::make_error_code(std::errc::no_buffer_space);
         return {};
 
       case SEC_E_INCOMPLETE_MESSAGE:
-        handle_missing(*this, in);
-        if (incomplete_message.empty())
+        if (!handle_missing(*this, in, error))
         {
-          buffer_while_incomplete_message();
+          handshake_result = error;
         }
         break;
 
@@ -877,15 +879,114 @@ std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
 
 std::pair<size_t, size_t> pipe_t::encrypt (std::error_code &error)
 {
-  error.clear();
-  return {};
+  LOG(std::cout << side
+    << "> encrypt, IN " << (in_last - in_ptr)
+    << ", ROOM " << (out_last - out_ptr) << '\n');
+
+  const size_t message_size = in_last - in_first, room = out_last - out_ptr;
+  if (message_size > max_message_size)
+  {
+    error = std::make_error_code(std::errc::message_size);
+    return {};
+  }
+  if (header_size + message_size + trailer_size > room)
+  {
+    error = std::make_error_code(std::errc::no_buffer_space);
+    return {};
+  }
+
+  buffer_t io_[] =
+  {
+    header_t{out_ptr, header_size},
+    data_t{out_ptr += header_size, message_size},
+    trailer_t{out_ptr += message_size, trailer_size},
+    empty_t{},
+  };
+  buffer_t::list_t io(io_);
+
+  std::uninitialized_copy_n(in_first, message_size,
+    sal::__bits::make_output_iterator(out_first + header_size, out_last)
+  );
+
+  auto status = call(::EncryptMessage, &context, 0, &io, 0);
+  if (status == SEC_E_OK)
+  {
+    out_ptr = out_first + io[0].cbBuffer + io[1].cbBuffer + io[2].cbBuffer;
+    error.clear();
+  }
+  else
+  {
+    error.assign(status, category());
+  }
+
+  print_bufs("IO", io);
+  LOG(std::cout
+    << "    > IN: " << (in_last - in_ptr)
+    << ", OUT: " << (out_ptr - out_first) << '\n');
+
+  return {message_size, out_ptr - out_first};
 }
 
 
 std::pair<size_t, size_t> pipe_t::decrypt (std::error_code &error)
 {
-  error.clear();
-  return {};
+  size_t consumed = in_last - in_first, not_consumed = 0, room = out_last - out_ptr;
+  if (!incomplete_message.empty() && buffer_while_incomplete_message())
+  {
+    return {consumed, 0};
+  }
+
+  LOG(std::cout << side
+    << "> decrypt, IN " << (in_last - in_ptr)
+    << ", ROOM " << (out_last - out_ptr) << '\n');
+
+  buffer_t io_[] =
+  {
+    data_t{in_ptr, size_t(in_last - in_ptr)},
+    empty_t{},
+    empty_t{},
+    empty_t{},
+  };
+  buffer_t::list_t io(io_);
+
+  switch (auto status = call(::DecryptMessage, &context, &io, 0, nullptr))
+  {
+    case SEC_E_OK:
+      if (io[1].cbBuffer <= room)
+      {
+        // TODO we can do in-place decrypt (consider after OpenSSL impl)
+        std::uninitialized_copy_n(
+          static_cast<const uint8_t *>(io[1].pvBuffer),
+          io[1].cbBuffer,
+          sal::__bits::make_output_iterator(out_ptr, out_last)
+        );
+        out_ptr += io[1].cbBuffer;
+        not_consumed = handle_extra(*this, io, 3);
+        error.clear();
+      }
+      else
+      {
+        // can do output buffering, but don't want to, it is application
+        // responsibility to provide sufficiently sized buffer
+        error = std::make_error_code(std::errc::no_buffer_space);
+      }
+      break;
+
+    case SEC_E_INCOMPLETE_MESSAGE:
+      handle_missing(*this, io, error);
+      break;
+
+    default:
+      error.assign(status, category());
+      break;
+  }
+
+  print_bufs("IO", io);
+  LOG(std::cout
+    << "    > IN: " << (in_last - in_ptr)
+    << ", OUT: " << (out_ptr - out_first) << '\n');
+
+  return {consumed - not_consumed, out_ptr - out_first};
 }
 
 

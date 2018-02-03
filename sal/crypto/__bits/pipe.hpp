@@ -56,7 +56,7 @@ struct pipe_t
   std::vector<uint8_t> incomplete_message;
   bool buffer_while_incomplete_message ();
 
-  size_t header_size, trailer_size, max_message_size;
+  size_t header_size, trailer_size, max_message_size = 8192;
 
 #endif
 
@@ -94,17 +94,21 @@ struct pipe_t
   {
     try
     {
-      in_first = in_ptr = ifirst;
-      in_last = ilast;
-      out_first = out_ptr = ofirst;
-      out_last = olast;
-      return handshake(error);
+      if (!handshake_result)
+      {
+        in_first = in_ptr = ifirst;
+        in_last = ilast;
+        out_first = out_ptr = ofirst;
+        out_last = olast;
+        return handshake(error);
+      }
+      error = handshake_result;
     }
     catch (const std::bad_alloc &)
     {
       error = std::make_error_code(std::errc::not_enough_memory);
-      return {};
     }
+    return {};
   }
 
 
@@ -116,17 +120,21 @@ struct pipe_t
   {
     try
     {
-      in_first = in_ptr = ifirst;
-      in_last = ilast;
-      out_first = out_ptr = ofirst;
-      out_last = olast;
-      return encrypt(error);
+      if (handshake_result == std::errc::already_connected)
+      {
+        in_first = in_ptr = ifirst;
+        in_last = ilast;
+        out_first = out_ptr = ofirst;
+        out_last = olast;
+        return encrypt(error);
+      }
+      error = std::make_error_code(std::errc::not_connected);
     }
     catch (const std::bad_alloc &)
     {
       error = std::make_error_code(std::errc::not_enough_memory);
-      return {};
     }
+    return {};
   }
 
 
@@ -138,17 +146,21 @@ struct pipe_t
   {
     try
     {
-      in_first = in_ptr = ifirst;
-      in_last = ilast;
-      out_first = out_ptr = ofirst;
-      out_last = olast;
-      return decrypt(error);
+      if (handshake_result == std::errc::already_connected)
+      {
+        in_first = in_ptr = ifirst;
+        in_last = ilast;
+        out_first = out_ptr = ofirst;
+        out_last = olast;
+        return decrypt(error);
+      }
+      error = std::make_error_code(std::errc::not_connected);
     }
     catch (const std::bad_alloc &)
     {
       error = std::make_error_code(std::errc::not_enough_memory);
-      return {};
     }
+    return {};
   }
 };
 using pipe_ptr = std::unique_ptr<pipe_t>;

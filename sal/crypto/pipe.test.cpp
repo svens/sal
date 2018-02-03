@@ -68,14 +68,17 @@ struct pipe
 };
 
 
-INSTANTIATE_TEST_CASE_P(crypto, pipe, ::testing::Bool());
-
-
-inline auto certificate () noexcept
+inline auto certificate ()
 {
-  auto pkcs12 = sal_test::to_der(sal_test::cert::pkcs12);
-  return with_certificate(import_pkcs12(pkcs12, "TestPassword"));
+  static auto cert = import_pkcs12(
+    sal_test::to_der(sal_test::cert::pkcs12),
+    "TestPassword"
+  );
+  return with_certificate(cert);
 }
+
+
+INSTANTIATE_TEST_CASE_P(crypto, pipe, ::testing::Bool());
 
 
 TEST_P(pipe, handshake)
@@ -130,7 +133,6 @@ size_t chunked_receive (pipe_t &receiver,
     if (phase == 100'000
       || phase == 100'216)
     {
-      std::cout << "*** PUMP\n";
       chunk_size = 13;
     }
 #endif
@@ -173,7 +175,7 @@ TEST_P(pipe, handshake_chunked_receive)
     server_buf
   );
   EXPECT_EQ(0U, consumed);
-  ASSERT_LT(0U, produced);
+  ASSERT_NE(0U, produced);
 
   // phase is for handling special case for SChannel DTLS handshake that fails
   // on 1B fragments client_hello during first 13B
@@ -213,7 +215,7 @@ TEST_P(pipe, handshake_no_output_buffer)
 
   // client side
   client.handshake(sal::const_null_buf, sal::null_buf, error);
-  EXPECT_EQ(std::errc::not_enough_memory, error);
+  EXPECT_EQ(std::errc::no_buffer_space, error);
 
   // server side (but first we need proper client_hello)
   auto [consumed, produced] = client.handshake(sal::const_null_buf, buffer);
@@ -222,7 +224,7 @@ TEST_P(pipe, handshake_no_output_buffer)
     sal::null_buf,
     error
   );
-  EXPECT_EQ(std::errc::not_enough_memory, error);
+  EXPECT_EQ(std::errc::no_buffer_space, error);
 }
 
 
@@ -244,7 +246,7 @@ TEST_P(pipe, handshake_output_buffer_too_small)
     sal::make_buf(buffer, 1),
     error
   );
-  EXPECT_EQ(std::errc::not_enough_memory, error);
+  EXPECT_EQ(std::errc::no_buffer_space, error);
 
   // server side (first we need proper client_hello)
   std::tie(consumed, produced) = client.handshake(sal::const_null_buf, buffer);
@@ -253,7 +255,7 @@ TEST_P(pipe, handshake_output_buffer_too_small)
     sal::make_buf(buffer, 1),
     error
   );
-  EXPECT_EQ(std::errc::not_enough_memory, error);
+  EXPECT_EQ(std::errc::no_buffer_space, error);
 }
 
 #else
@@ -310,22 +312,25 @@ TEST_P(pipe, handshake_chunked_send)
 #endif // !__sal_os_windows
 
 
-#if __sal_os_windows
-
-//
-// SChannel is ok with trashed messages, asking for more instead of failing
-//
-
-#else
-
-void trash (uint8_t *ptr, size_t size)
+inline void trash (uint8_t *ptr, size_t size) noexcept
 {
   while (size)
   {
-    *ptr = 0xff;
-    ptr++, size--;
+    *ptr++ = 0xff;
+    size--;
   }
 }
+
+
+#if __sal_os_windows
+
+
+//
+// SChannel is ok with trashed message, asking for more instead of error
+//
+
+
+#else
 
 
 TEST_P(pipe, handshake_fail_on_invalid_client_hello)
@@ -398,10 +403,11 @@ TEST_P(pipe, handshake_fail_on_invalid_key_exchange)
   EXPECT_FALSE(!error);
 }
 
+
 #endif // !__sal_os_windows
 
 
-TEST_P(pipe, DISABLED_client_encrypt_message)
+TEST_P(pipe, client_encrypt_message)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
@@ -413,7 +419,7 @@ TEST_P(pipe, DISABLED_client_encrypt_message)
   uint8_t secret[2048];
   auto [consumed, produced] = client.encrypt(case_name, secret);
   ASSERT_EQ(case_name.size(), consumed);
-  ASSERT_LT(0U, produced);
+  ASSERT_NE(0U, produced);
 
   std::string message(secret, secret + produced);
   EXPECT_EQ(std::string::npos, message.find(case_name));
@@ -425,7 +431,7 @@ TEST_P(pipe, DISABLED_client_encrypt_message)
 }
 
 
-TEST_P(pipe, DISABLED_server_encrypt_message)
+TEST_P(pipe, server_encrypt_message)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
@@ -437,7 +443,7 @@ TEST_P(pipe, DISABLED_server_encrypt_message)
   uint8_t secret[2048];
   auto [consumed, produced] = server.encrypt(case_name, secret);
   ASSERT_EQ(case_name.size(), consumed);
-  ASSERT_LT(0U, produced);
+  ASSERT_NE(0U, produced);
 
   std::string message(secret, secret + produced);
   EXPECT_EQ(std::string::npos, message.find(case_name));
@@ -449,7 +455,7 @@ TEST_P(pipe, DISABLED_server_encrypt_message)
 }
 
 
-TEST_P(pipe, DISABLED_encrypt_not_connected)
+TEST_P(pipe, encrypt_not_connected)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
@@ -476,7 +482,7 @@ TEST_P(pipe, DISABLED_encrypt_not_connected)
 }
 
 
-TEST_P(pipe, DISABLED_decrypt_not_connected)
+TEST_P(pipe, decrypt_not_connected)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
@@ -503,7 +509,7 @@ TEST_P(pipe, DISABLED_decrypt_not_connected)
 }
 
 
-TEST_P(pipe, DISABLED_decrypt_coalesced)
+TEST_P(pipe, decrypt_coalesced)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
@@ -516,14 +522,14 @@ TEST_P(pipe, DISABLED_decrypt_coalesced)
   std::string first("first");
   auto [consumed_1, produced_1] = client.encrypt(first, secret);
   ASSERT_EQ(first.size(), consumed_1);
-  ASSERT_LT(0U, produced_1);
+  ASSERT_NE(0U, produced_1);
 
   std::string second("second");
   auto [consumed_2, produced_2] = client.encrypt(second,
     sal::make_buf(secret + produced_1, sizeof(secret) - produced_1)
   );
   ASSERT_EQ(second.size(), consumed_2);
-  ASSERT_LT(0U, produced_2);
+  ASSERT_NE(0U, produced_2);
 
   uint8_t plain[2048];
   auto [consumed_3, produced_3] = server.decrypt(
@@ -544,7 +550,7 @@ TEST_P(pipe, DISABLED_decrypt_coalesced)
 }
 
 
-TEST_P(pipe, DISABLED_decrypt_chunked)
+TEST_P(pipe, decrypt_chunked)
 {
   auto [client, server] = make_pipe_pair(
     client_pipe_factory(no_certificate_check),
@@ -556,7 +562,7 @@ TEST_P(pipe, DISABLED_decrypt_chunked)
   uint8_t secret[2048];
   auto [consumed, produced] = client.encrypt(case_name, secret);
   ASSERT_EQ(case_name.size(), consumed);
-  ASSERT_LT(0U, produced);
+  ASSERT_NE(0U, produced);
 
   uint8_t plain[2048];
   for (auto it = secret;  it != secret + produced;  ++it)
@@ -571,8 +577,59 @@ TEST_P(pipe, DISABLED_decrypt_chunked)
       ASSERT_EQ(produced, it - secret + 1);
       ASSERT_EQ(case_name.size(), chunk_produce);
       EXPECT_EQ(case_name, std::string(plain, plain + chunk_produce));
+      return;
     }
   }
+
+  FAIL() << "no message decrypted";
+}
+
+
+TEST_P(pipe, client_decrypt_trashed_message)
+{
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
+  handshake(client, server);
+
+  uint8_t secret[2048];
+  auto [consumed, produced] = server.encrypt(case_name, secret);
+  ASSERT_EQ(case_name.size(), consumed);
+  ASSERT_NE(0U, produced);
+
+  trash(secret, produced);
+  std::string message(secret, secret + produced);
+
+  uint8_t plain[2048];
+  std::error_code error;
+  std::tie(consumed, produced) = client.decrypt(message, plain, error);
+  EXPECT_FALSE(!error);
+}
+
+
+TEST_P(pipe, server_decrypt_trashed_message)
+{
+  auto [client, server] = make_pipe_pair(
+    client_pipe_factory(no_certificate_check),
+    server_pipe_factory(certificate()),
+    GetParam()
+  );
+  handshake(client, server);
+
+  uint8_t secret[2048];
+  auto [consumed, produced] = client.encrypt(case_name, secret);
+  ASSERT_EQ(case_name.size(), consumed);
+  ASSERT_NE(0U, produced);
+
+  trash(secret, produced);
+  std::string message(secret, secret + produced);
+
+  uint8_t plain[2048];
+  std::error_code error;
+  std::tie(consumed, produced) = server.decrypt(message, plain, error);
+  EXPECT_FALSE(!error);
 }
 
 
