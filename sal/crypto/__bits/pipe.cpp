@@ -597,16 +597,20 @@ size_t handle_extra (pipe_t &pipe, buffer_t::list_t &in, size_t index)
   noexcept
 {
   auto &extra = in[index];
-  if (extra.BufferType == SECBUFFER_EXTRA && extra.cbBuffer > 0)
+  if (extra.BufferType == SECBUFFER_EXTRA)
   {
-    LOG(std::cout << "    - extra (TODO)" << extra.cbBuffer << "\n");
+    if (!pipe.incomplete_message.empty())
+    {
+      pipe.incomplete_message.erase(
+        pipe.incomplete_message.begin(),
+        pipe.incomplete_message.end() - extra.cbBuffer
+      );
+      return 0;
+    }
+    return extra.cbBuffer;
   }
-  else
-  {
-    pipe.incomplete_message.clear();
-    pipe.in_ptr = pipe.in_last;
-  }
-  return extra.cbBuffer;
+  pipe.incomplete_message.clear();
+  return 0;
 }
 
 
@@ -773,7 +777,7 @@ bool pipe_t::buffer_while_incomplete_message ()
 
 std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
 {
-  const size_t consumed = in_last - in_first;
+  size_t consumed = in_last - in_first, not_consumed = 0;
   if (!incomplete_message.empty() && buffer_while_incomplete_message())
   {
     return {consumed, 0};
@@ -847,7 +851,7 @@ std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
       case SEC_I_CONTINUE_NEEDED:
       case SEC_I_MESSAGE_FRAGMENT:
         handle_out(*this, out);
-        handle_extra(*this, in, 1);
+        not_consumed = handle_extra(*this, in, 1);
         break;
 
       case SEC_E_BUFFER_TOO_SMALL:
@@ -873,7 +877,7 @@ std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
     << "    > IN: " << (in_last - in_ptr)
     << ", OUT: " << (out_ptr - out_first) << '\n');
 
-  return {consumed, out_ptr - out_first};
+  return {consumed - not_consumed, out_ptr - out_first};
 }
 
 

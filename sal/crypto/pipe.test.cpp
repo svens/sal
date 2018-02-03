@@ -119,7 +119,7 @@ template <size_t Size>
 size_t chunked_receive (pipe_t &receiver,
   const uint8_t *in_ptr, size_t in_size,
   uint8_t (&out)[Size],
-  int &phase)
+  bool is_stream)
 {
   auto out_ptr = out;
   auto out_size = Size;
@@ -130,15 +130,18 @@ size_t chunked_receive (pipe_t &receiver,
     size_t chunk_size = 1U;
 
 #if __sal_os_windows
-    if (phase == 100'000
-      || phase == 100'216)
+    if (!is_stream)
     {
+      // special case for SChannel DTLS handshake that fails
+      // on 1B fragments client_hello during first 13B
       chunk_size = 13;
       if (chunk_size > in_size)
       {
         chunk_size = in_size;
       }
     }
+#else
+    (void)is_stream;
 #endif
 
     auto [consumed, produced] = receiver.handshake(
@@ -146,16 +149,13 @@ size_t chunked_receive (pipe_t &receiver,
       sal::make_buf(out_ptr, out_size),
       error
     );
-    EXPECT_TRUE(!error) << "failed at " << phase;
-    EXPECT_EQ(chunk_size, consumed);
+    EXPECT_TRUE(!error) << error.message();
 
-    in_ptr += chunk_size;
-    in_size -= chunk_size;
+    in_ptr += consumed;
+    in_size -= consumed;
 
     out_ptr += produced;
     out_size -= produced;
-
-    phase++;
   }
 
   return out_ptr - out;
@@ -180,16 +180,10 @@ TEST_P(pipe, handshake_chunked_receive)
   EXPECT_EQ(0U, consumed);
   ASSERT_NE(0U, produced);
 
-  // phase is for handling special case for SChannel DTLS handshake that fails
-  // on 1B fragments client_hello during first 13B
-  // this situation can be detected if phase=100'000 (incremented in
-  // chunked_receive)
-  int phase = GetParam() ? 0 : 100'000;
-
   while (produced > 0)
   {
-    produced = chunked_receive(server, server_buf, produced, client_buf, phase);
-    produced = chunked_receive(client, client_buf, produced, server_buf, phase);
+    produced = chunked_receive(server, server_buf, produced, client_buf, GetParam());
+    produced = chunked_receive(client, client_buf, produced, server_buf, GetParam());
   }
 
   ASSERT_TRUE(client.is_connected());
