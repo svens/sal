@@ -62,11 +62,11 @@ namespace crypto { namespace __bits {
 
   struct hmac_ctx_t
   {
-    std::unique_ptr<HMAC_CTX> ctx{};
+    static void release (HMAC_CTX *ctx) noexcept;
+
+    std::unique_ptr<HMAC_CTX, void(*)(HMAC_CTX *)> ctx{nullptr, release};
 
     hmac_ctx_t (const EVP_MD *evp, const void *key, size_t size);
-    ~hmac_ctx_t () noexcept;
-
     hmac_ctx_t (const hmac_ctx_t &that);
 
     hmac_ctx_t (hmac_ctx_t &&that) noexcept

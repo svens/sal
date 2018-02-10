@@ -1147,6 +1147,18 @@ std::vector<uint8_t> certificate_t::subject_key_identifier (
 namespace {
 
 
+inline std::string to_string (const ASN1_STRING *s) noexcept
+{
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+  return reinterpret_cast<const char *>(
+    ASN1_STRING_data(const_cast<ASN1_STRING *>(s))
+  );
+#else
+  return reinterpret_cast<const char *>(ASN1_STRING_get0_data(s));
+#endif
+}
+
+
 auto to_distinguished_name (X509_NAME *name, std::error_code &error) noexcept
 {
   certificate_t::distinguished_name_t result;
@@ -1160,9 +1172,7 @@ auto to_distinguished_name (X509_NAME *name, std::error_code &error) noexcept
       char oid[128];
       OBJ_obj2txt(oid, sizeof(oid), X509_NAME_ENTRY_get_object(entry), 1);
 
-      auto value = ASN1_STRING_data(X509_NAME_ENTRY_get_data(entry));
-
-      result.emplace_back(oid, reinterpret_cast<const char *>(value));
+      result.emplace_back(oid, to_string(X509_NAME_ENTRY_get_data(entry)));
     }
     error.clear();
   }
@@ -1198,8 +1208,7 @@ auto to_distinguished_name (X509_NAME *name, const oid_t &filter_oid,
       auto entry = X509_NAME_get_entry(name, i);
       if (OBJ_obj2nid(X509_NAME_ENTRY_get_object(entry)) == filter_nid)
       {
-        auto value = ASN1_STRING_data(X509_NAME_ENTRY_get_data(entry));
-        result.emplace_back(filter_oid, reinterpret_cast<const char *>(value));
+        result.emplace_back(filter_oid, to_string(X509_NAME_ENTRY_get_data(entry)));
       }
     }
     error.clear();
@@ -1281,7 +1290,9 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
     return result;
   }
 
-  auto names = X509_get_ext_d2i(cert, nid, nullptr, nullptr);
+  auto names = static_cast<STACK_OF(GENERAL_NAME) *>(
+    X509_get_ext_d2i(cert, nid, nullptr, nullptr)
+  );
   if (!names)
   {
     return result;

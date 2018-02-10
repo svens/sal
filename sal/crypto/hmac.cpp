@@ -73,33 +73,55 @@ template <> const EVP_MD *algorithm_id_v<sha512> = EVP_sha512();
 namespace __bits {
 
 
-hmac_ctx_t::hmac_ctx_t (const EVP_MD *evp, const void *key, size_t size)
-  : ctx(std::make_unique<HMAC_CTX>())
+namespace {
+
+HMAC_CTX *alloc () noexcept
 {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+  auto ctx = new HMAC_CTX;
+  ::HMAC_CTX_init(ctx);
+  return ctx;
+#else
+  return ::HMAC_CTX_new();
+#endif
+}
+
+} // namespace
+
+
+void hmac_ctx_t::release (HMAC_CTX *ctx) noexcept
+{
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+  ::HMAC_CTX_cleanup(ctx);
+  delete ctx;
+#else
+  ::HMAC_CTX_free(ctx);
+#endif
+}
+
+
+hmac_ctx_t::hmac_ctx_t (const EVP_MD *evp, const void *key, size_t size)
+  : ctx(alloc(), release)
+{
+  if (!ctx)
+  {
+    throw std::bad_alloc();
+  }
   if (!key)
   {
     key = "";
     size = 0U;
   }
-  ::HMAC_CTX_init(ctx.get());
   sal_verify(::HMAC_Init_ex(ctx.get(), key, size, evp, nullptr));
 }
 
 
-hmac_ctx_t::~hmac_ctx_t () noexcept
-{
-  if (ctx)
-  {
-    ::HMAC_CTX_cleanup(ctx.get());
-  }
-}
-
-
 hmac_ctx_t::hmac_ctx_t (const hmac_ctx_t &that)
+  : ctx(nullptr, release)
 {
   if (that.ctx)
   {
-    ctx = std::make_unique<HMAC_CTX>();
+    ctx.reset(alloc());
     ::HMAC_CTX_copy(ctx.get(), that.ctx.get());
   }
 }
