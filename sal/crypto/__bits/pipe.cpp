@@ -1,6 +1,11 @@
 #include <sal/crypto/__bits/pipe.hpp>
 
-#if __sal_os_macos
+#if __sal_os_linux
+  #include <mutex>
+  #include <openssl/err.h>
+  #include <openssl/opensslv.h>
+  #include <openssl/ssl.h>
+#elif __sal_os_macos
   #include <Security/SecIdentity.h>
 #elif __sal_os_windows
   #include <sal/memory.hpp>
@@ -27,6 +32,293 @@ namespace crypto::__bits {
 
 
 #if __sal_os_linux //{{{1
+
+
+namespace {
+
+
+inline void init_openssl () noexcept
+{
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+  static std::once_flag init_flag;
+  std::call_once(init_flag,
+    []()
+    {
+      ::SSL_library_init();
+      ::SSL_load_error_strings();
+    }
+  );
+#endif
+}
+
+
+inline const SSL_METHOD *tls_method (bool server, bool datagram) noexcept
+{
+  static const SSL_METHOD * const method[] =
+  {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    ::TLSv1_client_method(),
+    ::TLSv1_server_method(),
+    ::DTLSv1_client_method(),
+    ::DTLSv1_server_method(),
+#else
+    ::TLS_client_method(),
+    ::TLS_server_method(),
+    ::DTLS_client_method(),
+    ::DTLS_server_method(),
+#endif
+  };
+  return method[datagram * 2 + server];
+}
+
+
+bool set_certificate (pipe_factory_t &factory, std::error_code &error) noexcept
+{
+  if (factory.certificate.ref)
+  {
+    auto result = ::SSL_CTX_use_certificate(
+      factory.context.ref,
+      factory.certificate.ref
+    );
+    if (result != 1)
+    {
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+
+    result = ::SSL_CTX_use_PrivateKey(
+      factory.context.ref,
+      factory.private_key
+    );
+    if (result != 1)
+    {
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+
+    result = ::SSL_CTX_check_private_key(factory.context.ref);
+    if (result != 1)
+    {
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+  }
+  return true;
+}
+
+
+#if WITH_LOGGING
+void info_callback(const SSL* ssl, int where, int ret)
+{
+  if (ret != 0)
+  {
+    #define I_(w) \
+      do { if (where & SSL_CB_ ## w) { \
+        printf("    | %15.15s - %s\n", #w, ::SSL_state_string_long(ssl)); \
+      }} while (false)
+    I_(LOOP);
+    I_(READ);
+    I_(WRITE);
+    I_(ALERT);
+    I_(HANDSHAKE_START);
+    I_(HANDSHAKE_DONE);
+    #undef I_
+  }
+  else
+  {
+    printf("error, ret=%d!\n", ret);
+  }
+}
+#endif
+
+
+bool ssl_read (pipe_t &pipe, std::error_code &error) noexcept
+{
+  auto size = pipe.in_last - pipe.in_ptr;
+  if (size > 0)
+  {
+    size = ::BIO_write(pipe.in, pipe.in_ptr, size);
+    if (size > 0)
+    {
+      LOG(std::cout << "    BIO_write=" << size << '\n');
+      pipe.in_ptr += size;
+    }
+    else if (!::BIO_should_retry(pipe.in))
+    {
+      LOG(std::cout << "    BIO_write: no retry\n");
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+    else
+    {
+      LOG(std::cout << "    BIO_write: retry?\n");
+    }
+  }
+  return true;
+}
+
+
+bool ssl_write (pipe_t &pipe, std::error_code &error) noexcept
+{
+  auto size = pipe.out_last - pipe.out_ptr;
+  if (size > 0)
+  {
+    size = ::BIO_read(pipe.out, pipe.out_ptr, size);
+    if (size > 0)
+    {
+      LOG(std::cout << "    BIO_read=" << size << '\n');
+      pipe.out_ptr += size;
+    }
+    else if (!::BIO_should_retry(pipe.out))
+    {
+      LOG(std::cout << "    BIO_read: no retry\n");
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+    else
+    {
+      LOG(std::cout << "    BIO_read: retry?\n");
+    }
+  }
+  return true;
+}
+
+
+} // namespace
+
+
+void pipe_t::ctor (std::error_code &error) noexcept
+{
+  context = ::SSL_new(factory->context.ref);
+  if (context)
+  {
+    if (factory->server)
+    {
+      side = 'S';
+      ::SSL_set_accept_state(context.ref);
+    }
+    else
+    {
+      side = 'C';
+      ::SSL_set_connect_state(context.ref);
+    }
+    LOG(::SSL_set_info_callback(context.ref, info_callback));
+
+    in = ::BIO_new(::BIO_s_mem());
+    out = ::BIO_new(::BIO_s_mem());
+
+    if (in && out)
+    {
+      ::BIO_set_mem_eof_return(in, -1);
+      ::BIO_set_mem_eof_return(out, -1);
+      ::SSL_set_bio(context.ref, in, out);
+      error.clear();
+      return;
+    }
+
+    ::BIO_free_all(in);
+    ::BIO_free_all(out);
+  }
+  error = std::make_error_code(std::errc::not_enough_memory);
+}
+
+
+pipe_t::~pipe_t () noexcept
+{ }
+
+
+std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
+{
+  LOG(std::cout << side
+    << "> handshake, IN: " << (in_last - in_ptr)
+    << ", OUT: " << (out_last - out_ptr) << '\n');
+
+  if (!ssl_read(*this, error))
+  {
+    return {};
+  }
+
+  auto status = ::SSL_do_handshake(context.ref);
+  switch (::SSL_get_error(context.ref, status))
+  {
+    case SSL_ERROR_NONE:
+      handshake_result = std::make_error_code(std::errc::already_connected);
+      if (!::BIO_ctrl_pending(out))
+      {
+        error.clear();
+        break;
+      }
+      [[fallthrough]];
+
+    case SSL_ERROR_WANT_READ:
+    case SSL_ERROR_WANT_WRITE:
+      if (ssl_write(*this, error))
+      {
+        error.clear();
+      }
+      break;
+
+    case SSL_ERROR_ZERO_RETURN:
+      LOG(std::cout << "    aborted\n");
+      handshake_result = std::make_error_code(std::errc::connection_aborted);
+      error.clear();
+      break;
+
+    case SSL_ERROR_SSL:
+    case SSL_ERROR_SYSCALL:
+      LOG(std::cout << "    error\n");
+      handshake_result = std::make_error_code(std::errc::connection_aborted);
+      error.assign(::ERR_get_error(), category());
+      break;
+
+    default:
+      LOG(std::cout << "    unhandled state\n");
+      break;
+  }
+
+  LOG(std::cout
+    << "    < IN: " << (in_last - in_ptr)
+    << ", OUT: " << (out_ptr - out_first) << '\n');
+
+  return {in_ptr - in_first, out_ptr - out_first};
+}
+
+
+std::pair<size_t, size_t> pipe_t::encrypt (std::error_code &error)
+{
+  error.clear();
+  return {};
+}
+
+
+std::pair<size_t, size_t> pipe_t::decrypt (std::error_code &error)
+{
+  error.clear();
+  return {};
+}
+
+
+void pipe_factory_t::ctor (std::error_code &error) noexcept
+{
+  init_openssl();
+
+  context = ::SSL_CTX_new(tls_method(server, datagram));
+  if (context)
+  {
+    if (set_certificate(*this, error))
+    {
+      error.clear();
+    }
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+}
+
+
+pipe_factory_t::~pipe_factory_t () noexcept
+{ }
 
 
 #elif __sal_os_macos //{{{1
@@ -201,7 +493,7 @@ bool set_certificate_check (pipe_t &pipe, std::error_code &error) noexcept
 {
   if (pipe.factory->certificate_check)
   {
-    auto break_on_auth = pipe.factory->inbound
+    auto break_on_auth = pipe.factory->server
       ? kSSLSessionOptionBreakOnClientAuth
       : kSSLSessionOptionBreakOnServerAuth
     ;
@@ -241,8 +533,8 @@ bool trusted_peer (const pipe_t &pipe, std::error_code &error) noexcept
 void pipe_t::ctor (std::error_code &error) noexcept
 {
   context.ref = ::SSLCreateContext(nullptr,
-    factory->inbound ? kSSLServerSide : kSSLClientSide,
-    stream_oriented ? kSSLStreamType : kSSLDatagramType
+    factory->server ? kSSLServerSide : kSSLClientSide,
+    factory->datagram ? kSSLDatagramType : kSSLStreamType
   );
   if (!context)
   {
@@ -250,7 +542,7 @@ void pipe_t::ctor (std::error_code &error) noexcept
     return;
   }
 
-  side = factory->inbound ? 'S' : 'C';
+  side = factory->server ? 'S' : 'C';
   if (set_io(*this, error)
     && set_connection(*this, error)
     && set_peer_name(*this, error)
@@ -710,17 +1002,17 @@ void finish_handshake (pipe_t &pipe, std::error_code &error) noexcept
 
 void pipe_t::ctor (std::error_code &error) noexcept
 {
-  if (factory->inbound)
+  if (factory->server)
   {
     side = 'S';
 
-    if (stream_oriented)
+    if (factory->datagram)
     {
-      context_request |= ASC_REQ_STREAM;
+      context_request |= ASC_REQ_DATAGRAM;
     }
     else
     {
-      context_request |= ASC_REQ_DATAGRAM;
+      context_request |= ASC_REQ_STREAM;
     }
     if (factory->mutual_auth)
     {
@@ -731,13 +1023,13 @@ void pipe_t::ctor (std::error_code &error) noexcept
   {
     side = 'C';
 
-    if (stream_oriented)
+    if (factory->datagram)
     {
-      context_request |= ISC_REQ_STREAM;
+      context_request |= ISC_REQ_DATAGRAM;
     }
     else
     {
-      context_request |= ISC_REQ_DATAGRAM;
+      context_request |= ISC_REQ_STREAM;
     }
     if (factory->mutual_auth)
     {
@@ -805,7 +1097,7 @@ std::pair<size_t, size_t> pipe_t::handshake (std::error_code &error)
     };
     buffer_t::list_t in(in_), out(out_);
 
-    if (factory->inbound)
+    if (factory->server)
     {
       status = call(::AcceptSecurityContext,
         &factory->credentials,              // phCredentials
@@ -1014,7 +1306,7 @@ void pipe_factory_t::ctor (std::error_code &error) noexcept
   auto status = ::AcquireCredentialsHandle(
     nullptr,
     UNISP_NAME,
-    (inbound ? SECPKG_CRED_INBOUND : SECPKG_CRED_OUTBOUND),
+    (server ? SECPKG_CRED_INBOUND : SECPKG_CRED_OUTBOUND),
     nullptr,
     &auth_data,
     nullptr,

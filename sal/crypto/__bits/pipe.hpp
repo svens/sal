@@ -5,7 +5,10 @@
 #include <functional>
 #include <memory>
 
-#if __sal_os_macos
+#if __sal_os_linux
+  #include <sal/__bits/ref.hpp>
+  #include <openssl/ssl.h>
+#elif __sal_os_macos
   #include <sal/__bits/ref.hpp>
   #include <Security/SecureTransport.h>
 #elif __sal_os_windows
@@ -33,12 +36,16 @@ using pipe_factory_ptr = std::shared_ptr<pipe_factory_t>;
 struct pipe_t
 {
   pipe_factory_ptr factory;
-  bool stream_oriented;
   std::string peer_name{};
   char side = '?';
   std::error_code handshake_result{};
 
-#if __sal_os_macos
+#if __sal_os_linux
+
+  unique_ref<SSL *, ::SSL_free> context{};
+  BIO *in{}, *out{};
+
+#elif __sal_os_macos
 
   unique_ref<SSLContextRef> context{};
 
@@ -69,9 +76,8 @@ struct pipe_t
   uint8_t *out_ptr{};
 
 
-  pipe_t (pipe_factory_ptr factory, bool stream_oriented) noexcept
+  pipe_t (pipe_factory_ptr factory) noexcept
     : factory(factory)
-    , stream_oriented(stream_oriented)
   {}
 
   ~pipe_t () noexcept;
@@ -173,27 +179,40 @@ using pipe_ptr = std::unique_ptr<pipe_t>;
 struct pipe_factory_t
   : public std::enable_shared_from_this<pipe_factory_t>
 {
-  const bool inbound;
+  const bool server;
+  const bool datagram;
+
   bool mutual_auth = false;
   certificate_t certificate{};
   std::function<bool(const crypto::certificate_t &)> certificate_check{};
 
-#if __sal_os_windows
+#if __sal_os_linux
+
+  unique_ref<SSL_CTX *, ::SSL_CTX_free> context{};
+  EVP_PKEY *private_key{};
+
+#elif __sal_os_windows
+
   ::CredHandle credentials{};
+
 #endif
 
-  pipe_factory_t (bool inbound)
-    : inbound(inbound)
+  pipe_factory_t (bool server, bool datagram) noexcept
+    : server(server)
+    , datagram(datagram)
   {}
 
   ~pipe_factory_t () noexcept;
 
   void ctor (std::error_code &error) noexcept;
 
-  pipe_ptr make_pipe (bool stream_oriented)
+  pipe_ptr make_pipe ()
   {
-    return std::make_unique<pipe_t>(shared_from_this(), stream_oriented);
+    return std::make_unique<pipe_t>(shared_from_this());
   }
+
+  pipe_factory_t (const pipe_factory_t &) = delete;
+  pipe_factory_t &operator= (const pipe_factory_t &) = delete;
 };
 
 

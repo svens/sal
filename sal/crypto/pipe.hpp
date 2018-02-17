@@ -105,12 +105,12 @@ private:
     : impl_(std::move(pipe))
   {}
 
-  template <bool Server>
+  template <bool Server, bool Datagram>
   friend class basic_pipe_factory_t;
 };
 
 
-template <bool Server>
+template <bool Server, bool Datagram>
 class basic_pipe_factory_t
 {
 public:
@@ -124,28 +124,21 @@ public:
 
 
   template <typename... Option>
-  pipe_t make_stream_pipe (const pipe_option_t<Option> &...option)
+  pipe_t make_pipe (const pipe_option_t<Option> &...option)
   {
-    auto pipe = impl_->make_pipe(true);
+    auto pipe = impl_->make_pipe();
     (set_option(*pipe, static_cast<const Option &>(option)), ...);
-    pipe->ctor(throw_on_error("basic_pipe_factory::make_stream_pipe"));
-    return pipe;
-  }
-
-
-  template <typename... Option>
-  pipe_t make_datagram_pipe (const pipe_option_t<Option> &...option)
-  {
-    auto pipe = impl_->make_pipe(false);
-    (set_option(*pipe, static_cast<const Option &>(option)), ...);
-    pipe->ctor(throw_on_error("basic_pipe_factory::make_datagram_pipe"));
+    pipe->ctor(throw_on_error("basic_pipe_factory::make_pipe"));
     return pipe;
   }
 
 
 private:
 
-  __bits::pipe_factory_ptr impl_ = std::make_shared<__bits::pipe_factory_t>(Server);
+  __bits::pipe_factory_ptr impl_ = std::make_shared<__bits::pipe_factory_t>(
+    Server,
+    Datagram
+  );
 
 
   void set_option (const mutual_auth_t &) noexcept
@@ -157,6 +150,17 @@ private:
   void set_option (const with_certificate_t &option) noexcept
   {
     impl_->certificate = option.certificate.native_handle();
+  }
+
+
+  void set_option (const with_private_key_t &option) noexcept
+  {
+#if __sal_os_linux
+    // used only on Linux, other platforms keep private key in secured memory
+    impl_->private_key = option.private_key->native_handle().ref;
+#else
+    (void)option;
+#endif
   }
 
 
@@ -174,12 +178,14 @@ private:
 };
 
 
-using client_pipe_factory_t = basic_pipe_factory_t<false>;
-using server_pipe_factory_t = basic_pipe_factory_t<true>;
+using stream_client_pipe_factory_t = basic_pipe_factory_t<false, false>;
+using stream_server_pipe_factory_t = basic_pipe_factory_t<true, false>;
+using datagram_client_pipe_factory_t = basic_pipe_factory_t<false, true>;
+using datagram_server_pipe_factory_t = basic_pipe_factory_t<true, true>;
 
 
 template <typename... Option>
-server_pipe_factory_t server_pipe_factory (
+stream_server_pipe_factory_t stream_server_pipe_factory (
   const pipe_factory_option_t<Option> &...options)
 {
   return {options...};
@@ -187,7 +193,23 @@ server_pipe_factory_t server_pipe_factory (
 
 
 template <typename... Option>
-client_pipe_factory_t client_pipe_factory (
+stream_client_pipe_factory_t stream_client_pipe_factory (
+  const pipe_factory_option_t<Option> &...options)
+{
+  return {options...};
+}
+
+
+template <typename... Option>
+datagram_server_pipe_factory_t datagram_server_pipe_factory (
+  const pipe_factory_option_t<Option> &...options)
+{
+  return {options...};
+}
+
+
+template <typename... Option>
+datagram_client_pipe_factory_t datagram_client_pipe_factory (
   const pipe_factory_option_t<Option> &...options)
 {
   return {options...};

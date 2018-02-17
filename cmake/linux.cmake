@@ -9,4 +9,7 @@ if(${i} EQUAL -1)
   # not already in include path, add
   include_directories(${OPENSSL_INCLUDE_DIR})
 endif()
-list(APPEND SAL_DEP_LIBS ${OPENSSL_CRYPTO_LIBRARY})
+list(APPEND SAL_DEP_LIBS
+  ${OPENSSL_SSL_LIBRARY}
+  ${OPENSSL_CRYPTO_LIBRARY}
+)

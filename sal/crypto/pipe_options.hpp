@@ -69,16 +69,34 @@ struct with_certificate_t
 {
   certificate_t certificate;
 
-  with_certificate_t (const certificate_t &certificate) noexcept
+  with_certificate_t (certificate_t certificate) noexcept
     : certificate(certificate)
   {}
 };
 
 
-inline with_certificate_t with_certificate (const certificate_t &certificate)
+inline with_certificate_t with_certificate (certificate_t certificate)
   noexcept
 {
   return {certificate};
+}
+
+
+struct with_private_key_t
+  : public pipe_factory_option_t<with_private_key_t>
+{
+  const private_key_t * const private_key;
+
+  with_private_key_t (const private_key_t *private_key) noexcept
+    : private_key(private_key)
+  {}
+};
+
+
+inline with_private_key_t with_private_key (const private_key_t *private_key)
+  noexcept
+{
+  return {private_key};
 }
 
 

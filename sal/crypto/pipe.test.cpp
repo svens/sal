@@ -2,37 +2,69 @@
 #include <sal/crypto/common.test.hpp>
 #include <sal/buf_ptr.hpp>
 
-
 namespace {
 
 
 using namespace sal::crypto;
 
 
+std::pair<certificate_t *, private_key_t *> import_pkcs12 ()
+{
+  static private_key_t private_key;
+  static certificate_t certificate = import_pkcs12(
+    sal_test::to_der(sal_test::cert::pkcs12),
+    "TestPassword",
+    private_key
+  );
+  return {&certificate, &private_key};
+}
+
+
+inline auto certificate ()
+{
+  return with_certificate(*import_pkcs12().first);
+}
+
+
+inline auto private_key ()
+{
+  return with_private_key(import_pkcs12().second);
+}
+
+
 struct pipe
   : public sal_test::with_value<bool>
 {
-  std::pair<pipe_t, pipe_t> make_pipe_pair (
-    client_pipe_factory_t &&client_factory,
-    server_pipe_factory_t &&server_factory,
-    bool stream_oriented)
+  std::pair<pipe_t, pipe_t> make_pipe_pair (bool datagram)
   {
-    if (stream_oriented)
+    if (datagram)
     {
-      SCOPED_TRACE("make_stream_pipe");
+      SCOPED_TRACE("datagram");
       return
       {
-        client_factory.make_stream_pipe(),
-        server_factory.make_stream_pipe()
+        datagram_client_pipe_factory(
+          no_certificate_check
+        ).make_pipe(),
+
+        datagram_server_pipe_factory(
+          certificate(),
+          private_key()
+        ).make_pipe()
       };
     }
     else
     {
-      SCOPED_TRACE("make_datagram_pipe");
+      SCOPED_TRACE("stream");
       return
       {
-        client_factory.make_datagram_pipe(),
-        server_factory.make_datagram_pipe()
+        stream_client_pipe_factory(
+          no_certificate_check
+        ).make_pipe(),
+
+        stream_server_pipe_factory(
+          certificate(),
+          private_key()
+        ).make_pipe()
       };
     }
   }
@@ -44,7 +76,7 @@ struct pipe
     ASSERT_FALSE(client.is_connected());
     ASSERT_FALSE(server.is_connected());
 
-    uint8_t client_buf[2048], server_buf[2048];
+    uint8_t client_buf[4096], server_buf[4096];
     auto [consumed, produced] = client.handshake(
       sal::const_null_buf,
       server_buf
@@ -68,37 +100,19 @@ struct pipe
 };
 
 
-inline auto certificate ()
-{
-  static auto cert = import_pkcs12(
-    sal_test::to_der(sal_test::cert::pkcs12),
-    "TestPassword"
-  );
-  return with_certificate(cert);
-}
-
-
 INSTANTIATE_TEST_CASE_P(crypto, pipe, ::testing::Bool());
 
 
 TEST_P(pipe, handshake)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   handshake(client, server);
 }
 
 
 TEST_P(pipe, handshake_after_connected)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   handshake(client, server);
 
   uint8_t in[2048], out[2048];
@@ -115,11 +129,12 @@ TEST_P(pipe, handshake_after_connected)
 }
 
 
+#if !__sal_os_linux
 template <size_t Size>
 size_t chunked_receive (pipe_t &receiver,
   const uint8_t *in_ptr, size_t in_size,
   uint8_t (&out)[Size],
-  bool is_stream)
+  bool datagram)
 {
   auto out_ptr = out;
   auto out_size = Size;
@@ -130,7 +145,7 @@ size_t chunked_receive (pipe_t &receiver,
     size_t chunk_size = 1U;
 
 #if __sal_os_windows
-    if (!is_stream)
+    if (datagram)
     {
       // special case for SChannel DTLS handshake that fails
       // on 1B fragments client_hello during first 13B
@@ -141,7 +156,7 @@ size_t chunked_receive (pipe_t &receiver,
       }
     }
 #else
-    (void)is_stream;
+    (void)datagram;
 #endif
 
     auto [consumed, produced] = receiver.handshake(
@@ -164,11 +179,7 @@ size_t chunked_receive (pipe_t &receiver,
 
 TEST_P(pipe, handshake_chunked_receive)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   ASSERT_FALSE(client.is_connected());
   ASSERT_FALSE(server.is_connected());
 
@@ -201,11 +212,7 @@ TEST_P(pipe, handshake_chunked_receive)
 
 TEST_P(pipe, handshake_no_output_buffer)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
 
   char buffer[2048];
   std::error_code error;
@@ -227,11 +234,7 @@ TEST_P(pipe, handshake_no_output_buffer)
 
 TEST_P(pipe, handshake_output_buffer_too_small)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
 
   char buffer[2048];
   std::error_code error;
@@ -286,11 +289,7 @@ void chunked_send (const char phase[], pipe_t &receiver, pipe_t &sender)
 
 TEST_P(pipe, handshake_chunked_send)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
 
   chunked_send("server <- client_hello", server, client);
   chunked_send("client <- server_hello", client, server);
@@ -332,11 +331,7 @@ inline void trash (uint8_t *ptr, size_t size) noexcept
 
 TEST_P(pipe, handshake_fail_on_invalid_client_hello)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
 
   uint8_t client_buf[2048], server_buf[2048];
   auto [consumed, produced] = client.handshake(sal::const_null_buf, server_buf);
@@ -351,11 +346,7 @@ TEST_P(pipe, handshake_fail_on_invalid_client_hello)
 
 TEST_P(pipe, handshake_fail_on_invalid_server_hello)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
 
   // server <- client_hello
   uint8_t client_buf[2048], server_buf[2048];
@@ -374,11 +365,7 @@ TEST_P(pipe, handshake_fail_on_invalid_server_hello)
 
 TEST_P(pipe, handshake_fail_on_invalid_key_exchange)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
 
   // server <- client_hello
   uint8_t client_buf[2048], server_buf[2048];
@@ -406,11 +393,7 @@ TEST_P(pipe, handshake_fail_on_invalid_key_exchange)
 
 TEST_P(pipe, client_encrypt_message)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   handshake(client, server);
 
   uint8_t secret[2048];
@@ -430,11 +413,7 @@ TEST_P(pipe, client_encrypt_message)
 
 TEST_P(pipe, server_encrypt_message)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   handshake(client, server);
 
   uint8_t secret[2048];
@@ -454,11 +433,7 @@ TEST_P(pipe, server_encrypt_message)
 
 TEST_P(pipe, encrypt_not_connected)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
 
   char buffer[2048];
   std::error_code error;
@@ -481,11 +456,7 @@ TEST_P(pipe, encrypt_not_connected)
 
 TEST_P(pipe, decrypt_not_connected)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
 
   char buffer[2048];
   std::error_code error;
@@ -508,11 +479,7 @@ TEST_P(pipe, decrypt_not_connected)
 
 TEST_P(pipe, decrypt_coalesced)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   handshake(client, server);
 
   uint8_t secret[2048];
@@ -549,11 +516,7 @@ TEST_P(pipe, decrypt_coalesced)
 
 TEST_P(pipe, decrypt_chunked)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   handshake(client, server);
 
   uint8_t secret[2048];
@@ -584,11 +547,7 @@ TEST_P(pipe, decrypt_chunked)
 
 TEST_P(pipe, client_decrypt_trashed_message)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   handshake(client, server);
 
   uint8_t secret[2048];
@@ -608,11 +567,7 @@ TEST_P(pipe, client_decrypt_trashed_message)
 
 TEST_P(pipe, server_decrypt_trashed_message)
 {
-  auto [client, server] = make_pipe_pair(
-    client_pipe_factory(no_certificate_check),
-    server_pipe_factory(certificate()),
-    GetParam()
-  );
+  auto [client, server] = make_pipe_pair(GetParam());
   handshake(client, server);
 
   uint8_t secret[2048];
@@ -634,6 +589,7 @@ TEST_P(pipe, DISABLED_coalesced_server_finished_and_message)
 {
   FAIL() << "TODO";
 }
+#endif
 
 
 } // namespace

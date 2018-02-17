@@ -319,6 +319,16 @@ public:
   }
 
 
+  /**
+   * Return native handle
+   * \internal
+   */
+  const __bits::private_key_t &native_handle () const noexcept
+  {
+    return impl_;
+  }
+
+
 private:
 
   __bits::private_key_t impl_{};
