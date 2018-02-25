@@ -496,6 +496,42 @@ TYPED_TEST(crypto_channel, decrypt_alloc_null_size)
 }
 
 
+TYPED_TEST(crypto_channel, encrypt_alloc_insufficient)
+{
+  auto [client, server] = this->make_channel_pair();
+  handshake(client, server);
+
+  buffer_t<1> secret;
+  client.encrypt(this->case_name, secret);
+  EXPECT_FALSE(secret.data.empty());
+
+  buffer_t<4096> plain;
+  server.decrypt(secret.data, plain);
+  EXPECT_FALSE(plain.data.empty());
+
+  std::string message(plain.data.begin(), plain.data.end());
+  EXPECT_EQ(this->case_name, message);
+}
+
+
+TYPED_TEST(crypto_channel, decrypt_alloc_insufficient)
+{
+  auto [client, server] = this->make_channel_pair();
+  handshake(client, server);
+
+  buffer_t<4096> secret;
+  client.encrypt(this->case_name, secret);
+  EXPECT_FALSE(secret.data.empty());
+
+  buffer_t<1> plain;
+  server.decrypt(secret.data, plain);
+  EXPECT_FALSE(plain.data.empty());
+
+  std::string message(plain.data.begin(), plain.data.end());
+  EXPECT_EQ(this->case_name, message);
+}
+
+
 TYPED_TEST(crypto_channel, decrypt_coalesced)
 {
   auto [client, server] = this->make_channel_pair();

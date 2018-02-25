@@ -74,16 +74,17 @@ struct crypto_syscall
   ::OSStatus decrypt (__bits::channel_t &impl, size_t *processed) noexcept
   {
     impl.syscall = this;
-    ensure_available_buffer(1);
-    if (out_ptr != out_last)
+    if (auto buffer_size = ensure_available_buffer(in_last - in_ptr))
     {
-      return ::SSLRead(impl.handle.ref, out_ptr, out_last - out_ptr, processed);
+      auto status = ::SSLRead(impl.handle.ref, out_ptr, buffer_size, processed);
+      out_ptr += *processed;
+      return status;
     }
     return ::errSSLBufferOverflow;
   }
 
 
-  void ensure_available_buffer (size_t requested_size) noexcept
+  size_t ensure_available_buffer (size_t requested_size) noexcept
   {
     if (out_ptr + requested_size > out_last)
     {
@@ -100,6 +101,7 @@ struct crypto_syscall
         out_ptr = out_first = out_last = nullptr;
       }
     }
+    return out_last - out_ptr;
   }
 
 
@@ -108,10 +110,37 @@ struct crypto_syscall
     buffer_manager.ready(user_data, out_first, out_ptr - out_first);
   }
 
+  void drain_system_buffer (__bits::channel_t &impl, size_t *processed)
+    noexcept;
 
   crypto_syscall (const crypto_syscall &) = delete;
   crypto_syscall &operator= (const crypto_syscall &) = delete;
 };
+
+
+void crypto_syscall::drain_system_buffer (__bits::channel_t &impl,
+  size_t *processed) noexcept
+{
+  size_t system_buffer_size{};
+  ::SSLGetBufferedReadSize(impl.handle.ref, &system_buffer_size);
+
+  while (system_buffer_size)
+  {
+    if (auto buffer_size = ensure_available_buffer(system_buffer_size))
+    {
+      size_t read;
+      auto status = ::SSLRead(impl.handle.ref, out_ptr, buffer_size, &read);
+      if (status == ::errSecSuccess)
+      {
+        out_ptr += read;
+        *processed += read;
+        system_buffer_size -= read;
+        continue;
+      }
+    }
+    return;
+  }
+}
 
 
 inline __bits::channel_t &to_channel (::SSLConnectionRef connection) noexcept
@@ -162,30 +191,28 @@ inline __bits::channel_t &to_channel (::SSLConnectionRef connection) noexcept
 
   auto &channel = to_channel(connection);
   auto &call = *static_cast<crypto_syscall *>(channel.syscall);
+  auto data_ptr = static_cast<const uint8_t *>(data);
+  auto data_size = *size;
+  *size = 0;
 
-  call.ensure_available_buffer(*size);
-  if (call.out_ptr < call.out_last)
+  while (auto buffer_size = call.ensure_available_buffer(data_size))
   {
-    ::OSStatus status = ::errSecSuccess;
-    size_t room = call.out_last - call.out_ptr;
-    if (*size > room)
-    {
-      *size = room;
-      status = ::errSSLWouldBlock;
-      LOG(std::cout << ", less: " << room << '\n');
-    }
-    else
+    if (data_size <= buffer_size)
     {
       LOG(std::cout << ", all\n");
+      call.out_ptr = std::uninitialized_copy_n(data_ptr, data_size, call.out_ptr);
+      *size += data_size;
+      return ::errSecSuccess;
     }
-    call.out_ptr = std::uninitialized_copy_n(
-      static_cast<const uint8_t *>(data), *size, call.out_ptr
-    );
-    return status;
+
+    LOG(std::cout << '[' << buffer_size << ']');
+    call.out_ptr = std::uninitialized_copy_n(data_ptr, buffer_size, call.out_ptr);
+    data_ptr += buffer_size;
+    data_size -= buffer_size;
+    *size += buffer_size;
   }
 
   LOG(std::cout << ", no buf\n");
-  *size = 0;
   return ::errSSLBufferOverflow;
 }
 
@@ -454,11 +481,11 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
   switch (auto status = syscall.decrypt(*impl_, &processed))
   {
     case ::errSecSuccess:
+      syscall.drain_system_buffer(*impl_, &processed);
       LOG(std::cout << "    | ready " << processed
         << ", used " << (syscall.in_ptr - syscall.in_first)
         << "\n"
       );
-      syscall.out_ptr += processed;
       error.clear();
       break;
 
