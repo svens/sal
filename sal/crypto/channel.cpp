@@ -28,13 +28,13 @@ namespace crypto {
 #if __sal_os_linux //{{{1
 
 
-void channel_context_t::ctor (std::error_code &error) noexcept
+void __bits::channel_context_t::ctor (std::error_code &error) noexcept
 {
   error.clear();
 }
 
 
-void channel_t::ctor (std::error_code &error) noexcept
+void __bits::channel_t::ctor (std::error_code &error) noexcept
 {
   error.clear();
 }
@@ -374,7 +374,7 @@ bool set_certificate_check (__bits::channel_t &impl, std::error_code &error)
 {
   if (impl.context->certificate_check)
   {
-    auto break_on_auth = impl.server
+    auto break_on_auth = impl.context->server
       ? ::kSSLSessionOptionBreakOnClientAuth
       : ::kSSLSessionOptionBreakOnServerAuth
     ;
@@ -411,29 +411,29 @@ bool is_trusted_peer (__bits::channel_t &impl, std::error_code &error) noexcept
 } // namespace
 
 
-void channel_context_t::ctor (std::error_code &error) noexcept
+void __bits::channel_context_t::ctor (std::error_code &error) noexcept
 {
   error.clear();
 }
 
 
-void channel_t::ctor (std::error_code &error) noexcept
+void __bits::channel_t::ctor (std::error_code &error) noexcept
 {
-  impl_->handle.ref = ::SSLCreateContext(nullptr,
-    impl_->server ? ::kSSLServerSide : ::kSSLClientSide,
-    impl_->context->datagram ? ::kSSLDatagramType : ::kSSLStreamType
+  handle.ref = ::SSLCreateContext(nullptr,
+    context->server ? ::kSSLServerSide : ::kSSLClientSide,
+    context->datagram ? ::kSSLDatagramType : ::kSSLStreamType
   );
-  if (!impl_->handle)
+  if (!handle)
   {
     error = std::make_error_code(std::errc::not_enough_memory);
   }
 
-  if (set_io(*impl_, error)
-    && set_connection(*impl_, error)
-    && set_peer_name(*impl_, error)
-    && set_mutual_auth(*impl_, error)
-    && set_certificate(*impl_, error)
-    && set_certificate_check(*impl_, error))
+  if (set_io(*this, error)
+    && set_connection(*this, error)
+    && set_peer_name(*this, error)
+    && set_mutual_auth(*this, error)
+    && set_certificate(*this, error)
+    && set_certificate_check(*this, error))
   {
     error.clear();
   }
@@ -446,7 +446,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
 {
   auto &impl = *impl_;
 
-  LOG(std::cout << (impl.server ? "server" : "client")
+  LOG(std::cout << (impl.context->server ? "server" : "client")
     << "> handshake: " << size << '\n'
   );
 
@@ -566,13 +566,13 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
 #elif __sal_os_windows //{{{1
 
 
-void channel_context_t::ctor (std::error_code &error) noexcept
+void __bits::channel_context_t::ctor (std::error_code &error) noexcept
 {
   error.clear();
 }
 
 
-void channel_t::ctor (std::error_code &error) noexcept
+void __bits::channel_t::ctor (std::error_code &error) noexcept
 {
   error.clear();
 }

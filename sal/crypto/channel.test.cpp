@@ -32,18 +32,42 @@ inline auto private_key ()
 
 struct datagram
 {
-  static constexpr auto protocol () noexcept
+  static auto client ()
   {
-    return sal::crypto::datagram_oriented;
+    auto context = sal::crypto::datagram_client_channel_context(
+      sal::crypto::no_certificate_check
+    );
+    return context.make_channel();
+  }
+
+  static auto server ()
+  {
+    auto context = sal::crypto::datagram_server_channel_context(
+      certificate(),
+      private_key()
+    );
+    return context.make_channel();
   }
 };
 
 
 struct stream
 {
-  static constexpr auto protocol () noexcept
+  static auto client ()
   {
-    return sal::crypto::stream_oriented;
+    auto context = sal::crypto::stream_client_channel_context(
+      sal::crypto::no_certificate_check
+    );
+    return context.make_channel();
+  }
+
+  static auto server ()
+  {
+    auto context = sal::crypto::stream_server_channel_context(
+      certificate(),
+      private_key()
+    );
+    return context.make_channel();
   }
 };
 
@@ -55,19 +79,7 @@ struct crypto_channel
   auto make_channel_pair ()
   {
     SCOPED_TRACE("make_channel_pair");
-    auto client_context = sal::crypto::channel_context(
-      ChannelFactory::protocol(),
-      sal::crypto::no_certificate_check
-    );
-    auto server_context = sal::crypto::channel_context(
-      ChannelFactory::protocol(),
-      certificate(),
-      private_key()
-    );
-    return std::make_pair(
-      client_context.connect(),
-      server_context.accept()
-    );
+    return std::make_pair(ChannelFactory::client(), ChannelFactory::server());
   }
 };
 

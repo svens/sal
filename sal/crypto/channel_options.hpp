@@ -57,20 +57,6 @@ struct channel_context_option_t
 {};
 
 
-struct datagram_oriented_t: channel_context_option_t<datagram_oriented_t>
-{
-  const bool value;
-
-  constexpr datagram_oriented_t (bool value) noexcept
-    : value(value)
-  { }
-};
-
-
-inline constexpr const datagram_oriented_t datagram_oriented{true};
-inline constexpr const datagram_oriented_t stream_oriented{false};
-
-
 struct mutual_auth_t: channel_context_option_t<mutual_auth_t>
 {
   const bool value;

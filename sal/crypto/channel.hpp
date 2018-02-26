@@ -133,16 +133,9 @@ private:
 
   __bits::channel_ptr impl_;
 
-  channel_t (__bits::channel_context_ptr context, bool server)
-    : impl_(std::make_unique<__bits::channel_t>(context, server))
+  channel_t (__bits::channel_ptr &&impl) noexcept
+    : impl_(std::move(impl))
   { }
-
-  void ctor (std::error_code &error) noexcept;
-
-  void set_option (const peer_name_t &option)
-  {
-    impl_->peer_name = option.value;
-  }
 
   size_t handshake (const uint8_t *data, size_t size,
     buffer_manager_t &buffer_manager,
@@ -159,41 +152,33 @@ private:
     std::error_code &error
   ) noexcept;
 
+  template <bool Datagram, bool Server>
   friend class channel_context_t;
 };
 
 
 /**
  */
+template <bool Datagram, bool Server>
 class channel_context_t
 {
 public:
 
   template <typename... Option>
   channel_context_t (const channel_context_option_t<Option> &...option)
-    : impl_(std::make_shared<__bits::channel_context_t>())
+    : impl_(std::make_shared<__bits::channel_context_t>(Datagram, Server))
   {
     (set_option(static_cast<const Option &>(option)), ...);
-    ctor(throw_on_error("channel_context"));
+    impl_->ctor(throw_on_error("channel_context"));
   }
 
 
   template <typename... Option>
-  channel_t accept (const channel_option_t<Option> &...option)
+  channel_t make_channel (const channel_option_t<Option> &...option)
   {
-    channel_t channel{impl_, true};
-    (channel.set_option(static_cast<const Option &>(option)), ...);
-    channel.ctor(throw_on_error("channel_context::accept"));
-    return channel;
-  }
-
-
-  template <typename... Option>
-  channel_t connect (const channel_option_t<Option> &...option)
-  {
-    channel_t channel{impl_, false};
-    (channel.set_option(static_cast<const Option &>(option)), ...);
-    channel.ctor(throw_on_error("channel_context::connect"));
+    auto channel = std::make_unique<__bits::channel_t>(impl_);
+    (set_option(*channel, static_cast<const Option &>(option)), ...);
+    channel->ctor(throw_on_error("channel_context::make_channel"));
     return channel;
   }
 
@@ -201,13 +186,6 @@ public:
 private:
 
   __bits::channel_context_ptr impl_{};
-
-  void ctor (std::error_code &error) noexcept;
-
-  void set_option (const datagram_oriented_t &option) noexcept
-  {
-    impl_->datagram = option.value;
-  }
 
   void set_option (const mutual_auth_t &option) noexcept
   {
@@ -234,13 +212,54 @@ private:
   {
     impl_->certificate_check = option.value;
   }
+
+  void set_option (__bits::channel_t &channel, const peer_name_t &option)
+  {
+    channel.peer_name = option.value;
+  }
 };
+
+
+using stream_client_channel_context_t = channel_context_t<false, false>;
+using stream_server_channel_context_t = channel_context_t<false, true>;
+using datagram_client_channel_context_t = channel_context_t<true, false>;
+using datagram_server_channel_context_t = channel_context_t<true, true>;
 
 
 /**
  */
 template <typename... Option>
-inline channel_context_t channel_context (
+inline stream_client_channel_context_t stream_client_channel_context (
+  const channel_context_option_t<Option> &...option)
+{
+  return {option...};
+}
+
+
+/**
+ */
+template <typename... Option>
+inline stream_server_channel_context_t stream_server_channel_context (
+  const channel_context_option_t<Option> &...option)
+{
+  return {option...};
+}
+
+
+/**
+ */
+template <typename... Option>
+inline datagram_client_channel_context_t datagram_client_channel_context (
+  const channel_context_option_t<Option> &...option)
+{
+  return {option...};
+}
+
+
+/**
+ */
+template <typename... Option>
+inline datagram_server_channel_context_t datagram_server_channel_context (
   const channel_context_option_t<Option> &...option)
 {
   return {option...};

@@ -27,7 +27,8 @@ namespace crypto::__bits {
 
 struct channel_context_t
 {
-  bool datagram = false;
+  const bool datagram;
+  const bool server;
   bool mutual_auth = false;
   crypto::certificate_t certificate{};
   std::function<bool(const crypto::certificate_t &)> certificate_check{};
@@ -40,7 +41,12 @@ struct channel_context_t
   // TODO
 #endif //}}}1
 
-  channel_context_t () noexcept = default;
+  channel_context_t (bool datagram, bool server) noexcept
+    : datagram(datagram)
+    , server(server)
+  { }
+
+  void ctor (std::error_code &error) noexcept;
 
   channel_context_t (const channel_context_t &) = delete;
   channel_context_t &operator= (const channel_context_t &) = delete;
@@ -55,7 +61,6 @@ using channel_context_ptr = std::shared_ptr<channel_context_t>;
 struct channel_t
 {
   channel_context_ptr context;
-  const bool server;
   std::string peer_name{};
   std::error_code status = std::make_error_code(std::errc::not_connected);
 
@@ -68,10 +73,11 @@ struct channel_t
   // TODO
 #endif //}}}1
 
-  channel_t (channel_context_ptr context, bool server) noexcept
+  channel_t (channel_context_ptr context) noexcept
     : context(context)
-    , server(server)
   { }
+
+  void ctor (std::error_code &error) noexcept;
 
   channel_t (const channel_t &) = delete;
   channel_t &operator= (const channel_t &) = delete;
