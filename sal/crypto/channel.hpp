@@ -13,9 +13,6 @@
 #include <sal/memory.hpp>
 
 
-#include <iostream>
-
-
 __sal_begin
 
 
@@ -224,7 +221,7 @@ private:
 
   void set_option (const with_private_key_t &option) noexcept
   {
-#if __sal_os_linux
+#if false && __sal_os_linux
     // used only on Linux, other platforms keep private key in secured memory
     private_key_ = option.private_key->native_handle().ref;
 #else

@@ -1,7 +1,11 @@
 #include <sal/crypto/channel.hpp>
 
-#if __sal_os_macos //{{{1
+#if __sal_os_linux //{{{1
+  // TODO
+#elif __sal_os_macos //{{{1
   #include <Security/SecIdentity.h>
+#elif __sal_os_windows //{{{1
+  // TODO
 #endif //}}}1
 
 
@@ -21,7 +25,57 @@ __sal_begin
 namespace crypto {
 
 
-#if __sal_os_macos //{{{1
+#if __sal_os_linux //{{{1
+
+
+void channel_context_t::ctor (std::error_code &error) noexcept
+{
+  error.clear();
+}
+
+
+void channel_t::ctor (std::error_code &error) noexcept
+{
+  error.clear();
+}
+
+
+size_t channel_t::handshake (const uint8_t *data, size_t size,
+  buffer_manager_t &buffer_manager,
+  std::error_code &error) noexcept
+{
+  (void)data;
+  (void)size;
+  (void)buffer_manager;
+  error.clear();
+  return {};
+}
+
+
+void channel_t::encrypt (const uint8_t *data, size_t size,
+  buffer_manager_t &buffer_manager,
+  std::error_code &error) noexcept
+{
+  (void)data;
+  (void)size;
+  (void)buffer_manager;
+  error.clear();
+}
+
+
+size_t channel_t::decrypt (const uint8_t *data, size_t size,
+  buffer_manager_t &buffer_manager,
+  std::error_code &error) noexcept
+{
+  (void)data;
+  (void)size;
+  (void)buffer_manager;
+  error.clear();
+  return {};
+}
+
+
+#elif __sal_os_macos //{{{1
 
 
 namespace {
@@ -506,6 +560,56 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
   }
 
   return syscall.in_ptr - syscall.in_first;
+}
+
+
+#elif __sal_os_windows //{{{1
+
+
+void channel_context_t::ctor (std::error_code &error) noexcept
+{
+  error.clear();
+}
+
+
+void channel_t::ctor (std::error_code &error) noexcept
+{
+  error.clear();
+}
+
+
+size_t channel_t::handshake (const uint8_t *data, size_t size,
+  buffer_manager_t &buffer_manager,
+  std::error_code &error) noexcept
+{
+  (void)data;
+  (void)size;
+  (void)buffer_manager;
+  error.clear();
+  return {};
+}
+
+
+void channel_t::encrypt (const uint8_t *data, size_t size,
+  buffer_manager_t &buffer_manager,
+  std::error_code &error) noexcept
+{
+  (void)data;
+  (void)size;
+  (void)buffer_manager;
+  error.clear();
+}
+
+
+size_t channel_t::decrypt (const uint8_t *data, size_t size,
+  buffer_manager_t &buffer_manager,
+  std::error_code &error) noexcept
+{
+  (void)data;
+  (void)size;
+  (void)buffer_manager;
+  error.clear();
+  return {};
 }
 
 

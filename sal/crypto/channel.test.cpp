@@ -111,7 +111,7 @@ void handshake (sal::crypto::channel_t &client, sal::crypto::channel_t &server)
 
   buffer_t<4096> client_buf, server_buf;
 
-  client.handshake(server_buf.data, client_buf);
+  client.handshake(sal::const_null_buf, client_buf);
   while (!client_buf.data.empty())
   {
     server.handshake(client_buf.data, server_buf);
@@ -145,15 +145,15 @@ TYPED_TEST(crypto_channel, handshake_after_connected)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> in, out;
+  buffer_t<4096> out;
   std::error_code error;
 
   error.clear();
-  client.handshake(in.data, out, error);
+  client.handshake(sal::const_null_buf, out, error);
   EXPECT_EQ(std::errc::already_connected, error);
 
   error.clear();
-  server.handshake(in.data, out, error);
+  server.handshake(sal::const_null_buf, out, error);
   EXPECT_EQ(std::errc::already_connected, error);
 }
 
@@ -178,7 +178,7 @@ TYPED_TEST(crypto_channel, handshake_chunked_receive)
 
   buffer_t<4096> client_buf, server_buf;
 
-  client.handshake(server_buf.data, client_buf);
+  client.handshake(sal::const_null_buf, client_buf);
   while (!client_buf.data.empty())
   {
     chunked_feed(server, client_buf, server_buf);

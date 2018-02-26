@@ -5,9 +5,13 @@
 #include <functional>
 #include <memory>
 
-#if __sal_os_macos //{{{1
+#if __sal_os_linux //{{{1
+  // TODO
+#elif __sal_os_macos //{{{1
   #include <sal/__bits/ref.hpp>
   #include <Security/SecureTransport.h>
+#elif __sal_os_windows //{{{1
+  // TODO
 #endif //}}}1
 
 
@@ -27,6 +31,19 @@ struct channel_context_t
   bool mutual_auth = false;
   crypto::certificate_t certificate{};
   std::function<bool(const crypto::certificate_t &)> certificate_check{};
+
+#if __sal_os_linux //{{{1
+  // TODO
+#elif __sal_os_macos //{{{1
+  // none
+#elif __sal_os_windows //{{{1
+  // TODO
+#endif //}}}1
+
+  channel_context_t () noexcept = default;
+
+  channel_context_t (const channel_context_t &) = delete;
+  channel_context_t &operator= (const channel_context_t &) = delete;
 };
 using channel_context_ptr = std::shared_ptr<channel_context_t>;
 
@@ -42,9 +59,13 @@ struct channel_t
   std::string peer_name{};
   std::error_code status = std::make_error_code(std::errc::not_connected);
 
-#if __sal_os_macos //{{{1
+#if __sal_os_linux //{{{1
+  // TODO
+#elif __sal_os_macos //{{{1
   unique_ref<::SSLContextRef> handle{};
   void *syscall{};
+#elif __sal_os_windows //{{{1
+  // TODO
 #endif //}}}1
 
   channel_t (channel_context_ptr context, bool server) noexcept
