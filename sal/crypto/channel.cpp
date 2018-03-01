@@ -922,12 +922,11 @@ bool flush_out (__bits::channel_t &channel,
     }
   }
   LOG(std::cout << ", done\n");
-  channel.out.reset();
   return true;
 }
 
 
-bool handle_out (__bits::channel_t &channel,
+bool handle_allocated_out (__bits::channel_t &channel,
   buffer_t::list_t &out,
   channel_t::buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
@@ -938,6 +937,26 @@ bool handle_out (__bits::channel_t &channel,
     channel.out.reset(data.pvBuffer);
     channel.out_size = data.cbBuffer;
     channel.out_ptr = static_cast<const uint8_t *>(channel.out.get());
+    if (!flush_out(channel, buffer_manager, error))
+    {
+      return false;
+    }
+    channel.out.reset();
+  }
+  return true;
+}
+
+
+bool handle_out (__bits::channel_t &channel,
+  buffer_t::list_t &out,
+  channel_t::buffer_manager_t &buffer_manager,
+  std::error_code &error) noexcept
+{
+  auto &data = out[1];
+  if (data.BufferType == SECBUFFER_DATA && data.pvBuffer && data.cbBuffer)
+  {
+    channel.out_size = data.cbBuffer;
+    channel.out_ptr = static_cast<const uint8_t *>(data.pvBuffer);
     return flush_out(channel, buffer_manager, error);
   }
   return true;
@@ -948,18 +967,9 @@ size_t handle_extra (__bits::channel_t &channel,
   buffer_t::list_t &in,
   size_t index) noexcept
 {
-  auto &extra = in[index];
-  if (extra.BufferType == SECBUFFER_EXTRA)
-  {
-    if (!channel.in.empty())
-    {
-      channel.in.erase(channel.in.begin(), channel.in.end() - extra.cbBuffer);
-      return 0;
-    }
-    return extra.cbBuffer;
-  }
   channel.in.clear();
-  return 0;
+  auto &extra = in[index];
+  return (extra.BufferType == SECBUFFER_EXTRA) ? extra.cbBuffer : 0;
 }
 
 
@@ -1120,7 +1130,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
       token_t{},
       alert_t{},
     };
-    buffer_t::list_t in(in_), out(out_);
+    buffer_t::list_t in{in_}, out{out_};
 
     if (channel.factory->server)
     {
@@ -1166,7 +1176,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
       case SEC_I_CONTINUE_NEEDED:
       case SEC_I_MESSAGE_FRAGMENT:
         channel.handle_p = &channel.handle;
-        if (handle_out(channel, out, buffer_manager, error))
+        if (handle_allocated_out(channel, out, buffer_manager, error))
         {
           not_consumed = handle_extra(channel, in, 1);
         }
@@ -1198,10 +1208,60 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
   buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  (void)data;
-  (void)size;
-  (void)buffer_manager;
+  auto &channel = *impl_;
   error.clear();
+
+  LOG(std::cout << (channel.factory->server ? "server" : "client")
+    << "> encrypt: " << size
+    << '\n'
+  );
+
+  auto buffer = std::make_unique<uint8_t[]>(
+    + channel.header_size
+    + (std::min)(size, channel.max_message_size)
+    + channel.trailer_size
+  );
+
+  while (size)
+  {
+    auto chunk_ptr = buffer.get();
+    auto chunk_size = (std::min)(size, channel.max_message_size);
+
+    buffer_t io_[] =
+    {
+      header_t{chunk_ptr, channel.header_size},
+      data_t{chunk_ptr += channel.header_size, chunk_size},
+      trailer_t{chunk_ptr += chunk_size, channel.trailer_size},
+      empty_t{},
+    };
+    buffer_t::list_t io{io_};
+
+    chunk_ptr = buffer.get() + channel.header_size;
+    std::uninitialized_copy_n(data, chunk_size,
+      sal::__bits::make_output_iterator(chunk_ptr, chunk_ptr + chunk_size)
+    );
+
+    auto status = call(::EncryptMessage, channel.handle_p, 0, &io, 0);
+    print_bufs("IO", io);
+
+    if (status == SEC_E_OK)
+    {
+      channel.out_ptr = buffer.get();
+      channel.out_size = channel.header_size + chunk_size + channel.trailer_size;
+      if (!flush_out(channel, buffer_manager, error))
+      {
+        return;
+      }
+    }
+    else
+    {
+      error.assign(status, category());
+      return;
+    }
+
+    data += chunk_size;
+    size -= chunk_size;
+  }
 }
 
 
@@ -1209,11 +1269,60 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
   buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  (void)data;
-  (void)size;
-  (void)buffer_manager;
+  auto &channel = *impl_;
   error.clear();
-  return {};
+
+  LOG(std::cout << (channel.factory->server ? "server" : "client")
+    << "> decrypt: " << size
+    << '\n'
+  );
+
+  size_t consumed = size, not_consumed = 0U;
+  try
+  {
+    if (!channel.in.empty()
+      && buffer_while_incomplete_message(channel, &data, &size))
+    {
+      return consumed;
+    }
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return {};
+  }
+
+  buffer_t io_[] =
+  {
+    data_t{data, size},
+    empty_t{},
+    empty_t{},
+    empty_t{},
+  };
+  buffer_t::list_t io{io_};
+
+  auto status = call(::DecryptMessage, channel.handle_p, &io, 0, nullptr);
+  print_bufs("IO", io);
+
+  switch (status)
+  {
+    case SEC_E_OK:
+      if (handle_out(channel, io, buffer_manager, error))
+      {
+        not_consumed = handle_extra(channel, io, 3);
+      }
+      break;
+
+    case SEC_E_INCOMPLETE_MESSAGE:
+      handle_missing(channel, io, data, size, error);
+      break;
+
+    default:
+      error.assign(status, category());
+      break;
+  }
+
+  return consumed - not_consumed;
 }
 
 

@@ -594,28 +594,33 @@ TYPED_TEST(crypto_channel, coalesced_server_finished_and_message)
 
   buffer_t<4096> client_buf, server_buf;
 
-  // generate client_hello
-  client.handshake(server_buf.data, client_buf);
+  // usual handshake except break on server_finished
+  // i.e. server is connected but client is not
+  client.handshake(sal::const_null_buf, client_buf);
+  while (!client_buf.data.empty())
+  {
+    server.handshake(client_buf.data, server_buf);
+    client_buf.data.clear();
+    if (server.is_connected())
+    {
+      break;
+    }
 
-  // server <- client_hello, generate server_hello
-  server.handshake(client_buf.data, server_buf);
-  client_buf.data.clear();
+    client.handshake(server_buf.data, client_buf);
+    server_buf.data.clear();
+  }
 
-  // client <- server_hello, generate key_exchange
-  client.handshake(server_buf.data, client_buf);
-  server_buf.data.clear();
+  ASSERT_FALSE(client.is_connected());
+  ASSERT_TRUE(server.is_connected());
+  EXPECT_FALSE(server_buf.data.empty());
 
-  // server <- key_exchange, generate server_finished
-  server.handshake(client_buf.data, server_buf);
-  EXPECT_TRUE(server.is_connected());
-  client_buf.data.clear();
-
-  // append message to server_finished
+  // server_buf still has server_finished, append secret
   server.encrypt(this->case_name, server_buf);
 
   // client <- server_finished, leaving message in server_buf
   auto used = client.handshake(server_buf.data, client_buf);
   EXPECT_TRUE(client.is_connected());
+  EXPECT_TRUE(client_buf.data.empty());
   server_buf.data.erase(server_buf.data.begin(), server_buf.data.begin() + used);
   EXPECT_TRUE(!server_buf.data.empty());
 
@@ -626,6 +631,62 @@ TYPED_TEST(crypto_channel, coalesced_server_finished_and_message)
   EXPECT_TRUE(server_buf.data.empty());
   std::string message(client_buf.data.begin(), client_buf.data.end());
   EXPECT_EQ(this->case_name, message);
+}
+
+
+TYPED_TEST(crypto_channel, decrypt_half_and_one_plus_half_messages)
+{
+  auto [client, server] = this->make_channel_pair();
+  handshake(client, server);
+
+  buffer_t<4096> secret;
+
+  auto first = this->case_name + "_first";
+  client.encrypt(first, secret);
+  EXPECT_FALSE(secret.data.empty());
+  auto secret_1st_size = secret.data.size();
+
+  auto second = this->case_name + "_second";
+  std::reverse(second.begin(), second.end());
+  client.encrypt(second, secret);
+  EXPECT_FALSE(secret.data.empty());
+  auto secret_2nd_size = secret.data.size() - secret_1st_size;
+
+  // split 2 encrypted messages into half and one+half
+  std::vector<uint8_t> half, one_plus_half;
+  half.assign(
+    secret.data.begin(),
+    secret.data.begin() + secret_1st_size / 2
+  );
+  one_plus_half.assign(
+    secret.data.begin() + secret_1st_size / 2,
+    secret.data.end()
+  );
+
+  // 1st half (buffered in engine but no output)
+  buffer_t<4096> plain;
+  auto used_1st_half = server.decrypt(half, plain);
+  EXPECT_EQ(secret_1st_size / 2, used_1st_half);
+  EXPECT_TRUE(plain.data.empty());
+
+  // 2nd half (first message as output, do not buffer second message secret)
+  auto used_2nd_half = server.decrypt(one_plus_half, plain);
+  EXPECT_EQ(secret_1st_size - secret_1st_size / 2, used_2nd_half);
+  EXPECT_FALSE(plain.data.empty());
+  std::string message(plain.data.begin(), plain.data.end());
+  EXPECT_EQ(first, message);
+
+  // erase used data (first secret, second secret remains)
+  one_plus_half.erase(one_plus_half.begin(), one_plus_half.begin() + used_2nd_half);
+  EXPECT_EQ(secret_2nd_size, one_plus_half.size());
+
+  // second message
+  plain.data.clear();
+  used_2nd_half = server.decrypt(one_plus_half, plain);
+  EXPECT_EQ(secret_2nd_size, used_2nd_half);
+  EXPECT_FALSE(plain.data.empty());
+  message.assign(plain.data.begin(), plain.data.end());
+  EXPECT_EQ(second, message);
 }
 
 
