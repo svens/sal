@@ -37,7 +37,7 @@ public:
 
   bool is_connected () const noexcept
   {
-    return impl_->status == std::errc::already_connected;
+    return impl_->handshake_status == std::errc::already_connected;
   }
 
 
@@ -46,7 +46,7 @@ public:
     buffer_manager_t &buffer_manager,
     std::error_code &error) noexcept
   {
-    if (impl_->status == std::errc::not_connected)
+    if (impl_->handshake_status == std::errc::not_connected)
     {
       using std::cbegin;
       using std::cend;
@@ -57,7 +57,7 @@ public:
         error
       );
     }
-    error = impl_->status;
+    error = impl_->handshake_status;
     return {};
   }
 
@@ -76,7 +76,7 @@ public:
     buffer_manager_t &buffer_manager,
     std::error_code &error) noexcept
   {
-    if (impl_->status == std::errc::already_connected)
+    if (impl_->handshake_status == std::errc::already_connected)
     {
       using std::cbegin;
       using std::cend;
@@ -89,7 +89,7 @@ public:
     }
     else
     {
-      error = impl_->status;
+      error = impl_->handshake_status;
     }
   }
 
@@ -106,7 +106,7 @@ public:
     buffer_manager_t &buffer_manager,
     std::error_code &error) noexcept
   {
-    if (impl_->status == std::errc::already_connected)
+    if (impl_->handshake_status == std::errc::already_connected)
     {
       using std::cbegin;
       using std::cend;
@@ -117,7 +117,7 @@ public:
         error
       );
     }
-    error = impl_->status;
+    error = impl_->handshake_status;
     return {};
   }
 
@@ -187,14 +187,9 @@ private:
 
   __bits::channel_context_ptr impl_{};
 
-  void set_option (const mutual_auth_t &option) noexcept
-  {
-    impl_->mutual_auth = option.value;
-  }
-
   void set_option (const with_certificate_t &option) noexcept
   {
-    impl_->certificate = option.value;
+    impl_->certificate = option.value.native_handle();
   }
 
   void set_option (const with_private_key_t &option) noexcept
@@ -211,6 +206,12 @@ private:
   void set_option (const manual_certificate_check_t<Check> &option) noexcept
   {
     impl_->certificate_check = option.value;
+  }
+
+  void set_option (__bits::channel_t &channel, const mutual_auth_t &option)
+    noexcept
+  {
+    channel.mutual_auth = option.value;
   }
 
   void set_option (__bits::channel_t &channel, const peer_name_t &option)

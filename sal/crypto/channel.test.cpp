@@ -271,58 +271,32 @@ TYPED_TEST(crypto_channel, handshake_alloc_null_size)
 }
 
 
-void chunked_send (const char phase[],
-  sal::crypto::channel_t &receiver,
-  sal::crypto::channel_t &sender)
-{
-  SCOPED_TRACE(phase);
-
-  buffer_t<1> buffer;
-  std::vector<uint8_t> response;
-  for (;;)
-  {
-    sender.handshake(sal::const_null_buf, buffer);
-    if (!buffer.data.empty())
-    {
-      // while sender generates chunks, keep gathering it
-      response.insert(response.end(), buffer.data.begin(), buffer.data.end());
-      buffer.data.clear();
-    }
-    else
-    {
-      // no more, now feed as whole to receiver
-      std::error_code error;
-      failing_buffer_t failing_buffer(true, true);
-      receiver.handshake(response, failing_buffer, error);
-      if (!receiver.is_connected())
-      {
-        // while not connected, must want to send data
-        EXPECT_EQ(std::errc::no_buffer_space, error) << error.message();
-      }
-      return;
-    }
-  }
-}
-
-
-TYPED_TEST(crypto_channel, handshake_chunked_send)
+TYPED_TEST(crypto_channel, handshake_alloc_not_sufficient)
 {
   auto [client, server] = this->make_channel_pair();
-  chunked_send("server <- client_hello", server, client);
-  chunked_send("client <- server_hello", client, server);
-  chunked_send("server <- key_exchange", server, client);
-  chunked_send("client <- server_finished", client, server);
+  buffer_t<1> client_buf, server_buf;
+
+  client.handshake(sal::const_null_buf, client_buf);
+  while (!client_buf.data.empty())
+  {
+    server.handshake(client_buf.data, server_buf);
+    client_buf.data.clear();
+
+    client.handshake(server_buf.data, client_buf);
+    server_buf.data.clear();
+  }
 
   EXPECT_TRUE(client.is_connected());
-
-#if !__sal_os_macos
-  // SecureTransport bug? If during key_exchange feeding server side fails to
-  // generate output (due errSecWouldBlock, for example), server does not
-  // proceed to connected state
   EXPECT_TRUE(server.is_connected());
-#endif
 }
 
+
+#if !__sal_os_windows
+
+//
+// excluding SChannel:
+// it is ok with trashed message, asking for more instead of error
+//
 
 TYPED_TEST(crypto_channel, handshake_fail_on_invalid_client_hello)
 {
@@ -374,6 +348,8 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_key_exchange)
   server.handshake(client_buf.data, server_buf, error);
   EXPECT_FALSE(!error);
 }
+
+#endif
 
 
 TYPED_TEST(crypto_channel, client_encrypt_message)

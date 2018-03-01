@@ -28,6 +28,21 @@ struct channel_option_t
 {};
 
 
+struct mutual_auth_t
+  : public channel_option_t<mutual_auth_t>
+{
+  const bool value;
+
+  constexpr mutual_auth_t (bool required) noexcept
+    : value(required)
+  { }
+};
+
+
+inline constexpr const mutual_auth_t mutual_auth{true};
+inline constexpr const mutual_auth_t no_mutual_auth{false};
+
+
 struct peer_name_t
   : public channel_option_t<peer_name_t>
 {
@@ -55,20 +70,6 @@ inline peer_name_t peer_name (std::string name)
 template <typename Option>
 struct channel_context_option_t
 {};
-
-
-struct mutual_auth_t: channel_context_option_t<mutual_auth_t>
-{
-  const bool value;
-
-  constexpr mutual_auth_t (bool required) noexcept
-    : value(required)
-  { }
-};
-
-
-inline constexpr const mutual_auth_t mutual_auth{true};
-inline constexpr const mutual_auth_t no_mutual_auth{false};
 
 
 struct with_certificate_t
