@@ -25,10 +25,10 @@ namespace crypto::__bits {
 
 
 //
-// channel_context_t
+// channel_factory_t
 //
 
-struct channel_context_t
+struct channel_factory_t
 {
   const bool datagram;
   const bool server;
@@ -43,19 +43,19 @@ struct channel_context_t
   ::CredHandle credentials;
 #endif //}}}1
 
-  channel_context_t (bool datagram, bool server) noexcept
+  channel_factory_t (bool datagram, bool server) noexcept
     : datagram(datagram)
     , server(server)
   { }
 
   void ctor (std::error_code &error) noexcept;
 
-  ~channel_context_t () noexcept;
+  ~channel_factory_t () noexcept;
 
-  channel_context_t (const channel_context_t &) = delete;
-  channel_context_t &operator= (const channel_context_t &) = delete;
+  channel_factory_t (const channel_factory_t &) = delete;
+  channel_factory_t &operator= (const channel_factory_t &) = delete;
 };
-using channel_context_ptr = std::shared_ptr<channel_context_t>;
+using channel_factory_ptr = std::shared_ptr<channel_factory_t>;
 
 
 //
@@ -64,7 +64,7 @@ using channel_context_ptr = std::shared_ptr<channel_context_t>;
 
 struct channel_t
 {
-  channel_context_ptr context;
+  channel_factory_ptr factory;
   bool mutual_auth = false;
   std::string peer_name{};
   std::error_code handshake_status = std::make_error_code(std::errc::not_connected);
@@ -95,8 +95,8 @@ struct channel_t
 
 #endif //}}}1
 
-  channel_t (channel_context_ptr context) noexcept
-    : context(context)
+  channel_t (channel_factory_ptr factory) noexcept
+    : factory(factory)
   { }
 
   void ctor (std::error_code &error) noexcept;

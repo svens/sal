@@ -64,16 +64,16 @@ inline peer_name_t peer_name (std::string name)
 
 
 /**
- * \defgroup Channel context options
+ * \defgroup Channel factory options
  */
 
 template <typename Option>
-struct channel_context_option_t
+struct channel_factory_option_t
 {};
 
 
 struct with_certificate_t
-  : public channel_context_option_t<with_certificate_t>
+  : public channel_factory_option_t<with_certificate_t>
 {
   certificate_t value;
 
@@ -91,7 +91,7 @@ inline with_certificate_t with_certificate (certificate_t certificate)
 
 
 struct with_private_key_t
-  : public channel_context_option_t<with_private_key_t>
+  : public channel_factory_option_t<with_private_key_t>
 {
   const private_key_t * const private_key;
 
@@ -110,7 +110,7 @@ inline with_private_key_t with_private_key (const private_key_t *private_key)
 
 template <typename Check>
 struct manual_certificate_check_t
-  : public channel_context_option_t<manual_certificate_check_t<Check>>
+  : public channel_factory_option_t<manual_certificate_check_t<Check>>
 {
   Check value;
 

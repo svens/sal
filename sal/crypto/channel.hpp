@@ -153,23 +153,23 @@ private:
   ) noexcept;
 
   template <bool Datagram, bool Server>
-  friend class channel_context_t;
+  friend class channel_factory_t;
 };
 
 
 /**
  */
 template <bool Datagram, bool Server>
-class channel_context_t
+class channel_factory_t
 {
 public:
 
   template <typename... Option>
-  channel_context_t (const channel_context_option_t<Option> &...option)
-    : impl_(std::make_shared<__bits::channel_context_t>(Datagram, Server))
+  channel_factory_t (const channel_factory_option_t<Option> &...option)
+    : impl_(std::make_shared<__bits::channel_factory_t>(Datagram, Server))
   {
     (set_option(static_cast<const Option &>(option)), ...);
-    impl_->ctor(throw_on_error("channel_context"));
+    impl_->ctor(throw_on_error("channel_factory"));
   }
 
 
@@ -178,14 +178,14 @@ public:
   {
     auto channel = std::make_unique<__bits::channel_t>(impl_);
     (set_option(*channel, static_cast<const Option &>(option)), ...);
-    channel->ctor(throw_on_error("channel_context::make_channel"));
+    channel->ctor(throw_on_error("channel_factory::make_channel"));
     return channel;
   }
 
 
 private:
 
-  __bits::channel_context_ptr impl_{};
+  __bits::channel_factory_ptr impl_{};
 
   void set_option (const with_certificate_t &option) noexcept
   {
@@ -221,17 +221,17 @@ private:
 };
 
 
-using stream_client_channel_context_t = channel_context_t<false, false>;
-using stream_server_channel_context_t = channel_context_t<false, true>;
-using datagram_client_channel_context_t = channel_context_t<true, false>;
-using datagram_server_channel_context_t = channel_context_t<true, true>;
+using stream_client_channel_factory_t = channel_factory_t<false, false>;
+using stream_server_channel_factory_t = channel_factory_t<false, true>;
+using datagram_client_channel_factory_t = channel_factory_t<true, false>;
+using datagram_server_channel_factory_t = channel_factory_t<true, true>;
 
 
 /**
  */
 template <typename... Option>
-inline stream_client_channel_context_t stream_client_channel_context (
-  const channel_context_option_t<Option> &...option)
+inline stream_client_channel_factory_t stream_client_channel_factory (
+  const channel_factory_option_t<Option> &...option)
 {
   return {option...};
 }
@@ -240,8 +240,8 @@ inline stream_client_channel_context_t stream_client_channel_context (
 /**
  */
 template <typename... Option>
-inline stream_server_channel_context_t stream_server_channel_context (
-  const channel_context_option_t<Option> &...option)
+inline stream_server_channel_factory_t stream_server_channel_factory (
+  const channel_factory_option_t<Option> &...option)
 {
   return {option...};
 }
@@ -250,8 +250,8 @@ inline stream_server_channel_context_t stream_server_channel_context (
 /**
  */
 template <typename... Option>
-inline datagram_client_channel_context_t datagram_client_channel_context (
-  const channel_context_option_t<Option> &...option)
+inline datagram_client_channel_factory_t datagram_client_channel_factory (
+  const channel_factory_option_t<Option> &...option)
 {
   return {option...};
 }
@@ -260,8 +260,8 @@ inline datagram_client_channel_context_t datagram_client_channel_context (
 /**
  */
 template <typename... Option>
-inline datagram_server_channel_context_t datagram_server_channel_context (
-  const channel_context_option_t<Option> &...option)
+inline datagram_server_channel_factory_t datagram_server_channel_factory (
+  const channel_factory_option_t<Option> &...option)
 {
   return {option...};
 }

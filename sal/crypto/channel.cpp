@@ -29,7 +29,7 @@ namespace crypto {
 #if __sal_os_linux //{{{1
 
 
-void __bits::channel_context_t::ctor (std::error_code &error) noexcept
+void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
 {
   error.clear();
 }
@@ -336,11 +336,11 @@ bool set_mutual_auth (__bits::channel_t &impl, std::error_code &error) noexcept
 
 bool set_certificate (__bits::channel_t &impl, std::error_code &error) noexcept
 {
-  if (impl.context->certificate)
+  if (impl.factory->certificate)
   {
     unique_ref<::SecIdentityRef> identity;
     auto status = ::SecIdentityCreateWithCertificate(nullptr,
-      impl.context->certificate.ref,
+      impl.factory->certificate.ref,
       &identity.ref
     );
     if (status != ::errSecSuccess)
@@ -373,9 +373,9 @@ bool set_certificate (__bits::channel_t &impl, std::error_code &error) noexcept
 bool set_certificate_check (__bits::channel_t &impl, std::error_code &error)
   noexcept
 {
-  if (impl.context->certificate_check)
+  if (impl.factory->certificate_check)
   {
-    auto break_on_auth = impl.context->server
+    auto break_on_auth = impl.factory->server
       ? ::kSSLSessionOptionBreakOnClientAuth
       : ::kSSLSessionOptionBreakOnServerAuth
     ;
@@ -405,28 +405,28 @@ bool is_trusted_peer (__bits::channel_t &impl, std::error_code &error) noexcept
   );
   ::CFRetain(peer_certificate.native_handle().ref);
 
-  return impl.context->certificate_check(peer_certificate);
+  return impl.factory->certificate_check(peer_certificate);
 }
 
 
 } // namespace
 
 
-void __bits::channel_context_t::ctor (std::error_code &error) noexcept
+void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
 {
   error.clear();
 }
 
 
-__bits::channel_context_t::~channel_context_t () noexcept
+__bits::channel_factory_t::~channel_factory_t () noexcept
 { }
 
 
 void __bits::channel_t::ctor (std::error_code &error) noexcept
 {
   handle.ref = ::SSLCreateContext(nullptr,
-    context->server ? ::kSSLServerSide : ::kSSLClientSide,
-    context->datagram ? ::kSSLDatagramType : ::kSSLStreamType
+    factory->server ? ::kSSLServerSide : ::kSSLClientSide,
+    factory->datagram ? ::kSSLDatagramType : ::kSSLStreamType
   );
   if (!handle)
   {
@@ -455,7 +455,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
 {
   auto &impl = *impl_;
 
-  LOG(std::cout << (impl.context->server ? "server" : "client")
+  LOG(std::cout << (impl.factory->server ? "server" : "client")
     << "> handshake: " << size << '\n'
   );
 
@@ -505,7 +505,7 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
   buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  LOG(std::cout << (impl_->context->server ? "server" : "client")
+  LOG(std::cout << (impl_->factory->server ? "server" : "client")
     << "> encrypt: " << size << '\n'
   );
 
@@ -535,7 +535,7 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
   buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  LOG(std::cout << (impl_->context->server ? "server" : "client")
+  LOG(std::cout << (impl_->factory->server ? "server" : "client")
     << "> decrypt: " << size << '\n'
   );
 
@@ -754,7 +754,7 @@ void print_flags (ULONG flags)
 } // namespace
 
 
-void __bits::channel_context_t::ctor (std::error_code &error) noexcept
+void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
 {
   ::SCHANNEL_CRED auth_data{};
   auth_data.dwVersion = SCHANNEL_CRED_VERSION;
@@ -794,7 +794,7 @@ void __bits::channel_context_t::ctor (std::error_code &error) noexcept
 }
 
 
-__bits::channel_context_t::~channel_context_t () noexcept
+__bits::channel_factory_t::~channel_factory_t () noexcept
 {
   (void)::FreeCredentialsHandle(&credentials);
 }
@@ -802,10 +802,10 @@ __bits::channel_context_t::~channel_context_t () noexcept
 
 void __bits::channel_t::ctor (std::error_code &error) noexcept
 {
-  if (context->server)
+  if (factory->server)
   {
     context_request = ASC_REQ_ALLOCATE_MEMORY;
-    if (context->datagram)
+    if (factory->datagram)
     {
       context_request |= ASC_REQ_DATAGRAM;
     }
@@ -821,7 +821,7 @@ void __bits::channel_t::ctor (std::error_code &error) noexcept
   else
   {
     context_request = ISC_REQ_ALLOCATE_MEMORY;
-    if (context->datagram)
+    if (factory->datagram)
     {
       context_request |= ISC_REQ_DATAGRAM;
     }
@@ -872,8 +872,8 @@ bool buffer_while_incomplete_message (__bits::channel_t &channel,
     return true;
   }
 
-  if (channel.context->datagram
-    && channel.context->server
+  if (channel.factory->datagram
+    && channel.factory->server
     && channel.in.size() < 13)
   {
     // XXX special case for DTLS server side:
@@ -999,7 +999,7 @@ bool handle_missing (__bits::channel_t &channel,
 bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
   noexcept
 {
-  if (channel.context->certificate_check)
+  if (channel.factory->certificate_check)
   {
     __bits::certificate_t native_peer_certificate;
     auto status = ::QueryContextAttributes(channel.handle_p,
@@ -1008,7 +1008,7 @@ bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
     );
     if (status == SEC_E_OK)
     {
-      return channel.context->certificate_check(
+      return channel.factory->certificate_check(
         certificate_t::from_native_handle(
           std::move(native_peer_certificate)
         )
@@ -1075,7 +1075,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
   auto &channel = *impl_;
   error.clear();
 
-  LOG(std::cout << (channel.context->server ? "server" : "client")
+  LOG(std::cout << (channel.factory->server ? "server" : "client")
     << "> handshake: " << size
     << (channel.handle_p ? ", valid" : "")
     << '\n'
@@ -1122,10 +1122,10 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
     };
     buffer_t::list_t in(in_), out(out_);
 
-    if (channel.context->server)
+    if (channel.factory->server)
     {
       status = call(::AcceptSecurityContext,
-        &channel.context->credentials,          // phCredentials
+        &channel.factory->credentials,          // phCredentials
         channel.handle_p,                       // phContext
         &in,                                    // pInput
         channel.context_request,                // fContextReq
@@ -1139,7 +1139,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
     else
     {
       status = call(::InitializeSecurityContext,
-        &channel.context->credentials,          // phCredentials
+        &channel.factory->credentials,          // phCredentials
         channel.handle_p,                       // phContext
         (SEC_CHAR *)channel.peer_name.c_str(),  // pszTargetName
         channel.context_request,                // fContextReq

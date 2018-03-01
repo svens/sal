@@ -34,19 +34,19 @@ struct datagram
 {
   static auto client ()
   {
-    auto context = sal::crypto::datagram_client_channel_context(
+    auto factory = sal::crypto::datagram_client_channel_factory(
       sal::crypto::no_certificate_check
     );
-    return context.make_channel();
+    return factory.make_channel();
   }
 
   static auto server ()
   {
-    auto context = sal::crypto::datagram_server_channel_context(
+    auto factory = sal::crypto::datagram_server_channel_factory(
       certificate(),
       private_key()
     );
-    return context.make_channel();
+    return factory.make_channel();
   }
 };
 
@@ -55,19 +55,19 @@ struct stream
 {
   static auto client ()
   {
-    auto context = sal::crypto::stream_client_channel_context(
+    auto factory = sal::crypto::stream_client_channel_factory(
       sal::crypto::no_certificate_check
     );
-    return context.make_channel();
+    return factory.make_channel();
   }
 
   static auto server ()
   {
-    auto context = sal::crypto::stream_server_channel_context(
+    auto factory = sal::crypto::stream_server_channel_factory(
       certificate(),
       private_key()
     );
-    return context.make_channel();
+    return factory.make_channel();
   }
 };
 
@@ -138,11 +138,11 @@ void handshake (sal::crypto::channel_t &client, sal::crypto::channel_t &server)
 }
 
 
-using channel_context_types = ::testing::Types<
+using channel_factory_types = ::testing::Types<
   datagram,
   stream
 >;
-TYPED_TEST_CASE(crypto_channel, channel_context_types);
+TYPED_TEST_CASE(crypto_channel, channel_factory_types);
 
 
 TYPED_TEST(crypto_channel, handshake)
