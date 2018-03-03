@@ -194,9 +194,9 @@ private:
 
   void set_option (const with_private_key_t &option) noexcept
   {
-#if false && __sal_os_linux
+#if __sal_os_linux
     // used only on Linux, other platforms keep private key in secured memory
-    private_key_ = option.private_key->native_handle().ref;
+    impl_->private_key = option.private_key->native_handle().ref;
 #else
     (void)option;
 #endif

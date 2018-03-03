@@ -1,7 +1,9 @@
 #include <sal/crypto/channel.hpp>
 
 #if __sal_os_linux //{{{1
-  // TODO
+  #include <mutex>
+  #include <openssl/err.h>
+  #include <openssl/opensslv.h>
 #elif __sal_os_macos //{{{1
   #include <Security/SecIdentity.h>
 #elif __sal_os_windows //{{{1
@@ -29,27 +31,315 @@ namespace crypto {
 #if __sal_os_linux //{{{1
 
 
+namespace {
+
+
+inline void init_openssl () noexcept
+{
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+  static std::once_flag init_flag;
+  std::call_once(init_flag,
+    []()
+    {
+      ::SSL_library_init();
+      ::SSL_load_error_strings();
+    }
+  );
+#endif
+}
+
+
+inline const SSL_METHOD *channel_type (bool datagram, bool server) noexcept
+{
+  static const SSL_METHOD * const method[] =
+  {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    ::TLSv1_client_method(),
+    ::TLSv1_server_method(),
+    ::DTLSv1_client_method(),
+    ::DTLSv1_server_method(),
+#else
+    ::TLS_client_method(),
+    ::TLS_server_method(),
+    ::DTLS_client_method(),
+    ::DTLS_server_method(),
+#endif
+  };
+  return method[datagram * 2 + server];
+}
+
+
+bool set_certificate (__bits::channel_factory_t &factory,
+  std::error_code &error) noexcept
+{
+  if (factory.certificate.ref)
+  {
+    auto result = ::SSL_CTX_use_certificate(
+      factory.handle.ref,
+      factory.certificate.ref
+    );
+    if (result != 1)
+    {
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+
+    result = ::SSL_CTX_use_PrivateKey(
+      factory.handle.ref,
+      factory.private_key
+    );
+    if (result != 1)
+    {
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+
+    result = ::SSL_CTX_check_private_key(factory.handle.ref);
+    if (result != 1)
+    {
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+  }
+  return true;
+}
+
+
+bool set_read_ahead (__bits::channel_factory_t &factory, std::error_code &)
+  noexcept
+{
+  if (!factory.datagram)
+  {
+    ::SSL_CTX_set_read_ahead(factory.handle.ref, 0);
+  }
+  return true;
+}
+
+
+#if WITH_LOGGING
+void info_callback (const SSL *ssl, int where, int ret)
+{
+  if (ret != 0)
+  {
+    #define I_(w) \
+      do { \
+        if (where & SSL_CB_ ## w) \
+        { \
+          std::cout << "    | " #w " " << ::SSL_state_string_long(ssl) << '\n'; \
+        } \
+      } while (false)
+    I_(LOOP);
+    I_(READ);
+    I_(WRITE);
+    I_(ALERT);
+    I_(HANDSHAKE_START);
+    I_(HANDSHAKE_DONE);
+    #undef I_
+  }
+  else
+  {
+    std::cout << "    * error " << ret << '\n';
+  }
+}
+#endif
+
+
+bool to_ssl (__bits::channel_t &channel,
+  const uint8_t **data,
+  size_t *size,
+  std::error_code &error) noexcept
+{
+  if (*size > 0)
+  {
+    *size = ::BIO_write(channel.in, *data, *size);
+    if (*size > 0)
+    {
+      LOG(std::cout << "    | in " << *size << '\n');
+      return true;
+    }
+    else if (::BIO_should_retry(channel.in))
+    {
+      LOG(std::cout << "    | in: retry\n");
+      return true;
+    }
+    else
+    {
+      LOG(std::cout << "    | in: no retry\n");
+      error.assign(::ERR_get_error(), category());
+      return false;
+    }
+  }
+  return true;
+}
+
+
+bool from_ssl (__bits::channel_t &channel,
+  channel_t::buffer_manager_t &buffer_manager,
+  std::error_code &error) noexcept
+{
+  while (::BIO_ctrl_pending(channel.out) > 0)
+  {
+    size_t chunk_size{};
+    uint8_t *chunk_ptr{};
+    auto user_data = buffer_manager.alloc(&chunk_ptr, &chunk_size);
+    if (chunk_ptr && chunk_size)
+    {
+      auto size = ::BIO_read(channel.out, chunk_ptr, chunk_size);
+      if (size > 0)
+      {
+        LOG(std::cout << "    | out " << size << '\n');
+        buffer_manager.ready(user_data, chunk_ptr, size);
+        continue;
+      }
+      else if (::BIO_should_retry(channel.out))
+      {
+        LOG(std::cout << "    | out: retry\n");
+        return true;
+      }
+      else
+      {
+        LOG(std::cout << "    | out: no retry\n");
+        error.assign(::ERR_get_error(), category());
+        return false;
+      }
+    }
+    else
+    {
+      error = std::make_error_code(std::errc::no_buffer_space);
+      return false;
+    }
+  }
+  return true;
+}
+
+
+} // namespace
+
+
 void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
 {
-  error.clear();
+  init_openssl();
+
+  handle = ::SSL_CTX_new(channel_type(datagram, server));
+  if (handle)
+  {
+    if (set_certificate(*this, error)
+      && set_read_ahead(*this, error))
+    {
+      error.clear();
+    }
+  }
+  else
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
 }
+
+
+__bits::channel_factory_t::~channel_factory_t () noexcept
+{ }
 
 
 void __bits::channel_t::ctor (std::error_code &error) noexcept
 {
-  error.clear();
+  handle = ::SSL_new(factory->handle.ref);
+  if (handle)
+  {
+    if (factory->server)
+    {
+      ::SSL_set_accept_state(handle.ref);
+    }
+    else
+    {
+      ::SSL_set_connect_state(handle.ref);
+    }
+    LOG(::SSL_set_info_callback(handle.ref, info_callback));
+
+    in = ::BIO_new(::BIO_s_mem());
+    out = ::BIO_new(::BIO_s_mem());
+
+    if (in && out)
+    {
+      ::BIO_set_mem_eof_return(in, -1);
+      ::BIO_set_mem_eof_return(out, -1);
+      ::SSL_set_bio(handle.ref, in, out);
+      error.clear();
+      return;
+    }
+
+    ::BIO_free_all(in);
+    ::BIO_free_all(out);
+  }
+  error = std::make_error_code(std::errc::not_enough_memory);
 }
+
+
+__bits::channel_t::~channel_t () noexcept
+{ }
 
 
 size_t channel_t::handshake (const uint8_t *data, size_t size,
   buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  (void)data;
-  (void)size;
-  (void)buffer_manager;
-  error.clear();
-  return {};
+  auto &channel = *impl_;
+
+  LOG(std::cout << (channel.factory->server ? "server" : "client")
+    << "> handshake: " << size << '\n'
+  );
+
+  auto used_size = size;
+  if (!to_ssl(channel, &data, &used_size, error))
+  {
+    return used_size;
+  }
+
+  auto status = ::SSL_do_handshake(channel.handle.ref);
+  switch (::SSL_get_error(channel.handle.ref, status))
+  {
+    case SSL_ERROR_NONE:
+      LOG(std::cout << "    | connected\n");
+      channel.handshake_status = std::make_error_code(
+        std::errc::already_connected
+      );
+      if (!::BIO_ctrl_pending(channel.out))
+      {
+        error.clear();
+        break;
+      }
+      [[fallthrough]];
+
+    case SSL_ERROR_WANT_READ:
+    case SSL_ERROR_WANT_WRITE:
+      if (from_ssl(channel, buffer_manager, error))
+      {
+        error.clear();
+      }
+      break;
+
+    case SSL_ERROR_ZERO_RETURN:
+      LOG(std::cout << "    | aborted\n");
+      channel.handshake_status = std::make_error_code(
+        std::errc::connection_aborted
+      );
+      error.clear();
+      break;
+
+    case SSL_ERROR_SSL:
+    case SSL_ERROR_SYSCALL:
+      channel.handshake_status = std::make_error_code(
+        std::errc::connection_aborted
+      );
+      error.assign(::ERR_get_error(), category());
+      LOG(std::cout << "    | error: " << error.message() << "\n");
+      break;
+
+    default:
+      LOG(std::cout << "    | unhandled " << status << '\n');
+      break;
+  }
+
+  return used_size;
 }
 
 
@@ -112,26 +402,26 @@ struct crypto_call_t
   }
 
 
-  ::OSStatus handshake (__bits::channel_t &impl) noexcept
+  ::OSStatus handshake (__bits::channel_t &channel) noexcept
   {
-    impl.syscall = this;
-    return ::SSLHandshake(impl.handle.ref);
+    channel.syscall = this;
+    return ::SSLHandshake(channel.handle.ref);
   }
 
 
-  ::OSStatus encrypt (__bits::channel_t &impl, size_t *processed) noexcept
+  ::OSStatus encrypt (__bits::channel_t &channel, size_t *processed) noexcept
   {
-    impl.syscall = this;
-    return ::SSLWrite(impl.handle.ref, in_ptr, in_last - in_ptr, processed);
+    channel.syscall = this;
+    return ::SSLWrite(channel.handle.ref, in_ptr, in_last - in_ptr, processed);
   }
 
 
-  ::OSStatus decrypt (__bits::channel_t &impl, size_t *processed) noexcept
+  ::OSStatus decrypt (__bits::channel_t &channel, size_t *processed) noexcept
   {
-    impl.syscall = this;
+    channel.syscall = this;
     if (auto buffer_size = ensure_available_buffer(in_last - in_ptr))
     {
-      auto status = ::SSLRead(impl.handle.ref, out_ptr, buffer_size, processed);
+      auto status = ::SSLRead(channel.handle.ref, out_ptr, buffer_size, processed);
       out_ptr += *processed;
       return status;
     }
@@ -165,7 +455,7 @@ struct crypto_call_t
     buffer_manager.ready(user_data, out_first, out_ptr - out_first);
   }
 
-  void drain_system_buffer (__bits::channel_t &impl, size_t *processed)
+  void drain_system_buffer (__bits::channel_t &channel, size_t *processed)
     noexcept;
 
   crypto_call_t (const crypto_call_t &) = delete;
@@ -173,18 +463,18 @@ struct crypto_call_t
 };
 
 
-void crypto_call_t::drain_system_buffer (__bits::channel_t &impl,
+void crypto_call_t::drain_system_buffer (__bits::channel_t &channel,
   size_t *processed) noexcept
 {
   size_t system_buffer_size{};
-  ::SSLGetBufferedReadSize(impl.handle.ref, &system_buffer_size);
+  ::SSLGetBufferedReadSize(channel.handle.ref, &system_buffer_size);
 
   while (system_buffer_size)
   {
     if (auto buffer_size = ensure_available_buffer(system_buffer_size))
     {
       size_t read;
-      auto status = ::SSLRead(impl.handle.ref, out_ptr, buffer_size, &read);
+      auto status = ::SSLRead(channel.handle.ref, out_ptr, buffer_size, &read);
       if (status == ::errSecSuccess)
       {
         out_ptr += read;
@@ -206,7 +496,7 @@ inline __bits::channel_t &to_channel (::SSLConnectionRef connection) noexcept
 }
 
 
-::OSStatus channel_read (::SSLConnectionRef connection,
+::OSStatus ssl_read (::SSLConnectionRef connection,
   void *data, size_t *size) noexcept
 {
   LOG(std::cout << "    | read " << *size);
@@ -239,7 +529,7 @@ inline __bits::channel_t &to_channel (::SSLConnectionRef connection) noexcept
 }
 
 
-::OSStatus channel_write (::SSLConnectionRef connection,
+::OSStatus ssl_write (::SSLConnectionRef connection,
   const void *data, size_t *size) noexcept
 {
   LOG(std::cout << "    | write " << *size);
@@ -272,12 +562,9 @@ inline __bits::channel_t &to_channel (::SSLConnectionRef connection) noexcept
 }
 
 
-bool set_io (__bits::channel_t &impl, std::error_code &error) noexcept
+bool set_io (__bits::channel_t &channel, std::error_code &error) noexcept
 {
-  auto status = ::SSLSetIOFuncs(impl.handle.ref,
-    &channel_read,
-    &channel_write
-  );
+  auto status = ::SSLSetIOFuncs(channel.handle.ref, &ssl_read, &ssl_write);
   if (status == ::errSecSuccess)
   {
     return true;
@@ -287,9 +574,10 @@ bool set_io (__bits::channel_t &impl, std::error_code &error) noexcept
 }
 
 
-bool set_connection (__bits::channel_t &impl, std::error_code &error) noexcept
+bool set_connection (__bits::channel_t &channel, std::error_code &error)
+  noexcept
 {
-  auto status = ::SSLSetConnection(impl.handle.ref, &impl);
+  auto status = ::SSLSetConnection(channel.handle.ref, &channel);
   if (status == ::errSecSuccess)
   {
     return true;
@@ -299,13 +587,14 @@ bool set_connection (__bits::channel_t &impl, std::error_code &error) noexcept
 }
 
 
-bool set_peer_name (__bits::channel_t &impl, std::error_code &error) noexcept
+bool set_peer_name (__bits::channel_t &channel, std::error_code &error)
+  noexcept
 {
-  if (!impl.peer_name.empty())
+  if (!channel.peer_name.empty())
   {
-    auto status = ::SSLSetPeerDomainName(impl.handle.ref,
-      impl.peer_name.data(),
-      impl.peer_name.size()
+    auto status = ::SSLSetPeerDomainName(channel.handle.ref,
+      channel.peer_name.data(),
+      channel.peer_name.size()
     );
     if (status != ::errSecSuccess)
     {
@@ -317,11 +606,12 @@ bool set_peer_name (__bits::channel_t &impl, std::error_code &error) noexcept
 }
 
 
-bool set_mutual_auth (__bits::channel_t &impl, std::error_code &error) noexcept
+bool set_mutual_auth (__bits::channel_t &channel, std::error_code &error)
+  noexcept
 {
-  if (impl.mutual_auth)
+  if (channel.mutual_auth)
   {
-    auto status = ::SSLSetClientSideAuthenticate(impl.handle.ref,
+    auto status = ::SSLSetClientSideAuthenticate(channel.handle.ref,
       ::kAlwaysAuthenticate
     );
     if (status != ::errSecSuccess)
@@ -334,13 +624,14 @@ bool set_mutual_auth (__bits::channel_t &impl, std::error_code &error) noexcept
 }
 
 
-bool set_certificate (__bits::channel_t &impl, std::error_code &error) noexcept
+bool set_certificate (__bits::channel_t &channel, std::error_code &error)
+  noexcept
 {
-  if (impl.factory->certificate)
+  if (channel.factory->certificate)
   {
     unique_ref<::SecIdentityRef> identity;
     auto status = ::SecIdentityCreateWithCertificate(nullptr,
-      impl.factory->certificate.ref,
+      channel.factory->certificate.ref,
       &identity.ref
     );
     if (status != ::errSecSuccess)
@@ -359,7 +650,7 @@ bool set_certificate (__bits::channel_t &impl, std::error_code &error) noexcept
       return false;
     }
 
-    status = ::SSLSetCertificate(impl.handle.ref, certificates.ref);
+    status = ::SSLSetCertificate(channel.handle.ref, certificates.ref);
     if (status != ::errSecSuccess)
     {
       error.assign(status, category());
@@ -370,16 +661,16 @@ bool set_certificate (__bits::channel_t &impl, std::error_code &error) noexcept
 }
 
 
-bool set_certificate_check (__bits::channel_t &impl, std::error_code &error)
+bool set_certificate_check (__bits::channel_t &channel, std::error_code &error)
   noexcept
 {
-  if (impl.factory->certificate_check)
+  if (channel.factory->certificate_check)
   {
-    auto break_on_auth = impl.factory->server
+    auto break_on_auth = channel.factory->server
       ? ::kSSLSessionOptionBreakOnClientAuth
       : ::kSSLSessionOptionBreakOnServerAuth
     ;
-    auto status = ::SSLSetSessionOption(impl.handle.ref, break_on_auth, true);
+    auto status = ::SSLSetSessionOption(channel.handle.ref, break_on_auth, true);
     if (status != ::errSecSuccess)
     {
       error.assign(status, category());
@@ -390,10 +681,11 @@ bool set_certificate_check (__bits::channel_t &impl, std::error_code &error)
 }
 
 
-bool is_trusted_peer (__bits::channel_t &impl, std::error_code &error) noexcept
+bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
+  noexcept
 {
   unique_ref<::SecTrustRef> trust{};
-  auto status = ::SSLCopyPeerTrust(impl.handle.ref, &trust.ref);
+  auto status = ::SSLCopyPeerTrust(channel.handle.ref, &trust.ref);
   if (status != ::errSecSuccess)
   {
     error.assign(status, category());
@@ -405,7 +697,7 @@ bool is_trusted_peer (__bits::channel_t &impl, std::error_code &error) noexcept
   );
   ::CFRetain(peer_certificate.native_handle().ref);
 
-  return impl.factory->certificate_check(peer_certificate);
+  return channel.factory->certificate_check(peer_certificate);
 }
 
 
@@ -453,20 +745,22 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
   buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  auto &impl = *impl_;
+  auto &channel = *impl_;
 
-  LOG(std::cout << (impl.factory->server ? "server" : "client")
+  LOG(std::cout << (channel.factory->server ? "server" : "client")
     << "> handshake: " << size << '\n'
   );
 
   crypto_call_t call(data, data + size, buffer_manager);
   for (;;)
   {
-    switch (auto status = call.handshake(impl))
+    switch (auto status = call.handshake(channel))
     {
       case ::errSecSuccess:
         LOG(std::cout << "    | connected (" << (call.in_ptr - call.in_first) << ")\n");
-        impl.handshake_status = std::make_error_code(std::errc::already_connected);
+        channel.handshake_status = std::make_error_code(
+          std::errc::already_connected
+        );
         error.clear();
         break;
 
@@ -482,16 +776,20 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
 
       case ::errSSLPeerAuthCompleted:
         LOG(std::cout << "    | certificate_check\n");
-        if (!is_trusted_peer(impl, error))
+        if (!is_trusted_peer(channel, error))
         {
-          impl.handshake_status = std::make_error_code(std::errc::connection_aborted);
+          channel.handshake_status = std::make_error_code(
+            std::errc::connection_aborted
+          );
           break;
         }
         continue;
 
       default:
         LOG(std::cout << "    | error\n");
-        impl.handshake_status = std::make_error_code(std::errc::connection_aborted);
+        channel.handshake_status = std::make_error_code(
+          std::errc::connection_aborted
+        );
         error.assign(status, category());
         break;
     }

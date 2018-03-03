@@ -6,7 +6,8 @@
 #include <memory>
 
 #if __sal_os_linux //{{{1
-  // TODO
+  #include <sal/__bits/ref.hpp>
+  #include <openssl/ssl.h>
 #elif __sal_os_macos //{{{1
   #include <sal/__bits/ref.hpp>
   #include <Security/SecureTransport.h>
@@ -36,11 +37,18 @@ struct channel_factory_t
   std::function<bool(const crypto::certificate_t &)> certificate_check{};
 
 #if __sal_os_linux //{{{1
-  // TODO
+
+  unique_ref<::SSL_CTX *, ::SSL_CTX_free> handle{};
+  EVP_PKEY *private_key{};
+
 #elif __sal_os_macos //{{{1
+
   // none
+
 #elif __sal_os_windows //{{{1
+
   ::CredHandle credentials;
+
 #endif //}}}1
 
   channel_factory_t (bool datagram, bool server) noexcept
@@ -71,7 +79,8 @@ struct channel_t
 
 #if __sal_os_linux //{{{1
 
-  // TODO
+  unique_ref<::SSL *, ::SSL_free> handle{};
+  ::BIO *in{}, *out{};
 
 #elif __sal_os_macos //{{{1
 
