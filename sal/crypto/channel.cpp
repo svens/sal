@@ -13,7 +13,7 @@
 #endif //}}}1
 
 
-#define WITH_LOGGING 0
+#define WITH_LOGGING 1
 #if WITH_LOGGING
   #include <iostream>
   #define LOG(x) x
@@ -34,18 +34,25 @@ namespace crypto {
 namespace {
 
 
+constexpr bool openssl_pre_1_1 () noexcept
+{
+  return OPENSSL_VERSION_NUMBER < 0x10100000;
+}
+
+
 inline void init_openssl () noexcept
 {
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-  static std::once_flag init_flag;
-  std::call_once(init_flag,
-    []()
-    {
-      ::SSL_library_init();
-      ::SSL_load_error_strings();
-    }
-  );
-#endif
+  if constexpr (openssl_pre_1_1())
+  {
+    static std::once_flag init_flag;
+    std::call_once(init_flag,
+      []()
+      {
+        ::SSL_library_init();
+        ::SSL_load_error_strings();
+      }
+    );
+  }
 }
 
 
@@ -108,10 +115,7 @@ bool set_certificate (__bits::channel_factory_t &factory,
 bool set_read_ahead (__bits::channel_factory_t &factory, std::error_code &)
   noexcept
 {
-  if (!factory.datagram)
-  {
-    ::SSL_CTX_set_read_ahead(factory.handle.ref, 0);
-  }
+  ::SSL_CTX_set_read_ahead(factory.handle.ref, 0);
   return true;
 }
 
@@ -347,10 +351,48 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
   buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  (void)data;
-  (void)size;
-  (void)buffer_manager;
-  error.clear();
+  auto &channel = *impl_;
+
+  LOG(std::cout << (channel.factory->server ? "server" : "client")
+    << "> encrypt: " << size << '\n'
+  );
+
+  auto status = ::SSL_write(channel.handle.ref, data, size);
+  switch (::SSL_get_error(channel.handle.ref, status))
+  {
+    case SSL_ERROR_NONE:
+      if (from_ssl(channel, buffer_manager, error))
+      {
+        error.clear();
+      }
+      break;
+
+    case SSL_ERROR_WANT_WRITE:
+      LOG(std::cout << "    | want_write\n");
+      error.clear();
+      break;
+
+    case SSL_ERROR_WANT_READ:
+      LOG(std::cout << "    | want_read\n");
+      error.clear();
+      break;
+
+    case SSL_ERROR_ZERO_RETURN:
+      LOG(std::cout << "    | clean close\n");
+      break;
+
+    case SSL_ERROR_SSL:
+      LOG(std::cout << "    | error_ssl\n");
+      break;
+
+    case SSL_ERROR_SYSCALL:
+      LOG(std::cout << "    | error_syscall\n");
+      break;
+
+    default:
+      LOG(std::cout << "    | unhandled " << status << '\n');
+      break;
+  }
 }
 
 
@@ -358,10 +400,77 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
   buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  (void)data;
-  (void)size;
-  (void)buffer_manager;
-  error.clear();
+  auto &channel = *impl_;
+
+  LOG(std::cout << (channel.factory->server ? "server" : "client")
+    << "> decrypt: " << size << '\n'
+  );
+
+  auto used_size = size;
+  if (!to_ssl(channel, &data, &used_size, error))
+  {
+    return {};
+  }
+
+  for (;;)
+  {
+    size_t chunk_size{};
+    uint8_t *chunk_ptr{};
+    auto user_data = buffer_manager.alloc(&chunk_ptr, &chunk_size);
+    if (!chunk_ptr || !chunk_size)
+    {
+      error = std::make_error_code(std::errc::no_buffer_space);
+      break;
+    }
+
+    auto status = ::SSL_read(channel.handle.ref, chunk_ptr, chunk_size);
+    switch (::SSL_get_error(channel.handle.ref, status))
+    {
+      case SSL_ERROR_NONE:
+        LOG(std::cout << "    | ready " << status << '\n');
+        buffer_manager.ready(user_data, chunk_ptr, status);
+        LOG(std::cout << "    | pending"
+          << " BIO.in=" << ::BIO_ctrl_pending(channel.in)
+          << "; BIO.win=" << ::BIO_ctrl_wpending(channel.in)
+          << "; BIO.out=" << ::BIO_ctrl_pending(channel.out)
+          << "; BIO.wout=" << ::BIO_ctrl_wpending(channel.out)
+          << "; SSL=" << SSL_pending(channel.handle.ref)
+          << '\n'
+        );
+        if (auto not_used = ::BIO_ctrl_pending(channel.in))
+        {
+          BIO_reset(channel.in);
+          return used_size - not_used;
+        }
+        continue;
+
+      case SSL_ERROR_WANT_READ:
+      case SSL_ERROR_WANT_WRITE:
+        LOG(std::cout << "    | want_io\n");
+        if (chunk_ptr)
+        {
+          buffer_manager.ready(user_data, chunk_ptr, 0U);
+        }
+        return used_size;
+
+      case SSL_ERROR_ZERO_RETURN:
+        LOG(std::cout << "    | clean close\n");
+        return {};
+
+      case SSL_ERROR_SSL:
+        LOG(std::cout << "    | error_ssl\n");
+        return {};
+
+      case SSL_ERROR_SYSCALL:
+        LOG(std::cout << "    | error_syscall\n");
+        return {};
+
+      default:
+        LOG(std::cout << "    | unhandled " << status << '\n');
+        return {};
+    }
+  }
+
   return {};
 }
 

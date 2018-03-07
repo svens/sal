@@ -97,11 +97,25 @@ struct buffer_t final
   uint8_t chunk[Size];
   std::vector<uint8_t> data{};
 
+  std::string alloc_scope{};
+  size_t alloc_balance = 100'000;
+
+  buffer_t (std::string alloc_scope)
+    : alloc_scope(alloc_scope)
+  {}
+
+  ~buffer_t ()
+  {
+    SCOPED_TRACE(alloc_scope);
+    //EXPECT_EQ(100'000U, alloc_balance);
+  }
+
   uintptr_t alloc (uint8_t **buffer, size_t *buffer_size)
     noexcept final override
   {
     *buffer = chunk;
     *buffer_size = sizeof(chunk);
+    alloc_balance++;
     return {};
   }
 
@@ -109,6 +123,7 @@ struct buffer_t final
     noexcept final override
   {
     data.insert(data.end(), ptr, ptr + size);
+    alloc_balance--;
   }
 
   void trash ()
@@ -127,7 +142,7 @@ void handshake (sal::crypto::channel_t &client, sal::crypto::channel_t &server)
   ASSERT_FALSE(client.is_connected());
   ASSERT_FALSE(server.is_connected());
 
-  buffer_t<4096> client_buf, server_buf;
+  buffer_t<4096> client_buf{"client"}, server_buf{"server"};
 
   client.handshake(sal::const_null_buf, client_buf);
   while (!client_buf.data.empty())
@@ -163,7 +178,7 @@ TYPED_TEST(crypto_channel, handshake_after_connected)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> out;
+  buffer_t<4096> out{"out"};
   std::error_code error;
 
   error.clear();
@@ -228,7 +243,7 @@ TYPED_TEST(crypto_channel, handshake_chunked_receive)
   ASSERT_FALSE(client.is_connected());
   ASSERT_FALSE(server.is_connected());
 
-  buffer_t<4096> client_buf, server_buf;
+  buffer_t<4096> client_buf{"client"}, server_buf{"server"};
 
   client.handshake(sal::const_null_buf, client_buf);
   while (!client_buf.data.empty())
@@ -280,7 +295,7 @@ TYPED_TEST(crypto_channel, handshake_alloc_null_ptr)
   EXPECT_EQ(std::errc::no_buffer_space, error);
 
   // create client_hello before testing server side
-  buffer_t<4096> client_hello;
+  buffer_t<4096> client_hello{"client"};
   client.handshake(sal::const_null_buf, client_hello);
 
   // server side
@@ -301,7 +316,7 @@ TYPED_TEST(crypto_channel, handshake_alloc_null_size)
   EXPECT_EQ(std::errc::no_buffer_space, error);
 
   // create client_hello before testing server side
-  buffer_t<4096> client_hello;
+  buffer_t<4096> client_hello{"client"};
   client.handshake(sal::const_null_buf, client_hello);
 
   // server side
@@ -314,7 +329,7 @@ TYPED_TEST(crypto_channel, handshake_alloc_null_size)
 TYPED_TEST(crypto_channel, handshake_alloc_not_sufficient)
 {
   auto [client, server] = this->make_channel_pair();
-  buffer_t<1> client_buf, server_buf;
+  buffer_t<1> client_buf{"client"}, server_buf{"server"};
 
   client.handshake(sal::const_null_buf, client_buf);
   while (!client_buf.data.empty())
@@ -333,21 +348,15 @@ TYPED_TEST(crypto_channel, handshake_alloc_not_sufficient)
 
 // exclude tests handshake_fail_on_XXX
 template <typename ChannelFactory>
-constexpr bool suppress_trashed_handshake_tests (
-  const crypto_channel<ChannelFactory> &factory)
+bool suppress_trashed_handshake_tests (const crypto_channel<ChannelFactory> &factory)
 {
 #if __sal_os_macos
   // SecureTransport: due chosen trashing content, throws buffer overflow
   (void)factory;
   return false;
 #elif __sal_os_linux
-  if constexpr (factory.is_datagram)
-  {
-    // OpenSSL/DTLS: ignores trashed messages (correctly)
-    return true;
-  }
-  // OpenSSL/TLS: invalid version number
-  return false;
+  // OpenSSL/DTLS: ignores trashed messages (correctly)
+  return factory.is_datagram;
 #elif __sal_os_windows
   // SChannel: accepts trashed message, asking for more instead of error
   (void)factory;
@@ -365,7 +374,7 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_client_hello)
 
   auto [client, server] = this->make_channel_pair();
 
-  buffer_t<4096> client_buf, server_buf;
+  buffer_t<4096> client_buf{"client"}, server_buf{"server"};
   client.handshake(sal::const_null_buf, client_buf);
 
   std::error_code error;
@@ -384,7 +393,7 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_server_hello)
 
   auto [client, server] = this->make_channel_pair();
 
-  buffer_t<4096> client_buf, server_buf;
+  buffer_t<4096> client_buf{"client"}, server_buf{"server"};
   client.handshake(sal::const_null_buf, client_buf);
   server.handshake(client_buf.data, server_buf);
 
@@ -405,7 +414,7 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_key_exchange)
   auto [client, server] = this->make_channel_pair();
 
   // generate client_hello
-  buffer_t<4096> client_buf, server_buf;
+  buffer_t<4096> client_buf{"client"}, server_buf{"server"};
   client.handshake(sal::const_null_buf, client_buf);
 
   // server <- client_hello, generate server_hello
@@ -423,22 +432,19 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_key_exchange)
 }
 
 
-#if !__sal_os_linux
-
-
 TYPED_TEST(crypto_channel, client_encrypt_message)
 {
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret;
+  buffer_t<4096> secret{"secret"};
   client.encrypt(this->case_name, secret);
   EXPECT_FALSE(secret.data.empty());
 
   std::string message(secret.data.begin(), secret.data.end());
   EXPECT_EQ(std::string::npos, message.find(this->case_name));
 
-  buffer_t<4096> plain;
+  buffer_t<4096> plain{"plain"};
   server.decrypt(secret.data, plain);
   EXPECT_FALSE(plain.data.empty());
 
@@ -452,14 +458,14 @@ TYPED_TEST(crypto_channel, server_encrypt_message)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret;
+  buffer_t<4096> secret{"secret"};
   server.encrypt(this->case_name, secret);
   EXPECT_FALSE(secret.data.empty());
 
   std::string message(secret.data.begin(), secret.data.end());
   EXPECT_EQ(std::string::npos, message.find(this->case_name));
 
-  buffer_t<4096> plain;
+  buffer_t<4096> plain{"plain"};
   client.decrypt(secret.data, plain);
   EXPECT_FALSE(plain.data.empty());
 
@@ -471,7 +477,7 @@ TYPED_TEST(crypto_channel, server_encrypt_message)
 TYPED_TEST(crypto_channel, encrypt_not_connected)
 {
   auto [client, server] = this->make_channel_pair();
-  buffer_t<4096> secret;
+  buffer_t<4096> secret{"secret"};
 
   std::error_code error;
   client.encrypt(this->case_name, secret, error);
@@ -488,7 +494,7 @@ TYPED_TEST(crypto_channel, encrypt_not_connected)
 TYPED_TEST(crypto_channel, decrypt_not_connected)
 {
   auto [client, server] = this->make_channel_pair();
-  buffer_t<4096> plain;
+  buffer_t<4096> plain{"plain"};
 
   std::error_code error;
   client.decrypt(this->case_name, plain, error);
@@ -519,7 +525,7 @@ TYPED_TEST(crypto_channel, decrypt_alloc_null_ptr)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret;
+  buffer_t<4096> secret{"secret"};
   client.encrypt(this->case_name, secret);
   EXPECT_FALSE(secret.data.empty());
 
@@ -547,7 +553,7 @@ TYPED_TEST(crypto_channel, decrypt_alloc_null_size)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret;
+  buffer_t<4096> secret{"secret"};
   client.encrypt(this->case_name, secret);
   EXPECT_FALSE(secret.data.empty());
 
@@ -563,11 +569,11 @@ TYPED_TEST(crypto_channel, encrypt_alloc_insufficient)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<1> secret;
+  buffer_t<1> secret{"secret"};
   client.encrypt(this->case_name, secret);
   EXPECT_FALSE(secret.data.empty());
 
-  buffer_t<4096> plain;
+  buffer_t<4096> plain{"plain"};
   server.decrypt(secret.data, plain);
   EXPECT_FALSE(plain.data.empty());
 
@@ -581,11 +587,11 @@ TYPED_TEST(crypto_channel, decrypt_alloc_insufficient)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret;
+  buffer_t<4096> secret{"secret"};
   client.encrypt(this->case_name, secret);
   EXPECT_FALSE(secret.data.empty());
 
-  buffer_t<1> plain;
+  buffer_t<1> plain{"plain"};
   server.decrypt(secret.data, plain);
   EXPECT_FALSE(plain.data.empty());
 
@@ -599,33 +605,46 @@ TYPED_TEST(crypto_channel, decrypt_coalesced)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret;
+  buffer_t<4096> secret{"secret"};
 
   auto first = this->case_name + "_first";
   client.encrypt(first, secret);
   EXPECT_FALSE(secret.data.empty());
+  auto first_size = secret.data.size();
 
   auto second = this->case_name + "_second";
   std::reverse(second.begin(), second.end());
   client.encrypt(second, secret);
   EXPECT_FALSE(secret.data.empty());
+  auto second_size = secret.data.size() - first_size;
 
   // first
-  buffer_t<4096> plain;
+  std::cout << "\n\n--- first ---\n";
+  buffer_t<4096> plain{"plain"};
   auto used = server.decrypt(secret.data, plain);
+  EXPECT_EQ(first_size, used);
   std::string message(plain.data.begin(), plain.data.end());
   EXPECT_EQ(first, message);
   secret.data.erase(secret.data.begin(), secret.data.begin() + used);
 
   // second
+  std::cout << "\n\n--- second ---\n";
   plain.data.clear();
   used = server.decrypt(secret.data, plain);
+  EXPECT_EQ(second_size, used);
   message.assign(plain.data.begin(), plain.data.end());
   EXPECT_EQ(second, message);
   secret.data.erase(secret.data.begin(), secret.data.begin() + used);
 
+  (void)first_size;
+  (void)second_size;
+
+  std::cout << "\n\n--- finish ---\n";
   EXPECT_TRUE(secret.data.empty());
 }
+
+
+#if !__sal_os_linux
 
 
 TYPED_TEST(crypto_channel, decrypt_chunked)
@@ -633,7 +652,7 @@ TYPED_TEST(crypto_channel, decrypt_chunked)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret, plain;
+  buffer_t<4096> secret{"secret"}, plain{"plain"};
   client.encrypt(this->case_name, secret);
 
   for (auto b: secret.data)
@@ -652,7 +671,7 @@ TYPED_TEST(crypto_channel, decrypt_invalid_message)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret, plain;
+  buffer_t<4096> secret{"secret"}, plain{"plain"};
   client.encrypt(this->case_name, secret);
   secret.trash();
 
@@ -666,7 +685,7 @@ TYPED_TEST(crypto_channel, coalesced_server_finished_and_message)
 {
   auto [client, server] = this->make_channel_pair();
 
-  buffer_t<4096> client_buf, server_buf;
+  buffer_t<4096> client_buf{"client"}, server_buf{"server"};
 
   // usual handshake except break on server_finished
   // i.e. server is connected but client is not
@@ -713,7 +732,7 @@ TYPED_TEST(crypto_channel, decrypt_half_and_one_plus_half_messages)
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
-  buffer_t<4096> secret;
+  buffer_t<4096> secret{"secret"};
 
   auto first = this->case_name + "_first";
   client.encrypt(first, secret);
@@ -738,7 +757,7 @@ TYPED_TEST(crypto_channel, decrypt_half_and_one_plus_half_messages)
   );
 
   // 1st half (buffered in engine but no output)
-  buffer_t<4096> plain;
+  buffer_t<4096> plain{"plain"};
   auto used_1st_half = server.decrypt(half, plain);
   EXPECT_EQ(secret_1st_size / 2, used_1st_half);
   EXPECT_TRUE(plain.data.empty());
