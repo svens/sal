@@ -98,7 +98,7 @@ struct buffer_t final
   std::vector<uint8_t> data{};
 
   std::string alloc_scope{};
-  size_t alloc_balance = 100'000;
+  int alloc_balance = 0;
 
   buffer_t (std::string alloc_scope)
     : alloc_scope(alloc_scope)
@@ -107,7 +107,7 @@ struct buffer_t final
   ~buffer_t ()
   {
     SCOPED_TRACE(alloc_scope);
-    //EXPECT_EQ(100'000U, alloc_balance);
+    //EXPECT_EQ(0, alloc_balance);
   }
 
   uintptr_t alloc (uint8_t **buffer, size_t *buffer_size)
@@ -122,6 +122,7 @@ struct buffer_t final
   void ready (uintptr_t, uint8_t *ptr, size_t size)
     noexcept final override
   {
+    //std::cout << "[W:" << size << "]";
     data.insert(data.end(), ptr, ptr + size);
     alloc_balance--;
   }
@@ -284,43 +285,55 @@ struct failing_buffer_t final
 };
 
 
-TYPED_TEST(crypto_channel, handshake_alloc_null_ptr)
+TYPED_TEST(crypto_channel, handshake_client_alloc_null_ptr)
 {
   auto [client, server] = this->make_channel_pair();
+  (void)server;
+
   failing_buffer_t failing_buffer(true, false);
   std::error_code error;
-
-  // client side
   client.handshake(sal::const_null_buf, failing_buffer, error);
   EXPECT_EQ(std::errc::no_buffer_space, error);
+  EXPECT_FALSE(client.is_connected());
+}
 
-  // create client_hello before testing server side
+
+TYPED_TEST(crypto_channel, handshake_server_alloc_null_ptr)
+{
+  auto [client, server] = this->make_channel_pair();
+  std::error_code error;
+
   buffer_t<4096> client_hello{"client"};
   client.handshake(sal::const_null_buf, client_hello);
 
-  // server side
-  error.clear();
+  failing_buffer_t failing_buffer(true, false);
   server.handshake(client_hello.data, failing_buffer, error);
   EXPECT_EQ(std::errc::no_buffer_space, error);
 }
 
 
-TYPED_TEST(crypto_channel, handshake_alloc_null_size)
+TYPED_TEST(crypto_channel, handshake_client_alloc_null_size)
 {
   auto [client, server] = this->make_channel_pair();
+  (void)server;
+
   failing_buffer_t failing_buffer(false, true);
   std::error_code error;
-
-  // client side
   client.handshake(sal::const_null_buf, failing_buffer, error);
   EXPECT_EQ(std::errc::no_buffer_space, error);
+  EXPECT_FALSE(client.is_connected());
+}
 
-  // create client_hello before testing server side
+
+TYPED_TEST(crypto_channel, handshake_server_alloc_null_size)
+{
+  auto [client, server] = this->make_channel_pair();
+  std::error_code error;
+
   buffer_t<4096> client_hello{"client"};
   client.handshake(sal::const_null_buf, client_hello);
 
-  // server side
-  error.clear();
+  failing_buffer_t failing_buffer(false, true);
   server.handshake(client_hello.data, failing_buffer, error);
   EXPECT_EQ(std::errc::no_buffer_space, error);
 }
@@ -619,7 +632,6 @@ TYPED_TEST(crypto_channel, decrypt_coalesced)
   auto second_size = secret.data.size() - first_size;
 
   // first
-  std::cout << "\n\n--- first ---\n";
   buffer_t<4096> plain{"plain"};
   auto used = server.decrypt(secret.data, plain);
   EXPECT_EQ(first_size, used);
@@ -628,7 +640,6 @@ TYPED_TEST(crypto_channel, decrypt_coalesced)
   secret.data.erase(secret.data.begin(), secret.data.begin() + used);
 
   // second
-  std::cout << "\n\n--- second ---\n";
   plain.data.clear();
   used = server.decrypt(secret.data, plain);
   EXPECT_EQ(second_size, used);
@@ -636,10 +647,6 @@ TYPED_TEST(crypto_channel, decrypt_coalesced)
   EXPECT_EQ(second, message);
   secret.data.erase(secret.data.begin(), secret.data.begin() + used);
 
-  (void)first_size;
-  (void)second_size;
-
-  std::cout << "\n\n--- finish ---\n";
   EXPECT_TRUE(secret.data.empty());
 }
 

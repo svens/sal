@@ -96,12 +96,6 @@ struct channel_t
   size_t complete_message_size{};
   std::vector<uint8_t> in{};
 
-  std::unique_ptr<void, decltype(&::FreeContextBuffer)> out{nullptr,
-    &::FreeContextBuffer
-  };
-  const uint8_t *out_ptr{};
-  size_t out_size{};
-
 #endif //}}}1
 
   channel_t (channel_factory_ptr factory) noexcept
@@ -111,6 +105,16 @@ struct channel_t
   void ctor (std::error_code &error) noexcept;
 
   ~channel_t () noexcept;
+
+  void connected () noexcept
+  {
+    handshake_status = std::make_error_code(std::errc::already_connected);
+  }
+
+  void abort () noexcept
+  {
+    handshake_status = std::make_error_code(std::errc::connection_aborted);
+  }
 
   channel_t (const channel_t &) = delete;
   channel_t &operator= (const channel_t &) = delete;

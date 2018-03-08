@@ -13,7 +13,7 @@
 #endif //}}}1
 
 
-#define WITH_LOGGING 1
+#define WITH_LOGGING 0
 #if WITH_LOGGING
   #include <iostream>
   #define LOG(x) x
@@ -303,9 +303,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
   {
     case SSL_ERROR_NONE:
       LOG(std::cout << "    | connected\n");
-      channel.handshake_status = std::make_error_code(
-        std::errc::already_connected
-      );
+      channel.connected();
       if (!::BIO_ctrl_pending(channel.out))
       {
         error.clear();
@@ -323,17 +321,13 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
 
     case SSL_ERROR_ZERO_RETURN:
       LOG(std::cout << "    | aborted\n");
-      channel.handshake_status = std::make_error_code(
-        std::errc::connection_aborted
-      );
+      channel.abort();
       error.clear();
       break;
 
     case SSL_ERROR_SSL:
     case SSL_ERROR_SYSCALL:
-      channel.handshake_status = std::make_error_code(
-        std::errc::connection_aborted
-      );
+      channel.abort();
       error.assign(::ERR_get_error(), category());
       LOG(std::cout << "    | error: " << error.message() << "\n");
       break;
@@ -486,7 +480,6 @@ struct crypto_call_t
   const uint8_t *in_first;
   const uint8_t *in_last;
   const uint8_t *in_ptr;
-
   channel_t::buffer_manager_t &buffer_manager;
 
   uintptr_t user_data{};
@@ -867,9 +860,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
     {
       case ::errSecSuccess:
         LOG(std::cout << "    | connected (" << (call.in_ptr - call.in_first) << ")\n");
-        channel.handshake_status = std::make_error_code(
-          std::errc::already_connected
-        );
+        channel.connected();
         error.clear();
         break;
 
@@ -887,18 +878,14 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
         LOG(std::cout << "    | certificate_check\n");
         if (!is_trusted_peer(channel, error))
         {
-          channel.handshake_status = std::make_error_code(
-            std::errc::connection_aborted
-          );
+          channel.abort();
           break;
         }
         continue;
 
       default:
         LOG(std::cout << "    | error\n");
-        channel.handshake_status = std::make_error_code(
-          std::errc::connection_aborted
-        );
+        channel.abort();
         error.assign(status, category());
         break;
     }
@@ -1211,7 +1198,6 @@ void __bits::channel_t::ctor (std::error_code &error) noexcept
 {
   if (factory->server)
   {
-    context_request = ASC_REQ_ALLOCATE_MEMORY;
     if (factory->datagram)
     {
       context_request |= ASC_REQ_DATAGRAM;
@@ -1227,7 +1213,6 @@ void __bits::channel_t::ctor (std::error_code &error) noexcept
   }
   else
   {
-    context_request = ISC_REQ_ALLOCATE_MEMORY;
     if (factory->datagram)
     {
       context_request |= ISC_REQ_DATAGRAM;
@@ -1259,7 +1244,8 @@ namespace {
 
 bool buffer_while_incomplete_message (__bits::channel_t &channel,
   const uint8_t **data,
-  size_t *size)
+  size_t *size,
+  std::error_code &error) noexcept
 {
   // add new data to buffer
   /*
@@ -1267,7 +1253,17 @@ bool buffer_while_incomplete_message (__bits::channel_t &channel,
     << " + " << *size
   );
   */
-  channel.in.insert(channel.in.end(), *data, *data + *size);
+
+  try
+  {
+    channel.in.insert(channel.in.end(), *data, *data + *size);
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return true;
+  }
+
   *data = channel.in.data();
   *size = channel.in.size();
   //LOG(std::cout << " -> " << channel.in.size());
@@ -1298,32 +1294,36 @@ bool buffer_while_incomplete_message (__bits::channel_t &channel,
 }
 
 
-bool flush_out (__bits::channel_t &channel,
+bool flush (__bits::channel_t &channel,
   channel_t::buffer_manager_t &buffer_manager,
+  const uint8_t *ptr,
+  size_t size,
   std::error_code &error) noexcept
 {
-  LOG(std::cout << "    | flush " << channel.out_size);
-  while (channel.out_size)
+  (void)channel;
+
+  LOG(std::cout << "    | flush " << size);
+  while (size)
   {
-    uint8_t *out_ptr;
-    size_t out_size;
-    auto user_data = buffer_manager.alloc(&out_ptr, &out_size);
-    if (out_ptr && out_size)
+    uint8_t *chunk_ptr{};
+    size_t chunk_size{};
+    auto user_data = buffer_manager.alloc(&chunk_ptr, &chunk_size);
+    if (chunk_ptr && chunk_size)
     {
-      if (out_size > channel.out_size)
+      if (chunk_size > size)
       {
-        out_size = channel.out_size;
+        chunk_size = size;
       }
-      std::uninitialized_copy_n(channel.out_ptr, out_size,
-        sal::__bits::make_output_iterator(out_ptr, out_ptr + out_size)
+      std::uninitialized_copy_n(ptr, chunk_size,
+        sal::__bits::make_output_iterator(chunk_ptr, chunk_ptr + chunk_size)
       );
-      buffer_manager.ready(user_data, out_ptr, out_size);
-      channel.out_size -= out_size;
-      channel.out_ptr += out_size;
+      buffer_manager.ready(user_data, chunk_ptr, chunk_size);
+      size -= chunk_size;
+      ptr += chunk_size;
     }
     else
     {
-      LOG(std::cout << ", remaining " << channel.out_size << '\n');
+      LOG(std::cout << ", remaining " << size << '\n');
       error = std::make_error_code(std::errc::no_buffer_space);
       return false;
     }
@@ -1333,61 +1333,54 @@ bool flush_out (__bits::channel_t &channel,
 }
 
 
-bool handle_allocated_out (__bits::channel_t &channel,
-  buffer_t::list_t &out,
+bool handle_token (__bits::channel_t &channel,
+  buffer_t &token,
   channel_t::buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  auto &data = out[0];
-  if (data.BufferType == SECBUFFER_TOKEN && data.pvBuffer && data.cbBuffer)
+  if (token.BufferType == SECBUFFER_TOKEN && token.pvBuffer && token.cbBuffer)
   {
-    channel.out.reset(data.pvBuffer);
-    channel.out_size = data.cbBuffer;
-    channel.out_ptr = static_cast<const uint8_t *>(channel.out.get());
-    if (!flush_out(channel, buffer_manager, error))
-    {
-      return false;
-    }
-    channel.out.reset();
+    auto size = token.cbBuffer;
+    auto ptr = static_cast<const uint8_t *>(token.pvBuffer);
+    return flush(channel, buffer_manager, ptr, size, error);
   }
   return true;
 }
 
 
-bool handle_out (__bits::channel_t &channel,
-  buffer_t::list_t &out,
+bool handle_data (__bits::channel_t &channel,
+  buffer_t &data,
   channel_t::buffer_manager_t &buffer_manager,
   std::error_code &error) noexcept
 {
-  auto &data = out[1];
   if (data.BufferType == SECBUFFER_DATA && data.pvBuffer && data.cbBuffer)
   {
-    channel.out_size = data.cbBuffer;
-    channel.out_ptr = static_cast<const uint8_t *>(data.pvBuffer);
-    return flush_out(channel, buffer_manager, error);
+    auto size = data.cbBuffer;
+    auto ptr = static_cast<const uint8_t *>(data.pvBuffer);
+    return flush(channel, buffer_manager, ptr, size, error);
   }
   return true;
 }
 
 
-size_t handle_extra (__bits::channel_t &channel,
-  buffer_t::list_t &in,
-  size_t index) noexcept
+size_t handle_extra (__bits::channel_t &channel, buffer_t &extra) noexcept
 {
   channel.in.clear();
-  auto &extra = in[index];
-  return (extra.BufferType == SECBUFFER_EXTRA) ? extra.cbBuffer : 0;
+  if (extra.BufferType == SECBUFFER_EXTRA)
+  {
+    return extra.cbBuffer;
+  }
+  return 0;
 }
 
 
 bool handle_missing (__bits::channel_t &channel,
-  buffer_t::list_t &in,
+  buffer_t &missing,
   const uint8_t *data,
   size_t data_size,
   std::error_code &error) noexcept
 {
-  auto &missing = in[1];
-  if (missing.BufferType == SECBUFFER_MISSING && missing.cbBuffer > 0)
+  if (missing.BufferType == SECBUFFER_MISSING && missing.cbBuffer)
   {
     channel.complete_message_size = missing.cbBuffer + channel.in.size();
     if (channel.complete_message_size > channel.max_message_size)
@@ -1395,17 +1388,21 @@ bool handle_missing (__bits::channel_t &channel,
       error = std::make_error_code(std::errc::no_buffer_space);
       return false;
     }
-    channel.in.reserve(channel.complete_message_size);
-  }
-  if (channel.in.empty())
-  {
     try
     {
-      buffer_while_incomplete_message(channel, &data, &data_size);
+      channel.in.reserve(channel.complete_message_size);
     }
     catch (const std::bad_alloc &)
     {
       error = std::make_error_code(std::errc::not_enough_memory);
+      return false;
+    }
+  }
+  if (channel.in.empty())
+  {
+    buffer_while_incomplete_message(channel, &data, &data_size, error);
+    if (error)
+    {
       return false;
     }
   }
@@ -1454,9 +1451,7 @@ void finish_handshake (__bits::channel_t &channel, std::error_code &error)
       channel.header_size = sizes.cbHeader;
       channel.trailer_size = sizes.cbTrailer;
       channel.max_message_size = sizes.cbMaximumMessage;
-      channel.handshake_status = std::make_error_code(
-        std::errc::already_connected
-      );
+      channel.connected();
       LOG(std::cout
         << ", header=" << channel.header_size
         << ", trailer=" << channel.trailer_size
@@ -1468,16 +1463,14 @@ void finish_handshake (__bits::channel_t &channel, std::error_code &error)
     {
       LOG(std::cout << ", failed to get sizes\n");
       error.assign(status, category());
-      channel.handshake_status = std::make_error_code(
-        std::errc::connection_aborted
-      );
+      channel.abort();
     }
   }
   else
   {
     LOG(std::cout << ", not trusted\n");
-    error = std::make_error_code(std::errc::connection_aborted);
-    channel.handshake_status = error;
+    channel.abort();
+    error = channel.handshake_status;
   }
 }
 
@@ -1498,32 +1491,15 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
     << '\n'
   );
 
-  // do nothing until output buffer flushed
-  if (channel.out)
-  {
-    if (!flush_out(channel, buffer_manager, error) || !data || !size)
-    {
-      return {};
-    }
-  }
-
-  // if we know expected message size, just keep buffering until ready
   size_t consumed = size, not_consumed = 0U;
-  try
+  if (!channel.in.empty()
+    && buffer_while_incomplete_message(channel, &data, &size, error))
   {
-    if (!channel.in.empty()
-      && buffer_while_incomplete_message(channel, &data, &size))
-    {
-      return consumed;
-    }
-  }
-  catch (const std::bad_alloc &)
-  {
-    error = std::make_error_code(std::errc::not_enough_memory);
-    return {};
+    return consumed;
   }
 
   SECURITY_STATUS status;
+  uint8_t token[16 * 1024], alert[64];
   do
   {
     buffer_t in_[] =
@@ -1534,8 +1510,8 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
     };
     buffer_t out_[] =
     {
-      token_t{},
-      alert_t{},
+      token_t{token, sizeof(token)},
+      alert_t{alert, sizeof(alert)},
     };
     buffer_t::list_t in{in_}, out{out_};
 
@@ -1583,25 +1559,25 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
       case SEC_I_CONTINUE_NEEDED:
       case SEC_I_MESSAGE_FRAGMENT:
         channel.handle_p = &channel.handle;
-        if (handle_allocated_out(channel, out, buffer_manager, error))
+        if (handle_token(channel, out[0], buffer_manager, error))
         {
-          not_consumed = handle_extra(channel, in, 1);
+          not_consumed = handle_extra(channel, in[1]);
+        }
+        else
+        {
+          channel.abort();
         }
         break;
 
       case SEC_E_INCOMPLETE_MESSAGE:
-        if (!handle_missing(channel, in, data, size, error))
+        if (!handle_missing(channel, in[1], data, size, error))
         {
-          channel.handshake_status = std::make_error_code(
-            std::errc::connection_aborted
-          );
+          channel.abort();
         }
         break;
 
       default:
-        channel.handshake_status = std::make_error_code(
-          std::errc::connection_aborted
-        );
+        channel.abort();
         error.assign(status, category());
         return {};
     }
@@ -1623,16 +1599,11 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
     << '\n'
   );
 
-  auto buffer = std::make_unique<uint8_t[]>(
-    + channel.header_size
-    + (std::min)(size, channel.max_message_size)
-    + channel.trailer_size
-  );
-
+  uint8_t buffer[16 * 1024];
   while (size)
   {
-    auto chunk_ptr = buffer.get();
-    auto chunk_size = (std::min)(size, channel.max_message_size);
+    auto chunk_ptr = buffer;
+    auto chunk_size = (std::min)({size, sizeof(buffer), channel.max_message_size});
 
     buffer_t io_[] =
     {
@@ -1643,7 +1614,7 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
     };
     buffer_t::list_t io{io_};
 
-    chunk_ptr = buffer.get() + channel.header_size;
+    chunk_ptr = buffer + channel.header_size;
     std::uninitialized_copy_n(data, chunk_size,
       sal::__bits::make_output_iterator(chunk_ptr, chunk_ptr + chunk_size)
     );
@@ -1653,9 +1624,11 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
 
     if (status == SEC_E_OK)
     {
-      channel.out_ptr = buffer.get();
-      channel.out_size = channel.header_size + chunk_size + channel.trailer_size;
-      if (!flush_out(channel, buffer_manager, error))
+      if (!flush(channel,
+          buffer_manager,
+          buffer,
+          channel.header_size + chunk_size + channel.trailer_size,
+          error))
       {
         return;
       }
@@ -1685,18 +1658,10 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
   );
 
   size_t consumed = size, not_consumed = 0U;
-  try
+  if (!channel.in.empty()
+    && buffer_while_incomplete_message(channel, &data, &size, error))
   {
-    if (!channel.in.empty()
-      && buffer_while_incomplete_message(channel, &data, &size))
-    {
-      return consumed;
-    }
-  }
-  catch (const std::bad_alloc &)
-  {
-    error = std::make_error_code(std::errc::not_enough_memory);
-    return {};
+    return consumed;
   }
 
   buffer_t io_[] =
@@ -1714,14 +1679,14 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
   switch (status)
   {
     case SEC_E_OK:
-      if (handle_out(channel, io, buffer_manager, error))
+      if (handle_data(channel, io[1], buffer_manager, error))
       {
-        not_consumed = handle_extra(channel, io, 3);
+        not_consumed = handle_extra(channel, io[3]);
       }
       break;
 
     case SEC_E_INCOMPLETE_MESSAGE:
-      handle_missing(channel, io, data, size, error);
+      handle_missing(channel, io[1], data, size, error);
       break;
 
     default:
