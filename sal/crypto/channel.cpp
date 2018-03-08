@@ -482,11 +482,6 @@ struct crypto_call_t
   const uint8_t *in_ptr;
   channel_t::buffer_manager_t &buffer_manager;
 
-  uintptr_t user_data{};
-  uint8_t *out_first{};
-  uint8_t *out_last{};
-  uint8_t *out_ptr{};
-
 
   crypto_call_t (const uint8_t *first,
       const uint8_t *last,
@@ -496,12 +491,6 @@ struct crypto_call_t
     , in_ptr(first)
     , buffer_manager(buffer_manager)
   { }
-
-
-  ~crypto_call_t () noexcept
-  {
-    flush_buffer();
-  }
 
 
   ::OSStatus handshake (__bits::channel_t &channel) noexcept
@@ -514,80 +503,20 @@ struct crypto_call_t
   ::OSStatus encrypt (__bits::channel_t &channel, size_t *processed) noexcept
   {
     channel.syscall = this;
-    return ::SSLWrite(channel.handle.ref, in_ptr, in_last - in_ptr, processed);
+    return ::SSLWrite(channel.handle.ref,
+      in_ptr,
+      in_last - in_ptr,
+      processed
+    );
   }
 
 
-  ::OSStatus decrypt (__bits::channel_t &channel, size_t *processed) noexcept
-  {
-    channel.syscall = this;
-    if (auto buffer_size = ensure_available_buffer(in_last - in_ptr))
-    {
-      auto status = ::SSLRead(channel.handle.ref, out_ptr, buffer_size, processed);
-      out_ptr += *processed;
-      return status;
-    }
-    return ::errSSLBufferOverflow;
-  }
-
-
-  size_t ensure_available_buffer (size_t requested_size) noexcept
-  {
-    if (out_ptr + requested_size > out_last)
-    {
-      flush_buffer();
-      auto size = requested_size;
-      user_data = buffer_manager.alloc(&out_ptr, &size);
-      if (out_ptr && size)
-      {
-        out_first = out_ptr;
-        out_last = out_ptr + size;
-      }
-      else
-      {
-        out_ptr = out_first = out_last = nullptr;
-      }
-    }
-    return out_last - out_ptr;
-  }
-
-
-  void flush_buffer () noexcept
-  {
-    buffer_manager.ready(user_data, out_first, out_ptr - out_first);
-  }
-
-  void drain_system_buffer (__bits::channel_t &channel, size_t *processed)
-    noexcept;
+  ::OSStatus decrypt (__bits::channel_t &channel, size_t *processed) noexcept;
+  void drain (__bits::channel_t &channel, size_t *processed) noexcept;
 
   crypto_call_t (const crypto_call_t &) = delete;
   crypto_call_t &operator= (const crypto_call_t &) = delete;
 };
-
-
-void crypto_call_t::drain_system_buffer (__bits::channel_t &channel,
-  size_t *processed) noexcept
-{
-  size_t system_buffer_size{};
-  ::SSLGetBufferedReadSize(channel.handle.ref, &system_buffer_size);
-
-  while (system_buffer_size)
-  {
-    if (auto buffer_size = ensure_available_buffer(system_buffer_size))
-    {
-      size_t read;
-      auto status = ::SSLRead(channel.handle.ref, out_ptr, buffer_size, &read);
-      if (status == ::errSecSuccess)
-      {
-        out_ptr += read;
-        *processed += read;
-        system_buffer_size -= read;
-        continue;
-      }
-    }
-    return;
-  }
-}
 
 
 inline __bits::channel_t &to_channel (::SSLConnectionRef connection) noexcept
@@ -595,6 +524,58 @@ inline __bits::channel_t &to_channel (::SSLConnectionRef connection) noexcept
   return *const_cast<__bits::channel_t *>(
     static_cast<const __bits::channel_t *>(connection)
   );
+}
+
+
+::OSStatus crypto_call_t::decrypt (__bits::channel_t &channel,
+  size_t *processed) noexcept
+{
+  channel.syscall = this;
+
+  uint8_t *chunk_ptr{};
+  size_t chunk_size{};
+  auto user_data = buffer_manager.alloc(&chunk_ptr, &chunk_size);
+  if (chunk_ptr && chunk_size)
+  {
+    size_t read{};
+    auto status = ::SSLRead(channel.handle.ref, chunk_ptr, chunk_size, &read);
+    buffer_manager.ready(user_data, chunk_ptr, read);
+    if (status == ::errSecSuccess)
+    {
+      *processed += read;
+    }
+    return status;
+  }
+
+  return ::errSSLBufferOverflow;
+}
+
+
+void crypto_call_t::drain (__bits::channel_t &channel, size_t *processed)
+  noexcept
+{
+  size_t buffered_size{};
+  ::SSLGetBufferedReadSize(channel.handle.ref, &buffered_size);
+
+  while (buffered_size)
+  {
+    uint8_t *chunk_ptr{};
+    size_t chunk_size{};
+    auto user_data = buffer_manager.alloc(&chunk_ptr, &chunk_size);
+    if (chunk_ptr && chunk_size)
+    {
+      size_t read{};
+      auto status = ::SSLRead(channel.handle.ref, chunk_ptr, chunk_size, &read);
+      buffer_manager.ready(user_data, chunk_ptr, read);
+      if (status == ::errSecSuccess)
+      {
+        *processed += read;
+        buffered_size -= read;
+        continue;
+      }
+    }
+    return;
+  }
 }
 
 
@@ -642,25 +623,32 @@ inline __bits::channel_t &to_channel (::SSLConnectionRef connection) noexcept
   auto data_size = *size;
   *size = 0;
 
-  while (auto buffer_size = call.ensure_available_buffer(data_size))
+  while (data_size)
   {
-    if (data_size <= buffer_size)
+    uint8_t *chunk_ptr{};
+    size_t chunk_size{};
+    auto user_data = call.buffer_manager.alloc(&chunk_ptr, &chunk_size);
+    if (chunk_ptr && chunk_size)
     {
-      LOG(std::cout << ", all\n");
-      call.out_ptr = std::uninitialized_copy_n(data_ptr, data_size, call.out_ptr);
-      *size += data_size;
-      return ::errSecSuccess;
+      if (chunk_size > data_size)
+      {
+        chunk_size = data_size;
+      }
+      std::uninitialized_copy_n(data_ptr, chunk_size, chunk_ptr);
+      call.buffer_manager.ready(user_data, chunk_ptr, chunk_size);
+      data_ptr += chunk_size;
+      data_size -= chunk_size;
+      *size += chunk_size;
     }
-
-    LOG(std::cout << '[' << buffer_size << ']');
-    call.out_ptr = std::uninitialized_copy_n(data_ptr, buffer_size, call.out_ptr);
-    data_ptr += buffer_size;
-    data_size -= buffer_size;
-    *size += buffer_size;
+    else
+    {
+      LOG(std::cout << ", no buf\n");
+      return ::errSSLBufferOverflow;
+    }
   }
 
-  LOG(std::cout << ", no buf\n");
-  return ::errSSLBufferOverflow;
+  LOG(std::cout << ", all\n");
+  return ::errSecSuccess;
 }
 
 
@@ -938,7 +926,7 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
   switch (auto status = call.decrypt(*impl_, &processed))
   {
     case ::errSecSuccess:
-      call.drain_system_buffer(*impl_, &processed);
+      call.drain(*impl_, &processed);
       LOG(std::cout << "    | ready " << processed
         << ", used " << (call.in_ptr - call.in_first)
         << "\n"

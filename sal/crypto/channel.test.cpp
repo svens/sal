@@ -107,7 +107,7 @@ struct buffer_t final
   ~buffer_t ()
   {
     SCOPED_TRACE(alloc_scope);
-    //EXPECT_EQ(0, alloc_balance);
+    EXPECT_EQ(0, alloc_balance);
   }
 
   uintptr_t alloc (uint8_t **buffer, size_t *buffer_size)
@@ -122,7 +122,6 @@ struct buffer_t final
   void ready (uintptr_t, uint8_t *ptr, size_t size)
     noexcept final override
   {
-    //std::cout << "[W:" << size << "]";
     data.insert(data.end(), ptr, ptr + size);
     alloc_balance--;
   }
