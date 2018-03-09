@@ -444,6 +444,9 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_key_exchange)
 }
 
 
+#if !__sal_os_linux
+
+
 TYPED_TEST(crypto_channel, client_encrypt_message)
 {
   auto [client, server] = this->make_channel_pair();
@@ -648,9 +651,6 @@ TYPED_TEST(crypto_channel, decrypt_coalesced)
 
   EXPECT_TRUE(secret.data.empty());
 }
-
-
-#if !__sal_os_linux
 
 
 TYPED_TEST(crypto_channel, decrypt_chunked)

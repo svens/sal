@@ -80,7 +80,7 @@ struct channel_t
 #if __sal_os_linux //{{{1
 
   unique_ref<::SSL *, ::SSL_free> handle{};
-  ::BIO *in{}, *out{};
+  ::BIO *bio{};
 
 #elif __sal_os_macos //{{{1
 
@@ -111,7 +111,7 @@ struct channel_t
     handshake_status = std::make_error_code(std::errc::already_connected);
   }
 
-  void abort () noexcept
+  void aborted () noexcept
   {
     handshake_status = std::make_error_code(std::errc::connection_aborted);
   }

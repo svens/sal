@@ -2,6 +2,7 @@
 
 #if __sal_os_linux //{{{1
   #include <mutex>
+  #include <openssl/bio.h>
   #include <openssl/err.h>
   #include <openssl/opensslv.h>
 #elif __sal_os_macos //{{{1
@@ -34,25 +35,226 @@ namespace crypto {
 namespace {
 
 
-constexpr bool openssl_pre_1_1 () noexcept
+// because TLS/DTLS IO is based on buffer_manager, it is actually application
+// responsibility to provide properly sized buffers.
+// This value is used as default MTU size for SSL_set_mtu()
+constexpr const size_t mtu = 1472;
+
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+
+inline void BIO_set_init (BIO *bio, int init) noexcept
 {
-  return OPENSSL_VERSION_NUMBER < 0x10100000;
+  bio->init = init;
+}
+
+inline void BIO_set_data (BIO *bio, void *data) noexcept
+{
+  bio->ptr = data;
+}
+
+inline void *BIO_get_data (BIO *bio) noexcept
+{
+  return bio->ptr;
+}
+
+
+inline auto TLS_client_method () noexcept
+{
+  return TLSv1_client_method();
+}
+
+
+inline auto TLS_server_method () noexcept
+{
+  return TLSv1_server_method();
+}
+
+
+inline auto DTLS_client_method () noexcept
+{
+  return DTLSv1_client_method();
+}
+
+
+inline auto DTLS_server_method () noexcept
+{
+  return DTLSv1_server_method();
+}
+
+#endif
+
+
+struct bio_t
+{
+  static constexpr const char name[] = "buffer_manager";
+  static BIO_METHOD *methods;
+
+  static int create (BIO *bio) noexcept;
+  static long ctrl (BIO *bio, int cmd, long num, void *ptr) noexcept;
+  static int write (BIO *bio, const char *data, int size) noexcept;
+  static int read (BIO *bio, char *data, int size) noexcept;
+
+  struct io_t
+  {
+    std::error_code &error;
+    channel_t::buffer_manager_t &buffer_manager;
+    const uint8_t *first, *last;
+  };
+};
+BIO_METHOD *bio_t::methods = nullptr;
+
+
+int bio_t::create (BIO *bio) noexcept
+{
+  BIO_set_init(bio, 1);
+  return 1;
+}
+
+
+long bio_t::ctrl (BIO *, int cmd, long, void *) noexcept
+{
+  switch (cmd)
+  {
+    case BIO_CTRL_PUSH: // optional
+    case BIO_CTRL_POP: // optional
+      return 0;
+
+    case BIO_CTRL_PENDING:
+      LOG(std::cout << "    | BIO_CTRL_PENDING\n");
+      return 0;
+
+    case BIO_CTRL_WPENDING:
+      LOG(std::cout << "    | BIO_CTRL_WPENDING\n");
+      return 0;
+
+    case BIO_CTRL_FLUSH: // optional
+      LOG(std::cout << "    | BIO_CTRL_FLUSH\n");
+      return 1;
+
+    case BIO_CTRL_DGRAM_MTU_EXCEEDED:
+      LOG(std::cout << "    | exceeded MTU?\n");
+      return 0;
+
+#if defined(BIO_CTRL_DGRAM_GET_MTU_OVERHEAD)
+    case BIO_CTRL_DGRAM_GET_MTU_OVERHEAD:
+      // (20 IPv4 | 40 IPv6) header + 8 UDP header
+      // here we don't know which, go with IPv4
+      return 28;
+#endif
+  }
+
+  LOG(std::cout << "    | ctrl=" << cmd << " unhandled\n");
+  return 1;
+}
+
+
+int bio_t::write (BIO *bio, const char *data, int size) noexcept
+{
+  LOG(std::cout << "    | write " << size);
+
+  auto &io = *static_cast<io_t *>(BIO_get_data(bio));
+
+  BIO_clear_retry_flags(bio);
+
+  int written = 0;
+  while (size)
+  {
+    uint8_t *chunk_ptr{};
+    size_t chunk_size{};
+    auto user_data = io.buffer_manager.alloc(&chunk_ptr, &chunk_size);
+    if (chunk_ptr && chunk_size)
+    {
+      if (chunk_size > static_cast<size_t>(size))
+      {
+        chunk_size = size;
+      }
+      std::uninitialized_copy_n(data, chunk_size, chunk_ptr);
+      io.buffer_manager.ready(user_data, chunk_ptr, chunk_size);
+      written += chunk_size;
+      data += chunk_size;
+      size -= chunk_size;
+    }
+    else
+    {
+      LOG(std::cout << ", no buf\n");
+      io.error = std::make_error_code(std::errc::no_buffer_space);
+      return -1;
+    }
+  }
+
+  LOG(std::cout << ", succeeded " << written << '\n');
+  return written;
+}
+
+
+int bio_t::read (BIO *bio, char *data, int size) noexcept
+{
+  LOG(std::cout << "    | read " << size);
+
+  auto &io = *static_cast<io_t *>(BIO_get_data(bio));
+
+  if (io.first < io.last)
+  {
+    if (io.first + size > io.last)
+    {
+      size = io.last - io.first;
+    }
+    std::uninitialized_copy_n(io.first, size,
+      reinterpret_cast<uint8_t *>(data)
+    );
+    io.first += size;
+    BIO_clear_retry_flags(bio);
+  }
+  else
+  {
+    size = -1;
+    BIO_set_retry_read(bio);
+  }
+
+  LOG(std::cout << ", got " << size << '\n');
+  return size;
 }
 
 
 inline void init_openssl () noexcept
 {
-  if constexpr (openssl_pre_1_1())
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+
+  SSL_library_init();
+  SSL_load_error_strings();
+
+  static BIO_METHOD bio_methods =
   {
-    static std::once_flag init_flag;
-    std::call_once(init_flag,
-      []()
-      {
-        ::SSL_library_init();
-        ::SSL_load_error_strings();
-      }
-    );
+    BIO_TYPE_SOURCE_SINK,
+    bio_t::name,
+    &bio_t::write,
+    &bio_t::read,
+    nullptr,
+    nullptr,
+    &bio_t::ctrl,
+    &bio_t::create,
+    nullptr,
+    nullptr
+  };
+  bio_t::methods = &bio_methods;
+
+#else
+
+  // will be leaked but don't care
+  bio_t::methods = BIO_meth_new(
+    BIO_TYPE_SOURCE_SINK | BIO_get_new_index(),
+    bio_t::name
+  );
+  if (bio_t::methods)
+  {
+    BIO_meth_set_create(bio_t::methods, &bio_t::create);
+    BIO_meth_set_ctrl(bio_t::methods, &bio_t::ctrl);
+    BIO_meth_set_write(bio_t::methods, &bio_t::write);
+    BIO_meth_set_read(bio_t::methods, &bio_t::read);
   }
+
+#endif
 }
 
 
@@ -60,17 +262,10 @@ inline const SSL_METHOD *channel_type (bool datagram, bool server) noexcept
 {
   static const SSL_METHOD * const method[] =
   {
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    ::TLSv1_client_method(),
-    ::TLSv1_server_method(),
-    ::DTLSv1_client_method(),
-    ::DTLSv1_server_method(),
-#else
-    ::TLS_client_method(),
-    ::TLS_server_method(),
-    ::DTLS_client_method(),
-    ::DTLS_server_method(),
-#endif
+    TLS_client_method(),
+    TLS_server_method(),
+    DTLS_client_method(),
+    DTLS_server_method(),
   };
   return method[datagram * 2 + server];
 }
@@ -81,30 +276,30 @@ bool set_certificate (__bits::channel_factory_t &factory,
 {
   if (factory.certificate.ref)
   {
-    auto result = ::SSL_CTX_use_certificate(
+    auto result = SSL_CTX_use_certificate(
       factory.handle.ref,
       factory.certificate.ref
     );
     if (result != 1)
     {
-      error.assign(::ERR_get_error(), category());
+      error.assign(ERR_get_error(), category());
       return false;
     }
 
-    result = ::SSL_CTX_use_PrivateKey(
+    result = SSL_CTX_use_PrivateKey(
       factory.handle.ref,
       factory.private_key
     );
     if (result != 1)
     {
-      error.assign(::ERR_get_error(), category());
+      error.assign(ERR_get_error(), category());
       return false;
     }
 
-    result = ::SSL_CTX_check_private_key(factory.handle.ref);
+    result = SSL_CTX_check_private_key(factory.handle.ref);
     if (result != 1)
     {
-      error.assign(::ERR_get_error(), category());
+      error.assign(ERR_get_error(), category());
       return false;
     }
   }
@@ -115,7 +310,7 @@ bool set_certificate (__bits::channel_factory_t &factory,
 bool set_read_ahead (__bits::channel_factory_t &factory, std::error_code &)
   noexcept
 {
-  ::SSL_CTX_set_read_ahead(factory.handle.ref, 0);
+  SSL_CTX_set_read_ahead(factory.handle.ref, 0);
   return true;
 }
 
@@ -129,7 +324,7 @@ void info_callback (const SSL *ssl, int where, int ret)
       do { \
         if (where & SSL_CB_ ## w) \
         { \
-          std::cout << "    | " #w " " << ::SSL_state_string_long(ssl) << '\n'; \
+          std::cout << "    > " #w " " << SSL_state_string_long(ssl) << '\n'; \
         } \
       } while (false)
     I_(LOOP);
@@ -142,79 +337,10 @@ void info_callback (const SSL *ssl, int where, int ret)
   }
   else
   {
-    std::cout << "    * error " << ret << '\n';
+    std::cout << "    > error " << ret << '\n';
   }
 }
 #endif
-
-
-bool to_ssl (__bits::channel_t &channel,
-  const uint8_t **data,
-  size_t *size,
-  std::error_code &error) noexcept
-{
-  if (*size > 0)
-  {
-    *size = ::BIO_write(channel.in, *data, *size);
-    if (*size > 0)
-    {
-      LOG(std::cout << "    | in " << *size << '\n');
-      return true;
-    }
-    else if (::BIO_should_retry(channel.in))
-    {
-      LOG(std::cout << "    | in: retry\n");
-      return true;
-    }
-    else
-    {
-      LOG(std::cout << "    | in: no retry\n");
-      error.assign(::ERR_get_error(), category());
-      return false;
-    }
-  }
-  return true;
-}
-
-
-bool from_ssl (__bits::channel_t &channel,
-  channel_t::buffer_manager_t &buffer_manager,
-  std::error_code &error) noexcept
-{
-  while (::BIO_ctrl_pending(channel.out) > 0)
-  {
-    size_t chunk_size{};
-    uint8_t *chunk_ptr{};
-    auto user_data = buffer_manager.alloc(&chunk_ptr, &chunk_size);
-    if (chunk_ptr && chunk_size)
-    {
-      auto size = ::BIO_read(channel.out, chunk_ptr, chunk_size);
-      if (size > 0)
-      {
-        LOG(std::cout << "    | out " << size << '\n');
-        buffer_manager.ready(user_data, chunk_ptr, size);
-        continue;
-      }
-      else if (::BIO_should_retry(channel.out))
-      {
-        LOG(std::cout << "    | out: retry\n");
-        return true;
-      }
-      else
-      {
-        LOG(std::cout << "    | out: no retry\n");
-        error.assign(::ERR_get_error(), category());
-        return false;
-      }
-    }
-    else
-    {
-      error = std::make_error_code(std::errc::no_buffer_space);
-      return false;
-    }
-  }
-  return true;
-}
 
 
 } // namespace
@@ -222,9 +348,16 @@ bool from_ssl (__bits::channel_t &channel,
 
 void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
 {
-  init_openssl();
+  static std::once_flag init_flag;
+  std::call_once(init_flag, init_openssl);
 
-  handle = ::SSL_CTX_new(channel_type(datagram, server));
+  if (!bio_t::methods)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    return;
+  }
+
+  handle = SSL_CTX_new(channel_type(datagram, server));
   if (handle)
   {
     if (set_certificate(*this, error)
@@ -246,35 +379,40 @@ __bits::channel_factory_t::~channel_factory_t () noexcept
 
 void __bits::channel_t::ctor (std::error_code &error) noexcept
 {
-  handle = ::SSL_new(factory->handle.ref);
+  handle = SSL_new(factory->handle.ref);
   if (handle)
   {
     if (factory->server)
     {
-      ::SSL_set_accept_state(handle.ref);
+      SSL_set_accept_state(handle.ref);
     }
     else
     {
-      ::SSL_set_connect_state(handle.ref);
+      SSL_set_connect_state(handle.ref);
     }
-    LOG(::SSL_set_info_callback(handle.ref, info_callback));
+    LOG(SSL_set_info_callback(handle.ref, info_callback));
 
-    in = ::BIO_new(::BIO_s_mem());
-    out = ::BIO_new(::BIO_s_mem());
-
-    if (in && out)
+    bio = BIO_new(bio_t::methods);
+    if (bio)
     {
-      ::BIO_set_mem_eof_return(in, -1);
-      ::BIO_set_mem_eof_return(out, -1);
-      ::SSL_set_bio(handle.ref, in, out);
+      if (factory->datagram)
+      {
+        SSL_set_options(handle.ref, SSL_OP_NO_QUERY_MTU);
+        SSL_set_mtu(handle.ref, mtu);
+      }
+      BIO_set_ex_data(bio, 0, this);
+      SSL_set_bio(handle.ref, bio, bio);
       error.clear();
-      return;
     }
-
-    ::BIO_free_all(in);
-    ::BIO_free_all(out);
+    else
+    {
+      error.assign(ERR_get_error(), category());
+    }
   }
-  error = std::make_error_code(std::errc::not_enough_memory);
+  else
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
 }
 
 
@@ -292,52 +430,51 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
     << "> handshake: " << size << '\n'
   );
 
-  auto used_size = size;
-  if (!to_ssl(channel, &data, &used_size, error))
-  {
-    return used_size;
-  }
+  bio_t::io_t io = { error, buffer_manager, data, data + size };
+  BIO_set_data(channel.bio, &io);
 
-  auto status = ::SSL_do_handshake(channel.handle.ref);
-  switch (::SSL_get_error(channel.handle.ref, status))
+  ERR_clear_error();
+  error.clear();
+
+  auto status = SSL_do_handshake(channel.handle.ref);
+  switch (SSL_get_error(channel.handle.ref, status))
   {
     case SSL_ERROR_NONE:
       LOG(std::cout << "    | connected\n");
       channel.connected();
-      if (!::BIO_ctrl_pending(channel.out))
+      if (!BIO_ctrl_pending(channel.bio))
       {
-        error.clear();
         break;
       }
       [[fallthrough]];
 
     case SSL_ERROR_WANT_READ:
     case SSL_ERROR_WANT_WRITE:
-      if (from_ssl(channel, buffer_manager, error))
-      {
-        error.clear();
-      }
+      LOG(std::cout << "    | io\n");
       break;
 
     case SSL_ERROR_ZERO_RETURN:
       LOG(std::cout << "    | aborted\n");
-      channel.abort();
-      error.clear();
+      channel.aborted();
       break;
 
     case SSL_ERROR_SSL:
     case SSL_ERROR_SYSCALL:
-      channel.abort();
-      error.assign(::ERR_get_error(), category());
+      channel.aborted();
+      if (!error)
+      {
+        // assign only if not already set by bio_t::io_t
+        error.assign(ERR_get_error(), category());
+      }
       LOG(std::cout << "    | error: " << error.message() << "\n");
-      break;
+      return {};
 
     default:
-      LOG(std::cout << "    | unhandled " << status << '\n');
+      LOG(std::cout << "    | unhandled: " << status << "\n");
       break;
   }
 
-  return used_size;
+  return io.last - io.first;
 }
 
 
@@ -351,42 +488,12 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
     << "> encrypt: " << size << '\n'
   );
 
-  auto status = ::SSL_write(channel.handle.ref, data, size);
-  switch (::SSL_get_error(channel.handle.ref, status))
-  {
-    case SSL_ERROR_NONE:
-      if (from_ssl(channel, buffer_manager, error))
-      {
-        error.clear();
-      }
-      break;
+  (void)channel;
+  (void)data;
+  (void)size;
+  (void)buffer_manager;
 
-    case SSL_ERROR_WANT_WRITE:
-      LOG(std::cout << "    | want_write\n");
-      error.clear();
-      break;
-
-    case SSL_ERROR_WANT_READ:
-      LOG(std::cout << "    | want_read\n");
-      error.clear();
-      break;
-
-    case SSL_ERROR_ZERO_RETURN:
-      LOG(std::cout << "    | clean close\n");
-      break;
-
-    case SSL_ERROR_SSL:
-      LOG(std::cout << "    | error_ssl\n");
-      break;
-
-    case SSL_ERROR_SYSCALL:
-      LOG(std::cout << "    | error_syscall\n");
-      break;
-
-    default:
-      LOG(std::cout << "    | unhandled " << status << '\n');
-      break;
-  }
+  error.clear();
 }
 
 
@@ -400,71 +507,12 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
     << "> decrypt: " << size << '\n'
   );
 
-  auto used_size = size;
-  if (!to_ssl(channel, &data, &used_size, error))
-  {
-    return {};
-  }
+  (void)channel;
+  (void)data;
+  (void)size;
+  (void)buffer_manager;
 
-  for (;;)
-  {
-    size_t chunk_size{};
-    uint8_t *chunk_ptr{};
-    auto user_data = buffer_manager.alloc(&chunk_ptr, &chunk_size);
-    if (!chunk_ptr || !chunk_size)
-    {
-      error = std::make_error_code(std::errc::no_buffer_space);
-      break;
-    }
-
-    auto status = ::SSL_read(channel.handle.ref, chunk_ptr, chunk_size);
-    switch (::SSL_get_error(channel.handle.ref, status))
-    {
-      case SSL_ERROR_NONE:
-        LOG(std::cout << "    | ready " << status << '\n');
-        buffer_manager.ready(user_data, chunk_ptr, status);
-        LOG(std::cout << "    | pending"
-          << " BIO.in=" << ::BIO_ctrl_pending(channel.in)
-          << "; BIO.win=" << ::BIO_ctrl_wpending(channel.in)
-          << "; BIO.out=" << ::BIO_ctrl_pending(channel.out)
-          << "; BIO.wout=" << ::BIO_ctrl_wpending(channel.out)
-          << "; SSL=" << SSL_pending(channel.handle.ref)
-          << '\n'
-        );
-        if (auto not_used = ::BIO_ctrl_pending(channel.in))
-        {
-          BIO_reset(channel.in);
-          return used_size - not_used;
-        }
-        continue;
-
-      case SSL_ERROR_WANT_READ:
-      case SSL_ERROR_WANT_WRITE:
-        LOG(std::cout << "    | want_io\n");
-        if (chunk_ptr)
-        {
-          buffer_manager.ready(user_data, chunk_ptr, 0U);
-        }
-        return used_size;
-
-      case SSL_ERROR_ZERO_RETURN:
-        LOG(std::cout << "    | clean close\n");
-        return {};
-
-      case SSL_ERROR_SSL:
-        LOG(std::cout << "    | error_ssl\n");
-        return {};
-
-      case SSL_ERROR_SYSCALL:
-        LOG(std::cout << "    | error_syscall\n");
-        return {};
-
-      default:
-        LOG(std::cout << "    | unhandled " << status << '\n');
-        return {};
-    }
-  }
-
+  error.clear();
   return {};
 }
 
@@ -866,14 +914,14 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
         LOG(std::cout << "    | certificate_check\n");
         if (!is_trusted_peer(channel, error))
         {
-          channel.abort();
+          channel.aborted();
           break;
         }
         continue;
 
       default:
         LOG(std::cout << "    | error\n");
-        channel.abort();
+        channel.aborted();
         error.assign(status, category());
         break;
     }
@@ -1451,13 +1499,13 @@ void finish_handshake (__bits::channel_t &channel, std::error_code &error)
     {
       LOG(std::cout << ", failed to get sizes\n");
       error.assign(status, category());
-      channel.abort();
+      channel.aborted();
     }
   }
   else
   {
     LOG(std::cout << ", not trusted\n");
-    channel.abort();
+    channel.aborted();
     error = channel.handshake_status;
   }
 }
@@ -1553,19 +1601,19 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
         }
         else
         {
-          channel.abort();
+          channel.aborted();
         }
         break;
 
       case SEC_E_INCOMPLETE_MESSAGE:
         if (!handle_missing(channel, in[1], data, size, error))
         {
-          channel.abort();
+          channel.aborted();
         }
         break;
 
       default:
-        channel.abort();
+        channel.aborted();
         error.assign(status, category());
         return {};
     }
