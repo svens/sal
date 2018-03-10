@@ -2,8 +2,20 @@
 #include <sal/crypto/common.test.hpp>
 #include <sal/buf_ptr.hpp>
 
+#if __sal_os_linux
+  #include <openssl/opensslv.h>
+#endif
+
 
 namespace {
+
+
+#if defined(OPENSSL_VERSION_NUMBER)
+  constexpr const int openssl_version = OPENSSL_VERSION_NUMBER;
+#else
+  // to simplify test exclusions below
+  constexpr const int openssl_version = 0;
+#endif
 
 
 std::pair<sal::crypto::certificate_t *, sal::crypto::private_key_t *> import_pkcs12 ()
@@ -80,7 +92,7 @@ template <typename ChannelFactory>
 struct crypto_channel
   : public sal_test::with_type<ChannelFactory>
 {
-  static constexpr const bool is_datagram = ChannelFactory::is_datagram;
+  static constexpr const bool datagram = ChannelFactory::is_datagram;
 
   auto make_channel_pair ()
   {
@@ -199,14 +211,10 @@ void chunked_feed (sal::crypto::channel_t &channel,
 {
 #if __sal_os_linux
 
-  //
   // TODO: debug deeper what's going on here
-  //
-
   if (datagram)
   {
-    #if OPENSSL_VERSION_NUMBER < 0x10100000
-      // OpenSSL <1.1 DTLS fails when fragment is less than MTU
+      // OpenSSL DTLS fails when fragment is less than MTU
       auto p = in.data.data(), end = in.data.data() + in.data.size();
       while (p < end)
       {
@@ -218,11 +226,7 @@ void chunked_feed (sal::crypto::channel_t &channel,
         channel.handshake(sal::make_buf(p, chunk_size), out);
         p += chunk_size;
       }
-    #else
-      // OpenSSL =1.1 DTLS fail on any fragmentation
-      channel.handshake(in.data, out);
-    #endif
-    return;
+      return;
   }
 
 #else
@@ -248,10 +252,10 @@ TYPED_TEST(crypto_channel, handshake_chunked_receive)
   client.handshake(sal::const_null_buf, client_buf);
   while (!client_buf.data.empty())
   {
-    chunked_feed(server, client_buf, server_buf, this->is_datagram);
+    chunked_feed(server, client_buf, server_buf, TestFixture::datagram);
     client_buf.data.clear();
 
-    chunked_feed(client, server_buf, client_buf, this->is_datagram);
+    chunked_feed(client, server_buf, client_buf, TestFixture::datagram);
     server_buf.data.clear();
   }
 
@@ -368,7 +372,7 @@ bool suppress_trashed_handshake_tests (const crypto_channel<ChannelFactory> &fac
   return false;
 #elif __sal_os_linux
   // OpenSSL/DTLS: ignores trashed messages (correctly)
-  return factory.is_datagram;
+  return factory.datagram;
 #elif __sal_os_windows
   // SChannel: accepts trashed message, asking for more instead of error
   (void)factory;
@@ -442,9 +446,6 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_key_exchange)
   server.handshake(client_buf.data, server_buf, error);
   EXPECT_FALSE(!error);
 }
-
-
-#if !__sal_os_linux
 
 
 TYPED_TEST(crypto_channel, client_encrypt_message)
@@ -667,8 +668,16 @@ TYPED_TEST(crypto_channel, decrypt_chunked)
     EXPECT_EQ(1U, used);
   }
 
-  std::string message(plain.data.begin(), plain.data.end());
-  EXPECT_EQ(this->case_name, message);
+  if constexpr (openssl_version && TestFixture::datagram)
+  {
+    // OpenSSL DTLS correctly drops each chunk i.e. should have nothing now
+    EXPECT_TRUE(plain.data.empty());
+  }
+  else
+  {
+    std::string message(plain.data.begin(), plain.data.end());
+    EXPECT_EQ(this->case_name, message);
+  }
 }
 
 
@@ -683,7 +692,16 @@ TYPED_TEST(crypto_channel, decrypt_invalid_message)
 
   std::error_code error;
   server.decrypt(secret.data, plain, error);
-  EXPECT_FALSE(!error);
+
+  if constexpr (TestFixture::datagram)
+  {
+    // depending on platform, invalid DTLS datagrams may be simply ignored
+    EXPECT_TRUE(plain.data.empty());
+  }
+  else
+  {
+    EXPECT_FALSE(!error);
+  }
 }
 
 
@@ -716,25 +734,52 @@ TYPED_TEST(crypto_channel, coalesced_server_finished_and_message)
   // server_buf still has server_finished, append secret
   server.encrypt(this->case_name, server_buf);
 
-  // client <- server_finished, leaving message in server_buf
-  auto used = client.handshake(server_buf.data, client_buf);
-  EXPECT_TRUE(client.is_connected());
-  EXPECT_TRUE(client_buf.data.empty());
-  server_buf.data.erase(server_buf.data.begin(), server_buf.data.begin() + used);
-  EXPECT_TRUE(!server_buf.data.empty());
+  if constexpr (openssl_version && TestFixture::datagram)
+  {
+    // OpenSSL DTLS correctly consumes everything (i.e. server finished and
+    // message) leaving message buffered in SSL engine
+    auto used = client.handshake(server_buf.data, client_buf);
+    EXPECT_TRUE(client.is_connected());
+    EXPECT_TRUE(client_buf.data.empty());
+    server_buf.data.erase(server_buf.data.begin(), server_buf.data.begin() + used);
+    EXPECT_TRUE(server_buf.data.empty());
 
-  // check for decrypted message
-  client_buf.data.clear();
-  used = client.decrypt(server_buf.data, client_buf);
-  server_buf.data.erase(server_buf.data.begin(), server_buf.data.begin() + used);
-  EXPECT_TRUE(server_buf.data.empty());
-  std::string message(client_buf.data.begin(), client_buf.data.end());
-  EXPECT_EQ(this->case_name, message);
+    // Here comes ugly part: at our wrapper, we can't detect there is still
+    // data in SSL engine (bug in SSL_pending?)
+    used = client.decrypt(sal::const_null_buf, client_buf);
+    EXPECT_EQ(0U, used);
+    EXPECT_FALSE(client_buf.data.empty());
+    std::string message(client_buf.data.begin(), client_buf.data.end());
+    EXPECT_EQ(this->case_name, message);
+  }
+  else
+  {
+    // client <- server_finished, leaving message in server_buf
+    auto used = client.handshake(server_buf.data, client_buf);
+    EXPECT_TRUE(client.is_connected());
+    EXPECT_TRUE(client_buf.data.empty());
+    server_buf.data.erase(server_buf.data.begin(), server_buf.data.begin() + used);
+    EXPECT_TRUE(!server_buf.data.empty());
+
+    // check for decrypted message
+    used = client.decrypt(server_buf.data, client_buf);
+    server_buf.data.erase(server_buf.data.begin(), server_buf.data.begin() + used);
+    EXPECT_TRUE(server_buf.data.empty());
+    std::string message(client_buf.data.begin(), client_buf.data.end());
+    EXPECT_EQ(this->case_name, message);
+  }
 }
 
 
 TYPED_TEST(crypto_channel, decrypt_half_and_one_plus_half_messages)
 {
+  if constexpr (openssl_version && TestFixture::datagram)
+  {
+    // OpenSSL DTLS correctly drops partial handshake messages
+    // nothing to test
+    return;
+  }
+
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
 
@@ -787,9 +832,6 @@ TYPED_TEST(crypto_channel, decrypt_half_and_one_plus_half_messages)
   message.assign(plain.data.begin(), plain.data.end());
   EXPECT_EQ(second, message);
 }
-
-
-#endif
 
 
 } // namespace

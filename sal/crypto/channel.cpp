@@ -1,6 +1,7 @@
 #include <sal/crypto/channel.hpp>
 
 #if __sal_os_linux //{{{1
+  #include <sal/byte_order.hpp>
   #include <mutex>
   #include <openssl/bio.h>
   #include <openssl/err.h>
@@ -43,15 +44,20 @@ constexpr const size_t mtu = 1472;
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000
 
+inline constexpr const bool openssl_pre_1_1 = true;
+
+
 inline void BIO_set_init (BIO *bio, int init) noexcept
 {
   bio->init = init;
 }
 
+
 inline void BIO_set_data (BIO *bio, void *data) noexcept
 {
   bio->ptr = data;
 }
+
 
 inline void *BIO_get_data (BIO *bio) noexcept
 {
@@ -82,6 +88,10 @@ inline auto DTLS_server_method () noexcept
   return DTLSv1_server_method();
 }
 
+#else
+
+inline constexpr const bool openssl_pre_1_1 = false;
+
 #endif
 
 
@@ -99,7 +109,7 @@ struct bio_t
   {
     std::error_code &error;
     channel_t::buffer_manager_t &buffer_manager;
-    const uint8_t *first, *last;
+    const uint8_t *ptr, *end;
   };
 };
 BIO_METHOD *bio_t::methods = nullptr;
@@ -116,24 +126,11 @@ long bio_t::ctrl (BIO *, int cmd, long, void *) noexcept
 {
   switch (cmd)
   {
-    case BIO_CTRL_PUSH: // optional
-    case BIO_CTRL_POP: // optional
-      return 0;
-
     case BIO_CTRL_PENDING:
-      LOG(std::cout << "    | BIO_CTRL_PENDING\n");
-      return 0;
-
     case BIO_CTRL_WPENDING:
-      LOG(std::cout << "    | BIO_CTRL_WPENDING\n");
       return 0;
-
-    case BIO_CTRL_FLUSH: // optional
-      LOG(std::cout << "    | BIO_CTRL_FLUSH\n");
-      return 1;
 
     case BIO_CTRL_DGRAM_MTU_EXCEEDED:
-      LOG(std::cout << "    | exceeded MTU?\n");
       return 0;
 
 #if defined(BIO_CTRL_DGRAM_GET_MTU_OVERHEAD)
@@ -144,7 +141,6 @@ long bio_t::ctrl (BIO *, int cmd, long, void *) noexcept
 #endif
   }
 
-  LOG(std::cout << "    | ctrl=" << cmd << " unhandled\n");
   return 1;
 }
 
@@ -177,7 +173,7 @@ int bio_t::write (BIO *bio, const char *data, int size) noexcept
     }
     else
     {
-      LOG(std::cout << ", no buf\n");
+      LOG(std::cout << ", no buffer space\n");
       io.error = std::make_error_code(std::errc::no_buffer_space);
       return -1;
     }
@@ -194,16 +190,16 @@ int bio_t::read (BIO *bio, char *data, int size) noexcept
 
   auto &io = *static_cast<io_t *>(BIO_get_data(bio));
 
-  if (io.first < io.last)
+  if (io.ptr < io.end)
   {
-    if (io.first + size > io.last)
+    if (io.ptr + size > io.end)
     {
-      size = io.last - io.first;
+      size = io.end - io.ptr;
     }
-    std::uninitialized_copy_n(io.first, size,
+    std::uninitialized_copy_n(io.ptr, size,
       reinterpret_cast<uint8_t *>(data)
     );
-    io.first += size;
+    io.ptr += size;
     BIO_clear_retry_flags(bio);
   }
   else
@@ -307,7 +303,7 @@ bool set_certificate (__bits::channel_factory_t &factory,
 }
 
 
-bool set_read_ahead (__bits::channel_factory_t &factory, std::error_code &)
+bool disable_read_ahead (__bits::channel_factory_t &factory, std::error_code &)
   noexcept
 {
   SSL_CTX_set_read_ahead(factory.handle.ref, 0);
@@ -343,6 +339,21 @@ void info_callback (const SSL *ssl, int where, int ret)
 #endif
 
 
+inline size_t dtls_record_size (const uint8_t *data, size_t size) noexcept
+{
+  if (size < 13)
+  {
+    return size;
+  }
+
+  // see https://tools.ietf.org/html/rfc4347#section-4.3.1
+  uint16_t claimed_size = 13 + network_to_native_byte_order(
+    *reinterpret_cast<const uint16_t *>(data + 11)
+  );
+  return claimed_size > size ? size : claimed_size;
+}
+
+
 } // namespace
 
 
@@ -361,7 +372,7 @@ void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
   if (handle)
   {
     if (set_certificate(*this, error)
-      && set_read_ahead(*this, error))
+      && disable_read_ahead(*this, error))
     {
       error.clear();
     }
@@ -400,7 +411,6 @@ void __bits::channel_t::ctor (std::error_code &error) noexcept
         SSL_set_options(handle.ref, SSL_OP_NO_QUERY_MTU);
         SSL_set_mtu(handle.ref, mtu);
       }
-      BIO_set_ex_data(bio, 0, this);
       SSL_set_bio(handle.ref, bio, bio);
       error.clear();
     }
@@ -442,15 +452,6 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
     case SSL_ERROR_NONE:
       LOG(std::cout << "    | connected\n");
       channel.connected();
-      if (!BIO_ctrl_pending(channel.bio))
-      {
-        break;
-      }
-      [[fallthrough]];
-
-    case SSL_ERROR_WANT_READ:
-    case SSL_ERROR_WANT_WRITE:
-      LOG(std::cout << "    | io\n");
       break;
 
     case SSL_ERROR_ZERO_RETURN:
@@ -474,7 +475,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
       break;
   }
 
-  return io.last - io.first;
+  return io.ptr - data;
 }
 
 
@@ -488,12 +489,31 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
     << "> encrypt: " << size << '\n'
   );
 
-  (void)channel;
-  (void)data;
-  (void)size;
-  (void)buffer_manager;
+  bio_t::io_t io = { error, buffer_manager, nullptr, nullptr };
+  BIO_set_data(channel.bio, &io);
 
+  ERR_clear_error();
   error.clear();
+
+  auto status = SSL_write(channel.handle.ref, data, size);
+  switch (SSL_get_error(channel.handle.ref, status))
+  {
+    case SSL_ERROR_NONE:
+      return;
+
+    case SSL_ERROR_SSL:
+    case SSL_ERROR_SYSCALL:
+      if (!error)
+      {
+        error.assign(ERR_get_error(), category());
+      }
+      LOG(std::cout << "    | error: " << error.message() << '\n');
+      break;
+
+    default:
+      LOG(std::cout << "    | unhandled " << status << '\n');
+      break;
+  }
 }
 
 
@@ -507,13 +527,64 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
     << "> decrypt: " << size << '\n'
   );
 
-  (void)channel;
-  (void)data;
-  (void)size;
-  (void)buffer_manager;
+  if (channel.factory->datagram)
+  {
+    // OpenSSL DTLS correctly consumes all datagram payload but to unify with
+    // other platforms' implementations, give it only single TLS record and
+    // let application to call again with remaining data
+    size = dtls_record_size(data, size);
+  }
 
+  bio_t::io_t io = { error, buffer_manager, data, data + size };
+  BIO_set_data(channel.bio, &io);
+
+  ERR_clear_error();
   error.clear();
-  return {};
+
+  for (;;)
+  {
+    size_t chunk_size{};
+    uint8_t *chunk_ptr;
+    auto user_data = buffer_manager.alloc(&chunk_ptr, &chunk_size);
+    if (!chunk_ptr || !chunk_size)
+    {
+      error = std::make_error_code(std::errc::no_buffer_space);
+      break;
+    }
+
+    auto status = SSL_read(channel.handle.ref, chunk_ptr, chunk_size);
+    switch (SSL_get_error(channel.handle.ref, status))
+    {
+      case SSL_ERROR_NONE:
+        buffer_manager.ready(user_data, chunk_ptr, status);
+        if (SSL_pending(channel.handle.ref)
+          || (!openssl_pre_1_1 && channel.factory->datagram))
+        {
+          // XXX: OpenSSL-1.1 SSL_pending returns 0 for DTLS
+          // keep reading until SSL_ERROR_WANT_READ is returned
+          continue;
+        }
+        break;
+
+      case SSL_ERROR_SSL:
+      case SSL_ERROR_SYSCALL:
+        buffer_manager.ready(user_data, chunk_ptr, 0U);
+        if (!error)
+        {
+          error.assign(ERR_get_error(), category());
+        }
+        LOG(std::cout << "    | error: " << error.message() << '\n');
+        break;
+
+      default:
+        LOG(std::cout << "    | unhandled " << status << '\n');
+        buffer_manager.ready(user_data, chunk_ptr, 0U);
+        break;
+    }
+    break;
+  }
+
+  return io.ptr - data;
 }
 
 
@@ -993,8 +1064,8 @@ size_t channel_t::decrypt (const uint8_t *data, size_t size,
       break;
 
     default:
-      LOG(std::cout << "    | error\n");
       error.assign(status, category());
+      LOG(std::cout << "    | error: " << error.message() << "\n");
       break;
   }
 
