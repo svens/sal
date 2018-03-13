@@ -203,7 +203,7 @@ private:
   }
 
   template <typename Check>
-  void set_option (const manual_certificate_check_t<Check> &option) noexcept
+  void set_option (const certificate_check_t<Check> &option) noexcept
   {
     impl_->certificate_check = option.value;
   }

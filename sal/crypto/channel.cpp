@@ -5,6 +5,7 @@
   #include <mutex>
   #include <openssl/bio.h>
   #include <openssl/err.h>
+  #include <openssl/x509v3.h>
   #include <openssl/opensslv.h>
 #elif __sal_os_macos //{{{1
   #include <Security/SecIdentity.h>
@@ -87,6 +88,13 @@ inline auto DTLS_server_method () noexcept
 {
   return DTLSv1_server_method();
 }
+
+
+inline X509 *X509_STORE_CTX_get0_cert (X509_STORE_CTX *ctx) noexcept
+{
+  return ctx->cert;
+}
+
 
 #else
 
@@ -267,25 +275,36 @@ inline const SSL_METHOD *channel_type (bool datagram, bool server) noexcept
 }
 
 
+inline const char *ca_path () noexcept
+{
+  if (auto path = std::getenv(X509_get_default_cert_dir_env()))
+  {
+    return path;
+  }
+  return X509_get_default_cert_dir();
+}
+
+
 bool set_certificate (__bits::channel_factory_t &factory,
   std::error_code &error) noexcept
 {
+  auto result = SSL_CTX_load_verify_locations(factory.handle.ref, nullptr, ca_path());
+  if (result != 1)
+  {
+    error.assign(ERR_get_error(), category());
+    return false;
+  }
+
   if (factory.certificate.ref)
   {
-    auto result = SSL_CTX_use_certificate(
-      factory.handle.ref,
-      factory.certificate.ref
-    );
+    result = SSL_CTX_use_certificate(factory.handle.ref, factory.certificate.ref);
     if (result != 1)
     {
       error.assign(ERR_get_error(), category());
       return false;
     }
 
-    result = SSL_CTX_use_PrivateKey(
-      factory.handle.ref,
-      factory.private_key
-    );
+    result = SSL_CTX_use_PrivateKey(factory.handle.ref, factory.private_key);
     if (result != 1)
     {
       error.assign(ERR_get_error(), category());
@@ -299,7 +318,112 @@ bool set_certificate (__bits::channel_factory_t &factory,
       return false;
     }
   }
+
   return true;
+}
+
+
+inline int channel_index () noexcept
+{
+  static const int index = SSL_get_ex_new_index(0,
+    (void *)"channel",
+    nullptr,
+    nullptr,
+    nullptr
+  );
+  return index;
+}
+
+
+int manual_certificate_check (X509_STORE_CTX *ctx, void *arg) noexcept
+{
+  __bits::certificate_t native_cert = X509_STORE_CTX_get0_cert(ctx);
+  __bits::inc_ref(native_cert.ref);
+
+  auto peer_certificate = crypto::certificate_t::from_native_handle(
+    std::move(native_cert)
+  );
+
+  auto &factory = *static_cast<__bits::channel_factory_t *>(arg);
+  if (factory.certificate_check(peer_certificate))
+  {
+    LOG(std::cout << "    | certificate: accept\n");
+    return 1;
+  }
+
+  X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_REJECTED);
+  LOG(std::cout << "    | certificate: reject\n");
+  return 0;
+}
+
+
+void setup_manual_verification (__bits::channel_factory_t &factory) noexcept
+{
+  if (factory.certificate_check)
+  {
+    SSL_CTX_set_cert_verify_callback(factory.handle.ref,
+      manual_certificate_check,
+      &factory
+    );
+  }
+}
+
+
+#if WITH_LOGGING
+int certificate_post_check (int preverify_ok, X509_STORE_CTX *ctx) noexcept
+{
+  auto certificate = X509_STORE_CTX_get_current_cert(ctx);
+  auto error = X509_STORE_CTX_get_error(ctx);
+
+  char subject[256];
+  X509_NAME_oneline(X509_get_subject_name(certificate), subject, sizeof(subject));
+
+  LOG(std::cout << "    | cert " << subject
+    << " ("
+    << (preverify_ok ? "ok" : X509_verify_cert_error_string(error))
+    << ")\n"
+  );
+
+  return preverify_ok;
+}
+#endif
+
+
+void setup_verification (__bits::channel_t &channel) noexcept
+{
+  int mode = SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+  if (channel.factory->server && !channel.mutual_auth)
+  {
+    mode = SSL_VERIFY_NONE;
+  }
+
+  auto callback =
+    #if WITH_LOGGING
+      &certificate_post_check
+    #else
+      nullptr
+    #endif
+  ;
+
+  if (!channel.peer_name.empty())
+  {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    // TODO
+    // <1.0.2: https://wiki.openssl.org/index.php/Hostname_validation
+    // 1.0.2: X509_check_host()
+#else
+    auto x509_check_args = SSL_get0_param(channel.handle.ref);
+    X509_VERIFY_PARAM_set_hostflags(x509_check_args,
+      X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
+    );
+    X509_VERIFY_PARAM_set1_host(x509_check_args,
+      channel.peer_name.c_str(),
+      channel.peer_name.size()
+    );
+#endif
+  }
+
+  SSL_set_verify(channel.handle.ref, mode, callback);
 }
 
 
@@ -374,6 +498,7 @@ void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
     if (set_certificate(*this, error)
       && disable_read_ahead(*this, error))
     {
+      setup_manual_verification(*this);
       error.clear();
     }
   }
@@ -402,6 +527,9 @@ void __bits::channel_t::ctor (std::error_code &error) noexcept
       SSL_set_connect_state(handle.ref);
     }
     LOG(SSL_set_info_callback(handle.ref, info_callback));
+
+    SSL_set_ex_data(handle.ref, channel_index(), this);
+    setup_verification(*this);
 
     bio = BIO_new(bio_t::methods);
     if (bio)
@@ -454,11 +582,6 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
       channel.connected();
       break;
 
-    case SSL_ERROR_ZERO_RETURN:
-      LOG(std::cout << "    | aborted\n");
-      channel.aborted();
-      break;
-
     case SSL_ERROR_SSL:
     case SSL_ERROR_SYSCALL:
       channel.aborted();
@@ -469,10 +592,6 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
       }
       LOG(std::cout << "    | error: " << error.message() << "\n");
       return {};
-
-    default:
-      LOG(std::cout << "    | unhandled: " << status << "\n");
-      break;
   }
 
   return io.ptr - data;
@@ -901,12 +1020,19 @@ bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
     return false;
   }
 
-  auto peer_certificate = crypto::certificate_t::from_native_handle(
-    ::SecTrustGetCertificateAtIndex(trust.ref, 0)
-  );
-  ::CFRetain(peer_certificate.native_handle().ref);
+  if (auto handle = ::SecTrustGetCertificateAtIndex(trust.ref, 0))
+  {
+    ::CFRetain(handle);
+    auto peer_certificate = crypto::certificate_t::from_native_handle(handle);
 
-  return channel.factory->certificate_check(peer_certificate);
+    if (channel.factory->certificate_check(peer_certificate))
+    {
+      return true;
+    }
+  }
+
+  error.assign(errSSLPeerHandshakeFail, category());
+  return false;
 }
 
 
@@ -955,6 +1081,7 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
   std::error_code &error) noexcept
 {
   auto &channel = *impl_;
+  error.clear();
 
   LOG(std::cout << (channel.factory->server ? "server" : "client")
     << "> handshake: " << size << '\n'
@@ -968,12 +1095,10 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
       case ::errSecSuccess:
         LOG(std::cout << "    | connected (" << (call.in_ptr - call.in_first) << ")\n");
         channel.connected();
-        error.clear();
         break;
 
       case ::errSSLWouldBlock:
         LOG(std::cout << "    | blocked\n");
-        error.clear();
         break;
 
       case ::errSSLBufferOverflow:
@@ -1575,9 +1700,9 @@ void finish_handshake (__bits::channel_t &channel, std::error_code &error)
   }
   else
   {
-    LOG(std::cout << ", not trusted\n");
+    LOG(std::cout << "    * reject\n");
+    error.assign(SEC_E_CERT_UNKNOWN, category());
     channel.aborted();
-    error = channel.handshake_status;
   }
 }
 
@@ -1661,6 +1786,10 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
     {
       case SEC_E_OK:
         finish_handshake(channel, error);
+        if (error)
+        {
+          return {};
+        }
         [[fallthrough]];
 
       case SEC_I_CONTINUE_NEEDED:
@@ -1731,11 +1860,8 @@ void channel_t::encrypt (const uint8_t *data, size_t size,
 
     if (status == SEC_E_OK)
     {
-      if (!flush(channel,
-          buffer_manager,
-          buffer,
-          channel.header_size + chunk_size + channel.trailer_size,
-          error))
+      auto buffer_size = channel.header_size + chunk_size + channel.trailer_size;
+      if (!flush(channel, buffer_manager, buffer, buffer_size, error))
       {
         return;
       }

@@ -109,26 +109,26 @@ inline with_private_key_t with_private_key (const private_key_t *private_key)
 
 
 template <typename Check>
-struct manual_certificate_check_t
-  : public channel_factory_option_t<manual_certificate_check_t<Check>>
+struct certificate_check_t
+  : public channel_factory_option_t<certificate_check_t<Check>>
 {
   Check value;
 
-  manual_certificate_check_t (Check check) noexcept
+  certificate_check_t (Check check) noexcept
     : value(check)
   {}
 };
 
 
 template <typename Check>
-inline manual_certificate_check_t<Check> manual_certificate_check (Check check)
+inline certificate_check_t<Check> certificate_check (Check check)
   noexcept
 {
   return {check};
 }
 
 
-inline const auto no_certificate_check = manual_certificate_check(
+inline const auto no_certificate_check = certificate_check(
   [](const certificate_t &) noexcept
   {
     return true;

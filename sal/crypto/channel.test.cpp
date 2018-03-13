@@ -42,48 +42,49 @@ inline auto private_key ()
 }
 
 
-struct datagram
+inline const std::vector<uint8_t> &expected_serial_number ()
 {
-  static constexpr const bool is_datagram = true;
+  static std::vector<uint8_t> number = { 0x10, 0x01, };
+  return number;
+}
 
-  static auto client ()
+
+struct datagram_t
+{
+  virtual ~datagram_t () = default;
+
+  template <typename... Option>
+  static auto client_factory (
+    const sal::crypto::channel_factory_option_t<Option> &...option)
   {
-    auto factory = sal::crypto::datagram_client_channel_factory(
-      sal::crypto::no_certificate_check
-    );
-    return factory.make_channel();
+    return sal::crypto::datagram_client_channel_factory(option...);
   }
 
-  static auto server ()
+  template <typename... Option>
+  static auto server_factory (
+    const sal::crypto::channel_factory_option_t<Option> &...option)
   {
-    auto factory = sal::crypto::datagram_server_channel_factory(
-      certificate(),
-      private_key()
-    );
-    return factory.make_channel();
+    return sal::crypto::datagram_server_channel_factory(option...);
   }
 };
 
 
-struct stream
+struct stream_t
 {
-  static constexpr const bool is_datagram = false;
+  virtual ~stream_t () = default;
 
-  static auto client ()
+  template <typename... Option>
+  static auto client_factory (
+    const sal::crypto::channel_factory_option_t<Option> &...option)
   {
-    auto factory = sal::crypto::stream_client_channel_factory(
-      sal::crypto::no_certificate_check
-    );
-    return factory.make_channel();
+    return sal::crypto::stream_client_channel_factory(option...);
   }
 
-  static auto server ()
+  template <typename... Option>
+  static auto server_factory (
+    const sal::crypto::channel_factory_option_t<Option> &...option)
   {
-    auto factory = sal::crypto::stream_server_channel_factory(
-      certificate(),
-      private_key()
-    );
-    return factory.make_channel();
+    return sal::crypto::stream_server_channel_factory(option...);
   }
 };
 
@@ -91,13 +92,30 @@ struct stream
 template <typename ChannelFactory>
 struct crypto_channel
   : public sal_test::with_type<ChannelFactory>
+  , public ChannelFactory
 {
-  static constexpr const bool datagram = ChannelFactory::is_datagram;
+  static constexpr const bool datagram = std::is_same_v<ChannelFactory, datagram_t>;
+
+  template <typename... Option>
+  auto make_client_channel (
+    const sal::crypto::channel_option_t<Option> &...option)
+  {
+    return ChannelFactory::client_factory(sal::crypto::no_certificate_check)
+      .make_channel(option...);
+  }
+
+  template <typename... Option>
+  auto make_server_channel (
+    const sal::crypto::channel_option_t<Option> &...option)
+  {
+    return ChannelFactory::server_factory(certificate(), private_key())
+      .make_channel(option...);
+  }
 
   auto make_channel_pair ()
   {
     SCOPED_TRACE("make_channel_pair");
-    return std::make_pair(ChannelFactory::client(), ChannelFactory::server());
+    return std::make_pair(make_client_channel(), make_server_channel());
   }
 };
 
@@ -148,7 +166,9 @@ struct buffer_t final
 };
 
 
-void handshake (sal::crypto::channel_t &client, sal::crypto::channel_t &server)
+void handshake (sal::crypto::channel_t &client,
+  sal::crypto::channel_t &server,
+  bool require_connected = true)
 {
   SCOPED_TRACE("handshake");
   ASSERT_FALSE(client.is_connected());
@@ -166,14 +186,17 @@ void handshake (sal::crypto::channel_t &client, sal::crypto::channel_t &server)
     server_buf.data.clear();
   }
 
-  ASSERT_TRUE(client.is_connected());
-  ASSERT_TRUE(server.is_connected());
+  if (require_connected)
+  {
+    ASSERT_TRUE(client.is_connected());
+    ASSERT_TRUE(server.is_connected());
+  }
 }
 
 
 using channel_factory_types = ::testing::Types<
-  datagram,
-  stream
+  datagram_t,
+  stream_t
 >;
 TYPED_TEST_CASE(crypto_channel, channel_factory_types);
 
@@ -831,6 +854,235 @@ TYPED_TEST(crypto_channel, decrypt_half_and_one_plus_half_messages)
   EXPECT_FALSE(plain.data.empty());
   message.assign(plain.data.begin(), plain.data.end());
   EXPECT_EQ(second, message);
+}
+
+
+size_t cert_ok_count = 0;
+inline bool cert_ok (const sal::crypto::certificate_t &cert) noexcept
+{
+  EXPECT_EQ(expected_serial_number(), cert.serial_number());
+  cert_ok_count++;
+  return true;
+}
+
+
+size_t cert_fail_count = 0;
+inline bool cert_fail (const sal::crypto::certificate_t &cert) noexcept
+{
+  EXPECT_EQ(expected_serial_number(), cert.serial_number());
+  cert_fail_count++;
+  return false;
+}
+
+
+TYPED_TEST(crypto_channel, certificate_check_success)
+{
+  auto client_factory = TestFixture::client_factory(
+    sal::crypto::certificate_check(cert_ok)
+  );
+  auto client = client_factory.make_channel();
+  auto server = TestFixture::make_server_channel();
+
+  size_t expected_cert_ok_count = cert_ok_count + 1;
+  handshake(client, server, true);
+  EXPECT_EQ(expected_cert_ok_count, cert_ok_count);
+}
+
+
+TYPED_TEST(crypto_channel, certificate_check_fail)
+{
+  auto client_factory = TestFixture::client_factory(
+    sal::crypto::certificate_check(cert_fail)
+  );
+  auto client = client_factory.make_channel();
+  auto server = TestFixture::make_server_channel();
+
+  size_t expected_cert_fail_count = cert_fail_count + 1;
+  try
+  {
+    handshake(client, server, false);
+    FAIL() << "unexpected success";
+  }
+  catch (const std::system_error &)
+  {
+    SUCCEED();
+  }
+  EXPECT_EQ(expected_cert_fail_count, cert_fail_count);
+
+  EXPECT_FALSE(client.is_connected());
+
+#if __sal_os_linux
+  // client continues handshakes even after rejecting certificate, making
+  // server side succeed connecting
+#elif __sal_os_macos
+  EXPECT_FALSE(server.is_connected());
+#elif __sal_os_windows
+  // querying server provided certificate is possible only after all the
+  // handshakes i.e. server is now connected, not knowing client has rejected
+  // certificate
+#endif
+}
+
+
+//
+// peer_name tests are disabled by default because these reqire trusting our
+// self-signed certificate chain. Ok for local tests, too much hassle on CI.
+//
+
+
+TYPED_TEST(crypto_channel, DISABLED_peer_name_success)
+{
+
+  auto client_factory = TestFixture::client_factory();
+  auto client = client_factory.make_channel(
+    // in case of CN & SAN in cert, SAN is used
+    sal::crypto::peer_name("sal.alt.ee")
+  );
+  auto server = TestFixture::make_server_channel();
+  handshake(client, server, true);
+}
+
+
+TYPED_TEST(crypto_channel, DISABLED_peer_name_fail)
+{
+  if constexpr (openssl_version && openssl_version < 0x10100000)
+  {
+    // not implemented yet:
+    // <1.0.2: X509_check_host not supported
+    // <1.1: X509_VERIFY_PARAM_set1_host not supported
+    FAIL() << "not implemented for <OpenSSL-1.1";
+    return;
+  }
+
+  auto client_factory = TestFixture::client_factory();
+  auto client = client_factory.make_channel(
+    sal::crypto::peer_name("invalid.name")
+  );
+  auto server = TestFixture::make_server_channel();
+
+  EXPECT_THROW(
+    handshake(client, server, false),
+    std::system_error
+  );
+
+  EXPECT_FALSE(client.is_connected());
+  EXPECT_FALSE(server.is_connected());
+}
+
+
+TYPED_TEST(crypto_channel, mutual_auth_success)
+{
+  auto client_factory = TestFixture::client_factory(
+    sal::crypto::certificate_check(cert_ok),
+    certificate(),
+    private_key()
+  );
+  auto client = client_factory.make_channel();
+
+  auto server_factory = TestFixture::server_factory(
+    sal::crypto::certificate_check(cert_ok),
+    certificate(),
+    private_key()
+  );
+  auto server = server_factory.make_channel(sal::crypto::mutual_auth);
+
+  size_t expected_cert_ok_count = cert_ok_count + 2;
+  handshake(client, server, true);
+  EXPECT_EQ(expected_cert_ok_count, cert_ok_count);
+}
+
+
+TYPED_TEST(crypto_channel, mutual_auth_client_fail)
+{
+  auto client_factory = TestFixture::client_factory(
+    sal::crypto::certificate_check(cert_fail),
+    certificate(),
+    private_key()
+  );
+  auto client = client_factory.make_channel();
+
+  auto server_factory = TestFixture::server_factory(
+    sal::crypto::certificate_check(cert_ok),
+    certificate(),
+    private_key()
+  );
+  auto server = server_factory.make_channel(sal::crypto::mutual_auth);
+
+  size_t original_cert_fail_count = cert_fail_count;
+  try
+  {
+    handshake(client, server, false);
+    FAIL() << "unexpected success";
+  }
+  catch (const std::system_error &)
+  {
+    SUCCEED();
+  }
+  EXPECT_LT(original_cert_fail_count, cert_fail_count);
+
+  EXPECT_FALSE(client.is_connected());
+}
+
+
+TYPED_TEST(crypto_channel, mutual_auth_server_fail)
+{
+  auto client_factory = TestFixture::client_factory(
+    sal::crypto::certificate_check(cert_ok),
+    certificate(),
+    private_key()
+  );
+  auto client = client_factory.make_channel();
+
+  auto server_factory = TestFixture::server_factory(
+    sal::crypto::certificate_check(cert_fail),
+    certificate(),
+    private_key()
+  );
+  auto server = server_factory.make_channel(sal::crypto::mutual_auth);
+
+  size_t original_cert_fail_count = cert_fail_count;
+  try
+  {
+    handshake(client, server, false);
+    FAIL() << "unexpected success";
+  }
+  catch (const std::system_error &)
+  {
+    SUCCEED();
+  }
+  EXPECT_LT(original_cert_fail_count, cert_fail_count);
+
+  EXPECT_FALSE(client.is_connected());
+  EXPECT_FALSE(server.is_connected());
+}
+
+
+TYPED_TEST(crypto_channel, mutual_auth_no_client_cert)
+{
+  auto client_factory = TestFixture::client_factory(
+    sal::crypto::certificate_check(cert_ok)
+  );
+  auto client = client_factory.make_channel();
+
+  auto server_factory = TestFixture::server_factory(
+    sal::crypto::certificate_check(cert_ok),
+    certificate(),
+    private_key()
+  );
+  auto server = server_factory.make_channel(sal::crypto::mutual_auth);
+
+  try
+  {
+    handshake(client, server, false);
+    FAIL() << "unexpected success";
+  }
+  catch (const std::system_error &)
+  {
+    SUCCEED();
+  }
+
+  EXPECT_FALSE(client.is_connected());
+  EXPECT_FALSE(server.is_connected());
 }
 
 
