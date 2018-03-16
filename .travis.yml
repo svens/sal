@@ -35,8 +35,8 @@ addons:
 
 before_install: |
   if test "${TRAVIS_OS_NAME}" = "linux"; then
-    # show addresses to find out when IPv6 will be fixed
-    ip addr show
+    # https://github.com/travis-ci/travis-ci/issues/8361#issuecomment-350497804
+    sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
   fi
   if test "${BUILD_TYPE}" = "Coverity"; then
     if test "${TRAVIS_BRANCH}" != "${COVERITY_SCAN_BRANCH_PATTERN}"; then
