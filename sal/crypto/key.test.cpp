@@ -15,14 +15,14 @@ using private_key_t = sal::crypto::private_key_t;
 auto import ()
 {
   private_key_t private_key;
-  auto cert = sal::crypto::import_pkcs12(
+  auto chain = sal::crypto::import_pkcs12(
     to_der(cert::pkcs12),
     "TestPassword",
-    private_key
+    &private_key
   );
 
   return std::make_pair(
-    cert.public_key(),
+    chain[0].public_key(),
     std::move(private_key)
   );
 }

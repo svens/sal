@@ -21,12 +21,12 @@ namespace {
 std::pair<sal::crypto::certificate_t *, sal::crypto::private_key_t *> import_pkcs12 ()
 {
   static sal::crypto::private_key_t private_key;
-  static sal::crypto::certificate_t certificate = sal::crypto::import_pkcs12(
+  static auto chain = sal::crypto::import_pkcs12(
     sal_test::to_der(sal_test::cert::pkcs12),
     "TestPassword",
-    private_key
+    &private_key
   );
-  return {&certificate, &private_key};
+  return {&chain[0], &private_key};
 }
 
 

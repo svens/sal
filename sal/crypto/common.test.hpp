@@ -22,7 +22,6 @@ extern const std::string
     pkcs12_no_passphrase,
 
     // specific testcase certificates
-    too_long_chain,
     without_key_id;
 
 } // namespace cert
