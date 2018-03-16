@@ -12,10 +12,16 @@ class fixture
 {
 public:
 
+  const bool on_travis_ci = on_travis_ci_();
   const std::string case_name = case_name_();
 
 
 private:
+
+  static bool on_travis_ci_ ()
+  {
+    return std::getenv("TRAVIS") != nullptr;
+  }
 
   static std::string case_name_ ()
   {
