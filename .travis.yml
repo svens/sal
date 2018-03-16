@@ -25,7 +25,7 @@ matrix:
     - { os: osx, osx_image: xcode9.2, compiler: gcc, env: BUILD_TYPE=Release }
     - { os: osx, osx_image: xcode9.2, compiler: clang, env: BUILD_TYPE=Debug }
     - { os: osx, osx_image: xcode9.2, compiler: clang, env: BUILD_TYPE=Release }
-#    - { os: linux, compiler: gcc, env: BUILD_TYPE=Coverage }
+    - { os: linux, compiler: gcc, env: BUILD_TYPE=Coverage }
 #    - { os: linux, compiler: gcc, env: BUILD_TYPE=Coverity }
 
 addons:
