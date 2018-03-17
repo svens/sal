@@ -33,8 +33,8 @@ struct channel_factory_t
 {
   const bool datagram;
   const bool server;
-  certificate_t certificate{};
-  std::function<bool(const crypto::certificate_t &)> certificate_check{};
+  std::vector<crypto::certificate_t> chain{};
+  std::function<bool(const std::vector<crypto::certificate_t> &)> chain_check{};
 
 #if __sal_os_linux //{{{1
 

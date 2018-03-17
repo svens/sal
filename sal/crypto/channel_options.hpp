@@ -8,6 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/crypto/certificate.hpp>
+#include <functional>
 #include <string>
 
 
@@ -72,21 +73,28 @@ struct channel_factory_option_t
 {};
 
 
-struct with_certificate_t
-  : public channel_factory_option_t<with_certificate_t>
+struct with_chain_t
+  : public channel_factory_option_t<with_chain_t>
 {
-  certificate_t value;
+  std::vector<certificate_t> value;
 
-  with_certificate_t (certificate_t certificate) noexcept
-    : value(certificate)
+  with_chain_t (std::vector<certificate_t> certificates) noexcept
+    : value(certificates)
   {}
 };
 
 
-inline with_certificate_t with_certificate (certificate_t certificate)
+inline with_chain_t with_certificate (const certificate_t &certificate)
   noexcept
 {
-  return {certificate};
+  return {{certificate}};
+}
+
+
+inline with_chain_t with_chain (std::vector<certificate_t> chain)
+  noexcept
+{
+  return chain;
 }
 
 
@@ -109,27 +117,27 @@ inline with_private_key_t with_private_key (const private_key_t *private_key)
 
 
 template <typename Check>
-struct certificate_check_t
-  : public channel_factory_option_t<certificate_check_t<Check>>
+struct chain_check_t
+  : public channel_factory_option_t<chain_check_t<Check>>
 {
-  Check value;
+  std::function<bool(const std::vector<crypto::certificate_t> &)> value{};
 
-  certificate_check_t (Check check) noexcept
+  chain_check_t (Check check) noexcept
     : value(check)
   {}
 };
 
 
 template <typename Check>
-inline certificate_check_t<Check> certificate_check (Check check)
+inline chain_check_t<Check> chain_check (Check check)
   noexcept
 {
   return {check};
 }
 
 
-inline const auto no_certificate_check = certificate_check(
-  [](const certificate_t &) noexcept
+inline const auto no_chain_check = chain_check(
+  [](const std::vector<certificate_t> &) noexcept
   {
     return true;
   }

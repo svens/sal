@@ -90,9 +90,10 @@ inline auto DTLS_server_method () noexcept
 }
 
 
-inline X509 *X509_STORE_CTX_get0_cert (X509_STORE_CTX *ctx) noexcept
+inline STACK_OF(X509) *X509_STORE_CTX_get0_untrusted (X509_STORE_CTX *ctx)
+  noexcept
 {
-  return ctx->cert;
+  return ctx->untrusted;
 }
 
 
@@ -285,23 +286,44 @@ inline const char *ca_path () noexcept
 }
 
 
-bool set_certificate (__bits::channel_factory_t &factory,
+bool set_chain (__bits::channel_factory_t &factory,
   std::error_code &error) noexcept
 {
-  auto result = SSL_CTX_load_verify_locations(factory.handle.ref, nullptr, ca_path());
+  auto result = SSL_CTX_load_verify_locations(factory.handle.ref,
+    nullptr,
+    ca_path()
+  );
   if (result != 1)
   {
     error.assign(ERR_get_error(), category());
     return false;
   }
 
-  if (factory.certificate.ref)
+  if (factory.chain.size())
   {
-    result = SSL_CTX_use_certificate(factory.handle.ref, factory.certificate.ref);
+    result = SSL_CTX_use_certificate(factory.handle.ref,
+      factory.chain[0].native_handle().ref
+    );
     if (result != 1)
     {
       error.assign(ERR_get_error(), category());
       return false;
+    }
+
+    size_t it = 1U;
+    while (it < factory.chain.size()
+      && !factory.chain[it].is_self_signed())
+    {
+#if OPENSSL_VERSION_NUMBER < 0x10002000L
+      __bits::certificate_t native_cert = factory.chain[it].native_handle();
+      __bits::inc_ref(native_cert.ref);
+      SSL_CTX_add_extra_chain_cert(factory.handle.ref, native_cert.ref);
+#else
+      SSL_CTX_add1_chain_cert(factory.handle.ref,
+        factory.chain[it].native_handle().ref
+      );
+#endif
+      it++;
     }
 
     result = SSL_CTX_use_PrivateKey(factory.handle.ref, factory.private_key);
@@ -337,15 +359,21 @@ inline int channel_index () noexcept
 
 int manual_certificate_check (X509_STORE_CTX *ctx, void *arg) noexcept
 {
-  __bits::certificate_t native_cert = X509_STORE_CTX_get0_cert(ctx);
-  __bits::inc_ref(native_cert.ref);
+  auto list = X509_STORE_CTX_get0_untrusted(ctx);
+  std::vector<certificate_t> chain;
+  chain.reserve(sk_X509_num(list));
 
-  auto peer_certificate = crypto::certificate_t::from_native_handle(
-    std::move(native_cert)
-  );
+  while (chain.size() < (size_t)sk_X509_num(list))
+  {
+    __bits::certificate_t native_cert = sk_X509_value(list, chain.size());
+    __bits::inc_ref(native_cert.ref);
+    chain.emplace_back(
+      certificate_t::from_native_handle(std::move(native_cert))
+    );
+  }
 
   auto &factory = *static_cast<__bits::channel_factory_t *>(arg);
-  if (factory.certificate_check(peer_certificate))
+  if (factory.chain_check(chain))
   {
     LOG(std::cout << "    | certificate: accept\n");
     return 1;
@@ -359,7 +387,7 @@ int manual_certificate_check (X509_STORE_CTX *ctx, void *arg) noexcept
 
 void setup_manual_verification (__bits::channel_factory_t &factory) noexcept
 {
-  if (factory.certificate_check)
+  if (factory.chain_check)
   {
     SSL_CTX_set_cert_verify_callback(factory.handle.ref,
       manual_certificate_check,
@@ -495,7 +523,7 @@ void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
   handle = SSL_CTX_new(channel_type(datagram, server));
   if (handle)
   {
-    if (set_certificate(*this, error)
+    if (set_chain(*this, error)
       && disable_read_ahead(*this, error))
     {
       setup_manual_verification(*this);
@@ -952,14 +980,13 @@ bool set_mutual_auth (__bits::channel_t &channel, std::error_code &error)
 }
 
 
-bool set_certificate (__bits::channel_t &channel, std::error_code &error)
-  noexcept
+bool set_chain (__bits::channel_t &channel, std::error_code &error) noexcept
 {
-  if (channel.factory->certificate)
+  if (!channel.factory->chain.empty())
   {
     unique_ref<::SecIdentityRef> identity;
     auto status = ::SecIdentityCreateWithCertificate(nullptr,
-      channel.factory->certificate.ref,
+      channel.factory->chain[0].native_handle().ref,
       &identity.ref
     );
     if (status != ::errSecSuccess)
@@ -968,17 +995,28 @@ bool set_certificate (__bits::channel_t &channel, std::error_code &error)
       return false;
     }
 
-    unique_ref<::CFArrayRef> certificates = ::CFArrayCreate(nullptr,
-      (::CFTypeRef *)&identity.ref, 1,
+    constexpr const size_t max_chain_size = 9;
+    CFTypeRef chain[max_chain_size] = { identity.ref };
+    size_t chain_size = 1;
+    while (chain_size < max_chain_size
+      && chain_size < channel.factory->chain.size()
+      && !channel.factory->chain[chain_size].is_self_signed())
+    {
+      chain[chain_size] = channel.factory->chain[chain_size].native_handle().ref;
+      chain_size++;
+    }
+
+    unique_ref<::CFArrayRef> trust = ::CFArrayCreate(nullptr,
+      chain, chain_size,
       &::kCFTypeArrayCallBacks
     );
-    if (!certificates.ref)
+    if (!trust.ref)
     {
       error = std::make_error_code(std::errc::not_enough_memory);
       return false;
     }
 
-    status = ::SSLSetCertificate(channel.handle.ref, certificates.ref);
+    status = ::SSLSetCertificate(channel.handle.ref, trust.ref);
     if (status != ::errSecSuccess)
     {
       error.assign(status, category());
@@ -989,10 +1027,10 @@ bool set_certificate (__bits::channel_t &channel, std::error_code &error)
 }
 
 
-bool set_certificate_check (__bits::channel_t &channel, std::error_code &error)
+bool set_chain_check (__bits::channel_t &channel, std::error_code &error)
   noexcept
 {
-  if (channel.factory->certificate_check)
+  if (channel.factory->chain_check)
   {
     auto break_on_auth = channel.factory->server
       ? ::kSSLSessionOptionBreakOnClientAuth
@@ -1009,7 +1047,7 @@ bool set_certificate_check (__bits::channel_t &channel, std::error_code &error)
 }
 
 
-bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
+bool peer_auth (__bits::channel_t &channel, std::error_code &error)
   noexcept
 {
   unique_ref<::SecTrustRef> trust{};
@@ -1020,15 +1058,20 @@ bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
     return false;
   }
 
-  if (auto handle = ::SecTrustGetCertificateAtIndex(trust.ref, 0))
-  {
-    ::CFRetain(handle);
-    auto peer_certificate = crypto::certificate_t::from_native_handle(handle);
+  size_t chain_size = ::SecTrustGetCertificateCount(trust.ref);
+  std::vector<certificate_t> chain;
+  chain.reserve(chain_size);
 
-    if (channel.factory->certificate_check(peer_certificate))
-    {
-      return true;
-    }
+  while (chain.size() < chain_size)
+  {
+    auto handle = ::SecTrustGetCertificateAtIndex(trust.ref, chain.size());
+    ::CFRetain(handle);
+    chain.emplace_back(certificate_t::from_native_handle(handle));
+  }
+
+  if (chain.size() && channel.factory->chain_check(chain))
+  {
+    return true;
   }
 
   error.assign(errSSLPeerHandshakeFail, category());
@@ -1064,8 +1107,8 @@ void __bits::channel_t::ctor (std::error_code &error) noexcept
     && set_connection(*this, error)
     && set_peer_name(*this, error)
     && set_mutual_auth(*this, error)
-    && set_certificate(*this, error)
-    && set_certificate_check(*this, error))
+    && set_chain(*this, error)
+    && set_chain_check(*this, error))
   {
     error.clear();
   }
@@ -1107,8 +1150,8 @@ size_t channel_t::handshake (const uint8_t *data, size_t size,
         break;
 
       case ::errSSLPeerAuthCompleted:
-        LOG(std::cout << "    | certificate_check\n");
-        if (!is_trusted_peer(channel, error))
+        LOG(std::cout << "    | peer_auth\n");
+        if (!peer_auth(channel, error))
         {
           channel.aborted();
           break;
@@ -1386,14 +1429,17 @@ void __bits::channel_factory_t::ctor (std::error_code &error) noexcept
   auth_data.dwVersion = SCHANNEL_CRED_VERSION;
 
   auth_data.dwFlags = SCH_CRED_NO_DEFAULT_CREDS;
-  if (certificate_check)
+  if (chain_check)
   {
     auth_data.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
   }
 
-  if (!certificate.is_null())
+  PCCERT_CONTEXT chain_data[1];
+  if (chain.size())
   {
-    auth_data.paCred = &certificate.ref;
+    // SChannel builds chain itself
+    chain_data[0] = chain[0].native_handle().ref;
+    auth_data.paCred = chain_data;
     auth_data.cCreds = 1;
   }
 
@@ -1642,10 +1688,27 @@ bool handle_missing (__bits::channel_t &channel,
 }
 
 
-bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
+std::vector<certificate_t> to_chain (HCERTSTORE store)
+{
+  PCCERT_CONTEXT it = nullptr;
+  std::vector<certificate_t> chain;
+  while ((it = ::CertEnumCertificatesInStore(store, it)) != nullptr)
+  {
+    chain.push_back(
+      certificate_t::from_native_handle(
+        ::CertDuplicateCertificateContext(it)
+      )
+    );
+  }
+  std::reverse(chain.begin(), chain.end());
+  return chain;
+}
+
+
+bool peer_auth (__bits::channel_t &channel, std::error_code &error)
   noexcept
 {
-  if (channel.factory->certificate_check)
+  if (channel.factory->chain_check)
   {
     __bits::certificate_t native_peer_certificate;
     auto status = ::QueryContextAttributes(channel.handle_p,
@@ -1654,10 +1717,8 @@ bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
     );
     if (status == SEC_E_OK)
     {
-      return channel.factory->certificate_check(
-        certificate_t::from_native_handle(
-          std::move(native_peer_certificate)
-        )
+      return channel.factory->chain_check(
+        to_chain(native_peer_certificate.ref->hCertStore)
       );
     }
     error.assign(status, category());
@@ -1670,7 +1731,7 @@ bool is_trusted_peer (__bits::channel_t &channel, std::error_code &error)
 void finish_handshake (__bits::channel_t &channel, std::error_code &error)
   noexcept
 {
-  if (is_trusted_peer(channel, error))
+  if (peer_auth(channel, error))
   {
     LOG(std::cout << "    * connected");
     ::SecPkgContext_StreamSizes sizes{};

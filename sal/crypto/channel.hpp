@@ -187,9 +187,9 @@ private:
 
   __bits::channel_factory_ptr impl_{};
 
-  void set_option (const with_certificate_t &option) noexcept
+  void set_option (const with_chain_t &option) noexcept
   {
-    impl_->certificate = option.value.native_handle();
+    impl_->chain = option.value;
   }
 
   void set_option (const with_private_key_t &option) noexcept
@@ -203,9 +203,9 @@ private:
   }
 
   template <typename Check>
-  void set_option (const certificate_check_t<Check> &option) noexcept
+  void set_option (const chain_check_t<Check> &option) noexcept
   {
-    impl_->certificate_check = option.value;
+    impl_->chain_check = option.value;
   }
 
   void set_option (__bits::channel_t &channel, const mutual_auth_t &option)

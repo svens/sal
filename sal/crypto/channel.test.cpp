@@ -18,7 +18,8 @@ namespace {
 #endif
 
 
-std::pair<sal::crypto::certificate_t *, sal::crypto::private_key_t *> import_pkcs12 ()
+std::pair<std::vector<sal::crypto::certificate_t> *, sal::crypto::private_key_t *>
+  import_pkcs12 ()
 {
   static sal::crypto::private_key_t private_key;
   static auto chain = sal::crypto::import_pkcs12(
@@ -26,13 +27,13 @@ std::pair<sal::crypto::certificate_t *, sal::crypto::private_key_t *> import_pkc
     "TestPassword",
     &private_key
   );
-  return {&chain[0], &private_key};
+  return {&chain, &private_key};
 }
 
 
-inline auto certificate ()
+inline auto chain ()
 {
-  return sal::crypto::with_certificate(*import_pkcs12().first);
+  return sal::crypto::with_chain(*import_pkcs12().first);
 }
 
 
@@ -100,7 +101,7 @@ struct crypto_channel
   auto make_client_channel (
     const sal::crypto::channel_option_t<Option> &...option)
   {
-    return ChannelFactory::client_factory(sal::crypto::no_certificate_check)
+    return ChannelFactory::client_factory(sal::crypto::no_chain_check)
       .make_channel(option...);
   }
 
@@ -108,7 +109,7 @@ struct crypto_channel
   auto make_server_channel (
     const sal::crypto::channel_option_t<Option> &...option)
   {
-    return ChannelFactory::server_factory(certificate(), private_key())
+    return ChannelFactory::server_factory(chain(), private_key())
       .make_channel(option...);
   }
 
@@ -857,20 +858,30 @@ TYPED_TEST(crypto_channel, decrypt_half_and_one_plus_half_messages)
 }
 
 
-size_t cert_ok_count = 0;
-inline bool cert_ok (const sal::crypto::certificate_t &cert) noexcept
+size_t chain_ok_count = 0;
+inline bool chain_ok (const std::vector<sal::crypto::certificate_t> &chain)
+  noexcept
 {
-  EXPECT_EQ(expected_serial_number(), cert.serial_number());
-  cert_ok_count++;
+  chain_ok_count++;
+  EXPECT_FALSE(chain.empty());
+  if (chain.size())
+  {
+    EXPECT_EQ(expected_serial_number(), chain[0].serial_number());
+  }
   return true;
 }
 
 
-size_t cert_fail_count = 0;
-inline bool cert_fail (const sal::crypto::certificate_t &cert) noexcept
+size_t chain_fail_count = 0;
+inline bool chain_fail (const std::vector<sal::crypto::certificate_t> &chain)
+  noexcept
 {
-  EXPECT_EQ(expected_serial_number(), cert.serial_number());
-  cert_fail_count++;
+  chain_fail_count++;
+  EXPECT_FALSE(chain.empty());
+  if (chain.size())
+  {
+    EXPECT_EQ(expected_serial_number(), chain[0].serial_number());
+  }
   return false;
 }
 
@@ -878,26 +889,26 @@ inline bool cert_fail (const sal::crypto::certificate_t &cert) noexcept
 TYPED_TEST(crypto_channel, certificate_check_success)
 {
   auto client_factory = TestFixture::client_factory(
-    sal::crypto::certificate_check(cert_ok)
+    sal::crypto::chain_check(chain_ok)
   );
   auto client = client_factory.make_channel();
   auto server = TestFixture::make_server_channel();
 
-  size_t expected_cert_ok_count = cert_ok_count + 1;
+  size_t expected_chain_ok_count = chain_ok_count + 1;
   handshake(client, server, true);
-  EXPECT_EQ(expected_cert_ok_count, cert_ok_count);
+  EXPECT_EQ(expected_chain_ok_count, chain_ok_count);
 }
 
 
 TYPED_TEST(crypto_channel, certificate_check_fail)
 {
   auto client_factory = TestFixture::client_factory(
-    sal::crypto::certificate_check(cert_fail)
+    sal::crypto::chain_check(chain_fail)
   );
   auto client = client_factory.make_channel();
   auto server = TestFixture::make_server_channel();
 
-  size_t expected_cert_fail_count = cert_fail_count + 1;
+  size_t expected_chain_fail_count = chain_fail_count + 1;
   try
   {
     handshake(client, server, false);
@@ -907,7 +918,7 @@ TYPED_TEST(crypto_channel, certificate_check_fail)
   {
     SUCCEED();
   }
-  EXPECT_EQ(expected_cert_fail_count, cert_fail_count);
+  EXPECT_EQ(expected_chain_fail_count, chain_fail_count);
 
   EXPECT_FALSE(client.is_connected());
 
@@ -973,42 +984,42 @@ TYPED_TEST(crypto_channel, DISABLED_peer_name_fail)
 TYPED_TEST(crypto_channel, mutual_auth_success)
 {
   auto client_factory = TestFixture::client_factory(
-    sal::crypto::certificate_check(cert_ok),
-    certificate(),
+    sal::crypto::chain_check(chain_ok),
+    chain(),
     private_key()
   );
   auto client = client_factory.make_channel();
 
   auto server_factory = TestFixture::server_factory(
-    sal::crypto::certificate_check(cert_ok),
-    certificate(),
+    sal::crypto::chain_check(chain_ok),
+    chain(),
     private_key()
   );
   auto server = server_factory.make_channel(sal::crypto::mutual_auth);
 
-  size_t expected_cert_ok_count = cert_ok_count + 2;
+  size_t expected_chain_ok_count = chain_ok_count + 2;
   handshake(client, server, true);
-  EXPECT_EQ(expected_cert_ok_count, cert_ok_count);
+  EXPECT_EQ(expected_chain_ok_count, chain_ok_count);
 }
 
 
 TYPED_TEST(crypto_channel, mutual_auth_client_fail)
 {
   auto client_factory = TestFixture::client_factory(
-    sal::crypto::certificate_check(cert_fail),
-    certificate(),
+    sal::crypto::chain_check(chain_fail),
+    chain(),
     private_key()
   );
   auto client = client_factory.make_channel();
 
   auto server_factory = TestFixture::server_factory(
-    sal::crypto::certificate_check(cert_ok),
-    certificate(),
+    sal::crypto::chain_check(chain_ok),
+    chain(),
     private_key()
   );
   auto server = server_factory.make_channel(sal::crypto::mutual_auth);
 
-  size_t original_cert_fail_count = cert_fail_count;
+  size_t original_chain_fail_count = chain_fail_count;
   try
   {
     handshake(client, server, false);
@@ -1018,7 +1029,7 @@ TYPED_TEST(crypto_channel, mutual_auth_client_fail)
   {
     SUCCEED();
   }
-  EXPECT_LT(original_cert_fail_count, cert_fail_count);
+  EXPECT_LT(original_chain_fail_count, chain_fail_count);
 
   EXPECT_FALSE(client.is_connected());
 }
@@ -1027,20 +1038,20 @@ TYPED_TEST(crypto_channel, mutual_auth_client_fail)
 TYPED_TEST(crypto_channel, mutual_auth_server_fail)
 {
   auto client_factory = TestFixture::client_factory(
-    sal::crypto::certificate_check(cert_ok),
-    certificate(),
+    sal::crypto::chain_check(chain_ok),
+    chain(),
     private_key()
   );
   auto client = client_factory.make_channel();
 
   auto server_factory = TestFixture::server_factory(
-    sal::crypto::certificate_check(cert_fail),
-    certificate(),
+    sal::crypto::chain_check(chain_fail),
+    chain(),
     private_key()
   );
   auto server = server_factory.make_channel(sal::crypto::mutual_auth);
 
-  size_t original_cert_fail_count = cert_fail_count;
+  size_t original_chain_fail_count = chain_fail_count;
   try
   {
     handshake(client, server, false);
@@ -1050,7 +1061,7 @@ TYPED_TEST(crypto_channel, mutual_auth_server_fail)
   {
     SUCCEED();
   }
-  EXPECT_LT(original_cert_fail_count, cert_fail_count);
+  EXPECT_LT(original_chain_fail_count, chain_fail_count);
 
   EXPECT_FALSE(client.is_connected());
   EXPECT_FALSE(server.is_connected());
@@ -1060,13 +1071,13 @@ TYPED_TEST(crypto_channel, mutual_auth_server_fail)
 TYPED_TEST(crypto_channel, mutual_auth_no_client_cert)
 {
   auto client_factory = TestFixture::client_factory(
-    sal::crypto::certificate_check(cert_ok)
+    sal::crypto::chain_check(chain_ok)
   );
   auto client = client_factory.make_channel();
 
   auto server_factory = TestFixture::server_factory(
-    sal::crypto::certificate_check(cert_ok),
-    certificate(),
+    sal::crypto::chain_check(chain_ok),
+    chain(),
     private_key()
   );
   auto server = server_factory.make_channel(sal::crypto::mutual_auth);
