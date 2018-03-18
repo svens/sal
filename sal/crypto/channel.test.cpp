@@ -209,7 +209,7 @@ TYPED_TEST(crypto_channel, handshake)
 }
 
 
-TYPED_TEST(crypto_channel, handshake_after_connected)
+TYPED_TEST(crypto_channel, handshake_already_connected)
 {
   auto [client, server] = this->make_channel_pair();
   handshake(client, server);
@@ -943,7 +943,6 @@ TYPED_TEST(crypto_channel, certificate_check_fail)
 
 TYPED_TEST(crypto_channel, DISABLED_peer_name_success)
 {
-
   auto client_factory = TestFixture::client_factory();
   auto client = client_factory.make_channel(
     // in case of CN & SAN in cert, SAN is used
@@ -978,6 +977,28 @@ TYPED_TEST(crypto_channel, DISABLED_peer_name_fail)
 
   EXPECT_FALSE(client.is_connected());
   EXPECT_FALSE(server.is_connected());
+}
+
+
+TYPED_TEST(crypto_channel, peer_name_not_trusted)
+{
+  if (!TestFixture::on_ci)
+  {
+    // tests above cover cases where certificate is trusted in system store
+    return;
+  }
+  // else this test assumes certificate is not trusted in system store
+
+  auto client_factory = TestFixture::client_factory();
+  auto client = client_factory.make_channel(
+    sal::crypto::peer_name("sal.alt.ee")
+  );
+  auto server = TestFixture::make_server_channel();
+
+  EXPECT_THROW(
+    handshake(client, server, false),
+    std::system_error
+  );
 }
 
 

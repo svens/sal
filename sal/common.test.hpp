@@ -14,11 +14,26 @@ class fixture
 {
 public:
 
+  const bool on_appveyor_ci = on_appveyor_ci_();
   const bool on_travis_ci = on_travis_ci_();
+  const bool on_ci = on_appveyor_ci || on_travis_ci;
   const std::string case_name = case_name_();
 
 
 private:
+
+  static bool on_appveyor_ci_ ()
+  {
+#if __sal_os_windows
+    size_t required_size = 0;
+    getenv_s(&required_size, nullptr, 0, "APPVEYOR");
+    if (required_size != 0)
+    {
+      return true;
+    }
+#endif
+    return false;
+  }
 
   static bool on_travis_ci_ ()
   {

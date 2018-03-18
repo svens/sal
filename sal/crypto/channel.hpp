@@ -27,9 +27,7 @@ public:
 
   struct buffer_manager_t
   {
-    virtual ~buffer_manager_t () noexcept
-    { }
-
+    virtual ~buffer_manager_t () noexcept = default;
     virtual uintptr_t alloc (uint8_t **buffer, size_t *buffer_size) noexcept = 0;
     virtual void ready (uintptr_t user_data, uint8_t *buffer, size_t buffer_size) noexcept = 0;
   };
