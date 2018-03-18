@@ -1,7 +1,7 @@
 case "${TRAVIS_OS_NAME}-${CC}" in
   linux-clang)
-    export CC=clang-5.0
-    export CXX=clang++-5.0
+    export CC=clang
+    export CXX=clang++
     ;;
 
   linux-gcc)
@@ -19,8 +19,6 @@ case "${TRAVIS_OS_NAME}-${CC}" in
   osx-clang)
     export CC=clang
     export CXX=clang++
-    brew update
-    brew install cmake || true
     ;;
 
   osx-gcc)
@@ -31,6 +29,6 @@ case "${TRAVIS_OS_NAME}-${CC}" in
     brew cask uninstall oclint || true
 
     brew update
-    brew install cmake gcc || true
+    brew install gcc || true
     ;;
 esac

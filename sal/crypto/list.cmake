@@ -4,6 +4,10 @@ list(APPEND sal_sources
   sal/crypto/__bits/x509.cpp
   sal/crypto/certificate.hpp
   sal/crypto/certificate.cpp
+  sal/crypto/__bits/channel.hpp
+  sal/crypto/channel.hpp
+  sal/crypto/channel.cpp
+  sal/crypto/channel_options.hpp
   sal/crypto/error.hpp
   sal/crypto/error.cpp
   sal/crypto/__bits/digest.hpp
@@ -25,6 +29,7 @@ list(APPEND sal_unittests_sources
   sal/crypto/common.test.hpp
   sal/crypto/common.test.cpp
   sal/crypto/certificate.test.cpp
+  sal/crypto/channel.test.cpp
   sal/crypto/hash.test.cpp
   sal/crypto/hmac.test.cpp
   sal/crypto/key.test.cpp

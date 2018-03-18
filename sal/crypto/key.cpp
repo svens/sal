@@ -257,18 +257,27 @@ size_t private_key_t::sign (size_t digest_type,
   bool invalid_argument = true;
   if (auto algorithm = to_algorithm(digest_type))
   {
-    EVP_MD_CTX ctx;
-    EVP_MD_CTX_init(&ctx);
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    EVP_MD_CTX ctx_buf, *ctx = &ctx_buf;
+    EVP_MD_CTX_init(&ctx_buf);
+#else
+    auto ctx = EVP_MD_CTX_new();
+    if (!ctx)
+    {
+      error = std::make_error_code(std::errc::not_enough_memory);
+      return {};
+    }
+#endif
 
-    if (EVP_DigestSignInit(&ctx, nullptr, algorithm, nullptr, impl_.ref) == 1
-      && EVP_DigestSignUpdate(&ctx, data, data_size) == 1)
+    if (EVP_DigestSignInit(ctx, nullptr, algorithm, nullptr, impl_.ref) == 1
+      && EVP_DigestSignUpdate(ctx, data, data_size) == 1)
     {
       size_t result_size;
-      if (EVP_DigestSignFinal(&ctx, nullptr, &result_size) == 1)
+      if (EVP_DigestSignFinal(ctx, nullptr, &result_size) == 1)
       {
         if (signature_size >= result_size)
         {
-          EVP_DigestSignFinal(&ctx,
+          EVP_DigestSignFinal(ctx,
             static_cast<uint8_t *>(signature),
             &signature_size
           );
@@ -282,7 +291,11 @@ size_t private_key_t::sign (size_t digest_type,
       }
     }
 
-    EVP_MD_CTX_cleanup(&ctx);
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    EVP_MD_CTX_cleanup(ctx);
+#else
+    EVP_MD_CTX_free(ctx);
+#endif
   }
 
   if (invalid_argument)
@@ -308,20 +321,33 @@ bool public_key_t::verify_signature (size_t digest_type,
   bool success = false, valid_signature = false;
   if (auto algorithm = to_algorithm(digest_type))
   {
-    EVP_MD_CTX ctx;
-    EVP_MD_CTX_init(&ctx);
-
-    if (EVP_DigestVerifyInit(&ctx, nullptr, algorithm, nullptr, impl_.ref) == 1
-      && EVP_DigestVerifyUpdate(&ctx, data, data_size) == 1)
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    EVP_MD_CTX ctx_buf, *ctx = &ctx_buf;
+    EVP_MD_CTX_init(&ctx_buf);
+#else
+    auto ctx = EVP_MD_CTX_new();
+    if (!ctx)
     {
-      valid_signature = EVP_DigestVerifyFinal(&ctx,
+      error = std::make_error_code(std::errc::not_enough_memory);
+      return {};
+    }
+#endif
+
+    if (EVP_DigestVerifyInit(ctx, nullptr, algorithm, nullptr, impl_.ref) == 1
+      && EVP_DigestVerifyUpdate(ctx, data, data_size) == 1)
+    {
+      valid_signature = EVP_DigestVerifyFinal(ctx,
         static_cast<uint8_t *>(const_cast<void *>(signature)),
         signature_size
       );
       success = true;
     }
 
-    EVP_MD_CTX_cleanup(&ctx);
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    EVP_MD_CTX_cleanup(ctx);
+#else
+    EVP_MD_CTX_free(ctx);
+#endif
   }
 
   if (success)

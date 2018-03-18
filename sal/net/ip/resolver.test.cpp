@@ -360,6 +360,14 @@ TYPED_TEST(net_ip_resolver, resolve_v4_host_localhost)
 
 TYPED_TEST(net_ip_resolver, resolve_v6_host_localhost)
 {
+#if __sal_os_linux
+  if (TestFixture::on_travis_ci)
+  {
+    // TODO: drop once Travis CI IPv6 localhost working again
+    return;
+  }
+#endif
+
   typename TypeParam::resolver_t resolver;
   auto results = resolver.resolve(TypeParam::v6(),
     "localhost",

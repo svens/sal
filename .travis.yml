@@ -1,5 +1,11 @@
 language: cpp
 
+group: travis_latest
+
+git:
+  # definitely using submodules but let buildsystem figure it out
+  submodules: false
+
 env:
   global:
     - COVERITY_SCAN_PROJECT_NAME="svens/sal"
@@ -15,22 +21,22 @@ matrix:
     - { os: linux, compiler: gcc, env: BUILD_TYPE=Release }
     - { os: linux, compiler: clang, env: BUILD_TYPE=Debug }
     - { os: linux, compiler: clang, env: BUILD_TYPE=Release }
-    - { os: osx, osx_image: xcode9.1, compiler: gcc, env: BUILD_TYPE=Debug }
-    - { os: osx, osx_image: xcode9.1, compiler: gcc, env: BUILD_TYPE=Release }
-    - { os: osx, osx_image: xcode9.1, compiler: clang, env: BUILD_TYPE=Debug }
-    - { os: osx, osx_image: xcode9.1, compiler: clang, env: BUILD_TYPE=Release }
-#    - { os: linux, compiler: gcc, env: BUILD_TYPE=Coverage }
+    - { os: osx, osx_image: xcode9.2, compiler: gcc, env: BUILD_TYPE=Debug }
+    - { os: osx, osx_image: xcode9.2, compiler: gcc, env: BUILD_TYPE=Release }
+    - { os: osx, osx_image: xcode9.2, compiler: clang, env: BUILD_TYPE=Debug }
+    - { os: osx, osx_image: xcode9.2, compiler: clang, env: BUILD_TYPE=Release }
+    - { os: linux, compiler: gcc, env: BUILD_TYPE=Coverage }
 #    - { os: linux, compiler: gcc, env: BUILD_TYPE=Coverity }
 
 addons:
   apt:
-    sources: [ ubuntu-toolchain-r-test, llvm-toolchain-trusty-5.0 ]
-    packages: [ clang-5.0, cmake, g++-7 ]
+    sources: ubuntu-toolchain-r-test
+    packages: g++-7
 
 before_install: |
   if test "${TRAVIS_OS_NAME}" = "linux"; then
-    # show addresses to find out when IPv6 will be fixed
-    ip addr show
+    # https://github.com/travis-ci/travis-ci/issues/8361#issuecomment-350497804
+    sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'
   fi
   if test "${BUILD_TYPE}" = "Coverity"; then
     if test "${TRAVIS_BRANCH}" != "${COVERITY_SCAN_BRANCH_PATTERN}"; then

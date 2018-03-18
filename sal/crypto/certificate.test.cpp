@@ -1526,24 +1526,21 @@ TEST_F(crypto_certificate, import_pkcs12) //{{{1
   auto pkcs12 = to_der(cert::pkcs12);
 
   std::error_code error;
-  std::vector<cert_t> chain;
   private_key_t private_key;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "TestPassword",
-    private_key, chain, error
+  auto chain = sal::crypto::import_pkcs12(pkcs12,
+    "TestPassword",
+    &private_key,
+    error
   );
   ASSERT_TRUE(!error) << error.message();
 
-  ASSERT_FALSE(!cert);
-  EXPECT_EQ(cert_t::from_pem(to_pem(cert::leaf)), cert);
-
-  EXPECT_FALSE(!private_key);
-
-  ASSERT_EQ(2U, chain.size());
-  EXPECT_EQ(cert_t::from_pem(to_pem(cert::intermediate)), chain[0]);
-  EXPECT_EQ(cert_t::from_pem(to_pem(cert::root)), chain[1]);
+  ASSERT_EQ(3U, chain.size());
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::leaf)), chain[0]);
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::intermediate)), chain[1]);
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::root)), chain[2]);
 
   EXPECT_NO_THROW(
-    sal::crypto::import_pkcs12(pkcs12, "TestPassword", private_key, chain)
+    sal::crypto::import_pkcs12(pkcs12, "TestPassword", &private_key)
   );
 }
 
@@ -1553,37 +1550,16 @@ TEST_F(crypto_certificate, import_pkcs12_without_private_key) //{{{1
   auto pkcs12 = to_der(cert::pkcs12);
 
   std::error_code error;
-  std::vector<cert_t> chain;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "TestPassword",
-    chain, error
-  );
+  auto chain = sal::crypto::import_pkcs12(pkcs12, "TestPassword", error);
   ASSERT_TRUE(!error) << error.message();
 
-  EXPECT_FALSE(!cert);
-  EXPECT_EQ(2U, chain.size());
+  ASSERT_EQ(3U, chain.size());
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::leaf)), chain[0]);
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::intermediate)), chain[1]);
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::root)), chain[2]);
 
   EXPECT_NO_THROW(
-    sal::crypto::import_pkcs12(pkcs12, "TestPassword", chain)
-  );
-}
-
-
-TEST_F(crypto_certificate, import_pkcs12_without_chain) //{{{1
-{
-  auto pkcs12 = to_der(cert::pkcs12);
-
-  std::error_code error;
-  private_key_t private_key;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "TestPassword",
-    private_key, error
-  );
-  ASSERT_TRUE(!error) << error.message();
-
-  EXPECT_FALSE(!cert);
-  EXPECT_FALSE(!private_key);
-
-  EXPECT_NO_THROW(
-    sal::crypto::import_pkcs12(pkcs12, "TestPassword", private_key)
+    sal::crypto::import_pkcs12(pkcs12, "TestPassword")
   );
 }
 
@@ -1593,8 +1569,8 @@ TEST_F(crypto_certificate, import_pkcs12_no_data) //{{{1
   std::vector<uint8_t> pkcs12;
 
   std::error_code error;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "TestPassword", error);
-  EXPECT_TRUE(!cert);
+  auto chain = sal::crypto::import_pkcs12(pkcs12, "TestPassword", error);
+  EXPECT_TRUE(chain.empty());
 
   ASSERT_FALSE(!error);
   EXPECT_NE(nullptr, error.category().name());
@@ -1613,9 +1589,9 @@ TEST_F(crypto_certificate, import_pkcs12_partial_data) //{{{1
   pkcs12.resize(pkcs12.size() / 2);
 
   std::error_code error;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "TestPassword", error);
+  auto chain = sal::crypto::import_pkcs12(pkcs12, "TestPassword", error);
   EXPECT_FALSE(!error);
-  EXPECT_TRUE(!cert);
+  EXPECT_TRUE(chain.empty());
 
   EXPECT_THROW(
     (void)sal::crypto::import_pkcs12(pkcs12, "TestPassword"),
@@ -1633,34 +1609,12 @@ TEST_F(crypto_certificate, import_pkcs12_invalid_data) //{{{1
   }
 
   std::error_code error;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "TestPassword", error);
+  auto chain = sal::crypto::import_pkcs12(pkcs12, "TestPassword", error);
   EXPECT_FALSE(!error);
-  EXPECT_TRUE(!cert);
-
-  EXPECT_THROW(
-    (void)sal::crypto::import_pkcs12(pkcs12, "TestPassword"),
-    std::system_error
-  );
-}
-
-
-TEST_F(crypto_certificate, import_pkcs12_too_long_chain) //{{{1
-{
-  auto pkcs12 = to_der(cert::too_long_chain);
-
-  std::error_code error;
-  std::vector<cert_t> chain;
-  private_key_t private_key;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "TestPassword",
-    private_key, chain, error
-  );
-  EXPECT_EQ(std::errc::result_out_of_range, error);
-  EXPECT_TRUE(!cert);
-  EXPECT_TRUE(!private_key);
   EXPECT_TRUE(chain.empty());
 
   EXPECT_THROW(
-    (void)sal::crypto::import_pkcs12(pkcs12, "TestPassword", chain),
+    (void)sal::crypto::import_pkcs12(pkcs12, "TestPassword"),
     std::system_error
   );
 }
@@ -1671,9 +1625,9 @@ TEST_F(crypto_certificate, import_pkcs12_no_passphrase) //{{{1
   auto pkcs12 = to_der(cert::pkcs12);
 
   std::error_code error;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "", error);
+  auto chain = sal::crypto::import_pkcs12(pkcs12, "", error);
   EXPECT_FALSE(!error);
-  EXPECT_TRUE(!cert);
+  EXPECT_TRUE(chain.empty());
 
   EXPECT_THROW(
     (void)sal::crypto::import_pkcs12(pkcs12, ""),
@@ -1685,25 +1639,25 @@ TEST_F(crypto_certificate, import_pkcs12_no_passphrase) //{{{1
 TEST_F(crypto_certificate, import_pkcs12_valid_no_passphrase) //{{{1
 {
 #if __sal_os_macos
+  // MacOS refuses to import PKCS12 with no passphrase
   return;
 #endif
 
   auto pkcs12 = to_der(cert::pkcs12_no_passphrase);
 
   std::error_code error;
-  std::vector<cert_t> chain;
   private_key_t private_key;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, "",
-    private_key, chain, error
-  );
+  auto chain = sal::crypto::import_pkcs12(pkcs12, "", &private_key, error);
   ASSERT_TRUE(!error) << error.message();
 
-  EXPECT_FALSE(!cert);
   EXPECT_FALSE(!private_key);
-  EXPECT_EQ(2U, chain.size());
+  ASSERT_EQ(3U, chain.size());
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::leaf)), chain[0]);
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::intermediate)), chain[1]);
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::root)), chain[2]);
 
   EXPECT_NO_THROW(
-    sal::crypto::import_pkcs12(pkcs12, "", private_key, chain)
+    sal::crypto::import_pkcs12(pkcs12, "", &private_key)
   );
 }
 
@@ -1713,9 +1667,9 @@ TEST_F(crypto_certificate, import_pkcs12_invalid_passphrase) //{{{1
   auto pkcs12 = to_der(cert::pkcs12);
 
   std::error_code error;
-  auto cert = sal::crypto::import_pkcs12(pkcs12, case_name, error);
+  auto chain = sal::crypto::import_pkcs12(pkcs12, case_name, error);
   EXPECT_FALSE(!error);
-  EXPECT_TRUE(!cert);
+  EXPECT_TRUE(chain.empty());
 
   EXPECT_THROW(
     (void)sal::crypto::import_pkcs12(pkcs12, case_name),

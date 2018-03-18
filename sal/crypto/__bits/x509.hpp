@@ -12,6 +12,7 @@
   #undef availability
 #elif __sal_os_linux //{{{1
   #include <openssl/evp.h>
+  #include <openssl/opensslv.h>
   #include <openssl/x509.h>
 #elif __sal_os_windows //{{{1
   #include <windows.h>

@@ -89,20 +89,22 @@ public:
 
 
   /**
-   * Import certificates from PKCS12 formatted blob [\a first, \a last).
-   * Return leaf certificate and inserts other possible certificates into
-   * \a chain (if not \c nullptr). Private key corresponding to leaf
-   * certificate is extracted using \a passphrase and assigned to
-   * \a private_key if not \c nullptr.
+   * Import and return all certificates from PKCS12 formatted blob [\a first,
+   * \a last). Private key corresponding to leaf certificate is extracted
+   * using \a passphrase and assigned to \a private_key if not \c nullptr.
+   *
+   * Returned certificates collection is ordered by issuer i.e. start with
+   * leaf and end with root (self signed issuer). If there are unrelated
+   * certificates imported, their order is not defined.
    *
    * On success, error is cleared. On failure returns null certificate and
    * sets \a error.
    */
-  static certificate_t import_pkcs12 (
-    const uint8_t *first, const uint8_t *last,
+  static std::vector<certificate_t> import_pkcs12 (
+    const uint8_t *first,
+    const uint8_t *last,
     const std::string &passphrase,
     private_key_t *private_key,
-    std::vector<certificate_t> *chain,
     std::error_code &error
   ) noexcept;
 
@@ -642,6 +644,26 @@ public:
   }
 
 
+  /**
+   * Return native handle.
+   * \internal
+   */
+  __bits::certificate_t native_handle () const noexcept
+  {
+    return impl_;
+  }
+
+
+  /**
+   * Create certificate from native handle
+   * \internal
+   */
+  static certificate_t from_native_handle (__bits::certificate_t &&that) noexcept
+  {
+    return {std::move(that)};
+  }
+
+
 private:
 
   __bits::certificate_t impl_{};
@@ -675,10 +697,9 @@ private:
  * \see certificate_t::import_pkcs12
  */
 template <typename Data>
-inline certificate_t import_pkcs12 (const Data &pkcs12,
+inline std::vector<certificate_t> import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
-  private_key_t &private_key,
-  std::vector<certificate_t> &chain,
+  private_key_t *private_key,
   std::error_code &error) noexcept
 {
   using std::cbegin;
@@ -691,8 +712,7 @@ inline certificate_t import_pkcs12 (const Data &pkcs12,
       to_ptr(first),
       to_end_ptr(first, last),
       passphrase,
-      &private_key,
-      &chain,
+      private_key,
       error
     );
   }
@@ -705,53 +725,9 @@ inline certificate_t import_pkcs12 (const Data &pkcs12,
  * \see certificate_t::import_pkcs12
  */
 template <typename Data>
-inline certificate_t import_pkcs12 (const Data &pkcs12,
+inline std::vector<certificate_t> import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
-  private_key_t &private_key,
-  std::vector<certificate_t> &chain)
-{
-  return import_pkcs12(pkcs12, passphrase, private_key, chain,
-    throw_on_error("import_pkcs12")
-  );
-}
-
-
-/**
- * \see certificate_t::import_pkcs12
- */
-template <typename Data>
-inline certificate_t import_pkcs12 (const Data &pkcs12,
-  const std::string &passphrase,
-  private_key_t &private_key,
-  std::error_code &error) noexcept
-{
-  using std::cbegin;
-  using std::cend;
-  auto first = cbegin(pkcs12);
-  auto last = cend(pkcs12);
-  if (first != last)
-  {
-    return certificate_t::import_pkcs12(
-      to_ptr(first),
-      to_end_ptr(first, last),
-      passphrase,
-      &private_key,
-      nullptr,
-      error
-    );
-  }
-  error = std::make_error_code(std::errc::invalid_argument);
-  return {};
-}
-
-
-/**
- * \see certificate_t::import_pkcs12
- */
-template <typename Data>
-inline certificate_t import_pkcs12 (const Data &pkcs12,
-  const std::string &passphrase,
-  private_key_t &private_key)
+  private_key_t *private_key)
 {
   return import_pkcs12(pkcs12, passphrase, private_key,
     throw_on_error("import_pkcs12")
@@ -763,50 +739,7 @@ inline certificate_t import_pkcs12 (const Data &pkcs12,
  * \see certificate_t::import_pkcs12
  */
 template <typename Data>
-inline certificate_t import_pkcs12 (const Data &pkcs12,
-  const std::string &passphrase,
-  std::vector<certificate_t> &chain,
-  std::error_code &error) noexcept
-{
-  using std::cbegin;
-  using std::cend;
-  auto first = cbegin(pkcs12);
-  auto last = cend(pkcs12);
-  if (first != last)
-  {
-    return certificate_t::import_pkcs12(
-      to_ptr(first),
-      to_end_ptr(first, last),
-      passphrase,
-      nullptr,
-      &chain,
-      error
-    );
-  }
-  error = std::make_error_code(std::errc::invalid_argument);
-  return {};
-}
-
-
-/**
- * \see certificate_t::import_pkcs12
- */
-template <typename Data>
-inline certificate_t import_pkcs12 (const Data &pkcs12,
-  const std::string &passphrase,
-  std::vector<certificate_t> &chain)
-{
-  return import_pkcs12(pkcs12, passphrase, chain,
-    throw_on_error("import_pkcs12")
-  );
-}
-
-
-/**
- * \see certificate_t::import_pkcs12
- */
-template <typename Data>
-inline certificate_t import_pkcs12 (const Data &pkcs12,
+inline std::vector<certificate_t> import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase,
   std::error_code &error) noexcept
 {
@@ -821,7 +754,6 @@ inline certificate_t import_pkcs12 (const Data &pkcs12,
       to_end_ptr(first, last),
       passphrase,
       nullptr,
-      nullptr,
       error
     );
   }
@@ -834,7 +766,7 @@ inline certificate_t import_pkcs12 (const Data &pkcs12,
  * \see certificate_t::import_pkcs12
  */
 template <typename Data>
-inline certificate_t import_pkcs12 (const Data &pkcs12,
+inline std::vector<certificate_t> import_pkcs12 (const Data &pkcs12,
   const std::string &passphrase)
 {
   return import_pkcs12(pkcs12, passphrase, throw_on_error("import_pkcs12"));
