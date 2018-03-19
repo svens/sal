@@ -33,6 +33,7 @@ var searchData=
   ['broadcast',['broadcast',['../classsal_1_1net_1_1ip_1_1address__v4__t.html#a1af9b253ec90706b3a0812d3d5707513',1,'sal::net::ip::address_v4_t::broadcast()'],['../namespacesal_1_1net.html#ae0ce50aba8c1a8fd2ec0019aaef1ceae',1,'sal::net::broadcast(bool value) noexcept -&gt; __bits::socket_option_setter_t&lt; SOL_SOCKET, SO_BROADCAST, bool &gt;'],['../namespacesal_1_1net.html#adcd672acee25553230447d976a8a50a5',1,'sal::net::broadcast(bool *value) noexcept -&gt; __bits::socket_option_getter_t&lt; SOL_SOCKET, SO_BROADCAST, bool &gt;']]],
   ['buf_5fptr',['buf_ptr',['../classsal_1_1buf__ptr.html',1,'sal::buf_ptr'],['../classsal_1_1buf__ptr.html#aff62d012591c57a5f0a617c187386fae',1,'sal::buf_ptr::buf_ptr()']]],
   ['buf_5fptr_2ehpp',['buf_ptr.hpp',['../buf__ptr_8hpp.html',1,'']]],
+  ['buffer_5fmanager_5ft',['buffer_manager_t',['../structsal_1_1crypto_1_1channel__t_1_1buffer__manager__t.html',1,'sal::crypto::channel_t']]],
   ['builtins_2ehpp',['builtins.hpp',['../builtins_8hpp.html',1,'']]],
   ['busy_5fspin',['busy_spin',['../spinlock_8hpp.html#a3d01b2592aa12667779996dee9661497',1,'sal']]],
   ['byte_5forder_2ehpp',['byte_order.hpp',['../byte__order_8hpp.html',1,'']]],

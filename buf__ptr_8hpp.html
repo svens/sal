@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.27.0</span>
+   &#160;<span id="projectnumber">0.28.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -98,7 +98,8 @@ $(document).ready(function(){initNavTree('buf__ptr_8hpp.html','');});
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">buf_ptr.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -259,6 +260,17 @@ template&lt;typename T , typename Traits , typename Allocator &gt; </td></tr>
 <tr class="memitem:a8d6056ebfa91b2ea7f0db5672fc2a002"><td class="memTemplItemLeft" align="right" valign="top">const_buf_ptr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a8d6056ebfa91b2ea7f0db5672fc2a002">sal::make_buf</a> (const std::basic_string&lt; T, Traits, Allocator &gt; &amp;data, size_t max_bytes) noexcept</td></tr>
 <tr class="memdesc:a8d6056ebfa91b2ea7f0db5672fc2a002"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <a class="el" href="classsal_1_1const__buf__ptr.html" title="const_buf_ptr represents contiguous region of raw memory with specified size. ">const_buf_ptr</a> using region owned by <em>data</em> but not more than <em>max_bytes</em>. <br /></td></tr>
 <tr class="separator:a8d6056ebfa91b2ea7f0db5672fc2a002"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a94f2363bbef7ca49ac13445a8f3193e5"><td class="memItemLeft" align="right" valign="top"><a id="a94f2363bbef7ca49ac13445a8f3193e5"></a>
+const buf_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#a94f2363bbef7ca49ac13445a8f3193e5">sal::null_buf</a></td></tr>
+<tr class="memdesc:a94f2363bbef7ca49ac13445a8f3193e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nullptr <a class="el" href="classsal_1_1buf__ptr.html" title="buf_ptr represents contiguous region of raw memory with specified size. ">buf_ptr</a> with no size. <br /></td></tr>
+<tr class="separator:a94f2363bbef7ca49ac13445a8f3193e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd7c224497d994ce1f6f909c4b395027"><td class="memItemLeft" align="right" valign="top"><a id="afd7c224497d994ce1f6f909c4b395027"></a>
+const const_buf_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buf__ptr_8hpp.html#afd7c224497d994ce1f6f909c4b395027">sal::const_null_buf</a></td></tr>
+<tr class="memdesc:afd7c224497d994ce1f6f909c4b395027"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nullptr <a class="el" href="classsal_1_1const__buf__ptr.html" title="const_buf_ptr represents contiguous region of raw memory with specified size. ">const_buf_ptr</a> with no size. <br /></td></tr>
+<tr class="separator:afd7c224497d994ce1f6f909c4b395027"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="file_a06a600c3f5c40be60f3fad4f793b835c"></a>

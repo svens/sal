@@ -11,7 +11,7 @@ var indexSectionsWithContent =
   8: "deioru",
   9: "mos",
   10: "s",
-  11: "lop",
+  11: "clop",
   12: "lnost"
 };
 

@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.27.0</span>
+   &#160;<span id="projectnumber">0.28.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -100,7 +100,8 @@ $(document).ready(function(){initNavTree('namespacesal_1_1crypto.html','');});
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">sal::crypto Namespace Reference</div>  </div>
 </div><!--header-->
@@ -114,11 +115,32 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for platform's native public key certificate.  <a href="classsal_1_1crypto_1_1certificate__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1crypto_1_1chain__check__t.html">chain_check_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Channel factory option to switch to manual certificate chain check instead of OS's own check.  <a href="structsal_1_1crypto_1_1chain__check__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1crypto_1_1channel__factory__option__t.html">channel_factory_option_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class for channel factory options.  <a href="structsal_1_1crypto_1_1channel__factory__option__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1channel__factory__t.html">channel_factory_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Factory class for creating new secure <a class="el" href="classsal_1_1crypto_1_1channel__t.html" title="Secure encrypted two-way communication channel using TLS or DTLS. ">channel_t</a>.  <a href="classsal_1_1crypto_1_1channel__factory__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1crypto_1_1channel__option__t.html">channel_option_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class for channel options.  <a href="structsal_1_1crypto_1_1channel__option__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1channel__t.html">channel_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Secure encrypted two-way communication channel using TLS or DTLS.  <a href="classsal_1_1crypto_1_1channel__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hash__t.html">hash_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One way <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic hashing</a> using <em>Algorithm</em>.  <a href="classsal_1_1crypto_1_1hash__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1hmac__t.html">hmac_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keyed-hash message authentication code (<a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">HMAC</a>) using <em>Algorithm</em>.  <a href="classsal_1_1crypto_1_1hmac__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1crypto_1_1mutual__auth__t.html">mutual_auth_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutual authentication option class.  <a href="structsal_1_1crypto_1_1mutual__auth__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1crypto_1_1peer__name__t.html">peer_name_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remote peer name to check when connecting (or accepting with mutual authentication requirement)  <a href="structsal_1_1crypto_1_1peer__name__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private key portion of asymmetric key pair.  <a href="classsal_1_1crypto_1_1private__key__t.html#details">More...</a><br /></td></tr>
@@ -126,9 +148,31 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html">public_key_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Public key portion of asymmetric key pair.  <a href="classsal_1_1crypto_1_1public__key__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1crypto_1_1with__chain__t.html">with_chain_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Channel factory option for configuring used certificate chain.  <a href="structsal_1_1crypto_1_1with__chain__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1crypto_1_1with__private__key__t.html">with_private_key_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private key to secure new channels.  <a href="structsal_1_1crypto_1_1with__private__key__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:aae89fd868e8f6b9285b4b8b1ee6b5581"><td class="memItemLeft" align="right" valign="top"><a id="aae89fd868e8f6b9285b4b8b1ee6b5581"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#aae89fd868e8f6b9285b4b8b1ee6b5581">stream_client_channel_factory_t</a> = <a class="el" href="classsal_1_1crypto_1_1channel__factory__t.html">channel_factory_t</a>&lt; false, false &gt;</td></tr>
+<tr class="memdesc:aae89fd868e8f6b9285b4b8b1ee6b5581"><td class="mdescLeft">&#160;</td><td class="mdescRight">TLS client side channel factory. <br /></td></tr>
+<tr class="separator:aae89fd868e8f6b9285b4b8b1ee6b5581"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b9667d2d7e4a40b4eb1b4fcbb4b152d"><td class="memItemLeft" align="right" valign="top"><a id="a3b9667d2d7e4a40b4eb1b4fcbb4b152d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a3b9667d2d7e4a40b4eb1b4fcbb4b152d">stream_server_channel_factory_t</a> = <a class="el" href="classsal_1_1crypto_1_1channel__factory__t.html">channel_factory_t</a>&lt; false, true &gt;</td></tr>
+<tr class="memdesc:a3b9667d2d7e4a40b4eb1b4fcbb4b152d"><td class="mdescLeft">&#160;</td><td class="mdescRight">TLS server side channel factory. <br /></td></tr>
+<tr class="separator:a3b9667d2d7e4a40b4eb1b4fcbb4b152d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c67ae37937f9bbf5238085fae660622"><td class="memItemLeft" align="right" valign="top"><a id="a3c67ae37937f9bbf5238085fae660622"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a3c67ae37937f9bbf5238085fae660622">datagram_client_channel_factory_t</a> = <a class="el" href="classsal_1_1crypto_1_1channel__factory__t.html">channel_factory_t</a>&lt; true, false &gt;</td></tr>
+<tr class="memdesc:a3c67ae37937f9bbf5238085fae660622"><td class="mdescLeft">&#160;</td><td class="mdescRight">DTLS client side channel factory. <br /></td></tr>
+<tr class="separator:a3c67ae37937f9bbf5238085fae660622"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afde841f6a487838c8792ee08896f44e5"><td class="memItemLeft" align="right" valign="top"><a id="afde841f6a487838c8792ee08896f44e5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#afde841f6a487838c8792ee08896f44e5">datagram_server_channel_factory_t</a> = <a class="el" href="classsal_1_1crypto_1_1channel__factory__t.html">channel_factory_t</a>&lt; true, true &gt;</td></tr>
+<tr class="memdesc:afde841f6a487838c8792ee08896f44e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">DTLS server side channel factory. <br /></td></tr>
+<tr class="separator:afde841f6a487838c8792ee08896f44e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05ada56ee3317cbb60e4febf4c5a6437"><td class="memItemLeft" align="right" valign="top"><a id="a05ada56ee3317cbb60e4febf4c5a6437"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a05ada56ee3317cbb60e4febf4c5a6437">oid_t</a> = std::string</td></tr>
 <tr class="memdesc:a05ada56ee3317cbb60e4febf4c5a6437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Textual OID representation. <br /></td></tr>
@@ -159,30 +203,18 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a20b19aaf1d3c2acf058c2043e51d8df7"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
-<tr class="memitem:a20b19aaf1d3c2acf058c2043e51d8df7"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a20b19aaf1d3c2acf058c2043e51d8df7">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> &amp;private_key, std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; &amp;chain, std::error_code &amp;error) noexcept</td></tr>
-<tr class="separator:a20b19aaf1d3c2acf058c2043e51d8df7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11c8744d7fdfe3334db633de4e786b9f"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
-<tr class="memitem:a11c8744d7fdfe3334db633de4e786b9f"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a11c8744d7fdfe3334db633de4e786b9f">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> &amp;private_key, std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; &amp;chain)</td></tr>
-<tr class="separator:a11c8744d7fdfe3334db633de4e786b9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab0482e82b89a238ff533b3610042b820"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
-<tr class="memitem:ab0482e82b89a238ff533b3610042b820"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#ab0482e82b89a238ff533b3610042b820">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> &amp;private_key, std::error_code &amp;error) noexcept</td></tr>
-<tr class="separator:ab0482e82b89a238ff533b3610042b820"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a81cccef4b1ecc59e7ed14c5c70166a20"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
-<tr class="memitem:a81cccef4b1ecc59e7ed14c5c70166a20"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a81cccef4b1ecc59e7ed14c5c70166a20">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> &amp;private_key)</td></tr>
-<tr class="separator:a81cccef4b1ecc59e7ed14c5c70166a20"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b1d5f4407979298c0dd92ed2d3c4a92"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
-<tr class="memitem:a5b1d5f4407979298c0dd92ed2d3c4a92"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a5b1d5f4407979298c0dd92ed2d3c4a92">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; &amp;chain, std::error_code &amp;error) noexcept</td></tr>
-<tr class="separator:a5b1d5f4407979298c0dd92ed2d3c4a92"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1dacb4f70b5c3abb237f7b4927f87ccc"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
-<tr class="memitem:a1dacb4f70b5c3abb237f7b4927f87ccc"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a1dacb4f70b5c3abb237f7b4927f87ccc">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; &amp;chain)</td></tr>
-<tr class="separator:a1dacb4f70b5c3abb237f7b4927f87ccc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf85ee70ff2b24b0e9b5318799f63e53"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
-<tr class="memitem:aaf85ee70ff2b24b0e9b5318799f63e53"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#aaf85ee70ff2b24b0e9b5318799f63e53">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, std::error_code &amp;error) noexcept</td></tr>
-<tr class="separator:aaf85ee70ff2b24b0e9b5318799f63e53"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a025d0b7933ae8c186382c932a64c6571"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
-<tr class="memitem:a025d0b7933ae8c186382c932a64c6571"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a025d0b7933ae8c186382c932a64c6571">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase)</td></tr>
-<tr class="separator:a025d0b7933ae8c186382c932a64c6571"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a260557467232385397d640d14a74d14c"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:a260557467232385397d640d14a74d14c"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a260557467232385397d640d14a74d14c">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> *private_key, std::error_code &amp;error) noexcept</td></tr>
+<tr class="separator:a260557467232385397d640d14a74d14c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5842a8d7bac2caec3967ac3b8e818879"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:a5842a8d7bac2caec3967ac3b8e818879"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a5842a8d7bac2caec3967ac3b8e818879">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> *private_key)</td></tr>
+<tr class="separator:a5842a8d7bac2caec3967ac3b8e818879"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80bc8e13b807be7b7723254bf830ff07"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:a80bc8e13b807be7b7723254bf830ff07"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a80bc8e13b807be7b7723254bf830ff07">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase, std::error_code &amp;error) noexcept</td></tr>
+<tr class="separator:a80bc8e13b807be7b7723254bf830ff07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c2f15702667a0648035de1c348b8f50"><td class="memTemplParams" colspan="2">template&lt;typename Data &gt; </td></tr>
+<tr class="memitem:a2c2f15702667a0648035de1c348b8f50"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a2c2f15702667a0648035de1c348b8f50">import_pkcs12</a> (const Data &amp;pkcs12, const std::string &amp;passphrase)</td></tr>
+<tr class="separator:a2c2f15702667a0648035de1c348b8f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ffc69c2081d2000b1372af3bd78c910"><td class="memItemLeft" align="right" valign="top"><a id="a7ffc69c2081d2000b1372af3bd78c910"></a>
 <a class="el" href="classsal_1_1memory__writer__t.html">memory_writer_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a7ffc69c2081d2000b1372af3bd78c910">operator&lt;&lt;</a> (<a class="el" href="classsal_1_1memory__writer__t.html">memory_writer_t</a> &amp;writer, const <a class="el" href="structsal_1_1crypto_1_1certificate__t_1_1distinguished__name__format__t.html">certificate_t::distinguished_name_format_t</a> &amp;rdn)</td></tr>
 <tr class="memdesc:a7ffc69c2081d2000b1372af3bd78c910"><td class="mdescLeft">&#160;</td><td class="mdescRight">Format certificate's distinguished names list in <em>rdn</em> into memory <em>writer</em>. <br /></td></tr>
@@ -199,6 +231,47 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="
 std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#aaa463d552a36574d4b42743baba9633b">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;certificate)</td></tr>
 <tr class="memdesc:aaa463d552a36574d4b42743baba9633b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Format certificate's subject distinguished names list in <em>rdn</em> into stream <em>os</em>. <br /></td></tr>
 <tr class="separator:aaa463d552a36574d4b42743baba9633b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bb316d54a6903bf3ff0e34e4d054b23"><td class="memTemplParams" colspan="2"><a id="a7bb316d54a6903bf3ff0e34e4d054b23"></a>
+template&lt;typename... Option&gt; </td></tr>
+<tr class="memitem:a7bb316d54a6903bf3ff0e34e4d054b23"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacesal_1_1crypto.html#aae89fd868e8f6b9285b4b8b1ee6b5581">stream_client_channel_factory_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a7bb316d54a6903bf3ff0e34e4d054b23">stream_client_channel_factory</a> (const <a class="el" href="structsal_1_1crypto_1_1channel__factory__option__t.html">channel_factory_option_t</a>&lt; Option &gt; &amp;...options)</td></tr>
+<tr class="memdesc:a7bb316d54a6903bf3ff0e34e4d054b23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct and return new TLS client side channel factory using <em>options</em>. <br /></td></tr>
+<tr class="separator:a7bb316d54a6903bf3ff0e34e4d054b23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39faa4b27ac2948327573428adf48cb8"><td class="memTemplParams" colspan="2"><a id="a39faa4b27ac2948327573428adf48cb8"></a>
+template&lt;typename... Option&gt; </td></tr>
+<tr class="memitem:a39faa4b27ac2948327573428adf48cb8"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacesal_1_1crypto.html#a3b9667d2d7e4a40b4eb1b4fcbb4b152d">stream_server_channel_factory_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a39faa4b27ac2948327573428adf48cb8">stream_server_channel_factory</a> (const <a class="el" href="structsal_1_1crypto_1_1channel__factory__option__t.html">channel_factory_option_t</a>&lt; Option &gt; &amp;...options)</td></tr>
+<tr class="memdesc:a39faa4b27ac2948327573428adf48cb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct and return new TLS server side channel factory using <em>options</em>. <br /></td></tr>
+<tr class="separator:a39faa4b27ac2948327573428adf48cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a550a3957e01dec11b8ad73dea39fa142"><td class="memTemplParams" colspan="2"><a id="a550a3957e01dec11b8ad73dea39fa142"></a>
+template&lt;typename... Option&gt; </td></tr>
+<tr class="memitem:a550a3957e01dec11b8ad73dea39fa142"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacesal_1_1crypto.html#a3c67ae37937f9bbf5238085fae660622">datagram_client_channel_factory_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a550a3957e01dec11b8ad73dea39fa142">datagram_client_channel_factory</a> (const <a class="el" href="structsal_1_1crypto_1_1channel__factory__option__t.html">channel_factory_option_t</a>&lt; Option &gt; &amp;...options)</td></tr>
+<tr class="memdesc:a550a3957e01dec11b8ad73dea39fa142"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct and return new DTLS client side channel factory using <em>options</em>. <br /></td></tr>
+<tr class="separator:a550a3957e01dec11b8ad73dea39fa142"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af078c1d20be2bd358a336ee9a4c3daf8"><td class="memTemplParams" colspan="2"><a id="af078c1d20be2bd358a336ee9a4c3daf8"></a>
+template&lt;typename... Option&gt; </td></tr>
+<tr class="memitem:af078c1d20be2bd358a336ee9a4c3daf8"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacesal_1_1crypto.html#afde841f6a487838c8792ee08896f44e5">datagram_server_channel_factory_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#af078c1d20be2bd358a336ee9a4c3daf8">datagram_server_channel_factory</a> (const <a class="el" href="structsal_1_1crypto_1_1channel__factory__option__t.html">channel_factory_option_t</a>&lt; Option &gt; &amp;...options)</td></tr>
+<tr class="memdesc:af078c1d20be2bd358a336ee9a4c3daf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct and return new DTLS server side channel factory using <em>options</em>. <br /></td></tr>
+<tr class="separator:af078c1d20be2bd358a336ee9a4c3daf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5ff13de34495b54890aefc15c170e51d"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="structsal_1_1crypto_1_1peer__name__t.html">peer_name_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__channel__options.html#ga5ff13de34495b54890aefc15c170e51d">peer_name</a> (std::string name)</td></tr>
+<tr class="memdesc:ga5ff13de34495b54890aefc15c170e51d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create peer <em>name</em> channel option instance. <br /></td></tr>
+<tr class="separator:ga5ff13de34495b54890aefc15c170e51d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ee7eedbd992d5485e78ca909b009520"><td class="memItemLeft" align="right" valign="top"><a id="a7ee7eedbd992d5485e78ca909b009520"></a>
+<a class="el" href="structsal_1_1crypto_1_1with__chain__t.html">with_chain_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a7ee7eedbd992d5485e78ca909b009520">with_certificate</a> (const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;certificate) noexcept</td></tr>
+<tr class="memdesc:a7ee7eedbd992d5485e78ca909b009520"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use single <em>certificate</em> during handshake. <br /></td></tr>
+<tr class="separator:a7ee7eedbd992d5485e78ca909b009520"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcd132e77876caf4ecd9b2e9375a87fa"><td class="memItemLeft" align="right" valign="top"><a id="abcd132e77876caf4ecd9b2e9375a87fa"></a>
+<a class="el" href="structsal_1_1crypto_1_1with__chain__t.html">with_chain_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#abcd132e77876caf4ecd9b2e9375a87fa">with_chain</a> (std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; chain) noexcept</td></tr>
+<tr class="memdesc:abcd132e77876caf4ecd9b2e9375a87fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use <em>chain</em> during handshake. <br /></td></tr>
+<tr class="separator:abcd132e77876caf4ecd9b2e9375a87fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a635c299848091a4ea40335e15f30fa21"><td class="memItemLeft" align="right" valign="top"><a id="a635c299848091a4ea40335e15f30fa21"></a>
+<a class="el" href="structsal_1_1crypto_1_1with__private__key__t.html">with_private_key_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a635c299848091a4ea40335e15f30fa21">with_private_key</a> (const <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> *private_key) noexcept</td></tr>
+<tr class="memdesc:a635c299848091a4ea40335e15f30fa21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return private key channel factory option with <em>private_key</em>. <br /></td></tr>
+<tr class="separator:a635c299848091a4ea40335e15f30fa21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ff1cb89d64f89684277aff9d7164eb3"><td class="memTemplParams" colspan="2"><a id="a4ff1cb89d64f89684277aff9d7164eb3"></a>
+template&lt;typename Check &gt; </td></tr>
+<tr class="memitem:a4ff1cb89d64f89684277aff9d7164eb3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structsal_1_1crypto_1_1chain__check__t.html">chain_check_t</a>&lt; Check &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a4ff1cb89d64f89684277aff9d7164eb3">chain_check</a> (Check check) noexcept</td></tr>
+<tr class="memdesc:a4ff1cb89d64f89684277aff9d7164eb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return instance of channel factory option to <em>check</em> peer's chain. <br /></td></tr>
+<tr class="separator:a4ff1cb89d64f89684277aff9d7164eb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05c92afd9e162edf82c54ad93b01da5c"><td class="memItemLeft" align="right" valign="top">const std::error_category &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a05c92afd9e162edf82c54ad93b01da5c">category</a> () noexcept</td></tr>
 <tr class="memdesc:a05c92afd9e162edf82c54ad93b01da5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return reference to cryptography errors category.  <a href="#a05c92afd9e162edf82c54ad93b01da5c">More...</a><br /></td></tr>
 <tr class="separator:a05c92afd9e162edf82c54ad93b01da5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -215,6 +288,20 @@ template&lt;typename Data &gt; </td></tr>
 <tr class="memitem:a05aa6ad00796312e52fbcb3c0ced40f4"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a05aa6ad00796312e52fbcb3c0ced40f4">random</a> (Data &amp;data)</td></tr>
 <tr class="memdesc:a05aa6ad00796312e52fbcb3c0ced40f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill <em>data</em> with cryptographically strong random bytes suitable for cryptographic keys, nonces, etc. <br /></td></tr>
 <tr class="separator:a05aa6ad00796312e52fbcb3c0ced40f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ga093d259c63653f6c7b617bb5667d47f1"><td class="memItemLeft" align="right" valign="top">
+constexpr const <a class="el" href="structsal_1_1crypto_1_1mutual__auth__t.html">mutual_auth_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__channel__options.html#ga093d259c63653f6c7b617bb5667d47f1">mutual_auth</a> {true}</td></tr>
+<tr class="memdesc:ga093d259c63653f6c7b617bb5667d47f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Require mutual authentication. <br /></td></tr>
+<tr class="separator:ga093d259c63653f6c7b617bb5667d47f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6bbb229fb0881a57ca13eb8262c1c000"><td class="memItemLeft" align="right" valign="top">
+constexpr const <a class="el" href="structsal_1_1crypto_1_1mutual__auth__t.html">mutual_auth_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__channel__options.html#ga6bbb229fb0881a57ca13eb8262c1c000">no_mutual_auth</a> {false}</td></tr>
+<tr class="memdesc:ga6bbb229fb0881a57ca13eb8262c1c000"><td class="mdescLeft">&#160;</td><td class="mdescRight">Do not require mutual authentication. <br /></td></tr>
+<tr class="separator:ga6bbb229fb0881a57ca13eb8262c1c000"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7d33364e162f8a687f9008b6c6cc22a"><td class="memItemLeft" align="right" valign="top">const auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#aa7d33364e162f8a687f9008b6c6cc22a">no_chain_check</a></td></tr>
+<tr class="memdesc:aa7d33364e162f8a687f9008b6c6cc22a"><td class="mdescLeft">&#160;</td><td class="mdescRight">No-op peer chain checker that trusts any presented certificate chain.  <a href="#aa7d33364e162f8a687f9008b6c6cc22a">More...</a><br /></td></tr>
+<tr class="separator:aa7d33364e162f8a687f9008b6c6cc22a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Cryptography primitives. </p>
@@ -323,8 +410,8 @@ template&lt;typename Data &gt; </td></tr>
 
 </div>
 </div>
-<a id="a20b19aaf1d3c2acf058c2043e51d8df7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20b19aaf1d3c2acf058c2043e51d8df7">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[1/8]</span></h2>
+<a id="a260557467232385397d640d14a74d14c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a260557467232385397d640d14a74d14c">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -335,7 +422,7 @@ template&lt;typename Data &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::import_pkcs12 </td>
+          <td class="memname">std::vector&lt;<a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&gt; sal::crypto::import_pkcs12 </td>
           <td>(</td>
           <td class="paramtype">const Data &amp;&#160;</td>
           <td class="paramname"><em>pkcs12</em>, </td>
@@ -349,115 +436,7 @@ template&lt;typename Data &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> &amp;&#160;</td>
-          <td class="paramname"><em>private_key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>chain</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::error_code &amp;&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6" title="Import certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
-
-</div>
-</div>
-<a id="a11c8744d7fdfe3334db633de4e786b9f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a11c8744d7fdfe3334db633de4e786b9f">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[2/8]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Data &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::import_pkcs12 </td>
-          <td>(</td>
-          <td class="paramtype">const Data &amp;&#160;</td>
-          <td class="paramname"><em>pkcs12</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>passphrase</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> &amp;&#160;</td>
-          <td class="paramname"><em>private_key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>chain</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6" title="Import certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
-
-</div>
-</div>
-<a id="ab0482e82b89a238ff533b3610042b820"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab0482e82b89a238ff533b3610042b820">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[3/8]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Data &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::import_pkcs12 </td>
-          <td>(</td>
-          <td class="paramtype">const Data &amp;&#160;</td>
-          <td class="paramname"><em>pkcs12</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>passphrase</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> *&#160;</td>
           <td class="paramname"><em>private_key</em>, </td>
         </tr>
         <tr>
@@ -478,12 +457,12 @@ template&lt;typename Data &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6" title="Import certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a0a67fb9390c361ae31a8f5f700b6aa6e" title="Import and return all certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
 
 </div>
 </div>
-<a id="a81cccef4b1ecc59e7ed14c5c70166a20"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a81cccef4b1ecc59e7ed14c5c70166a20">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[4/8]</span></h2>
+<a id="a5842a8d7bac2caec3967ac3b8e818879"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5842a8d7bac2caec3967ac3b8e818879">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -494,7 +473,7 @@ template&lt;typename Data &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::import_pkcs12 </td>
+          <td class="memname">std::vector&lt;<a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&gt; sal::crypto::import_pkcs12 </td>
           <td>(</td>
           <td class="paramtype">const Data &amp;&#160;</td>
           <td class="paramname"><em>pkcs12</em>, </td>
@@ -508,7 +487,7 @@ template&lt;typename Data &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> *&#160;</td>
           <td class="paramname"><em>private_key</em>&#160;</td>
         </tr>
         <tr>
@@ -523,63 +502,12 @@ template&lt;typename Data &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6" title="Import certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a0a67fb9390c361ae31a8f5f700b6aa6e" title="Import and return all certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
 
 </div>
 </div>
-<a id="a5b1d5f4407979298c0dd92ed2d3c4a92"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5b1d5f4407979298c0dd92ed2d3c4a92">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[5/8]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Data &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::import_pkcs12 </td>
-          <td>(</td>
-          <td class="paramtype">const Data &amp;&#160;</td>
-          <td class="paramname"><em>pkcs12</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>passphrase</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>chain</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::error_code &amp;&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6" title="Import certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
-
-</div>
-</div>
-<a id="a1dacb4f70b5c3abb237f7b4927f87ccc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1dacb4f70b5c3abb237f7b4927f87ccc">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[6/8]</span></h2>
+<a id="a80bc8e13b807be7b7723254bf830ff07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80bc8e13b807be7b7723254bf830ff07">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -590,52 +518,7 @@ template&lt;typename Data &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::import_pkcs12 </td>
-          <td>(</td>
-          <td class="paramtype">const Data &amp;&#160;</td>
-          <td class="paramname"><em>pkcs12</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>passphrase</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>chain</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6" title="Import certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
-
-</div>
-</div>
-<a id="aaf85ee70ff2b24b0e9b5318799f63e53"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaf85ee70ff2b24b0e9b5318799f63e53">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[7/8]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Data &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::import_pkcs12 </td>
+          <td class="memname">std::vector&lt;<a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&gt; sal::crypto::import_pkcs12 </td>
           <td>(</td>
           <td class="paramtype">const Data &amp;&#160;</td>
           <td class="paramname"><em>pkcs12</em>, </td>
@@ -664,12 +547,12 @@ template&lt;typename Data &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6" title="Import certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a0a67fb9390c361ae31a8f5f700b6aa6e" title="Import and return all certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
 
 </div>
 </div>
-<a id="a025d0b7933ae8c186382c932a64c6571"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a025d0b7933ae8c186382c932a64c6571">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[8/8]</span></h2>
+<a id="a2c2f15702667a0648035de1c348b8f50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c2f15702667a0648035de1c348b8f50">&#9670;&nbsp;</a></span>import_pkcs12() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -680,7 +563,7 @@ template&lt;typename Data &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::import_pkcs12 </td>
+          <td class="memname">std::vector&lt;<a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&gt; sal::crypto::import_pkcs12 </td>
           <td>(</td>
           <td class="paramtype">const Data &amp;&#160;</td>
           <td class="paramname"><em>pkcs12</em>, </td>
@@ -703,7 +586,34 @@ template&lt;typename Data &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6" title="Import certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a0a67fb9390c361ae31a8f5f700b6aa6e" title="Import and return all certificates from PKCS12 formatted blob [first, last). ">certificate_t::import_pkcs12</a> </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="aa7d33364e162f8a687f9008b6c6cc22a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7d33364e162f8a687f9008b6c6cc22a">&#9670;&nbsp;</a></span>no_chain_check</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const auto sal::crypto::no_chain_check</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= <a class="code" href="namespacesal_1_1crypto.html#a4ff1cb89d64f89684277aff9d7164eb3">chain_check</a>(</div><div class="line">  [](<span class="keyword">const</span> std::vector&lt;certificate_t&gt; &amp;) noexcept</div><div class="line">  {</div><div class="line">    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div><div class="line">  }</div><div class="line">)</div><div class="ttc" id="namespacesal_1_1crypto_html_a4ff1cb89d64f89684277aff9d7164eb3"><div class="ttname"><a href="namespacesal_1_1crypto.html#a4ff1cb89d64f89684277aff9d7164eb3">sal::crypto::chain_check</a></div><div class="ttdeci">chain_check_t&lt; Check &gt; chain_check(Check check) noexcept</div><div class="ttdoc">Return instance of channel factory option to check peer&amp;#39;s chain. </div><div class="ttdef"><b>Definition:</b> channel_options.hpp:216</div></div>
+</div><!-- fragment -->
+<p>No-op peer chain checker that trusts any presented certificate chain. </p>
+<dl class="section warning"><dt>Warning</dt><dd>Do not use it unless testing. </dd></dl>
 
 </div>
 </div>

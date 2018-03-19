@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.27.0</span>
+   &#160;<span id="projectnumber">0.28.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -295,12 +295,16 @@ template&lt;class Rep , class Period &gt; </td></tr>
 <tr class="memitem:a22426d325689819eb94200cb4ea57b31"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1crypto_1_1public__key__t.html">public_key_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a22426d325689819eb94200cb4ea57b31">public_key</a> () const</td></tr>
 <tr class="memdesc:a22426d325689819eb94200cb4ea57b31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns certificate's public key.  <a href="#a22426d325689819eb94200cb4ea57b31">More...</a><br /></td></tr>
 <tr class="separator:a22426d325689819eb94200cb4ea57b31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a2dd5b075ecf6cc0dfa54a6c7af099a"><td class="memItemLeft" align="right" valign="top"><a id="a2a2dd5b075ecf6cc0dfa54a6c7af099a"></a>
+__bits::certificate_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a2dd5b075ecf6cc0dfa54a6c7af099a">native_handle</a> () const noexcept</td></tr>
+<tr class="memdesc:a2a2dd5b075ecf6cc0dfa54a6c7af099a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return native handle. <br /></td></tr>
+<tr class="separator:a2a2dd5b075ecf6cc0dfa54a6c7af099a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a2a6197a754c4402f9448c2f08ec2fad6"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2a6197a754c4402f9448c2f08ec2fad6">import_pkcs12</a> (const uint8_t *first, const uint8_t *last, const std::string &amp;passphrase, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> *private_key, std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; *chain, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a2a6197a754c4402f9448c2f08ec2fad6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Import certificates from PKCS12 formatted blob [<em>first</em>, <em>last</em>).  <a href="#a2a6197a754c4402f9448c2f08ec2fad6">More...</a><br /></td></tr>
-<tr class="separator:a2a6197a754c4402f9448c2f08ec2fad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a67fb9390c361ae31a8f5f700b6aa6e"><td class="memItemLeft" align="right" valign="top">static std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a0a67fb9390c361ae31a8f5f700b6aa6e">import_pkcs12</a> (const uint8_t *first, const uint8_t *last, const std::string &amp;passphrase, <a class="el" href="classsal_1_1crypto_1_1private__key__t.html">private_key_t</a> *private_key, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a0a67fb9390c361ae31a8f5f700b6aa6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Import and return all certificates from PKCS12 formatted blob [<em>first</em>, <em>last</em>).  <a href="#a0a67fb9390c361ae31a8f5f700b6aa6e">More...</a><br /></td></tr>
+<tr class="separator:a0a67fb9390c361ae31a8f5f700b6aa6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90b150dac78e462674f22ec8a042221b"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a90b150dac78e462674f22ec8a042221b">from_der</a> (const uint8_t *first, const uint8_t *last, std::error_code &amp;error) noexcept</td></tr>
 <tr class="memdesc:a90b150dac78e462674f22ec8a042221b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and construct new certificate from DER encoded blob in [<em>first</em>, <em>last</em>).  <a href="#a90b150dac78e462674f22ec8a042221b">More...</a><br /></td></tr>
 <tr class="separator:a90b150dac78e462674f22ec8a042221b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -327,6 +331,10 @@ Static Public Member Functions</h2></td></tr>
 static <a class="el" href="structsal_1_1crypto_1_1certificate__t_1_1distinguished__name__format__t.html">distinguished_name_format_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#ade5ac34373a06f1a0256179e210ffd83">format</a> (const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a6cff54f2e04894a7b47dbbbc21eb2e32">distinguished_name_t</a> &amp;rdn, const std::string &amp;assign=&quot;=&quot;, const std::string &amp;separator=&quot;; &quot;) noexcept</td></tr>
 <tr class="memdesc:ade5ac34373a06f1a0256179e210ffd83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience method to create distinguished names list formatter. <br /></td></tr>
 <tr class="separator:ade5ac34373a06f1a0256179e210ffd83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d2256ce05355d6a6120057e4dd1b8ae"><td class="memItemLeft" align="right" valign="top"><a id="a8d2256ce05355d6a6120057e4dd1b8ae"></a>
+static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a8d2256ce05355d6a6120057e4dd1b8ae">from_native_handle</a> (__bits::certificate_t &amp;&amp;that) noexcept</td></tr>
+<tr class="memdesc:a8d2256ce05355d6a6120057e4dd1b8ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create certificate from native handle. <br /></td></tr>
+<tr class="separator:a8d2256ce05355d6a6120057e4dd1b8ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Wrapper for platform's native public key certificate. </p>
@@ -733,8 +741,8 @@ template&lt;typename Data &gt; </div>
 
 </div>
 </div>
-<a id="a2a6197a754c4402f9448c2f08ec2fad6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a6197a754c4402f9448c2f08ec2fad6">&#9670;&nbsp;</a></span>import_pkcs12()</h2>
+<a id="a0a67fb9390c361ae31a8f5f700b6aa6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a67fb9390c361ae31a8f5f700b6aa6e">&#9670;&nbsp;</a></span>import_pkcs12()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -743,7 +751,7 @@ template&lt;typename Data &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::certificate_t::import_pkcs12 </td>
+          <td class="memname">static std::vector&lt;<a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&gt; sal::crypto::certificate_t::import_pkcs12 </td>
           <td>(</td>
           <td class="paramtype">const uint8_t *&#160;</td>
           <td class="paramname"><em>first</em>, </td>
@@ -769,12 +777,6 @@ template&lt;typename Data &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt; *&#160;</td>
-          <td class="paramname"><em>chain</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">std::error_code &amp;&#160;</td>
           <td class="paramname"><em>error</em>&#160;</td>
         </tr>
@@ -791,8 +793,9 @@ template&lt;typename Data &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Import certificates from PKCS12 formatted blob [<em>first</em>, <em>last</em>). </p>
-<p>Return leaf certificate and inserts other possible certificates into <em>chain</em> (if not <code>nullptr</code>). Private key corresponding to leaf certificate is extracted using <em>passphrase</em> and assigned to <em>private_key</em> if not <code>nullptr</code>.</p>
+<p>Import and return all certificates from PKCS12 formatted blob [<em>first</em>, <em>last</em>). </p>
+<p>Private key corresponding to leaf certificate is extracted using <em>passphrase</em> and assigned to <em>private_key</em> if not <code>nullptr</code>.</p>
+<p>Returned certificates collection is ordered by issuer i.e. start with leaf and end with root (self signed issuer). If there are unrelated certificates imported, their order is not defined.</p>
 <p>On success, error is cleared. On failure returns null certificate and sets <em>error</em>. </p>
 
 </div>

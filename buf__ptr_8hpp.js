@@ -31,5 +31,7 @@ var buf__ptr_8hpp =
     [ "operator+", "buf__ptr_8hpp.html#a3706e4d36d0fb468d58512c523fa01e6", null ],
     [ "operator+", "buf__ptr_8hpp.html#ae5ee1eee8c838b44a3ecd8364731e846", null ],
     [ "operator+", "buf__ptr_8hpp.html#ae5527a4346864c5f78dfe1ffee892472", null ],
-    [ "operator+", "buf__ptr_8hpp.html#a3efeac38f609d769681054e10d539349", null ]
+    [ "operator+", "buf__ptr_8hpp.html#a3efeac38f609d769681054e10d539349", null ],
+    [ "const_null_buf", "buf__ptr_8hpp.html#afd7c224497d994ce1f6f909c4b395027", null ],
+    [ "null_buf", "buf__ptr_8hpp.html#a94f2363bbef7ca49ac13445a8f3193e5", null ]
 ];

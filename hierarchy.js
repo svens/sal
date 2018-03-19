@@ -43,7 +43,27 @@ var hierarchy =
       [ "sal::logger::worker_t", "classsal_1_1logger_1_1worker__t.html", null ]
     ] ],
     [ "sal::buf_ptr", "classsal_1_1buf__ptr.html", null ],
+    [ "sal::crypto::channel_t::buffer_manager_t", "structsal_1_1crypto_1_1channel__t_1_1buffer__manager__t.html", null ],
     [ "sal::crypto::certificate_t", "classsal_1_1crypto_1_1certificate__t.html", null ],
+    [ "sal::crypto::channel_factory_option_t< Option >", "structsal_1_1crypto_1_1channel__factory__option__t.html", null ],
+    [ "sal::crypto::channel_factory_option_t< chain_check_t< Check > >", "structsal_1_1crypto_1_1channel__factory__option__t.html", [
+      [ "sal::crypto::chain_check_t< Check >", "structsal_1_1crypto_1_1chain__check__t.html", null ]
+    ] ],
+    [ "sal::crypto::channel_factory_option_t< with_chain_t >", "structsal_1_1crypto_1_1channel__factory__option__t.html", [
+      [ "sal::crypto::with_chain_t", "structsal_1_1crypto_1_1with__chain__t.html", null ]
+    ] ],
+    [ "sal::crypto::channel_factory_option_t< with_private_key_t >", "structsal_1_1crypto_1_1channel__factory__option__t.html", [
+      [ "sal::crypto::with_private_key_t", "structsal_1_1crypto_1_1with__private__key__t.html", null ]
+    ] ],
+    [ "sal::crypto::channel_factory_t< Datagram, Server >", "classsal_1_1crypto_1_1channel__factory__t.html", null ],
+    [ "sal::crypto::channel_option_t< Option >", "structsal_1_1crypto_1_1channel__option__t.html", null ],
+    [ "sal::crypto::channel_option_t< mutual_auth_t >", "structsal_1_1crypto_1_1channel__option__t.html", [
+      [ "sal::crypto::mutual_auth_t", "structsal_1_1crypto_1_1mutual__auth__t.html", null ]
+    ] ],
+    [ "sal::crypto::channel_option_t< peer_name_t >", "structsal_1_1crypto_1_1channel__option__t.html", [
+      [ "sal::crypto::peer_name_t", "structsal_1_1crypto_1_1peer__name__t.html", null ]
+    ] ],
+    [ "sal::crypto::channel_t", "classsal_1_1crypto_1_1channel__t.html", null ],
     [ "sal::logger::channel_t< Worker >", "classsal_1_1logger_1_1channel__t.html", null ],
     [ "sal::char_array_t< Size >", "classsal_1_1char__array__t.html", null ],
     [ "sal::char_array_t< max_message_size >", "classsal_1_1char__array__t.html", null ],

@@ -16,6 +16,7 @@ var searchData=
   ['algorithm',['algorithm',['../classsal_1_1crypto_1_1public__key__t.html#a0c5f3adcaf44b9673d033b847f0b660f',1,'sal::crypto::public_key_t::algorithm()'],['../classsal_1_1crypto_1_1private__key__t.html#a81506498cb94fef8508614d0fe1b2450',1,'sal::crypto::private_key_t::algorithm()']]],
   ['alias_5for_5foid',['alias_or_oid',['../namespacesal_1_1crypto.html#a947c911ad604951f1b178d41db406616',1,'sal::crypto']]],
   ['all_5fmatching',['all_matching',['../classsal_1_1net_1_1ip_1_1resolver__base__t.html#a3bc5dfeb44ef97cadfaf28d30bc07b74',1,'sal::net::ip::resolver_base_t']]],
+  ['alloc',['alloc',['../structsal_1_1crypto_1_1channel__t_1_1buffer__manager__t.html#aa48e884319e2352247592fecc12e4627',1,'sal::crypto::channel_t::buffer_manager_t']]],
   ['alt_5fname',['alt_name',['../classsal_1_1crypto_1_1certificate__t.html#a27bbc09d780d81b41e31cdbb331dfd22',1,'sal::crypto::certificate_t']]],
   ['any',['any',['../classsal_1_1net_1_1ip_1_1address__v4__t.html#ab5f0e9acb6a1a201c85a4b8bcd94bc7b',1,'sal::net::ip::address_v4_t::any()'],['../classsal_1_1net_1_1ip_1_1address__v6__t.html#ab9392a0e6535099107a2b6fbea509632',1,'sal::net::ip::address_v6_t::any()']]],
   ['argument',['argument',['../structsal_1_1program__options_1_1option__t.html#a0005a60191c30b646aa12bea9e57d2c7',1,'sal::program_options::option_t']]],

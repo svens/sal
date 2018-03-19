@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.27.0</span>
+   &#160;<span id="projectnumber">0.28.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -117,21 +117,31 @@ Functions</h2></td></tr>
 <tr class="memitem:a309545e926f9d8476d240d85d1e41c7c"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="memory_8hpp.html#a309545e926f9d8476d240d85d1e41c7c">sal::to_ptr</a> (It it) noexcept</td></tr>
 <tr class="memdesc:a309545e926f9d8476d240d85d1e41c7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return <em>it</em> as pointer casted to uint8_t pointer.  <a href="memory_8hpp.html#a309545e926f9d8476d240d85d1e41c7c">More...</a><br /></td></tr>
 <tr class="separator:a309545e926f9d8476d240d85d1e41c7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4832722c6b994987e56dab7526495729"><td class="memItemLeft" align="right" valign="top">constexpr std::nullptr_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="memory_8hpp.html#a4832722c6b994987e56dab7526495729">sal::to_ptr</a> (std::nullptr_t) noexcept</td></tr>
+<tr class="memdesc:a4832722c6b994987e56dab7526495729"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return <em>it</em> as pointer casted to uint8_t pointer.  <a href="memory_8hpp.html#a4832722c6b994987e56dab7526495729">More...</a><br /></td></tr>
+<tr class="separator:a4832722c6b994987e56dab7526495729"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58244cfacdee430af035458247e489ed"><td class="memTemplParams" colspan="2">template&lt;typename It &gt; </td></tr>
 <tr class="memitem:a58244cfacdee430af035458247e489ed"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="memory_8hpp.html#a58244cfacdee430af035458247e489ed">sal::range_size</a> (It first, It last) noexcept</td></tr>
 <tr class="memdesc:a58244cfacdee430af035458247e489ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return memory region [<em>first</em>, <em>last</em>) size in bytes.  <a href="memory_8hpp.html#a58244cfacdee430af035458247e489ed">More...</a><br /></td></tr>
 <tr class="separator:a58244cfacdee430af035458247e489ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ce8199a6fda68a0845bb3b797b81367"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="memory_8hpp.html#a9ce8199a6fda68a0845bb3b797b81367">sal::range_size</a> (std::nullptr_t, std::nullptr_t) noexcept</td></tr>
+<tr class="memdesc:a9ce8199a6fda68a0845bb3b797b81367"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return memory region [<em>first</em>, <em>last</em>) size in bytes.  <a href="memory_8hpp.html#a9ce8199a6fda68a0845bb3b797b81367">More...</a><br /></td></tr>
+<tr class="separator:a9ce8199a6fda68a0845bb3b797b81367"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b601f17307b630499e4afdfb32a42ac"><td class="memTemplParams" colspan="2"><a id="a5b601f17307b630499e4afdfb32a42ac"></a>
 template&lt;typename It &gt; </td></tr>
 <tr class="memitem:a5b601f17307b630499e4afdfb32a42ac"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="memory_8hpp.html#a5b601f17307b630499e4afdfb32a42ac">sal::to_end_ptr</a> (It first, It last) noexcept</td></tr>
 <tr class="memdesc:a5b601f17307b630499e4afdfb32a42ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return iterator casted to uint8_t pointer to past last item in range [<em>first</em>, <em>last</em>). <br /></td></tr>
 <tr class="separator:a5b601f17307b630499e4afdfb32a42ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a907b918b216516cf5a51ba1a193cb915"><td class="memItemLeft" align="right" valign="top"><a id="a907b918b216516cf5a51ba1a193cb915"></a>
+constexpr std::nullptr_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="memory_8hpp.html#a907b918b216516cf5a51ba1a193cb915">sal::to_end_ptr</a> (std::nullptr_t, std::nullptr_t) noexcept</td></tr>
+<tr class="memdesc:a907b918b216516cf5a51ba1a193cb915"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return iterator casted to uint8_t pointer to past last item in range [<em>first</em>, <em>last</em>). <br /></td></tr>
+<tr class="separator:a907b918b216516cf5a51ba1a193cb915"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Iterator and memory pointer helpers. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="file_a58244cfacdee430af035458247e489ed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a58244cfacdee430af035458247e489ed">&#9670;&nbsp;</a></span>range_size()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a58244cfacdee430af035458247e489ed">&#9670;&nbsp;</a></span>range_size() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -171,8 +181,47 @@ template&lt;typename It &gt; </div>
 
 </div>
 </div>
+<a id="file_a9ce8199a6fda68a0845bb3b797b81367"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a9ce8199a6fda68a0845bb3b797b81367">&#9670;&nbsp;</a></span>range_size() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t sal::range_size </td>
+          <td>(</td>
+          <td class="paramtype">std::nullptr_t&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::nullptr_t&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return memory region [<em>first</em>, <em>last</em>) size in bytes. </p>
+<p>If <em>first</em> &gt; <em>last</em>, result is undefined. </p>
+
+</div>
+</div>
 <a id="file_a309545e926f9d8476d240d85d1e41c7c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#file_a309545e926f9d8476d240d85d1e41c7c">&#9670;&nbsp;</a></span>to_ptr()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a309545e926f9d8476d240d85d1e41c7c">&#9670;&nbsp;</a></span>to_ptr() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -193,6 +242,35 @@ template&lt;typename It &gt; </div>
   </td>
   <td class="mlabels-right">
 <span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return <em>it</em> as pointer casted to uint8_t pointer. </p>
+<p><em>it</em> can be iterator or unrelated type of pointer. </p>
+
+</div>
+</div>
+<a id="file_a4832722c6b994987e56dab7526495729"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a4832722c6b994987e56dab7526495729">&#9670;&nbsp;</a></span>to_ptr() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr std::nullptr_t sal::to_ptr </td>
+          <td>(</td>
+          <td class="paramtype">std::nullptr_t&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">

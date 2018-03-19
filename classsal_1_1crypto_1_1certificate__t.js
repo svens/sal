@@ -26,6 +26,7 @@ var classsal_1_1crypto_1_1certificate__t =
     [ "issuer", "classsal_1_1crypto_1_1certificate__t.html#a864cda28c34f0baa63ad9250ce12c26a", null ],
     [ "issuer_alt_names", "classsal_1_1crypto_1_1certificate__t.html#a0012dfb14352279e801f051b913f1afd", null ],
     [ "issuer_alt_names", "classsal_1_1crypto_1_1certificate__t.html#aad396510d667a166e818ebf149c543a7", null ],
+    [ "native_handle", "classsal_1_1crypto_1_1certificate__t.html#a2a2dd5b075ecf6cc0dfa54a6c7af099a", null ],
     [ "not_after", "classsal_1_1crypto_1_1certificate__t.html#af414a01aa6c243c6d13afe421ca823ae", null ],
     [ "not_after", "classsal_1_1crypto_1_1certificate__t.html#a069b4d2bb7a9171a87a5ffc3739c1149", null ],
     [ "not_before", "classsal_1_1crypto_1_1certificate__t.html#a27c2585873a5890645e53251b5cd9665", null ],

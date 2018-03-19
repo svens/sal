@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['oid_20values',['OID values',['../group___o_i_d__values.html',1,'']]]
+  ['logger',['Logger',['../group__logger.html',1,'']]]
 ];
