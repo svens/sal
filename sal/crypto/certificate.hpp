@@ -15,6 +15,7 @@
 #include <sal/crypto/oid.hpp>
 #include <sal/char_array.hpp>
 #include <sal/time.hpp>
+#include <functional>
 #include <ostream>
 #include <vector>
 
@@ -188,6 +189,64 @@ public:
   static certificate_t from_pem (const Data &data)
   {
     return from_pem(data, throw_on_error("certificate::from_pem"));
+  }
+
+
+  /**
+   * Load and return first certificate from system store that satisfies
+   * \a predicate.
+   *
+   * Order of iterating over certificates depends on platform:
+   *   - Linux: uses OpenSSL system-wide CA bundle. Location of it depends on
+   *     distro (see https://www.happyassassin.net/2015/01/12/a-note-about-ssltls-trusted-certificate-stores-and-platforms/).
+   *     This function tries multiple files until first succeeds, which is
+   *     then iterated:
+   *     1. CA bundle file pointed by environment variable name as defined by
+   *        X509_get_default_cert_file_env()
+   *     2. OpenSSL default file as defined by X509_get_default_cert_file()
+   *     3. /etc/pki/tls/certs/ca-bundle.crt
+   *     4. /etc/ssl/certs/ca-certificates.crt
+   *   - MacOS: trusted certificates in Login and System keychains.
+   *   - Windows: system's certificate stores MY, Root, Trust and CA
+   */
+  static certificate_t load_first (
+    std::function<bool(const certificate_t &)> predicate,
+    std::error_code &error
+  ) noexcept;
+
+
+  /**
+   * \copydoc load_first()
+   *
+   * \throws std::system_error on failure
+   */
+  static certificate_t load_first (
+    std::function<bool(const certificate_t &)> predicate)
+  {
+    return load_first(predicate, throw_on_error("certificate::load_first"));
+  }
+
+
+  /**
+   * Load and return all certificates from system store that satisfies
+   * \a predicate.
+   * \see load_first()
+   */
+  static std::vector<certificate_t> load (
+    std::function<bool(const certificate_t &)> predicate,
+    std::error_code &error
+  ) noexcept;
+
+
+  /**
+   * \copydoc load()
+   *
+   * \throws std::system_error on failure
+   */
+  static std::vector<certificate_t> load (
+    std::function<bool(const certificate_t &)> predicate)
+  {
+    return load(predicate, throw_on_error("certificate::load"));
   }
 
 
@@ -812,6 +871,78 @@ inline std::ostream &operator<< (std::ostream &os,
   const certificate_t &certificate)
 {
   return (os << certificate_t::format(certificate.subject()));
+}
+
+
+/**
+ * Predicate for certificate_t::load() and certificate_t::load_first().
+ * It checks if passed certificate has \a common_name
+ */
+inline std::function<bool(const certificate_t &)> with_common_name (
+  std::string common_name)
+{
+  return [=](const certificate_t &certificate) -> bool
+  {
+    auto distinguished_names = certificate.subject(oid::common_name);
+    if (!distinguished_names.empty())
+    {
+      return distinguished_names[0].second == common_name;
+    }
+    return false;
+  };
+}
+
+
+/**
+ * \copybrief with_common_name(std::string)
+ * Checks if passed certificate has DNS subject alternate name with exact
+ * or wildcard match for \a fqdn.
+ */
+inline std::function<bool(const certificate_t &)> with_fqdn (
+  std::string fqdn)
+{
+  return [=](const certificate_t &certificate) -> bool
+  {
+    for (auto &alt_name: certificate.subject_alt_names())
+    {
+      if (alt_name.first == certificate_t::alt_name::dns)
+      {
+        if (alt_name.second.size() > 2
+          && alt_name.second[0] == '*'
+          && alt_name.second[1] == '.')
+        {
+          auto expected_suffix = alt_name.second.substr(1);
+          auto pos = fqdn.find(expected_suffix);
+          return (fqdn.size() - expected_suffix.size()) == pos;
+        }
+        else if (alt_name.second == fqdn)
+        {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+}
+
+
+/**
+ * \copybrief with_common_name(std::string)
+ * Checks if passed certificate has matching SHA1 \a thumbprint.
+ */
+inline std::function<bool(const certificate_t &)> with_sha1_thumbprint (
+  std::vector<uint8_t> thumbprint)
+{
+  return [=](const certificate_t &certificate) -> bool
+  {
+    auto certificate_thumbprint = certificate.digest<sha1>();
+    return std::equal(
+      certificate_thumbprint.begin(),
+      certificate_thumbprint.end(),
+      thumbprint.begin(),
+      thumbprint.end()
+    );
+  };
 }
 
 
