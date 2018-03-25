@@ -1853,6 +1853,12 @@ TEST_F(crypto_certificate, load_fail) //{{{1
 
 TEST_F(crypto_certificate, load_with_common_name) //{{{1
 {
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
   auto certs = sal::crypto::certificate_t::load(
     sal::crypto::with_common_name("test.sal.ee")
   );
@@ -1872,6 +1878,12 @@ TEST_F(crypto_certificate, load_with_common_name_fail) //{{{1
 
 TEST_F(crypto_certificate, load_with_subject_alt_name_fqdn) //{{{1
 {
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
   auto certs = sal::crypto::certificate_t::load(
     sal::crypto::with_fqdn("sal.alt.ee")
   );
@@ -1891,6 +1903,12 @@ TEST_F(crypto_certificate, load_with_subject_alt_name_fqdn_fail) //{{{1
 
 TEST_F(crypto_certificate, load_with_subject_alt_name_wildcard_fqdn) //{{{1
 {
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
   auto certs = sal::crypto::certificate_t::load(
     sal::crypto::with_fqdn("success.sal.alt.ee")
   );
@@ -1901,6 +1919,12 @@ TEST_F(crypto_certificate, load_with_subject_alt_name_wildcard_fqdn) //{{{1
 
 TEST_F(crypto_certificate, load_with_subject_alt_name_wildcard_fqdn_fail) //{{{1
 {
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
   auto certs = sal::crypto::certificate_t::load(
     sal::crypto::with_fqdn("fail-sal.alt.ee")
   );
@@ -1910,6 +1934,12 @@ TEST_F(crypto_certificate, load_with_subject_alt_name_wildcard_fqdn_fail) //{{{1
 
 TEST_F(crypto_certificate, load_with_sha1_thumbprint) //{{{1
 {
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
   auto certs = sal::crypto::certificate_t::load(
     sal::crypto::with_sha1_thumbprint({
       0xef, 0xbe, 0x01, 0xb6, 0x43, 0x34, 0x57, 0xae, 0xf9, 0xfc,
