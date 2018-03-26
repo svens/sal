@@ -1789,6 +1789,180 @@ TEST_F(crypto_certificate, ostream_escape) //{{{1
 }
 
 
+auto all = [](const sal::crypto::certificate_t &)
+{
+  return true;
+};
+
+auto none = [](const sal::crypto::certificate_t &)
+{
+  return false;
+};
+
+
+TEST_F(crypto_certificate, load_first) //{{{1
+{
+  std::error_code error;
+  sal::crypto::certificate_t::load_first(all, error);
+  EXPECT_TRUE(!error);
+
+  EXPECT_NO_THROW(
+    sal::crypto::certificate_t::load_first(all)
+  );
+}
+
+
+TEST_F(crypto_certificate, load_first_fail) //{{{1
+{
+  std::error_code error;
+  sal::crypto::certificate_t::load_first(none, error);
+  EXPECT_EQ(std::errc::no_such_file_or_directory, error);
+
+  EXPECT_THROW(
+    sal::crypto::certificate_t::load_first(none),
+    std::system_error
+  );
+}
+
+
+TEST_F(crypto_certificate, load) //{{{1
+{
+  std::error_code error;
+  auto certs = sal::crypto::certificate_t::load(all, error);
+  EXPECT_TRUE(!error) << error.message();
+  EXPECT_FALSE(certs.empty());
+
+  EXPECT_NO_THROW(
+    sal::crypto::certificate_t::load(all)
+  );
+}
+
+
+TEST_F(crypto_certificate, load_fail) //{{{1
+{
+  std::error_code error;
+  auto certs = sal::crypto::certificate_t::load(none, error);
+  EXPECT_TRUE(!error);
+  EXPECT_TRUE(certs.empty());
+
+  EXPECT_NO_THROW(
+    sal::crypto::certificate_t::load(none)
+  );
+}
+
+
+TEST_F(crypto_certificate, load_with_common_name) //{{{1
+{
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
+  auto certs = sal::crypto::certificate_t::load(
+    sal::crypto::with_common_name("test.sal.ee")
+  );
+  ASSERT_EQ(1U, certs.size());
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::leaf)), certs[0]);
+}
+
+
+TEST_F(crypto_certificate, load_with_common_name_fail) //{{{1
+{
+  auto certs = sal::crypto::certificate_t::load(
+    sal::crypto::with_common_name(case_name)
+  );
+  EXPECT_TRUE(certs.empty());
+}
+
+
+TEST_F(crypto_certificate, load_with_subject_alt_name_fqdn) //{{{1
+{
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
+  auto certs = sal::crypto::certificate_t::load(
+    sal::crypto::with_fqdn("sal.alt.ee")
+  );
+  ASSERT_EQ(1U, certs.size());
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::leaf)), certs[0]);
+}
+
+
+TEST_F(crypto_certificate, load_with_subject_alt_name_fqdn_fail) //{{{1
+{
+  auto certs = sal::crypto::certificate_t::load(
+    sal::crypto::with_fqdn(case_name)
+  );
+  EXPECT_TRUE(certs.empty());
+}
+
+
+TEST_F(crypto_certificate, load_with_subject_alt_name_wildcard_fqdn) //{{{1
+{
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
+  auto certs = sal::crypto::certificate_t::load(
+    sal::crypto::with_fqdn("success.sal.alt.ee")
+  );
+  ASSERT_EQ(1U, certs.size());
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::leaf)), certs[0]);
+}
+
+
+TEST_F(crypto_certificate, load_with_subject_alt_name_wildcard_fqdn_fail) //{{{1
+{
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
+  auto certs = sal::crypto::certificate_t::load(
+    sal::crypto::with_fqdn("fail-sal.alt.ee")
+  );
+  EXPECT_TRUE(certs.empty());
+}
+
+
+TEST_F(crypto_certificate, load_with_sha1_thumbprint) //{{{1
+{
+  if (fixture::on_ci)
+  {
+    // expects our test certificates in system store
+    return;
+  }
+
+  auto certs = sal::crypto::certificate_t::load(
+    sal::crypto::with_sha1_thumbprint({
+      0xef, 0xbe, 0x01, 0xb6, 0x43, 0x34, 0x57, 0xae, 0xf9, 0xfc,
+      0x66, 0x06, 0x4d, 0xe2, 0x09, 0x50, 0xee, 0xb4, 0x10, 0x40,
+    })
+  );
+  ASSERT_EQ(1U, certs.size());
+  EXPECT_EQ(cert_t::from_pem(to_pem(cert::leaf)), certs[0]);
+}
+
+
+TEST_F(crypto_certificate, load_with_sha1_thumbprint_fail) //{{{1
+{
+  auto certs = sal::crypto::certificate_t::load(
+    sal::crypto::with_sha1_thumbprint({
+      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    })
+  );
+  EXPECT_TRUE(certs.empty());
+}
+
+
 //}}}1
 
 

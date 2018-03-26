@@ -13,13 +13,18 @@
   #include <Security/SecCertificateOIDs.h>
   #include <Security/SecIdentity.h>
   #include <Security/SecImportExport.h>
+  #include <Security/SecItem.h>
 #elif __sal_os_linux //{{{1
   #include <openssl/asn1.h>
   #include <openssl/err.h>
   #include <openssl/evp.h>
+  #include <openssl/pem.h>
   #include <openssl/pkcs12.h>
   #include <openssl/x509v3.h>
   #include <mutex>
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <unistd.h>
 #endif //}}}1
 
 
@@ -766,6 +771,108 @@ std::vector<certificate_t> certificate_t::import_pkcs12 (
 }
 
 
+namespace {
+
+inline auto keychain_certificates_query () noexcept
+{
+  static const void
+    *keys[] =
+    {
+      kSecClass,
+      kSecMatchTrustedOnly,
+      kSecMatchLimit,
+    },
+    *values[] =
+    {
+      kSecClassCertificate,
+      kCFBooleanTrue,
+      kSecMatchLimitAll,
+    };
+  static auto query = ::CFDictionaryCreate(nullptr,
+    keys,
+    values,
+    3,
+    nullptr,
+    nullptr
+  );
+  return query;
+}
+
+} // namespace
+
+
+certificate_t certificate_t::load_first (
+  std::function<bool(const certificate_t &)> predicate,
+  std::error_code &error) noexcept
+{
+  error.clear();
+  unique_ref<CFArrayRef> result;
+  auto status = ::SecItemCopyMatching(keychain_certificates_query(),
+    (CFTypeRef *)&result.ref
+  );
+  if (status == errSecSuccess)
+  {
+    for (auto i = 0;  i < ::CFArrayGetCount(result.ref);  ++i)
+    {
+      auto certificate = certificate_t::from_native_handle(
+        (SecCertificateRef)::CFArrayGetValueAtIndex(result.ref, i)
+      );
+      ::CFRetain(certificate.native_handle().ref);
+      if (predicate(certificate))
+      {
+        return certificate;
+      }
+    }
+    error = std::make_error_code(std::errc::no_such_file_or_directory);
+  }
+  else
+  {
+    error.assign(status, category());
+  }
+  return {};
+}
+
+
+std::vector<certificate_t> certificate_t::load (
+  std::function<bool(const certificate_t &)> predicate,
+  std::error_code &error) noexcept
+{
+  error.clear();
+  std::vector<certificate_t> certificates;
+  try
+  {
+    unique_ref<CFArrayRef> result;
+    auto status = ::SecItemCopyMatching(keychain_certificates_query(),
+      (CFTypeRef *)&result.ref
+    );
+    if (status == errSecSuccess)
+    {
+      for (auto i = 0;  i < ::CFArrayGetCount(result.ref);  ++i)
+      {
+        auto certificate = certificate_t::from_native_handle(
+          (SecCertificateRef)::CFArrayGetValueAtIndex(result.ref, i)
+        );
+        ::CFRetain(certificate.native_handle().ref);
+        if (predicate(certificate))
+        {
+          certificates.emplace_back(std::move(certificate));
+        }
+      }
+    }
+    else
+    {
+      error.assign(status, category());
+    }
+  }
+  catch (const std::bad_alloc &)
+  {
+    certificates.clear();
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  return certificates;
+}
+
+
 #elif __sal_os_linux //{{{1
 
 
@@ -1422,6 +1529,145 @@ std::vector<certificate_t> certificate_t::import_pkcs12 (
 
   error.clear();
   return certificates;
+}
+
+
+namespace {
+
+
+inline const char *default_ca_file () noexcept
+{
+  if (auto path = std::getenv(X509_get_default_cert_file_env()))
+  {
+    return path;
+  }
+  return X509_get_default_cert_file();
+}
+
+
+const char *ca_file () noexcept
+{
+  // see https://www.happyassassin.net/2015/01/12/a-note-about-ssltls-trusted-certificate-stores-and-platforms/
+  static const char *files[] =
+  {
+    default_ca_file(),
+    "/etc/pki/tls/certs/ca-bundle.crt",
+    "/etc/ssl/certs/ca-certificates.crt",
+  };
+  for (auto &file: files)
+  {
+    struct stat st;
+    if (stat(file, &st) == 0 && S_ISREG(st.st_mode))
+    {
+      return file;
+    }
+  }
+  return nullptr;
+}
+
+
+auto ca_file_bio (std::error_code &error) noexcept
+{
+  auto bio = std::unique_ptr<BIO, decltype(&BIO_free_all)>(nullptr, &BIO_free_all);
+
+  static auto file = ca_file();
+  if (!file)
+  {
+    error = std::make_error_code(std::errc::no_such_file_or_directory);
+    return bio;
+  }
+
+  bio.reset(BIO_new(BIO_s_file()));
+  if (BIO_read_filename(bio.get(), ca_file()) < 1)
+  {
+    error.assign(ERR_get_error(), category());
+    bio.reset();
+  }
+
+  return bio;
+}
+
+
+} // namespace
+
+
+certificate_t certificate_t::load_first (
+  std::function<bool(const certificate_t &)> predicate,
+  std::error_code &error) noexcept
+{
+  auto bio = ca_file_bio(error);
+  if (!bio)
+  {
+    return {};
+  }
+
+  auto certificates = PEM_X509_INFO_read_bio(bio.get(),
+    nullptr,
+    nullptr,
+    nullptr
+  );
+
+  for (auto i = 0;  i < sk_X509_INFO_num(certificates);  ++i)
+  {
+    auto certificate = from_native_handle(
+      sk_X509_INFO_value(certificates, i)->x509
+    );
+    __bits::inc_ref(certificate.native_handle().ref);
+    if (predicate(certificate))
+    {
+      sk_X509_INFO_pop_free(certificates, X509_INFO_free);
+      error.clear();
+      return certificate;
+    }
+  }
+
+  sk_X509_INFO_pop_free(certificates, X509_INFO_free);
+  error = std::make_error_code(std::errc::no_such_file_or_directory);
+  return {};
+}
+
+
+std::vector<certificate_t> certificate_t::load (
+  std::function<bool(const certificate_t &)> predicate,
+  std::error_code &error) noexcept
+{
+  auto bio = ca_file_bio(error);
+  if (!bio)
+  {
+    return {};
+  }
+
+  std::vector<certificate_t> result;
+  auto certificates = PEM_X509_INFO_read_bio(bio.get(),
+    nullptr,
+    nullptr,
+    nullptr
+  );
+
+  try
+  {
+    for (auto i = 0;  i < sk_X509_INFO_num(certificates);  ++i)
+    {
+      auto certificate = from_native_handle(
+        sk_X509_INFO_value(certificates, i)->x509
+      );
+      __bits::inc_ref(certificate.native_handle().ref);
+      if (predicate(certificate))
+      {
+        result.emplace_back(std::move(certificate));
+      }
+    }
+    error.clear();
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+    result.clear();
+  }
+
+  sk_X509_INFO_pop_free(certificates, X509_INFO_free);
+
+  return result;
 }
 
 
@@ -2116,6 +2362,124 @@ std::vector<certificate_t> certificate_t::import_pkcs12 (
 
   error.clear();
   return certificates;
+}
+
+
+namespace {
+
+inline void close_store (HCERTSTORE ref) noexcept
+{
+  (void)::CertCloseStore(ref, 0);
+}
+
+using store_t = unique_ref<HCERTSTORE, close_store>;
+
+
+constexpr const LPCSTR subsystems[] =
+{
+  "MY",
+  "Root",
+  "Trust",
+  "CA",
+};
+
+
+store_t current_user_store (LPCSTR subsystem, std::error_code &error)
+  noexcept
+{
+  if (!error)
+  {
+    if (store_t store = ::CertOpenSystemStore(NULL, subsystem))
+    {
+      return store;
+    }
+    error.assign(::GetLastError(), category());
+  }
+  return {};
+}
+
+
+void for_each (store_t store,
+  std::vector<certificate_t> &gathered,
+  const std::function<bool(const certificate_t &)> &predicate)
+{
+  if (store)
+  {
+    PCCERT_CONTEXT it = nullptr;
+    while ((it = ::CertEnumCertificatesInStore(store.ref, it)) != nullptr)
+    {
+      auto certificate = certificate_t::from_native_handle(
+        ::CertDuplicateCertificateContext(it)
+      );
+      if (predicate(certificate))
+      {
+        gathered.emplace_back(std::move(certificate));
+      }
+    }
+  }
+}
+
+
+certificate_t until_first (store_t store,
+  const std::function<bool(const certificate_t &)> &predicate)
+{
+  if (store)
+  {
+    PCCERT_CONTEXT it = nullptr;
+    while ((it = ::CertEnumCertificatesInStore(store.ref, it)) != nullptr)
+    {
+      auto certificate = certificate_t::from_native_handle(
+        ::CertDuplicateCertificateContext(it)
+      );
+      if (predicate(certificate))
+      {
+        return certificate;
+      }
+    }
+  }
+  return {};
+}
+
+
+} // namespace
+
+
+certificate_t certificate_t::load_first (
+  std::function<bool(const certificate_t &)> predicate,
+  std::error_code &error) noexcept
+{
+  error.clear();
+  for (auto &subsystem: subsystems)
+  {
+    if (auto result = until_first(current_user_store(subsystem, error), predicate))
+    {
+      return result;
+    }
+  }
+  error = std::make_error_code(std::errc::no_such_file_or_directory);
+  return {};
+}
+
+
+std::vector<certificate_t> certificate_t::load (
+  std::function<bool(const certificate_t &)> predicate,
+  std::error_code &error) noexcept
+{
+  try
+  {
+    error.clear();
+    std::vector<certificate_t> result;
+    for (auto &subsystem: subsystems)
+    {
+      for_each(current_user_store(subsystem, error), result, predicate);
+    }
+    return result;
+  }
+  catch (const std::bad_alloc &)
+  {
+    error = std::make_error_code(std::errc::not_enough_memory);
+  }
+  return {};
 }
 
 
