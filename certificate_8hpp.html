@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.28.0</span>
+   &#160;<span id="projectnumber">0.29.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -114,6 +114,7 @@ $(document).ready(function(){initNavTree('certificate_8hpp.html','');});
 <code>#include &lt;<a class="el" href="oid_8hpp_source.html">sal/crypto/oid.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="char__array_8hpp_source.html">sal/char_array.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="time_8hpp_source.html">sal/time.hpp</a>&gt;</code><br />
+<code>#include &lt;functional&gt;</code><br />
 <code>#include &lt;ostream&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div>
@@ -164,6 +165,17 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="
 std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#aaa463d552a36574d4b42743baba9633b">sal::crypto::operator&lt;&lt;</a> (std::ostream &amp;os, const certificate_t &amp;certificate)</td></tr>
 <tr class="memdesc:aaa463d552a36574d4b42743baba9633b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Format certificate's subject distinguished names list in <em>rdn</em> into stream <em>os</em>. <br /></td></tr>
 <tr class="separator:aaa463d552a36574d4b42743baba9633b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ec293fe7769641d3c4d12b75d6dd238"><td class="memItemLeft" align="right" valign="top">std::function&lt; bool(const certificate_t &amp;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a6ec293fe7769641d3c4d12b75d6dd238">sal::crypto::with_common_name</a> (std::string common_name)</td></tr>
+<tr class="memdesc:a6ec293fe7769641d3c4d12b75d6dd238"><td class="mdescLeft">&#160;</td><td class="mdescRight">Predicate for <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#ac9563b193315f1aea29d2a38ff39085e" title="Load and return all certificates from system store that satisfies predicate. ">certificate_t::load()</a> and <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#abcc33c8c2db4eab4b107bdba391afcfc" title="Load and return first certificate from system store that satisfies predicate. ">certificate_t::load_first()</a>.  <a href="namespacesal_1_1crypto.html#a6ec293fe7769641d3c4d12b75d6dd238">More...</a><br /></td></tr>
+<tr class="separator:a6ec293fe7769641d3c4d12b75d6dd238"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25902f2603ae33048d3f38ac9d0c3d95"><td class="memItemLeft" align="right" valign="top"><a id="a25902f2603ae33048d3f38ac9d0c3d95"></a>
+std::function&lt; bool(const certificate_t &amp;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#a25902f2603ae33048d3f38ac9d0c3d95">sal::crypto::with_fqdn</a> (std::string fqdn)</td></tr>
+<tr class="memdesc:a25902f2603ae33048d3f38ac9d0c3d95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Predicate for <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#ac9563b193315f1aea29d2a38ff39085e" title="Load and return all certificates from system store that satisfies predicate. ">certificate_t::load()</a> and <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#abcc33c8c2db4eab4b107bdba391afcfc" title="Load and return first certificate from system store that satisfies predicate. ">certificate_t::load_first()</a>. Checks if passed certificate has DNS subject alternate name with exact or wildcard match for <em>fqdn</em>. <br /></td></tr>
+<tr class="separator:a25902f2603ae33048d3f38ac9d0c3d95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5699017d8ec5e9a06db7dcb133b35de"><td class="memItemLeft" align="right" valign="top"><a id="ab5699017d8ec5e9a06db7dcb133b35de"></a>
+std::function&lt; bool(const certificate_t &amp;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1crypto.html#ab5699017d8ec5e9a06db7dcb133b35de">sal::crypto::with_sha1_thumbprint</a> (std::vector&lt; uint8_t &gt; thumbprint)</td></tr>
+<tr class="memdesc:ab5699017d8ec5e9a06db7dcb133b35de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Predicate for <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#ac9563b193315f1aea29d2a38ff39085e" title="Load and return all certificates from system store that satisfies predicate. ">certificate_t::load()</a> and <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#abcc33c8c2db4eab4b107bdba391afcfc" title="Load and return first certificate from system store that satisfies predicate. ">certificate_t::load_first()</a>. Checks if passed certificate has matching SHA1 <em>thumbprint</em>. <br /></td></tr>
+<tr class="separator:ab5699017d8ec5e9a06db7dcb133b35de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public key certificate in X509 format. </p>

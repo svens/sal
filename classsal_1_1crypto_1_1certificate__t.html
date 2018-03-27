@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.28.0</span>
+   &#160;<span id="projectnumber">0.29.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -327,6 +327,18 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a7c9c2c5973fd05025e5040decd898f12"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a7c9c2c5973fd05025e5040decd898f12">from_pem</a> (const Data &amp;data)</td></tr>
 <tr class="memdesc:a7c9c2c5973fd05025e5040decd898f12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and construct new certificate from DER encoded blob in <em>data</em>.  <a href="#a7c9c2c5973fd05025e5040decd898f12">More...</a><br /></td></tr>
 <tr class="separator:a7c9c2c5973fd05025e5040decd898f12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcc33c8c2db4eab4b107bdba391afcfc"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#abcc33c8c2db4eab4b107bdba391afcfc">load_first</a> (std::function&lt; bool(const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;)&gt; predicate, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:abcc33c8c2db4eab4b107bdba391afcfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and return first certificate from system store that satisfies <em>predicate</em>.  <a href="#abcc33c8c2db4eab4b107bdba391afcfc">More...</a><br /></td></tr>
+<tr class="separator:abcc33c8c2db4eab4b107bdba391afcfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d78118a9b19d3a8b6ab6ac564e1d31c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a5d78118a9b19d3a8b6ab6ac564e1d31c">load_first</a> (std::function&lt; bool(const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;)&gt; predicate)</td></tr>
+<tr class="memdesc:a5d78118a9b19d3a8b6ab6ac564e1d31c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and return first certificate from system store that satisfies <em>predicate</em>.  <a href="#a5d78118a9b19d3a8b6ab6ac564e1d31c">More...</a><br /></td></tr>
+<tr class="separator:a5d78118a9b19d3a8b6ab6ac564e1d31c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9563b193315f1aea29d2a38ff39085e"><td class="memItemLeft" align="right" valign="top">static std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#ac9563b193315f1aea29d2a38ff39085e">load</a> (std::function&lt; bool(const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;)&gt; predicate, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:ac9563b193315f1aea29d2a38ff39085e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and return all certificates from system store that satisfies <em>predicate</em>.  <a href="#ac9563b193315f1aea29d2a38ff39085e">More...</a><br /></td></tr>
+<tr class="separator:ac9563b193315f1aea29d2a38ff39085e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7919aef14263b2d68597648554f74747"><td class="memItemLeft" align="right" valign="top">static std::vector&lt; <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a7919aef14263b2d68597648554f74747">load</a> (std::function&lt; bool(const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;)&gt; predicate)</td></tr>
+<tr class="memdesc:a7919aef14263b2d68597648554f74747"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load and return all certificates from system store that satisfies <em>predicate</em>.  <a href="#a7919aef14263b2d68597648554f74747">More...</a><br /></td></tr>
+<tr class="separator:a7919aef14263b2d68597648554f74747"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade5ac34373a06f1a0256179e210ffd83"><td class="memItemLeft" align="right" valign="top"><a id="ade5ac34373a06f1a0256179e210ffd83"></a>
 static <a class="el" href="structsal_1_1crypto_1_1certificate__t_1_1distinguished__name__format__t.html">distinguished_name_format_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#ade5ac34373a06f1a0256179e210ffd83">format</a> (const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a6cff54f2e04894a7b47dbbbc21eb2e32">distinguished_name_t</a> &amp;rdn, const std::string &amp;assign=&quot;=&quot;, const std::string &amp;separator=&quot;; &quot;) noexcept</td></tr>
 <tr class="memdesc:ade5ac34373a06f1a0256179e210ffd83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience method to create distinguished names list formatter. <br /></td></tr>
@@ -1087,6 +1099,174 @@ template&lt;typename Data &gt; </div>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::system_error</td><td>on failure. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac9563b193315f1aea29d2a38ff39085e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9563b193315f1aea29d2a38ff39085e">&#9670;&nbsp;</a></span>load() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::vector&lt;<a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&gt; sal::crypto::certificate_t::load </td>
+          <td>(</td>
+          <td class="paramtype">std::function&lt; bool(const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;)&gt;&#160;</td>
+          <td class="paramname"><em>predicate</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::error_code &amp;&#160;</td>
+          <td class="paramname"><em>error</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Load and return all certificates from system store that satisfies <em>predicate</em>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#abcc33c8c2db4eab4b107bdba391afcfc" title="Load and return first certificate from system store that satisfies predicate. ">load_first()</a> </dd></dl>
+
+</div>
+</div>
+<a id="a7919aef14263b2d68597648554f74747"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7919aef14263b2d68597648554f74747">&#9670;&nbsp;</a></span>load() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::vector&lt;<a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a>&gt; sal::crypto::certificate_t::load </td>
+          <td>(</td>
+          <td class="paramtype">std::function&lt; bool(const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;)&gt;&#160;</td>
+          <td class="paramname"><em>predicate</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Load and return all certificates from system store that satisfies <em>predicate</em>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1crypto_1_1certificate__t.html#abcc33c8c2db4eab4b107bdba391afcfc" title="Load and return first certificate from system store that satisfies predicate. ">load_first()</a></dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::system_error</td><td>on failure </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="abcc33c8c2db4eab4b107bdba391afcfc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abcc33c8c2db4eab4b107bdba391afcfc">&#9670;&nbsp;</a></span>load_first() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::certificate_t::load_first </td>
+          <td>(</td>
+          <td class="paramtype">std::function&lt; bool(const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;)&gt;&#160;</td>
+          <td class="paramname"><em>predicate</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::error_code &amp;&#160;</td>
+          <td class="paramname"><em>error</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Load and return first certificate from system store that satisfies <em>predicate</em>. </p>
+<p>Order of iterating over certificates depends on platform:</p><ul>
+<li>Linux: uses OpenSSL system-wide CA bundle. Location of it depends on distro (see <a href="https://www.happyassassin.net/2015/01/12/a-note-about-ssltls-trusted-certificate-stores-and-platforms/">https://www.happyassassin.net/2015/01/12/a-note-about-ssltls-trusted-certificate-stores-and-platforms/</a>). This function tries multiple files until first succeeds, which is then iterated:<ol type="1">
+<li>CA bundle file pointed by environment variable name as defined by X509_get_default_cert_file_env()</li>
+<li>OpenSSL default file as defined by X509_get_default_cert_file()</li>
+<li>/etc/pki/tls/certs/ca-bundle.crt</li>
+<li>/etc/ssl/certs/ca-certificates.crt</li>
+</ol>
+</li>
+<li>MacOS: trusted certificates in Login and System keychains.</li>
+<li>Windows: system's certificate stores MY, Root, Trust and CA </li>
+</ul>
+
+</div>
+</div>
+<a id="a5d78118a9b19d3a8b6ab6ac564e1d31c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d78118a9b19d3a8b6ab6ac564e1d31c">&#9670;&nbsp;</a></span>load_first() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> sal::crypto::certificate_t::load_first </td>
+          <td>(</td>
+          <td class="paramtype">std::function&lt; bool(const <a class="el" href="classsal_1_1crypto_1_1certificate__t.html">certificate_t</a> &amp;)&gt;&#160;</td>
+          <td class="paramname"><em>predicate</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Load and return first certificate from system store that satisfies <em>predicate</em>. </p>
+<p>Order of iterating over certificates depends on platform:</p><ul>
+<li>Linux: uses OpenSSL system-wide CA bundle. Location of it depends on distro (see <a href="https://www.happyassassin.net/2015/01/12/a-note-about-ssltls-trusted-certificate-stores-and-platforms/">https://www.happyassassin.net/2015/01/12/a-note-about-ssltls-trusted-certificate-stores-and-platforms/</a>). This function tries multiple files until first succeeds, which is then iterated:<ol type="1">
+<li>CA bundle file pointed by environment variable name as defined by X509_get_default_cert_file_env()</li>
+<li>OpenSSL default file as defined by X509_get_default_cert_file()</li>
+<li>/etc/pki/tls/certs/ca-bundle.crt</li>
+<li>/etc/ssl/certs/ca-certificates.crt</li>
+</ol>
+</li>
+<li>MacOS: trusted certificates in Login and System keychains.</li>
+<li>Windows: system's certificate stores MY, Root, Trust and CA</li>
+</ul>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::system_error</td><td>on failure </td></tr>
   </table>
   </dd>
 </dl>

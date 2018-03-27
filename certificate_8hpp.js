@@ -9,5 +9,8 @@ var certificate_8hpp =
     [ "operator<<", "certificate_8hpp.html#a7ffc69c2081d2000b1372af3bd78c910", null ],
     [ "operator<<", "certificate_8hpp.html#a3005d2b9edf3b6fbea481ad06c186629", null ],
     [ "operator<<", "certificate_8hpp.html#a4a4de34aed88e7fae29bc9ac1b412f20", null ],
-    [ "operator<<", "certificate_8hpp.html#aaa463d552a36574d4b42743baba9633b", null ]
+    [ "operator<<", "certificate_8hpp.html#aaa463d552a36574d4b42743baba9633b", null ],
+    [ "with_common_name", "certificate_8hpp.html#a6ec293fe7769641d3c4d12b75d6dd238", null ],
+    [ "with_fqdn", "certificate_8hpp.html#a25902f2603ae33048d3f38ac9d0c3d95", null ],
+    [ "with_sha1_thumbprint", "certificate_8hpp.html#ab5699017d8ec5e9a06db7dcb133b35de", null ]
 ];

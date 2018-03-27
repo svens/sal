@@ -140,14 +140,17 @@ var NAVTREEINDEX0 =
 "byte__order_8hpp.html#ae58e29c8fc60933af687831484cd0005":[8,0,0,7,2],
 "byte__order_8hpp_source.html":[8,0,0,7],
 "certificate_8hpp.html":[8,0,0,0,0],
+"certificate_8hpp.html#a25902f2603ae33048d3f38ac9d0c3d95":[8,0,0,0,0,11],
 "certificate_8hpp.html#a260557467232385397d640d14a74d14c":[8,0,0,0,0,2],
 "certificate_8hpp.html#a2c2f15702667a0648035de1c348b8f50":[8,0,0,0,0,5],
 "certificate_8hpp.html#a3005d2b9edf3b6fbea481ad06c186629":[8,0,0,0,0,7],
 "certificate_8hpp.html#a4a4de34aed88e7fae29bc9ac1b412f20":[8,0,0,0,0,8],
 "certificate_8hpp.html#a5842a8d7bac2caec3967ac3b8e818879":[8,0,0,0,0,3],
+"certificate_8hpp.html#a6ec293fe7769641d3c4d12b75d6dd238":[8,0,0,0,0,10],
 "certificate_8hpp.html#a7ffc69c2081d2000b1372af3bd78c910":[8,0,0,0,0,6],
 "certificate_8hpp.html#a80bc8e13b807be7b7723254bf830ff07":[8,0,0,0,0,4],
 "certificate_8hpp.html#aaa463d552a36574d4b42743baba9633b":[8,0,0,0,0,9],
+"certificate_8hpp.html#ab5699017d8ec5e9a06db7dcb133b35de":[8,0,0,0,0,12],
 "certificate_8hpp_source.html":[8,0,0,0,0],
 "channel__options_8hpp.html":[8,0,0,0,2],
 "channel__options_8hpp.html#a4ff1cb89d64f89684277aff9d7164eb3":[8,0,0,0,2,4],
@@ -246,8 +249,5 @@ var NAVTREEINDEX0 =
 "classsal_1_1crypto_1_1certificate__t.html#a77d640d00704e3cf6d9d1762c5b7ba73":[7,0,0,0,0,4],
 "classsal_1_1crypto_1_1certificate__t.html#a7c775ab19091aa9b2928d7c32dceb3c0":[7,0,0,0,0,6],
 "classsal_1_1crypto_1_1certificate__t.html#a851c3cb0cb11bc8aa0fa80fcd946b4de":[7,0,0,0,0,42],
-"classsal_1_1crypto_1_1certificate__t.html#a864cda28c34f0baa63ad9250ce12c26a":[7,0,0,0,0,18],
-"classsal_1_1crypto_1_1certificate__t.html#a917835e336243b3b3270f37e1dbf495d":[7,0,0,0,0,8],
-"classsal_1_1crypto_1_1certificate__t.html#a9642cef2678515e344b336340dbe5595":[7,0,0,0,0,49],
-"classsal_1_1crypto_1_1certificate__t.html#a98c1059adec36ce0fa1f05f37b82a204":[7,0,0,0,0,26]
+"classsal_1_1crypto_1_1certificate__t.html#a864cda28c34f0baa63ad9250ce12c26a":[7,0,0,0,0,18]
 };

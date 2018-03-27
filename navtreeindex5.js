@@ -1,5 +1,8 @@
 var NAVTREEINDEX5 =
 {
+"socket__options_8hpp.html#adcd672acee25553230447d976a8a50a5":[8,0,0,2,11,1],
+"socket__options_8hpp.html#add172facef3587d3f456ace471e1deb2":[8,0,0,2,11,10],
+"socket__options_8hpp.html#ade501a1a09d051f6ce95f72b1f4c3e7a":[8,0,0,2,11,19],
 "socket__options_8hpp.html#ae0ce50aba8c1a8fd2ec0019aaef1ceae":[8,0,0,2,11,0],
 "socket__options_8hpp.html#af6dbabef6d7237377284754667faf12c":[8,0,0,2,11,13],
 "socket__options_8hpp_source.html":[8,0,0,2,11],
