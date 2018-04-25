@@ -471,7 +471,7 @@ std::vector<uint8_t> certificate_t::serial_number (std::error_code &error)
     return {};
   }
 
-  unique_ref<CFDataRef> value = ::SecCertificateCopySerialNumber(
+  unique_ref<CFDataRef> value = ::SecCertificateCopySerialNumberData(
     impl_.ref,
     nullptr
   );
