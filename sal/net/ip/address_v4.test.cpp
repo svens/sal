@@ -89,7 +89,7 @@ TEST_F(net_ip_address_v4, store)
 {
   in_addr a;
   addr_t::loopback().store(a);
-  EXPECT_EQ(INADDR_LOOPBACK, ntohl(a.s_addr));
+  EXPECT_EQ(static_cast<uint32_t>(INADDR_LOOPBACK), ntohl(a.s_addr));
 }
 
 

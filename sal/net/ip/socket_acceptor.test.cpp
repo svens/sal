@@ -29,7 +29,7 @@ INSTANTIATE_TEST_CASE_P(net_ip, socket_acceptor,
   ::testing::Values(
     sal::net::ip::tcp_t::v4(),
     sal::net::ip::tcp_t::v6()
-  )
+  ),
 );
 
 

@@ -215,7 +215,7 @@ TYPED_TEST(net_ip_endpoint, store_v4)
   auto &sa = reinterpret_cast<sockaddr_in &>(ss);
   EXPECT_EQ(AF_INET, sa.sin_family);
   EXPECT_EQ(123U, ntohs(sa.sin_port));
-  EXPECT_EQ(INADDR_LOOPBACK, ntohl(sa.sin_addr.s_addr));
+  EXPECT_EQ(static_cast<uint32_t>(INADDR_LOOPBACK), ntohl(sa.sin_addr.s_addr));
 }
 
 
@@ -289,7 +289,7 @@ TYPED_TEST(net_ip_endpoint, const_data_v4)
 
   auto ss = static_cast<const sockaddr_in *>(endpoint.data());
   EXPECT_EQ(AF_INET, ss->sin_family);
-  EXPECT_EQ(INADDR_LOOPBACK, ntohl(ss->sin_addr.s_addr));
+  EXPECT_EQ(static_cast<uint32_t>(INADDR_LOOPBACK), ntohl(ss->sin_addr.s_addr));
   EXPECT_EQ(123, ntohs(ss->sin_port));
 }
 

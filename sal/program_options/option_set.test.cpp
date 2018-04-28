@@ -42,7 +42,7 @@ struct option_set
 };
 
 
-INSTANTIATE_TEST_CASE_P(program_options, option_set, testing::Values(true));
+INSTANTIATE_TEST_CASE_P(program_options, option_set, testing::Values(true),);
 
 
 TEST_P(option_set, add_no_names)

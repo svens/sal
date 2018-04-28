@@ -18,7 +18,7 @@ TEST(builtins, sal_unlikely)
 
 TEST(builtins, sal_clz)
 {
-  for (int i = 0;  i != 64;  ++i)
+  for (uint64_t i = 0;  i != 64;  ++i)
   {
     EXPECT_EQ(63 - i, sal_clz(1ULL << i));
   }
