@@ -12,12 +12,12 @@ constexpr char dir_sep = '/';
   #include <direct.h>
   #include <windows.h>
 
-  inline constexpr bool is_dir_sep (char ch) noexcept
+  constexpr bool is_dir_sep (char ch) noexcept
   {
     return ch == '/' || ch == '\\';
   }
 
-  inline constexpr bool is_drive_sep (char ch) noexcept
+  constexpr bool is_drive_sep (char ch) noexcept
   {
     return ch == ':';
   }
@@ -38,12 +38,12 @@ constexpr char dir_sep = '/';
   #include <sys/types.h>
   #include <unistd.h>
 
-  inline constexpr bool is_dir_sep (char ch) noexcept
+  constexpr bool is_dir_sep (char ch) noexcept
   {
     return ch == '/';
   }
 
-  inline constexpr bool is_drive_sep (char /*ch*/) noexcept
+  constexpr bool is_drive_sep (char /*ch*/) noexcept
   {
     return false;
   }

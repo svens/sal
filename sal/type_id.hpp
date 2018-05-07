@@ -14,7 +14,7 @@ __sal_begin
 namespace __bits {
 
 
-inline constexpr uint64_t fnv_1a_32 (const char *p) noexcept
+constexpr uint64_t fnv_1a_32 (const char *p) noexcept
 {
   uint64_t h = 0x811c9dc5;
   while (*p)

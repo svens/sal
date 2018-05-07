@@ -19,7 +19,7 @@ size_t lines = 1'000'000;
 size_t threads = std::thread::hardware_concurrency();
 
 
-inline constexpr bool measure_latency ()
+constexpr bool measure_latency ()
 {
   return false;
 }

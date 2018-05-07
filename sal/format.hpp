@@ -126,7 +126,7 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, short value)
  * numeric \a value hexadecimal string representation into memory_writer_t.
  */
 template <typename T>
-inline constexpr auto hex (T value) noexcept
+constexpr auto hex (T value) noexcept
 {
   return __bits::hex_t<T>(value);
 }
@@ -137,7 +137,7 @@ inline constexpr auto hex (T value) noexcept
  * numeric \a value octal string representation into memory_writer_t.
  */
 template <typename T>
-inline constexpr auto oct (T value) noexcept
+constexpr auto oct (T value) noexcept
 {
   return __bits::oct_t<T>(value);
 }
@@ -148,7 +148,7 @@ inline constexpr auto oct (T value) noexcept
  * numeric \a value binary string representation into memory_writer_t.
  */
 template <typename T>
-inline constexpr auto bin (T value) noexcept
+constexpr auto bin (T value) noexcept
 {
   return __bits::bin_t<T>(value);
 }
@@ -235,7 +235,7 @@ inline memory_writer_t &operator<< (memory_writer_t &writer, long double value)
  * \endcode
  */
 template <typename T>
-inline constexpr auto fixed_float (T value, size_t precision=2) noexcept
+constexpr auto fixed_float (T value, size_t precision=2) noexcept
 {
   return __bits::fixed_float_t<T>(value, precision);
 }

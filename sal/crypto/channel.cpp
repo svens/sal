@@ -45,7 +45,7 @@ constexpr const size_t mtu = 1472;
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000
 
-inline constexpr const bool openssl_pre_1_1 = true;
+constexpr bool openssl_pre_1_1 = true;
 
 
 inline void BIO_set_init (BIO *bio, int init) noexcept
@@ -99,7 +99,7 @@ inline STACK_OF(X509) *X509_STORE_CTX_get0_untrusted (X509_STORE_CTX *ctx)
 
 #else
 
-inline constexpr const bool openssl_pre_1_1 = false;
+constexpr bool openssl_pre_1_1 = false;
 
 #endif
 

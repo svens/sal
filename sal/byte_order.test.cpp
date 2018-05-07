@@ -63,7 +63,7 @@ inline auto ntoh (uint64_t v) noexcept
 
 
 template <typename T>
-inline constexpr auto test_data () noexcept
+constexpr auto test_data () noexcept
 {
   using limits = std::numeric_limits<T>;
 

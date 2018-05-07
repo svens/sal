@@ -57,12 +57,12 @@ struct mutual_auth_t
 /**
  * Require mutual authentication.
  */
-inline constexpr const mutual_auth_t mutual_auth{true};
+constexpr mutual_auth_t mutual_auth{true};
 
 /**
  * Do not require mutual authentication.
  */
-inline constexpr const mutual_auth_t no_mutual_auth{false};
+constexpr mutual_auth_t no_mutual_auth{false};
 
 
 /**

@@ -19,7 +19,7 @@ template <typename T> constexpr const bool is_const_ref_v = false;
 template <typename T> constexpr const bool is_const_ref_v<const T &> = true;
 
 template <typename It>
-inline constexpr void ensure_iterator_constraints () noexcept
+constexpr void ensure_iterator_constraints () noexcept
 {
   static_assert(
     std::is_pod_v<typename std::iterator_traits<It>::value_type>,
@@ -83,7 +83,7 @@ constexpr std::nullptr_t to_ptr (std::nullptr_t) noexcept
  * If \a first > \a last, result is undefined.
  */
 template <typename It>
-inline constexpr size_t range_size (It first, It last) noexcept
+constexpr size_t range_size (It first, It last) noexcept
 {
   __bits::ensure_iterator_constraints<It>();
   return std::distance(first, last)
