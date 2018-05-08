@@ -29,6 +29,6 @@ case "${TRAVIS_OS_NAME}-${CC}" in
     brew cask uninstall oclint || true
 
     brew update
-    brew install gcc@7 || true
+    brew install gcc || true
     ;;
 esac
