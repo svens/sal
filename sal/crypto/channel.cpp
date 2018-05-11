@@ -40,7 +40,7 @@ namespace {
 // because TLS/DTLS IO is based on buffer_manager, it is actually application
 // responsibility to provide properly sized buffers.
 // This value is used as default MTU size for SSL_set_mtu()
-constexpr const size_t mtu = 1472;
+constexpr size_t mtu = 1472;
 
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000
@@ -106,7 +106,7 @@ constexpr bool openssl_pre_1_1 = false;
 
 struct bio_t
 {
-  static constexpr const char name[] = "buffer_manager";
+  static constexpr char name[] = "buffer_manager";
   static BIO_METHOD *methods;
 
   static int create (BIO *bio) noexcept;
@@ -995,7 +995,7 @@ bool set_chain (__bits::channel_t &channel, std::error_code &error) noexcept
       return false;
     }
 
-    constexpr const size_t max_chain_size = 9;
+    constexpr size_t max_chain_size = 9;
     CFTypeRef chain[max_chain_size] = { identity.ref };
     size_t chain_size = 1;
     while (chain_size < max_chain_size

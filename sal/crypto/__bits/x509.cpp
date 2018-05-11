@@ -15,7 +15,7 @@ namespace {
 uint8_t *base64_decode (const uint8_t *first, const uint8_t *last, uint8_t *d)
   noexcept
 {
-  static constexpr const unsigned char lookup[] =
+  static constexpr unsigned char lookup[] =
     // _0  _1  _2  _3  _4  _5  _6  _7  _8  _9  _a  _b  _c  _d  _e  _f
     "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" // 0_
     "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" // 1_

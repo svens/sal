@@ -237,7 +237,7 @@ TEST(type_id, unique_type_id_for_var)
 template <uintptr_t V>
 struct type_v_value
 {
-  static constexpr const auto value = V;
+  static constexpr auto value = V;
 };
 
 

@@ -69,7 +69,7 @@ inline uintptr_t type_id (T) noexcept
  * type_id() of being constexpr.
  */
 template <typename T>
-constexpr const auto type_v = __bits::type_t<T>::id();
+constexpr auto type_v = __bits::type_t<T>::id();
 
 
 __sal_end

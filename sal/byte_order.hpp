@@ -38,8 +38,7 @@ enum class endian
 /**
  * Convert 16-bit \a value from host order to network order.
  */
-constexpr inline uint16_t native_to_network_byte_order (uint16_t value)
-  noexcept
+constexpr uint16_t native_to_network_byte_order (uint16_t value) noexcept
 {
   if constexpr (endian::native == endian::little)
   {
@@ -61,8 +60,7 @@ constexpr inline uint16_t native_to_network_byte_order (uint16_t value)
 /**
  * Convert 32-bit \a value from host order to network order.
  */
-constexpr inline uint32_t native_to_network_byte_order (uint32_t value)
-  noexcept
+constexpr uint32_t native_to_network_byte_order (uint32_t value) noexcept
 {
   if constexpr (endian::native == endian::little)
   {
@@ -86,8 +84,7 @@ constexpr inline uint32_t native_to_network_byte_order (uint32_t value)
 /**
  * Convert 64-bit \a value from host order to network order.
  */
-constexpr inline uint64_t native_to_network_byte_order (uint64_t value)
-  noexcept
+constexpr uint64_t native_to_network_byte_order (uint64_t value) noexcept
 {
   if constexpr (endian::native == endian::little)
   {
@@ -115,8 +112,7 @@ constexpr inline uint64_t native_to_network_byte_order (uint64_t value)
 /**
  * Convert 16-bit \a value from network order to host order.
  */
-constexpr inline uint16_t network_to_native_byte_order (uint16_t value)
-  noexcept
+constexpr uint16_t network_to_native_byte_order (uint16_t value) noexcept
 {
   return native_to_network_byte_order(value);
 }
@@ -125,8 +121,7 @@ constexpr inline uint16_t network_to_native_byte_order (uint16_t value)
 /**
  * Convert 32-bit \a value from network order to host order.
  */
-constexpr inline uint32_t network_to_native_byte_order (uint32_t value)
-  noexcept
+constexpr uint32_t network_to_native_byte_order (uint32_t value) noexcept
 {
   return native_to_network_byte_order(value);
 }
@@ -135,8 +130,7 @@ constexpr inline uint32_t network_to_native_byte_order (uint32_t value)
 /**
  * Convert 64-bit \a value from network order to host order.
  */
-constexpr inline uint64_t network_to_native_byte_order (uint64_t value)
-  noexcept
+constexpr uint64_t network_to_native_byte_order (uint64_t value) noexcept
 {
   return native_to_network_byte_order(value);
 }

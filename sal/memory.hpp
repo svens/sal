@@ -15,8 +15,8 @@ __sal_begin
 
 namespace __bits {
 
-template <typename T> constexpr const bool is_const_ref_v = false;
-template <typename T> constexpr const bool is_const_ref_v<const T &> = true;
+template <typename T> constexpr bool is_const_ref_v = false;
+template <typename T> constexpr bool is_const_ref_v<const T &> = true;
 
 template <typename It>
 constexpr void ensure_iterator_constraints () noexcept

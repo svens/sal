@@ -14,8 +14,7 @@ __sal_begin
 
 namespace {
 
-constexpr inline bool is_set (file_t::open_mode mode, file_t::open_mode mask)
-  noexcept
+constexpr bool is_set (file_t::open_mode mode, file_t::open_mode mask) noexcept
 {
   return (mode & mask) == mask;
 }

@@ -9,9 +9,9 @@ namespace __bits {
 
 namespace {
 
-static constexpr const char digits[] = "0123456789abcdef";
+static constexpr char digits[] = "0123456789abcdef";
 
-static constexpr const char lookup[] =
+static constexpr char lookup[] =
   // _0  _1  _2  _3  _4  _5  _6  _7  _8  _9  _a  _b  _c  _d  _e  _f
   "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" // 0_
   "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" // 1_

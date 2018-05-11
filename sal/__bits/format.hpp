@@ -23,10 +23,10 @@ inline memory_writer_t &format_bool (memory_writer_t &writer, bool value)
 {
   if (value)
   {
-    static constexpr const char label[] = "true";
+    static constexpr char label[] = "true";
     return writer.write(label, label + sizeof(label) - 1);
   }
-  static constexpr const char label[] = "false";
+  static constexpr char label[] = "false";
   return writer.write(label, label + sizeof(label) - 1);
 }
 
@@ -34,7 +34,7 @@ inline memory_writer_t &format_bool (memory_writer_t &writer, bool value)
 inline memory_writer_t &format_null (memory_writer_t &writer, std::nullptr_t)
   noexcept
 {
-  static constexpr const char label[] = "(null)";
+  static constexpr char label[] = "(null)";
   return writer.write(label, label + sizeof(label) - 1);
 }
 
@@ -276,10 +276,10 @@ inline memory_writer_t &format_fixed_float (memory_writer_t &writer,
     {
       writer.write('-');
     }
-    static constexpr const char label[] = "inf";
+    static constexpr char label[] = "inf";
     return writer.write(label, label + sizeof(label) - 1);
   }
-  static constexpr const char label[] = "nan";
+  static constexpr char label[] = "nan";
   return writer.write(label, label + sizeof(label) - 1);
 }
 

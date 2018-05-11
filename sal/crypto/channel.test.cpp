@@ -11,10 +11,10 @@ namespace {
 
 
 #if defined(OPENSSL_VERSION_NUMBER)
-  constexpr const int openssl_version = OPENSSL_VERSION_NUMBER;
+  constexpr int openssl_version = OPENSSL_VERSION_NUMBER;
 #else
   // to simplify test exclusions below
-  constexpr const int openssl_version = 0;
+  constexpr int openssl_version = 0;
 #endif
 
 
@@ -95,7 +95,7 @@ struct crypto_channel
   : public sal_test::with_type<ChannelFactory>
   , public ChannelFactory
 {
-  static constexpr const bool datagram = std::is_same_v<ChannelFactory, datagram_t>;
+  static constexpr bool datagram = std::is_same_v<ChannelFactory, datagram_t>;
 
   template <typename... Option>
   auto make_client_channel (

@@ -25,13 +25,13 @@ __sal_begin
 namespace __bits {
 
 using namespace std::string_view_literals;
-constexpr const auto version = "@PROJECT_VERSION@"sv;
+constexpr auto version = "@PROJECT_VERSION@"sv;
 
 } // namespace __bits
 
 
 /// SAL version
-constexpr const std::string_view version = __bits::version;
+constexpr std::string_view version = __bits::version;
 
 
 //

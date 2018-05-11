@@ -171,7 +171,7 @@ void finish (char_array_t<event_t::max_message_size> &message) noexcept
 {
   if (!message.good())
   {
-    static constexpr const char marker[] = "<...>";
+    static constexpr char marker[] = "<...>";
     message.reset();
     message << marker;
   }

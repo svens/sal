@@ -2375,7 +2375,7 @@ inline void close_store (HCERTSTORE ref) noexcept
 using store_t = unique_ref<HCERTSTORE, close_store>;
 
 
-constexpr const LPCSTR subsystems[] =
+constexpr LPCSTR subsystems[] =
 {
   "MY",
   "Root",
