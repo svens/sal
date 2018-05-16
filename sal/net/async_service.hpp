@@ -283,7 +283,23 @@ public:
   io_ptr make_io ()
   {
     return io_ptr{
-      static_cast<io_t *>(async_context_t::new_io()),
+      static_cast<io_t *>(async_context_t::new_io(0)),
+      &async_context_t::release_io
+    };
+  }
+
+
+  /**
+   * \copydoc make_io()
+   * Returned io_ptr has \a user_data
+   */
+  template <typename T>
+  io_ptr make_io (T user_data)
+  {
+    return io_ptr{
+      static_cast<io_t *>(
+        async_context_t::new_io(reinterpret_cast<uintptr_t>(user_data))
+      ),
       &async_context_t::release_io
     };
   }

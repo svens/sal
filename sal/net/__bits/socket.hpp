@@ -334,7 +334,7 @@ struct async_context_t
   void extend_pool ();
 
 
-  async_io_t *new_io ()
+  async_io_t *new_io (uintptr_t user_data)
   {
     auto io = static_cast<async_io_t *>(free.try_pop());
     if (!io)
@@ -343,6 +343,7 @@ struct async_context_t
       io = static_cast<async_io_t *>(free.try_pop());
     }
     io->context = this;
+    io->user_data = user_data;
     io->begin = io->data;
     io->end = io->data + sizeof(io->data);
     return io;
