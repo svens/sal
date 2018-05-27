@@ -8,6 +8,11 @@
 namespace sal_test {
 
 
+// made visible so other modules can easily test file-based loggers as well
+std::vector<std::string> directory_listing (const std::string &path);
+bool file_contains (const std::string &needle, const std::string &file);
+
+
 struct sink_t final
   : public sal::logger::sink_t
 {

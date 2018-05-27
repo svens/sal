@@ -1,13 +1,11 @@
 # sources
 list(APPEND sal_sources
-  sal/service/service.hpp
-  sal/service/service_base.hpp
-  sal/service/service_base.cpp
+  sal/service/application.hpp
+  sal/service/application.cpp
 )
 
 
 # unittests
 list(APPEND sal_unittests_sources
-  sal/service/service.test.cpp
-  sal/service/service_base.test.cpp
+  sal/service/application.test.cpp
 )

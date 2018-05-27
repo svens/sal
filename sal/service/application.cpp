@@ -1,4 +1,4 @@
-#include <sal/service/service_base.hpp>
+#include <sal/service/application.hpp>
 #include <sal/error.hpp>
 #include <sal/program_options/command_line.hpp>
 #include <sal/program_options/config_reader.hpp>
@@ -6,7 +6,6 @@
 #include <fstream>
 #include <iostream>
 #include <string_view>
-#include <thread>
 
 
 __sal_begin
@@ -20,7 +19,6 @@ namespace {
 
 // service configuration variables read from command line or config file
 static const std::string
-  service_worker_count = "service.worker_count",
   service_logger_dir = "service.logger.dir",
   service_logger_sink = "service.logger.sink";
 
@@ -116,12 +114,6 @@ program_options::option_set_t service_options (
         "null: disable service logging\n"
       )
     )
-    .add({service_worker_count},
-      requires_argument("INT", worker_count_default),
-      help("number of worker threads to start\n"
-        "(default: " + worker_count_default + ')'
-      )
-    )
   ;
   return option_set;
 }
@@ -147,43 +139,6 @@ program_options::argument_map_t service_config (
 }
 
 
-std::string get_string (
-  const std::string &option_name,
-  const program_options::option_set_t &options,
-  const program_options::argument_map_t &command_line,
-  const program_options::argument_map_t &config_file)
-{
-  if (help(command_line))
-  {
-    return {};
-  }
-  return options.back_or_default(option_name, {config_file, command_line});
-}
-
-
-size_t get_uint (
-  const std::string &option_name,
-  const program_options::option_set_t &options,
-  const program_options::argument_map_t &command_line,
-  const program_options::argument_map_t &config_file)
-{
-  if (help(command_line))
-  {
-    return {};
-  }
-
-  auto value = options.back_or_default(option_name, {config_file, command_line});
-  try
-  {
-    return std::stoul(value);
-  }
-  catch (const std::exception &)
-  {
-    throw_runtime_error(option_name, ": invalid argument: ", value);
-  }
-}
-
-
 logger::sink_ptr logger_sink (const std::string &dir, const std::string &sink)
 {
   if (sink == "stdout" || sink == "null")
@@ -198,7 +153,7 @@ logger::sink_ptr logger_sink (const std::string &dir, const std::string &sink)
 }
 
 
-using service_logger_t = std::remove_const_t<decltype(service_base_t::logger)>;
+using service_logger_t = std::remove_const_t<decltype(application_t::logger)>;
 
 
 service_logger_t service_logger (
@@ -211,11 +166,11 @@ service_logger_t service_logger (
     return {};
   }
 
-  auto dir_name = get_string(service_logger_dir,
-    options, command_line, config_file
+  auto dir_name = options.back_or_default(service_logger_dir,
+    {config_file, command_line}
   );
-  auto sink_name = get_string(service_logger_sink,
-    options, command_line, config_file
+  auto sink_name = options.back_or_default(service_logger_sink,
+    {config_file, command_line}
   );
 
   return
@@ -230,7 +185,7 @@ service_logger_t service_logger (
 } // namespace
 
 
-service_base_t::service_base_t (int argc, const char *argv[],
+application_t::application_t (int argc, const char *argv[],
     program_options::option_set_t option_set)
   : name(service_name(argc, argv))
   , path(service_path(argc, argv))
@@ -238,7 +193,6 @@ service_base_t::service_base_t (int argc, const char *argv[],
   , command_line(options.parse<program_options::command_line_t>(argc, argv))
   , config_file(service_config(options, command_line))
   , logger(service_logger(options, command_line, config_file))
-  , worker_count(get_uint(service_worker_count, options, command_line, config_file))
 {
   if (logger.sink == "null")
   {
@@ -247,18 +201,12 @@ service_base_t::service_base_t (int argc, const char *argv[],
 }
 
 
-int service_base_t::usage ()
+int application_t::print_help (std::ostream &os) const
 {
-  std::cout
+  os
     << "usage:\n  " << name << " [options]\n\n"
     << "options:" << options
     << '\n';
-  return EXIT_SUCCESS;
-}
-
-
-int service_base_t::work ()
-{
   return EXIT_SUCCESS;
 }
 

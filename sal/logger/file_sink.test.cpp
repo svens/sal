@@ -10,69 +10,72 @@
 #include <vector>
 
 
-namespace {
+#if __sal_os_windows
+  #include <direct.h>
+  #include <io.h>
+  #define rmdir _rmdir
+#else
+  #include <dirent.h>
+  #include <unistd.h>
+#endif
+
+
+namespace sal_test {
+
 
 #if __sal_os_windows
 
-  #include <direct.h>
-  #include <io.h>
+const std::string permission_denied_dir = "C:/Windows";
 
-  #define rmdir _rmdir
+std::vector<std::string> directory_listing (const std::string &path)
+{
+  auto filespec = path + "/*";
+  std::vector<std::string> result;
 
-  const std::string permission_denied_dir = "C:/Windows";
-
-  auto directory_listing (const std::string &path)
+  struct ::_finddata_t file_info;
+  auto h = ::_findfirst(filespec.c_str(), &file_info);
+  if (h == -1)
   {
-    auto filespec = path + "/*";
-    std::vector<std::string> result;
-
-    struct ::_finddata_t file_info;
-    auto h = ::_findfirst(filespec.c_str(), &file_info);
-    if (h == -1)
-    {
-      return result;
-    }
-
-    do
-    {
-      auto name = std::string(file_info.name);
-      if (name != "." && name != "..")
-      {
-        result.push_back(path + '\\' + name);
-      }
-    } while (::_findnext(h, &file_info) == 0);
-
-    ::_findclose(h);
-
-    std::sort(result.begin(), result.end());
     return result;
   }
+
+  do
+  {
+    auto name = std::string(file_info.name);
+    if (name != "." && name != "..")
+    {
+      result.push_back(path + '\\' + name);
+    }
+  } while (::_findnext(h, &file_info) == 0);
+
+  ::_findclose(h);
+
+  std::sort(result.begin(), result.end());
+  return result;
+}
 
 #else
 
-  #include <dirent.h>
-  #include <unistd.h>
+const std::string permission_denied_dir = "/";
 
-  const std::string permission_denied_dir = "/";
-
-  auto directory_listing (const std::string &path)
+std::vector<std::string> directory_listing (const std::string &path)
+{
+  std::vector<std::string> result;
+  if (auto dir = ::opendir(path.c_str()))
   {
-    std::vector<std::string> result;
-    if (auto dir = ::opendir(path.c_str()))
+    while (auto it = ::readdir(dir))
     {
-      while (auto it = ::readdir(dir))
+      auto name = std::string(it->d_name);
+      if (name != "." && name != "..")
       {
-        auto name = std::string(it->d_name);
-        if (name != "." && name != "..")
-        {
-          result.push_back(path + '/' + name);
-        }
+        result.push_back(path + '/' + name);
       }
-      ::closedir(dir);
     }
-    std::sort(result.begin(), result.end());
-    return result;
+    ::closedir(dir);
   }
+  std::sort(result.begin(), result.end());
+  return result;
+}
 
 #endif
 
@@ -99,10 +102,19 @@ std::string read_file (const std::string &name)
 }
 
 
-inline bool file_contains (const std::string &needle, const std::string &file)
+bool file_contains (const std::string &needle, const std::string &file)
 {
   return read_file(file).find(needle) != std::string::npos;
 }
+
+
+} // sal_test
+
+
+namespace {
+
+
+using namespace sal_test;
 
 
 template <typename Worker>
@@ -185,7 +197,7 @@ TYPED_TEST(logger_file_sink, log_buffered)
   sal_log(channel) << this->case_name;
   for (auto i = 0;  i != 10;  ++i)
   {
-    // log 10 long messages to make sure we hit full buffer conditio
+    // log 10 long messages to make sure we hit full buffer condition
     sal_log(channel) << std::string(sal::logger::event_t::max_message_size/2, 'x');
   }
   this->stop_and_close_logs();

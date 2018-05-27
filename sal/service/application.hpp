@@ -1,14 +1,14 @@
 #pragma once
 
 /**
- * \file sal/service/service_base.hpp
+ * \file sal/service/application.hpp
  */
 
 #include <sal/config.hpp>
 #include <sal/logger/async_worker.hpp>
-#include <sal/logger/logger.hpp>
 #include <sal/program_options/argument_map.hpp>
 #include <sal/program_options/option_set.hpp>
+#include <ostream>
 #include <string>
 
 
@@ -18,25 +18,25 @@ __sal_begin
 namespace service {
 
 
-class service_base_t
+class application_t
 {
 public:
 
   /**
-   * Service name extracted from argv[0] without path (and without extension
-   * on Windows platform)
+   * Application name extracted from argv[0] without path (and without
+   * extension on Windows platform)
    */
   const std::string name;
 
   /**
-   * Service executable path extracted from argv[0] with final directory
+   * Application executable path extracted from argv[0] with final directory
    * separator character.
    */
   const std::string path;
 
   /**
    * Gathered list of application options. All option names starting with
-   * 'service.' are reserved for class service_base_t. Also, option names
+   * 'service.' are reserved for class application_t. Also, option names
    * 'help', 'h', 'config' and 'c' are reserved.
    */
   const program_options::option_set_t options;
@@ -55,12 +55,12 @@ public:
   struct
   {
     /**
-     * Directory where service logs are sent. Used only if sink is file.
+     * Directory where application logs are sent. Used only if sink is file.
      */
     const std::string dir;
 
     /**
-     * Service logger channel sink. Possible values:
+     * Application logger channel sink. Possible values:
      *  - stdout: std::cout
      *  - null: std::cout with channel being disabled
      *  - other values are assumed to be name from which actual filename is
@@ -76,39 +76,35 @@ public:
   } logger;
 
 
-  /**
-   * Number of worker threads to start.
-   */
-  const size_t worker_count;
-
-
-  service_base_t (int argc, const char *argv[],
+  application_t (int argc, const char *argv[],
     program_options::option_set_t options
   );
 
 
-  int run ()
+  bool help_requested () const noexcept
   {
-    if (command_line.has("help"))
-    {
-      return usage();
-    }
-    return work();
+    return command_line.has("help");
   }
 
 
-private:
+  int print_help (std::ostream &os) const;
 
-  int usage ();
-  int work ();
+
+  ///\{
+  // Internal: helpers for sal_log macros to disguise this as channel_t
+
+  auto is_enabled () noexcept
+  {
+    return logger.worker.default_channel().is_enabled();
+  }
+
+  auto make_event ()
+  {
+    return logger.worker.default_channel().make_event();
+  }
+
+  ///\}
 };
-
-
-#define sal_svc_log(svc) \
-  sal_log((svc).logger.worker.default_channel())
-
-#define sal_svc_log_if(svc,expr) \
-  sal_log_if((svc).logger.worker.default_channel(), (expr))
 
 
 } // service
