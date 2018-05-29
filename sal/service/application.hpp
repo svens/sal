@@ -75,8 +75,8 @@ public:
 
   /**
    * Create new application object with command line arguments loaded from
-   * \a argv. \a options describe knows arguments. This class itself adds
-   * arguments:
+   * \a argv. \a options describe known arguments. This class itself adds
+   * following options:
    *  - 'help' or 'h': print help screen with known options
    *  - 'config' or 'c': load configuration from specified file
    *

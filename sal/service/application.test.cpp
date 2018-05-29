@@ -10,8 +10,7 @@ using namespace sal_test;
 
 struct service_application
   : public sal_test::fixture
-{
-};
+{ };
 
 
 TEST_F(service_application, name)
