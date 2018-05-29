@@ -2,9 +2,7 @@
 #include <sal/error.hpp>
 #include <sal/program_options/command_line.hpp>
 #include <sal/program_options/config_reader.hpp>
-#include <sal/logger/file_sink.hpp>
 #include <fstream>
-#include <iostream>
 #include <string_view>
 
 
@@ -15,12 +13,6 @@ namespace service {
 
 
 namespace {
-
-
-// service configuration variables read from command line or config file
-static const std::string
-  service_logger_dir = "service.logger.dir",
-  service_logger_sink = "service.logger.sink";
 
 
 #if __sal_os_linux || __sal_os_macos
@@ -43,7 +35,7 @@ static const std::string
 #endif
 
 
-std::string_view service_name (int argc, const char *argv[])
+std::string_view app_name (int argc, const char *argv[])
 {
   sal_throw_if(argc == 0);
   std::string_view result = argv[0];
@@ -65,7 +57,7 @@ std::string_view service_name (int argc, const char *argv[])
 }
 
 
-std::string_view service_path (int argc, const char *argv[])
+std::string_view app_path (int argc, const char *argv[])
 {
   sal_throw_if(argc == 0);
   std::string_view result = argv[0];
@@ -80,15 +72,12 @@ std::string_view service_path (int argc, const char *argv[])
 }
 
 
-program_options::option_set_t service_options (
-  const std::string &service_name,
+program_options::option_set_t app_options (const std::string &app_name,
   sal::program_options::option_set_t option_set)
 {
   using namespace program_options;
 
-  auto config_default = service_name + ".conf";
-  auto worker_count_default = std::to_string(std::thread::hardware_concurrency());
-
+  auto config_default = app_name + ".conf";
   option_set
     .add({"help", "h"},
       help("display this help and exit")
@@ -99,37 +88,16 @@ program_options::option_set_t service_options (
         "(default: " + config_default + ')'
       )
     )
-    .add({service_logger_dir},
-      requires_argument("STRING", "logs"),
-      help("service logs directory. "
-        "This directory is created if it does not exist.\n"
-        "(default: logs)"
-      )
-    )
-    .add({service_logger_sink},
-      requires_argument("STRING", "stdout"),
-      help("service logger destination\n"
-        "stdout: send service log messages to stdout (default)\n"
-        "filename: send service log messages to specified file"
-        "null: disable service logging\n"
-      )
-    )
   ;
   return option_set;
 }
 
 
-inline bool help (const program_options::argument_map_t &command_line) noexcept
-{
-  return command_line.has("help");
-}
-
-
-program_options::argument_map_t service_config (
+program_options::argument_map_t app_config (
   const program_options::option_set_t &options,
   const program_options::argument_map_t &command_line)
 {
-  if (help(command_line))
+  if (command_line.has("help"))
   {
     std::istringstream iss;
     return options.parse<program_options::config_reader_t>(iss);
@@ -139,69 +107,20 @@ program_options::argument_map_t service_config (
 }
 
 
-logger::sink_ptr logger_sink (const std::string &dir, const std::string &sink)
-{
-  if (sink == "stdout" || sink == "null")
-  {
-    return logger::ostream_sink(std::cout);
-  }
-  return logger::file(sink,
-    logger::set_file_dir(dir),
-    logger::set_file_utc_time(true),
-    logger::set_file_buffer_size_kb(64)
-  );
-}
-
-
-using service_logger_t = std::remove_const_t<decltype(application_t::logger)>;
-
-
-service_logger_t service_logger (
-  const program_options::option_set_t &options,
-  const program_options::argument_map_t &command_line,
-  const program_options::argument_map_t &config_file)
-{
-  if (help(command_line))
-  {
-    return {};
-  }
-
-  auto dir_name = options.back_or_default(service_logger_dir,
-    {config_file, command_line}
-  );
-  auto sink_name = options.back_or_default(service_logger_sink,
-    {config_file, command_line}
-  );
-
-  return
-  {
-    dir_name,
-    sink_name,
-    {logger::set_channel_sink(logger_sink(dir_name, sink_name))},
-  };
-}
-
-
 } // namespace
 
 
 application_t::application_t (int argc, const char *argv[],
     program_options::option_set_t option_set)
-  : name(service_name(argc, argv))
-  , path(service_path(argc, argv))
-  , options(service_options(name, option_set))
+  : name(app_name(argc, argv))
+  , path(app_path(argc, argv))
+  , options(app_options(name, option_set))
   , command_line(options.parse<program_options::command_line_t>(argc, argv))
-  , config_file(service_config(options, command_line))
-  , logger(service_logger(options, command_line, config_file))
-{
-  if (logger.sink == "null")
-  {
-    logger.worker.default_channel().set_enabled(false);
-  }
-}
+  , config_file(app_config(options, command_line))
+{ }
 
 
-int application_t::print_help (std::ostream &os) const
+int application_t::help (std::ostream &os) const
 {
   os
     << "usage:\n  " << name << " [options]\n\n"
