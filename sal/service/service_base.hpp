@@ -26,33 +26,39 @@ class service_base_t
 public:
 
   /**
-   * Service logger related members.
+   * Service configuration collected from config file and command line.
    */
   struct
   {
     /**
-     * Directory where service logs are sent. Used only if sink is file.
-     * Configurable using option "service.logger.dir".
+     * Service logger related configuration.
      */
-    const std::string dir;
+    struct
+    {
+      /**
+       * Directory where service logs are sent. Used only if sink is file.
+       * Configurable using option "service.logger.dir".
+       */
+      const std::string dir;
 
-    /**
-     * Service logger channel sink. Possible values:
-     *  - stdout: std::cout
-     *  - null: std::cout with channel being disabled
-     *  - other values are assumed to be name from which actual filename is
-     *    composed. This value is passed to logger::file()
-     *
-     * Configurable using option "service.logger.sink".
-     */
-    const std::string sink;
+      /**
+       * Service logger channel sink. Possible values:
+       *  - stdout: std::cout
+       *  - null: std::cout with channel being disabled
+       *  - other values are assumed to be name from which actual filename is
+       *    composed. This value is passed to logger::file()
+       *
+       * Configurable using option "service.logger.sink".
+       */
+      const std::string sink;
+    } const logger;
+  } const config;
 
-    /**
-     * Asynchronous logger worker. It launches separate thread receiving
-     * messages and writing those to sink.
-     */
-    logger::async_worker_t worker;
-  } logger;
+
+  /**
+   * Service logger worker.
+   */
+  logger::async_worker_t logger;
 
 
   /**
@@ -75,12 +81,12 @@ public:
 
   auto is_enabled () noexcept
   {
-    return logger.worker.default_channel().is_enabled();
+    return logger.default_channel().is_enabled();
   }
 
   auto make_event ()
   {
-    return logger.worker.default_channel().make_event();
+    return logger.default_channel().make_event();
   }
 
   ///\}

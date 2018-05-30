@@ -46,23 +46,10 @@ program_options::option_set_t with_service_options (
 }
 
 
-logger::sink_ptr make_logger_sink (
-  const std::string &dir,
-  const std::string &sink)
-{
-  if (sink == "stdout" || sink == "null")
-  {
-    return logger::ostream_sink(std::cout);
-  }
-  return logger::file(sink,
-    logger::set_file_dir(dir),
-    logger::set_file_utc_time(true),
-    logger::set_file_buffer_size_kb(64)
-  );
-}
+using service_config_t = std::remove_const_t<decltype(service_base_t::config)>;
 
 
-std::remove_const_t<decltype(service_base_t::logger)> service_logger (
+service_config_t service_config (
   const program_options::option_set_t &options,
   const program_options::argument_map_t &command_line,
   const program_options::argument_map_t &config_file)
@@ -72,18 +59,43 @@ std::remove_const_t<decltype(service_base_t::logger)> service_logger (
     return {};
   }
 
-  auto dir_name = options.back_or_default(service_logger_dir,
-    {config_file, command_line}
-  );
-  auto sink_name = options.back_or_default(service_logger_sink,
-    {config_file, command_line}
-  );
+  return
+  {
+    {
+      options.back_or_default(service_logger_dir,
+        {config_file, command_line}
+      ),
+      options.back_or_default(service_logger_sink,
+        {config_file, command_line}
+      ),
+    },
+  };
+}
+
+
+logger::async_worker_t service_logger (
+  const program_options::argument_map_t &command_line,
+  const service_config_t &config)
+{
+  if (command_line.has("help"))
+  {
+    return {};
+  }
+
+  if (config.logger.sink == "stdout" || config.logger.sink == "null")
+  {
+    return {logger::set_channel_sink(logger::ostream_sink(std::cout))};
+  }
 
   return
   {
-    dir_name,
-    sink_name,
-    {logger::set_channel_sink(make_logger_sink(dir_name, sink_name))},
+    logger::set_channel_sink(
+      logger::file(config.logger.sink,
+        logger::set_file_dir(config.logger.dir),
+        logger::set_file_utc_time(true),
+        logger::set_file_buffer_size_kb(64)
+      )
+    )
   };
 }
 
@@ -94,11 +106,12 @@ std::remove_const_t<decltype(service_base_t::logger)> service_logger (
 service_base_t::service_base_t (int argc, const char *argv[],
     program_options::option_set_t option_set)
   : application_t(argc, argv, with_service_options(option_set))
-  , logger(service_logger(options, command_line, config_file))
+  , config(service_config(options, command_line, config_file))
+  , logger(service_logger(command_line, config))
 {
-  if (logger.sink == "null")
+  if (config.logger.sink == "null")
   {
-    logger.worker.default_channel().set_enabled(false);
+    logger.default_channel().set_enabled(false);
   }
 }
 
