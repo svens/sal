@@ -116,6 +116,29 @@ service_base_t::service_base_t (int argc, const char *argv[],
 }
 
 
+void service_base_t::start (event_handler_t &event_handler)
+{
+  event_handler.service_start();
+}
+
+
+void service_base_t::tick (event_handler_t &event_handler,
+  const std::chrono::milliseconds &tick_interval)
+{
+  event_handler.service_tick(now_);
+  if (exit_code_ < 0)
+  {
+    std::this_thread::sleep_for(tick_interval);
+  }
+}
+
+
+void service_base_t::stop (event_handler_t &event_handler)
+{
+  event_handler.service_stop();
+}
+
+
 } // namespace service
 
 

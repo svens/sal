@@ -76,6 +76,66 @@ public:
   );
 
 
+  struct event_handler_t
+  {
+    virtual ~event_handler_t () = default;
+
+    virtual void service_start ()
+    { }
+
+    virtual void service_stop ()
+    { }
+
+    virtual void service_tick (const sal::time_t &now)
+    {
+      (void)now;
+    }
+  };
+
+
+  template <typename Rep, typename Period>
+  int run (event_handler_t &event_handler,
+    const std::chrono::duration<Rep, Period> &tick_interval)
+  {
+    using namespace std::chrono;
+    const auto tick_interval_ms = duration_cast<milliseconds>(tick_interval);
+
+    start(event_handler);
+    for (now_ = sal::now();  exit_code_ < 0;  now_ = sal::now())
+    {
+      tick(event_handler, tick_interval_ms);
+    }
+    stop(event_handler);
+    return exit_code_;
+  }
+
+
+  int run (event_handler_t &event_handler)
+  {
+    constexpr auto tick_interval = std::chrono::seconds{1};
+    return run(event_handler, tick_interval);
+  }
+
+
+  /**
+   * Set exit code. Allow success turn into error but not other way around.
+   */
+  void exit (int code) noexcept
+  {
+    if (exit_code_ < 1)
+    {
+      exit_code_ = code;
+    }
+  }
+
+
+  std::chrono::seconds uptime () const noexcept
+  {
+    using namespace std::chrono;
+    return duration_cast<seconds>(now_ - start_time_);
+  }
+
+
   ///\{
   // Internal: helpers for sal_log macros to disguise this as channel_t
 
@@ -90,6 +150,18 @@ public:
   }
 
   ///\}
+
+
+private:
+
+  int exit_code_ = -1;
+  sal::time_t now_ = sal::now(), start_time_ = now_;
+
+  void start (event_handler_t &event_handler);
+  void tick (event_handler_t &event_handler,
+    const std::chrono::milliseconds &tick_interval
+  );
+  void stop (event_handler_t &event_handler);
 };
 
 

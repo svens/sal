@@ -24,7 +24,7 @@ TEST_F(service_application, name)
 #endif
   };
 
-  sal::service::application_t app(1, argv, {});
+  sal::service::application_t app(std::size(argv), argv, {});
   EXPECT_EQ("app", app.name);
 #if __sal_os_windows
   EXPECT_EQ(".\\", app.path);
@@ -45,7 +45,7 @@ TEST_F(service_application, name_with_path)
 #endif
   };
 
-  sal::service::application_t app(1, argv, {});
+  sal::service::application_t app(std::size(argv), argv, {});
   EXPECT_EQ("app", app.name);
 #if __sal_os_windows
   EXPECT_EQ("..\\..\\", app.path);
@@ -66,7 +66,7 @@ TEST_F(service_application, name_with_root)
 #endif
   };
 
-  sal::service::application_t app(1, argv, {});
+  sal::service::application_t app(std::size(argv), argv, {});
   EXPECT_EQ("app", app.name);
 #if __sal_os_windows
   EXPECT_EQ("\\", app.path);
@@ -96,7 +96,7 @@ TEST_F(service_application, add_options)
     "--version",
   };
 
-  sal::service::application_t app(2, argv, options);
+  sal::service::application_t app(std::size(argv), argv, options);
   std::ostringstream oss;
   app.help(oss);
   auto help = oss.str();
@@ -118,7 +118,7 @@ TEST_F(service_application, add_reserved_options)
   };
 
   EXPECT_THROW(
-    sal::service::application_t(1, argv, options),
+    sal::service::application_t(std::size(argv), argv, options),
     duplicate_option_name_error
   );
 }
@@ -131,7 +131,7 @@ TEST_F(service_application, help)
     "app",
     "--help",
   };
-  sal::service::application_t app(2, argv, {});
+  sal::service::application_t app(std::size(argv), argv, {});
   EXPECT_TRUE(app.help_requested());
 
   std::ostringstream oss;
@@ -148,7 +148,7 @@ TEST_F(service_application, no_help)
   {
     "app",
   };
-  sal::service::application_t app(1, argv, {});
+  sal::service::application_t app(std::size(argv), argv, {});
   EXPECT_FALSE(app.help_requested());
 }
 
@@ -161,7 +161,7 @@ TEST_F(service_application, invalid_option)
     "--invalid",
   };
   EXPECT_THROW(
-    sal::service::application_t(2, argv, {}),
+    sal::service::application_t(std::size(argv), argv, {}),
     sal::program_options::unknown_option_error
   );
 }
@@ -174,7 +174,7 @@ TEST_F(service_application, positional_argument)
     "app",
     case_name.c_str(),
   };
-  sal::service::application_t app(2, argv, {});
+  sal::service::application_t app(std::size(argv), argv, {});
 
   auto &args = app.command_line.positional_arguments();
   ASSERT_EQ(1U, args.size());

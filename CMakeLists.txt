@@ -76,7 +76,8 @@ if(sal_unittests)
   add_executable(unittests ${sal_unittests_sources})
   target_link_libraries(unittests
     sal
-    gtest_main
+    gtest
+    gmock_main
     ${SAL_DEP_LIBS}
   )
   add_dependencies(unittests gtest)
