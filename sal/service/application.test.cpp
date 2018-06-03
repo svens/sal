@@ -10,21 +10,28 @@ using namespace sal_test;
 
 struct service_application
   : public sal_test::fixture
-{ };
+{
+  template <size_t N>
+  auto make_app (const char *(&&args)[N],
+    sal::program_options::option_set_t options={})
+  {
+    return sal::service::application_t(
+      static_cast<int>(std::size(args)), args, options
+    );
+  }
+};
 
 
 TEST_F(service_application, name)
 {
-  const char *argv[] =
-  {
+  auto app = make_app({
 #if __sal_os_windows
     "app.exe",
 #else
     "app",
 #endif
-  };
+  });
 
-  sal::service::application_t app(std::size(argv), argv, {});
   EXPECT_EQ("app", app.name);
 #if __sal_os_windows
   EXPECT_EQ(".\\", app.path);
@@ -36,16 +43,14 @@ TEST_F(service_application, name)
 
 TEST_F(service_application, name_with_path)
 {
-  const char *argv[] =
-  {
+  auto app = make_app({
 #if __sal_os_windows
     "..\\..\\app.exe"
 #else
     "../../app"
 #endif
-  };
+  });
 
-  sal::service::application_t app(std::size(argv), argv, {});
   EXPECT_EQ("app", app.name);
 #if __sal_os_windows
   EXPECT_EQ("..\\..\\", app.path);
@@ -57,16 +62,14 @@ TEST_F(service_application, name_with_path)
 
 TEST_F(service_application, name_with_root)
 {
-  const char *argv[] =
-  {
+  auto app = make_app({
 #if __sal_os_windows
     "\\app.exe"
 #else
     "/app"
 #endif
-  };
+  });
 
-  sal::service::application_t app(std::size(argv), argv, {});
   EXPECT_EQ("app", app.name);
 #if __sal_os_windows
   EXPECT_EQ("\\", app.path);
@@ -90,13 +93,7 @@ TEST_F(service_application, add_options)
   using namespace sal::program_options;
   auto options = option_set_t().add({"version"}, help(case_name));
 
-  const char *argv[] =
-  {
-    "app",
-    "--version",
-  };
-
-  sal::service::application_t app(std::size(argv), argv, options);
+  auto app = make_app({"app", "--version"}, options);
   std::ostringstream oss;
   app.help(oss);
   auto help = oss.str();
@@ -112,13 +109,8 @@ TEST_F(service_application, add_reserved_options)
   using namespace sal::program_options;
   auto options = option_set_t().add({"help"}, help(case_name));
 
-  const char *argv[] =
-  {
-    "app",
-  };
-
   EXPECT_THROW(
-    sal::service::application_t(std::size(argv), argv, options),
+    make_app({"app"}, options),
     duplicate_option_name_error
   );
 }
@@ -126,12 +118,7 @@ TEST_F(service_application, add_reserved_options)
 
 TEST_F(service_application, help)
 {
-  const char *argv[] =
-  {
-    "app",
-    "--help",
-  };
-  sal::service::application_t app(std::size(argv), argv, {});
+  auto app = make_app({"app", "--help"});
   EXPECT_TRUE(app.help_requested());
 
   std::ostringstream oss;
@@ -144,24 +131,15 @@ TEST_F(service_application, help)
 
 TEST_F(service_application, no_help)
 {
-  const char *argv[] =
-  {
-    "app",
-  };
-  sal::service::application_t app(std::size(argv), argv, {});
+  auto app = make_app({"app"});
   EXPECT_FALSE(app.help_requested());
 }
 
 
 TEST_F(service_application, invalid_option)
 {
-  const char *argv[] =
-  {
-    "app",
-    "--invalid",
-  };
   EXPECT_THROW(
-    sal::service::application_t(std::size(argv), argv, {}),
+    make_app({"app", "--invalid"}),
     sal::program_options::unknown_option_error
   );
 }
@@ -169,13 +147,10 @@ TEST_F(service_application, invalid_option)
 
 TEST_F(service_application, positional_argument)
 {
-  const char *argv[] =
-  {
+  auto app = make_app({
     "app",
-    case_name.c_str(),
-  };
-  sal::service::application_t app(std::size(argv), argv, {});
-
+    case_name.c_str()
+  });
   auto &args = app.command_line.positional_arguments();
   ASSERT_EQ(1U, args.size());
   EXPECT_EQ(case_name, args[0]);

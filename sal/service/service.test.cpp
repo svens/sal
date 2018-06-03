@@ -12,13 +12,19 @@ using namespace std::chrono_literals;
 struct service
   : public sal_test::fixture
 {
+  template <size_t N>
+  auto make_service (const char *(&&args)[N])
+  {
+    return sal::service::service_t<service>(
+      static_cast<int>(std::size(args)),
+      args,
+      {}
+    );
+  }
+
   auto make_service ()
   {
-    const char *argv[] =
-    {
-      "svc",
-    };
-    return sal::service::service_t<service>(std::size(argv), argv, {});
+    return make_service({"svc"});
   }
 };
 

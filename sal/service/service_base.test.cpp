@@ -15,13 +15,19 @@ using namespace sal_test;
 struct service_base
   : public sal_test::fixture
 {
+  template <size_t N>
+  auto make_service (const char *(&&args)[N])
+  {
+    return sal::service::service_base_t(
+      static_cast<int>(std::size(args)),
+      args,
+      {}
+    );
+  }
+
   auto make_service ()
   {
-    const char *argv[] =
-    {
-      "svc",
-    };
-    return sal::service::service_base_t(std::size(argv), argv, {});
+    return make_service({"svc"});
   }
 };
 
@@ -34,12 +40,7 @@ using ::testing::Throw;
 
 TEST_F(service_base, help)
 {
-  const char *argv[] =
-  {
-    "svc",
-    "--help",
-  };
-  sal::service::service_base_t svc(std::size(argv), argv, {});
+  auto svc = make_service({"svc", "--help"});
   EXPECT_TRUE(svc.help_requested());
 
   std::ostringstream oss;
@@ -57,12 +58,7 @@ TEST_F(service_base, logger_stdout)
   std::ostringstream oss;
   auto rdbuf = std::cout.rdbuf(oss.rdbuf());
   {
-    const char *argv[] =
-    {
-      "svc",
-      "--service.logger.sink=stdout",
-    };
-    sal::service::service_base_t svc(std::size(argv), argv, {});
+    auto svc = make_service({"svc", "--service.logger.sink=stdout"});
     sal_log(svc) << case_name;
   }
   std::cout.rdbuf(rdbuf);
@@ -77,12 +73,7 @@ TEST_F(service_base, logger_null)
   std::ostringstream oss;
   auto rdbuf = std::cout.rdbuf(oss.rdbuf());
   {
-    const char *argv[] =
-    {
-      "svc",
-      "--service.logger.sink=null",
-    };
-    sal::service::service_base_t svc(std::size(argv), argv, {});
+    auto svc = make_service({"svc", "--service.logger.sink=null"});
     sal_log(svc) << case_name;
   }
   std::cout.rdbuf(rdbuf);
@@ -110,13 +101,11 @@ TEST_F(service_base, logger_file)
   clean_logs("logs");
 
   {
-    const char *argv[] =
-    {
+    auto svc = make_service({
       "svc",
       "--service.logger.dir=logs",
-      "--service.logger.sink=svc",
-    };
-    sal::service::service_base_t svc(std::size(argv), argv, {});
+      "--service.logger.sink=svc"
+    });
     sal_log(svc) << case_name;
   }
 
