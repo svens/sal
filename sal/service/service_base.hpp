@@ -8,6 +8,7 @@
 #include <sal/config.hpp>
 #include <sal/service/application.hpp>
 #include <sal/logger/async_worker.hpp>
+#include <sal/net/async_service.hpp>
 
 
 __sal_begin
@@ -26,6 +27,11 @@ class service_base_t
 public:
 
   /**
+   * This class creation time.
+   */
+  const sal::time_t start_time = sal::now();
+
+  /**
    * Service configuration collected from config file and command line.
    */
   struct
@@ -39,7 +45,7 @@ public:
        * Directory where service logs are sent. Used only if sink is file.
        * Configurable using option "service.logger.dir".
        */
-      const std::string dir;
+      std::string dir;
 
       /**
        * Service logger channel sink. Possible values:
@@ -50,8 +56,14 @@ public:
        *
        * Configurable using option "service.logger.sink".
        */
-      const std::string sink;
-    } const logger;
+      std::string sink;
+    } logger;
+
+    /**
+     * Number of service worker threads. Defaults to number of cores.
+     * Configurable using option "service.thread_count".
+     */
+    size_t thread_count;
   } const config;
 
 
@@ -59,6 +71,12 @@ public:
    * Service logger worker.
    */
   logger::async_worker_t logger;
+
+
+  /**
+   * Asynchronous networking service.
+   */
+  net::async_service_t async_net;
 
 
   /**
@@ -74,6 +92,9 @@ public:
   service_base_t (int argc, const char *argv[],
     program_options::option_set_t options
   );
+
+
+  ~service_base_t () noexcept;
 
 
   struct event_handler_t
@@ -97,23 +118,30 @@ public:
   int run (event_handler_t &event_handler,
     const std::chrono::duration<Rep, Period> &tick_interval)
   {
-    using namespace std::chrono;
-    const auto tick_interval_ms = duration_cast<milliseconds>(tick_interval);
-
-    start(event_handler);
-    for (now_ = sal::now();  exit_code_ < 0;  now_ = sal::now())
+    try
     {
-      tick(event_handler, tick_interval_ms);
+      service_start(event_handler);
+      while (exit_code_ < 0)
+      {
+        using namespace std::chrono;
+        service_tick(event_handler, duration_cast<milliseconds>(tick_interval));
+      }
+      service_stop(event_handler);
     }
-    stop(event_handler);
+    catch (...)
+    {
+      exit(EXIT_FAILURE);
+      throw;
+    }
+
     return exit_code_;
   }
 
 
   int run (event_handler_t &event_handler)
   {
-    constexpr auto tick_interval = std::chrono::seconds{1};
-    return run(event_handler, tick_interval);
+    using namespace std::chrono_literals;
+    return run(event_handler, 1s);
   }
 
 
@@ -132,7 +160,7 @@ public:
   std::chrono::seconds uptime () const noexcept
   {
     using namespace std::chrono;
-    return duration_cast<seconds>(now_ - start_time_);
+    return duration_cast<seconds>(now_ - start_time);
   }
 
 
@@ -155,13 +183,20 @@ public:
 private:
 
   int exit_code_ = -1;
-  sal::time_t now_ = sal::now(), start_time_ = now_;
+  sal::time_t now_ = start_time;
 
-  void start (event_handler_t &event_handler);
-  void tick (event_handler_t &event_handler,
+  struct impl_t;
+  std::unique_ptr<impl_t> impl_;
+
+  void service_start (event_handler_t &event_handler);
+  void service_stop (event_handler_t &event_handler);
+
+  void service_tick (event_handler_t &event_handler,
     const std::chrono::milliseconds &tick_interval
   );
-  void stop (event_handler_t &event_handler);
+
+  void service_poll (event_handler_t &event_handler) noexcept;
+
 };
 
 

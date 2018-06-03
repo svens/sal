@@ -4,6 +4,7 @@
 #include <sal/common.test.hpp>
 #include <sal/logger/common.test.hpp>
 #include <cstdio>
+#include <thread>
 
 
 namespace {
@@ -50,6 +51,7 @@ TEST_F(service_base, help)
   EXPECT_NE(help.npos, help.find("help"));
   EXPECT_NE(help.npos, help.find("service.logger.dir"));
   EXPECT_NE(help.npos, help.find("service.logger.sink"));
+  EXPECT_NE(help.npos, help.find("service.thread_count"));
 }
 
 
@@ -114,6 +116,20 @@ TEST_F(service_base, logger_file)
   EXPECT_TRUE(file_contains(case_name, logs[0]));
 
   clean_logs("logs");
+}
+
+
+TEST_F(service_base, thread_count_default)
+{
+  auto svc = make_service();
+  EXPECT_EQ(std::thread::hardware_concurrency(), svc.config.thread_count);
+}
+
+
+TEST_F(service_base, thread_count)
+{
+  auto svc = make_service({"svc", "--service.thread_count=3"});
+  EXPECT_EQ(3U, svc.config.thread_count);
 }
 
 

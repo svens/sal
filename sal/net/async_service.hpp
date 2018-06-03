@@ -305,7 +305,7 @@ public:
 
   /**
    * Return completed I/O operation handle for asynchronous operation. If none
-   * is immediately available, this methods wait for more completions until
+   * is immediately available, this method waits for more completions until
    * \a timeout has passed. If still no completions, \c nullptr is returned.
    *
    * On waiting failure, \a error is set and nullptr is returned.
