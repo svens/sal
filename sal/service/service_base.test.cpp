@@ -11,6 +11,7 @@ namespace {
 
 
 using namespace sal_test;
+using namespace std::chrono_literals;
 
 
 struct service_base
@@ -133,22 +134,13 @@ TEST_F(service_base, thread_count)
 }
 
 
-TEST_F(service_base, event_handler)
-{
-  sal::service::service_base_t::event_handler_t event_handler;
-  EXPECT_NO_THROW(event_handler.service_start());
-  EXPECT_NO_THROW(event_handler.service_tick({}));
-  EXPECT_NO_THROW(event_handler.service_stop());
-}
-
-
 TEST_F(service_base, exit_during_start)
 {
   auto svc = make_service();
-  ::testing::StrictMock<service_event_handler_mock_t> event_handler;
+  ::testing::NiceMock<service_event_handler_mock_t> event_handler;
 
-  EXPECT_CALL(event_handler, service_start())
-    .WillOnce(
+  ON_CALL(event_handler, service_start(_))
+    .WillByDefault(
       InvokeWithoutArgs([&]()
       {
         svc.exit(EXIT_FAILURE);
@@ -157,19 +149,17 @@ TEST_F(service_base, exit_during_start)
 
   EXPECT_CALL(event_handler, service_stop());
 
-  EXPECT_EQ(EXIT_FAILURE, svc.run(event_handler));
+  EXPECT_EQ(EXIT_FAILURE, svc.run(event_handler, 10ms));
 }
 
 
 TEST_F(service_base, exit_during_tick)
 {
   auto svc = make_service();
-  ::testing::StrictMock<service_event_handler_mock_t> event_handler;
+  ::testing::NiceMock<service_event_handler_mock_t> event_handler;
 
-  EXPECT_CALL(event_handler, service_start());
-
-  EXPECT_CALL(event_handler, service_tick(_))
-    .WillOnce(
+  ON_CALL(event_handler, service_tick(_))
+    .WillByDefault(
       InvokeWithoutArgs([&]()
       {
         svc.exit(EXIT_FAILURE);
@@ -185,14 +175,14 @@ TEST_F(service_base, exit_during_tick)
 TEST_F(service_base, throw_during_start)
 {
   auto svc = make_service();
-  ::testing::StrictMock<service_event_handler_mock_t> event_handler;
+  ::testing::NiceMock<service_event_handler_mock_t> event_handler;
 
-  EXPECT_CALL(event_handler, service_start())
-    .WillOnce(Throw(std::runtime_error(case_name)));
+  ON_CALL(event_handler, service_start(_))
+    .WillByDefault(Throw(std::runtime_error(case_name)));
 
   try
   {
-    svc.run(event_handler);
+    svc.run(event_handler, 10ms);
     FAIL();
   }
   catch (const std::runtime_error &e)
@@ -205,12 +195,10 @@ TEST_F(service_base, throw_during_start)
 TEST_F(service_base, throw_during_tick)
 {
   auto svc = make_service();
-  ::testing::StrictMock<service_event_handler_mock_t> event_handler;
+  ::testing::NiceMock<service_event_handler_mock_t> event_handler;
 
-  EXPECT_CALL(event_handler, service_start());
-
-  EXPECT_CALL(event_handler, service_tick(_))
-    .WillOnce(Throw(std::runtime_error(case_name)));
+  ON_CALL(event_handler, service_tick(_))
+    .WillByDefault(Throw(std::runtime_error(case_name)));
 
   try
   {
@@ -227,20 +215,18 @@ TEST_F(service_base, throw_during_tick)
 TEST_F(service_base, throw_during_stop)
 {
   auto svc = make_service();
-  ::testing::StrictMock<service_event_handler_mock_t> event_handler;
+  ::testing::NiceMock<service_event_handler_mock_t> event_handler;
 
-  EXPECT_CALL(event_handler, service_start());
-
-  EXPECT_CALL(event_handler, service_tick(_))
-    .WillOnce(
+  ON_CALL(event_handler, service_tick(_))
+    .WillByDefault(
       InvokeWithoutArgs([&]()
       {
         svc.exit(EXIT_SUCCESS);
       })
     );
 
-  EXPECT_CALL(event_handler, service_stop())
-    .WillOnce(Throw(std::runtime_error(case_name)));
+  ON_CALL(event_handler, service_stop())
+    .WillByDefault(Throw(std::runtime_error(case_name)));
 
   try
   {
@@ -272,7 +258,6 @@ TEST_F(service_base, tick_frequency)
       )
     );
 
-  using namespace std::chrono_literals;
   constexpr auto tick_interval = 10ms;
   EXPECT_EQ(EXIT_SUCCESS, svc.run(event_handler, tick_interval));
   EXPECT_LE(first + tick_interval, second);

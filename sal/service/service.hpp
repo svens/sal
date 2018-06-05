@@ -51,17 +51,19 @@ private:
       : service(service)
     { }
 
-    void service_start () final override
-    { }
-
-    void service_stop () final override
-    { }
+    void service_start (net::async_service_t::context_t &context) final override
+    {
+      (void)context;
+    }
 
     void service_tick (const sal::time_t &now) final override
     {
       (void)now;
       service.exit(EXIT_SUCCESS);
     }
+
+    void service_stop () final override
+    { }
   } event_handler_{*this};
 };
 

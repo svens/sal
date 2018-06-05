@@ -101,16 +101,9 @@ public:
   {
     virtual ~event_handler_t () = default;
 
-    virtual void service_start ()
-    { }
-
-    virtual void service_stop ()
-    { }
-
-    virtual void service_tick (const sal::time_t &now)
-    {
-      (void)now;
-    }
+    virtual void service_start (net::async_service_t::context_t &context) = 0;
+    virtual void service_stop () = 0;
+    virtual void service_tick (const sal::time_t &now) = 0;
   };
 
 
@@ -118,21 +111,12 @@ public:
   int run (event_handler_t &event_handler,
     const std::chrono::duration<Rep, Period> &tick_interval)
   {
-    try
-    {
-      service_start(event_handler);
-      while (exit_code_ < 0)
-      {
-        using namespace std::chrono;
-        service_tick(event_handler, duration_cast<milliseconds>(tick_interval));
-      }
-      service_stop(event_handler);
-    }
-    catch (...)
-    {
-      exit(EXIT_FAILURE);
-      throw;
-    }
+    using namespace std::chrono;
+    auto tick_interval_ms = duration_cast<milliseconds>(tick_interval);
+
+    service_start(event_handler);
+    while (service_tick(event_handler, tick_interval_ms)) /**/;
+    service_stop(event_handler);
 
     return exit_code_;
   }
@@ -146,14 +130,12 @@ public:
 
 
   /**
-   * Set exit code. Allow success turn into error but not other way around.
+   * Set exit code.
    */
-  void exit (int code) noexcept
+  bool exit (int code) noexcept
   {
-    if (exit_code_ < 1)
-    {
-      exit_code_ = code;
-    }
+    int run_code = -1;
+    return exit_code_.compare_exchange_strong(run_code, code);
   }
 
 
@@ -182,7 +164,7 @@ public:
 
 private:
 
-  int exit_code_ = -1;
+  std::atomic<int> exit_code_{-1};
   sal::time_t now_ = start_time;
 
   struct impl_t;
@@ -191,12 +173,11 @@ private:
   void service_start (event_handler_t &event_handler);
   void service_stop (event_handler_t &event_handler);
 
-  void service_tick (event_handler_t &event_handler,
+  bool service_tick (event_handler_t &event_handler,
     const std::chrono::milliseconds &tick_interval
   );
 
   void service_poll (event_handler_t &event_handler) noexcept;
-
 };
 
 

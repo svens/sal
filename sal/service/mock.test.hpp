@@ -15,8 +15,8 @@ namespace sal_test {
 struct service_event_handler_mock_t
   : public sal::service::service_base_t::event_handler_t
 {
-  MOCK_METHOD0(service_start,
-    void()
+  MOCK_METHOD1(service_start,
+    void(sal::net::async_service_t::context_t&)
   );
 
   MOCK_METHOD0(service_stop,
