@@ -3,6 +3,7 @@
 #include <sal/logger/file_sink.hpp>
 #include <sal/program_options/command_line.hpp>
 #include <sal/program_options/config_reader.hpp>
+#include <condition_variable>
 #include <exception>
 #include <mutex>
 
