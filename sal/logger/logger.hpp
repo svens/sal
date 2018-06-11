@@ -29,7 +29,8 @@ namespace logger {
  * sal_log(channel) << "result=" << slow_call();
  * \endcode
  *
- * In case of disabled logging, statement is rendered to channel.is_enabled()
+ * In case of disabled logging, statement is rendered to
+ * channel.is_logger_channel_enabled()
  * call. In else branch, unnamed event_ptr object is instantiated for logging.
  * Event message is logged when going out of scope.
  *
@@ -46,8 +47,8 @@ namespace logger {
  * \endcode
  */
 #define sal_log(channel) \
-  if (!(channel).is_enabled()) /**/; \
-  else (channel).make_event()->message
+  if (!(channel).is_logger_channel_enabled()) /**/; \
+  else (channel).make_logger_event()->message
 
 
 /**
@@ -63,9 +64,9 @@ namespace logger {
  * enabled.
  */
 #define sal_log_if(channel,expr) \
-  if (!(channel).is_enabled()) /**/; \
+  if (!(channel).is_logger_channel_enabled()) /**/; \
   else if (!(expr)) /**/; \
-  else (channel).make_event()->message
+  else (channel).make_logger_event()->message
 
 
 /**

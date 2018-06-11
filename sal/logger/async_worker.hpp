@@ -55,7 +55,7 @@ private:
   impl_ptr start ();
   impl_ptr impl_ = start();
 
-  event_ptr make_event (const channel_type &channel) noexcept;
+  event_ptr make_logger_event (const channel_type &channel) noexcept;
   friend class channel_t<async_worker_t>;
 };
 

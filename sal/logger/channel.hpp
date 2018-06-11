@@ -69,7 +69,7 @@ public:
   /**
    * Return true if logging events to this channel are enabled.
    */
-  bool is_enabled () const noexcept
+  bool is_logger_channel_enabled () const noexcept
   {
     return impl_.is_enabled;
   }
@@ -90,9 +90,9 @@ public:
    * \note Event creation is unconditional, even if is_enabled() returns
    * false. Use logging macros that do this checking.
    */
-  event_ptr make_event () const
+  event_ptr make_logger_event () const
   {
-    return impl_.worker.make_event(*this);
+    return impl_.worker.make_logger_event(*this);
   }
 
 

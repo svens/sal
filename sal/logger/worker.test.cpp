@@ -29,18 +29,18 @@ TYPED_TEST(logger_worker, default_channel_name)
 }
 
 
-TYPED_TEST(logger_worker, default_channel_is_enabled)
+TYPED_TEST(logger_worker, default_channel_enabled)
 {
   TypeParam worker;
 
   auto channel = worker.default_channel();
-  EXPECT_TRUE(channel.is_enabled());
+  EXPECT_TRUE(channel.is_logger_channel_enabled());
 
   channel.set_enabled(false);
-  EXPECT_FALSE(channel.is_enabled());
+  EXPECT_FALSE(channel.is_logger_channel_enabled());
 
   channel.set_enabled(true);
-  EXPECT_TRUE(channel.is_enabled());
+  EXPECT_TRUE(channel.is_logger_channel_enabled());
 }
 
 
@@ -54,7 +54,7 @@ TYPED_TEST(logger_worker, default_channel_sink)
 
     EXPECT_FALSE(sink->init_called);
     EXPECT_FALSE(sink->write_called);
-    channel.make_event()->message << this->case_name;
+    channel.make_logger_event()->message << this->case_name;
   }
 
   EXPECT_TRUE(sink->init_called);
@@ -99,9 +99,9 @@ TYPED_TEST(logger_worker, set_enabled_if)
   TypeParam worker;
 
   auto info = worker.make_channel(this->case_name);
-  EXPECT_TRUE(info.is_enabled());
+  EXPECT_TRUE(info.is_logger_channel_enabled());
   auto debug = worker.make_channel(this->case_name + ".debug");
-  EXPECT_TRUE(debug.is_enabled());
+  EXPECT_TRUE(debug.is_logger_channel_enabled());
 
   worker.set_enabled_if(false,
     [](auto channel_name)
@@ -110,8 +110,8 @@ TYPED_TEST(logger_worker, set_enabled_if)
     }
   );
 
-  EXPECT_TRUE(info.is_enabled());
-  EXPECT_FALSE(debug.is_enabled());
+  EXPECT_TRUE(info.is_logger_channel_enabled());
+  EXPECT_FALSE(debug.is_logger_channel_enabled());
 }
 
 
@@ -122,7 +122,7 @@ TYPED_TEST(logger_worker, sink_throwing_event_init)
   auto channel = worker.default_channel();
 
   sink->throw_init = true;
-  EXPECT_EQ(nullptr, channel.make_event());
+  EXPECT_EQ(nullptr, channel.make_logger_event());
   EXPECT_TRUE(sink->init_called);
   EXPECT_FALSE(sink->write_called);
 }
@@ -136,7 +136,7 @@ TYPED_TEST(logger_worker, sink_throwing_event_write)
     TypeParam worker{set_channel_sink(sink)};
     auto channel = worker.default_channel();
     sink->throw_write = true;
-    auto event = channel.make_event();
+    auto event = channel.make_logger_event();
     ASSERT_NE(nullptr, event);
     event->message << this->case_name;
   }

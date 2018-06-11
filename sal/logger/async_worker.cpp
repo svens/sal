@@ -63,7 +63,7 @@ struct async_worker_t::impl_t
   }
 
 
-  event_t *make_event () noexcept
+  event_t *make_logger_event () noexcept
   {
     static std::atomic<unsigned> quasi_rnd{};
     auto &segment = free_list_segments[++quasi_rnd % free_list_segments.size()];
@@ -159,9 +159,9 @@ async_worker_t::impl_ptr async_worker_t::start ()
 }
 
 
-event_ptr async_worker_t::make_event (const channel_type &channel) noexcept
+event_ptr async_worker_t::make_logger_event (const channel_type &channel) noexcept
 {
-  event_ptr event_p(impl_->make_event(), &impl_t::async_write);
+  event_ptr event_p(impl_->make_logger_event(), &impl_t::async_write);
   if (event_p)
   {
     try

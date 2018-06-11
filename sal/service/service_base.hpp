@@ -149,14 +149,14 @@ public:
   ///\{
   // Internal: helpers for sal_log macros to disguise this as channel_t
 
-  auto is_enabled () noexcept
+  auto is_logger_channel_enabled () noexcept
   {
-    return logger.default_channel().is_enabled();
+    return logger.default_channel().is_logger_channel_enabled();
   }
 
-  auto make_event ()
+  auto make_logger_event ()
   {
-    return logger.default_channel().make_event();
+    return logger.default_channel().make_logger_event();
   }
 
   ///\}

@@ -336,7 +336,7 @@ TYPED_TEST(logger_file_sink, new_day)
   sal_log(channel) << "old day";
   {
     using namespace std::chrono_literals;
-    auto event = channel.make_event();
+    auto event = channel.make_logger_event();
     event->time += 24h;
     event->message << "new day";
   }

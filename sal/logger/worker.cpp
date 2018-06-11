@@ -55,7 +55,7 @@ void write_and_release (event_t *event)
 } // namespace
 
 
-event_ptr worker_t::make_event (const channel_type &channel)
+event_ptr worker_t::make_logger_event (const channel_type &channel)
 {
   event_ptr event(sal_check_ptr(this_thread_event_alloc()), &write_and_release);
 

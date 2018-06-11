@@ -40,22 +40,22 @@ TYPED_TEST(logger_channel, name)
 
 TYPED_TEST(logger_channel, enabled)
 {
-  EXPECT_TRUE(this->channel_.is_enabled());
+  EXPECT_TRUE(this->channel_.is_logger_channel_enabled());
 
   this->channel_.set_enabled(false);
-  EXPECT_FALSE(this->channel_.is_enabled());
+  EXPECT_FALSE(this->channel_.is_logger_channel_enabled());
 
   this->channel_.set_enabled(true);
-  EXPECT_TRUE(this->channel_.is_enabled());
+  EXPECT_TRUE(this->channel_.is_logger_channel_enabled());
 }
 
 
-TYPED_TEST(logger_channel, make_event)
+TYPED_TEST(logger_channel, make_logger_event)
 {
   EXPECT_FALSE(this->sink_->init_called);
   EXPECT_FALSE(this->sink_->write_called);
   {
-    auto event = this->channel_.make_event();
+    auto event = this->channel_.make_logger_event();
     EXPECT_TRUE(this->sink_->init_called);
     this->sink_->init_called = false;
     EXPECT_FALSE(this->sink_->write_called);
