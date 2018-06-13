@@ -427,6 +427,7 @@ TEST_P(stream_socket, async_connect)
 
   auto result = a.async_connect_result(io);
   ASSERT_NE(nullptr, result);
+  EXPECT_EQ(&a, result->socket());
 
   EXPECT_EQ(nullptr, a.async_send_result(io));
 }
@@ -611,6 +612,7 @@ TEST_P(stream_socket, async_receive)
 
   auto result = a.async_receive_result(io);
   ASSERT_NE(nullptr, result);
+  EXPECT_EQ(&a, result->socket());
   EXPECT_EQ(case_name.size(), result->transferred());
 
   EXPECT_EQ(nullptr, a.async_send_result(io));
@@ -993,6 +995,7 @@ TEST_P(stream_socket, async_send)
 
   auto result = a.async_send_result(io);
   ASSERT_NE(nullptr, result);
+  EXPECT_EQ(&a, result->socket());
   EXPECT_EQ(case_name, to_s(io, result));
 
   EXPECT_EQ(nullptr, a.async_receive_result(io));

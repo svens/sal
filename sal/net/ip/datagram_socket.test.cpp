@@ -488,6 +488,7 @@ TEST_P(datagram_socket, async_receive_from)
 
   auto result = socket.async_receive_from_result(io);
   ASSERT_NE(nullptr, result);
+  EXPECT_EQ(&socket, result->socket());
   EXPECT_EQ(endpoint, result->remote_endpoint());
   EXPECT_EQ(case_name, to_s(io, result));
 
@@ -902,6 +903,7 @@ TEST_P(datagram_socket, async_receive)
 
   auto result = socket.async_receive_result(io);
   ASSERT_NE(nullptr, result);
+  EXPECT_EQ(&socket, result->socket());
   EXPECT_EQ(case_name, to_s(io, result));
 
   EXPECT_EQ(nullptr, socket.async_receive_from_result(io));
@@ -1336,6 +1338,7 @@ TEST_P(datagram_socket, async_send_to)
   EXPECT_EQ(1U, io->user_data());
   auto result = socket.async_send_to_result(io);
   ASSERT_NE(nullptr, result);
+  EXPECT_EQ(&socket, result->socket());
   EXPECT_EQ(case_name.size(), result->transferred());
 
   EXPECT_EQ(nullptr, socket.async_receive_from_result(io));
@@ -1579,6 +1582,7 @@ TEST_P(datagram_socket, async_send)
   ASSERT_NE(nullptr, io);
   auto result = socket.async_send_result(io);
   ASSERT_NE(nullptr, result);
+  EXPECT_EQ(&socket, result->socket());
   EXPECT_EQ(case_name.size(), result->transferred());
 
   EXPECT_EQ(nullptr, socket.async_receive_result(io));

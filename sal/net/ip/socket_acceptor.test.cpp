@@ -492,6 +492,7 @@ TEST_P(socket_acceptor, async_accept)
 
   auto result = acceptor.async_accept_result(io);
   ASSERT_NE(nullptr, result);
+  EXPECT_EQ(&acceptor, result->socket());
 
   EXPECT_EQ(a.local_endpoint(), result->remote_endpoint());
 

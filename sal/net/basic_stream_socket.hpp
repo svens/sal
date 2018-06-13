@@ -192,7 +192,15 @@ public:
    */
   struct async_connect_t
     : public __bits::async_connect_t
-  {};
+  {
+    /**
+     * Return socket that started this asynchronous operation.
+     */
+    basic_stream_socket_t *socket () const noexcept
+    {
+      return reinterpret_cast<basic_stream_socket_t *>(lib_data);
+    }
+  };
 
 
   /**
@@ -201,7 +209,7 @@ public:
    */
   void async_connect (io_ptr &&io, const endpoint_t &endpoint) noexcept
   {
-    __bits::async_connect_t::start(io.release(), base_t::socket_,
+    __bits::async_connect_t::start(io.release(), base_t::socket_, this,
       endpoint.data(), endpoint.size()
     );
   }
@@ -243,6 +251,15 @@ public:
     : public __bits::async_receive_t
   {
     /**
+     * Return socket that started this asynchronous operation.
+     */
+    basic_stream_socket_t *socket () const noexcept
+    {
+      return reinterpret_cast<basic_stream_socket_t *>(lib_data);
+    }
+
+
+    /**
      * Number of bytes received.
      */
     size_t transferred () const noexcept
@@ -259,7 +276,7 @@ public:
   void async_receive (io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    __bits::async_receive_t::start(io.release(), base_t::socket_, flags);
+    __bits::async_receive_t::start(io.release(), base_t::socket_, this, flags);
   }
 
 
@@ -309,6 +326,15 @@ public:
     : public __bits::async_send_t
   {
     /**
+     * Return socket that started this asynchronous operation.
+     */
+    basic_stream_socket_t *socket () const noexcept
+    {
+      return reinterpret_cast<basic_stream_socket_t *>(lib_data);
+    }
+
+
+    /**
      * Number of bytes sent.
      */
     size_t transferred () const noexcept
@@ -324,7 +350,7 @@ public:
    */
   void async_send (io_ptr &&io, socket_base_t::message_flags_t flags) noexcept
   {
-    __bits::async_send_t::start(io.release(), base_t::socket_, flags);
+    __bits::async_send_t::start(io.release(), base_t::socket_, this, flags);
   }
 
 

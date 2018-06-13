@@ -377,6 +377,7 @@ struct async_context_t
 
 struct async_op_base_t
 {
+  void *lib_data;
 #if __sal_os_windows // {{{1
   DWORD transferred;
 #elif __sal_os_macos || __sal_os_linux // {{{1
@@ -389,12 +390,14 @@ template <typename T>
 struct async_op_t
   : public async_op_base_t
 {
-  static T *new_op (async_io_t *io) noexcept
+  static T *new_op (async_io_t *io, void *lib_data) noexcept
   {
     static_assert(sizeof(T) <= sizeof(io->op_data));
     static_assert(std::is_trivially_destructible<T>());
     io->op_id = type_v<T>;
-    return reinterpret_cast<T *>(io->op_data);
+    auto result = reinterpret_cast<T *>(io->op_data);
+    result->lib_data = lib_data;
+    return result;
   }
 
 
@@ -436,6 +439,7 @@ struct async_receive_from_t
 
   static void start (async_io_t *io,
     socket_t &socket,
+    void *lib_data,
     message_flags_t flags
   ) noexcept;
 };
@@ -446,6 +450,7 @@ struct async_receive_t
 {
   static void start (async_io_t *io,
     socket_t &socket,
+    void *lib_data,
     message_flags_t flags
   ) noexcept;
 };
@@ -456,6 +461,7 @@ struct async_send_to_t
 {
   static void start (async_io_t *io,
     socket_t &socket,
+    void *lib_data,
     const void *address, size_t address_size,
     message_flags_t flags
   ) noexcept;
@@ -465,8 +471,11 @@ struct async_send_to_t
 struct async_send_t
   : public async_op_t<async_send_t>
 {
-  static void start (async_io_t *io, socket_t &socket, message_flags_t flags)
-    noexcept;
+  static void start (async_io_t *io,
+    socket_t &socket,
+    void *lib_data,
+    message_flags_t flags
+  ) noexcept;
 };
 
 
@@ -477,6 +486,7 @@ struct async_connect_t
 
   static void start (async_io_t *io,
     socket_t &socket,
+    void *lib_data,
     const void *address, size_t address_size
   ) noexcept;
 
@@ -491,7 +501,12 @@ struct async_accept_t
   socket_t::handle_t accepted, acceptor;
   sockaddr_storage *remote_address;
 
-  static void start (async_io_t *io, socket_t &socket, int family) noexcept;
+  static void start (async_io_t *io,
+    socket_t &socket,
+    void *lib_data,
+    int family
+  ) noexcept;
+
   static async_accept_t *result (async_io_t *io, std::error_code &error) noexcept;
 
   socket_t::handle_t load_accepted () noexcept
@@ -548,6 +563,7 @@ struct async_receive_from_t
 
   static void start (async_io_t *io,
     socket_t &socket,
+    void *lib_data,
     message_flags_t flags
   ) noexcept;
 };
@@ -560,6 +576,7 @@ struct async_receive_t
 
   static void start (async_io_t *io,
     socket_t &socket,
+    void *lib_data,
     message_flags_t flags
   ) noexcept;
 };
@@ -574,6 +591,7 @@ struct async_send_to_t
 
   static void start (async_io_t *io,
     socket_t &socket,
+    void *lib_data,
     const void *address, size_t address_size,
     message_flags_t flags
   ) noexcept;
@@ -585,8 +603,11 @@ struct async_send_t
 {
   message_flags_t flags;
 
-  static void start (async_io_t *io, socket_t &socket, message_flags_t flags)
-    noexcept;
+  static void start (async_io_t *io,
+    socket_t &socket,
+    void *lib_data,
+    message_flags_t flags
+  ) noexcept;
 };
 
 
@@ -595,6 +616,7 @@ struct async_connect_t
 {
   static void start (async_io_t *io,
     socket_t &socket,
+    void *lib_data,
     const void *address, size_t address_size
   ) noexcept;
 };
@@ -606,7 +628,11 @@ struct async_accept_t
   socket_t::handle_t accepted;
   sockaddr_storage *local_address, *remote_address;
 
-  static void start (async_io_t *io, socket_t &socket, int family) noexcept;
+  static void start (async_io_t *io,
+    socket_t &socket,
+    void *lib_data,
+    int family
+  ) noexcept;
 
   socket_t::handle_t load_accepted () noexcept
   {

@@ -336,6 +336,15 @@ public:
     : public __bits::async_receive_from_t
   {
     /**
+     * Return socket that started this asynchronous operation.
+     */
+    basic_datagram_socket_t *socket () const noexcept
+    {
+      return reinterpret_cast<basic_datagram_socket_t *>(lib_data);
+    }
+
+
+    /**
      * Packet sender endpoint.
      */
     const endpoint_t &remote_endpoint () const noexcept
@@ -360,7 +369,9 @@ public:
   void async_receive_from (io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    __bits::async_receive_from_t::start(io.release(), base_t::socket_, flags);
+    __bits::async_receive_from_t::start(io.release(),
+      base_t::socket_, this, flags
+    );
   }
 
 
@@ -410,6 +421,15 @@ public:
     : public __bits::async_receive_t
   {
     /**
+     * Return socket that started this asynchronous operation.
+     */
+    basic_datagram_socket_t *socket () const noexcept
+    {
+      return reinterpret_cast<basic_datagram_socket_t *>(lib_data);
+    }
+
+
+    /**
      * Number of bytes received.
      */
     size_t transferred () const noexcept
@@ -426,7 +446,7 @@ public:
   void async_receive (io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    __bits::async_receive_t::start(io.release(), base_t::socket_, flags);
+    __bits::async_receive_t::start(io.release(), base_t::socket_, this, flags);
   }
 
 
@@ -476,6 +496,15 @@ public:
     : public __bits::async_send_to_t
   {
     /**
+     * Return socket that started this asynchronous operation.
+     */
+    basic_datagram_socket_t *socket () const noexcept
+    {
+      return reinterpret_cast<basic_datagram_socket_t *>(lib_data);
+    }
+
+
+    /**
      * Number of bytes sent.
      */
     size_t transferred () const noexcept
@@ -495,7 +524,9 @@ public:
   {
     __bits::async_send_to_t::start(io.release(),
       base_t::socket_,
-      endpoint.data(), endpoint.size(),
+      this,
+      endpoint.data(),
+      endpoint.size(),
       flags
     );
   }
@@ -547,6 +578,15 @@ public:
     : public __bits::async_send_t
   {
     /**
+     * Return socket that started this asynchronous operation.
+     */
+    basic_datagram_socket_t *socket () const noexcept
+    {
+      return reinterpret_cast<basic_datagram_socket_t *>(lib_data);
+    }
+
+
+    /**
      * Number of bytes sent.
      */
     size_t transferred () const noexcept
@@ -562,7 +602,7 @@ public:
    */
   void async_send (io_ptr &&io, socket_base_t::message_flags_t flags) noexcept
   {
-    __bits::async_send_t::start(io.release(), base_t::socket_, flags);
+    __bits::async_send_t::start(io.release(), base_t::socket_, this, flags);
   }
 
 

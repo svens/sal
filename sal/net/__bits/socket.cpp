@@ -1174,9 +1174,10 @@ void io_result_check (async_io_t *io, int result) noexcept
 
 void async_receive_from_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   message_flags_t flags) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
   op->remote_address_size = sizeof(op->remote_address);
 
   DWORD flags_ = flags;
@@ -1197,9 +1198,10 @@ void async_receive_from_t::start (async_io_t *io,
 
 void async_receive_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   message_flags_t flags) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
 
   DWORD flags_ = flags;
   buf_t buf(io);
@@ -1231,10 +1233,11 @@ void async_receive_t::start (async_io_t *io,
 
 void async_send_to_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   const void *address, size_t address_size,
   message_flags_t flags) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
 
   buf_t buf(io);
   io_result_check(io,
@@ -1253,9 +1256,10 @@ void async_send_to_t::start (async_io_t *io,
 
 void async_send_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   message_flags_t flags) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
 
   buf_t buf(io);
   io_result_check(io,
@@ -1272,9 +1276,10 @@ void async_send_t::start (async_io_t *io,
 
 void async_connect_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   const void *address, size_t address_size) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
   op->handle = socket.handle;
 
   #pragma warning(suppress: 6387)
@@ -1337,8 +1342,10 @@ async_connect_t *async_connect_t::result (async_io_t *io,
 }
 
 
-void async_accept_t::start (async_io_t *io, socket_t &socket, int family)
-  noexcept
+void async_accept_t::start (async_io_t *io,
+  socket_t &socket,
+  void *lib_data,
+  int family) noexcept
 {
   socket_t new_socket;
   new_socket.open(family, SOCK_STREAM, IPPROTO_TCP, io->error);
@@ -1348,7 +1355,7 @@ void async_accept_t::start (async_io_t *io, socket_t &socket, int family)
     return;
   }
 
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
   op->acceptor = socket.handle;
   op->accepted = new_socket.handle;
   new_socket.handle = socket_t::invalid;
@@ -1882,9 +1889,10 @@ void async_context_t::extend_pool ()
 
 void async_receive_from_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   message_flags_t flags) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
   op->flags = flags | MSG_DONTWAIT;
   op->remote_address_size = sizeof(op->remote_address);
 
@@ -1908,9 +1916,10 @@ void async_receive_from_t::start (async_io_t *io,
 
 void async_receive_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   message_flags_t flags) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
   op->flags = flags | MSG_DONTWAIT;
 
   op->transferred = socket.receive(
@@ -1932,10 +1941,11 @@ void async_receive_t::start (async_io_t *io,
 
 void async_send_to_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   const void *address, size_t address_size,
   message_flags_t flags) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
 
   op->flags = flags | MSG_DONTWAIT;
   op->transferred = socket.send_to(
@@ -1960,9 +1970,10 @@ void async_send_to_t::start (async_io_t *io,
 
 void async_send_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   message_flags_t flags) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
 
   op->flags = flags | MSG_DONTWAIT;
   op->transferred = socket.send(
@@ -1984,9 +1995,10 @@ void async_send_t::start (async_io_t *io,
 
 void async_connect_t::start (async_io_t *io,
   socket_t &socket,
+  void *lib_data,
   const void *address, size_t address_size) noexcept
 {
-  (void)new_op(io);
+  (void)new_op(io, lib_data);
 
   socket.connect(address, address_size, io->error);
   if (io->error != std::errc::operation_in_progress)
@@ -2000,10 +2012,12 @@ void async_connect_t::start (async_io_t *io,
 }
 
 
-void async_accept_t::start (async_io_t *io, socket_t &socket, int /*family*/)
-  noexcept
+void async_accept_t::start (async_io_t *io,
+  socket_t &socket,
+  void *lib_data,
+  int /*family*/) noexcept
 {
-  auto op = new_op(io);
+  auto op = new_op(io, lib_data);
 
   op->remote_address = reinterpret_cast<sockaddr_storage *>(io->data);
   auto remote_address_size = sizeof(*remote_address);

@@ -484,6 +484,15 @@ public:
     : public __bits::async_accept_t
   {
     /**
+     * Return socket that started this asynchronous operation.
+     */
+    basic_socket_acceptor_t *socket () const noexcept
+    {
+      return reinterpret_cast<basic_socket_acceptor_t *>(lib_data);
+    }
+
+
+    /**
      * Remote endpoint of accepted socket.
      */
     const endpoint_t &remote_endpoint () const noexcept
@@ -513,7 +522,7 @@ public:
    */
   void async_accept (io_ptr &&io) noexcept
   {
-    __bits::async_accept_t::start(io.release(), socket_, family_);
+    __bits::async_accept_t::start(io.release(), socket_, this, family_);
   }
 
 
