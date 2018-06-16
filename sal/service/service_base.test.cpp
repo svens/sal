@@ -129,8 +129,26 @@ TEST_F(service_base, thread_count_default)
 
 TEST_F(service_base, thread_count)
 {
-  auto svc = make_service({"svc", "--service.thread_count=3"});
-  EXPECT_EQ(3U, svc.config.thread_count);
+  auto svc = make_service({"svc", "--service.thread_count=1"});
+  EXPECT_EQ(1U, svc.config.thread_count);
+}
+
+
+TEST_F(service_base, thread_count_zero)
+{
+  EXPECT_THROW(
+    make_service({"svc", "--service.thread_count=0"}),
+    std::runtime_error
+  );
+}
+
+
+TEST_F(service_base, thread_count_invalid)
+{
+  EXPECT_THROW(
+    make_service({"svc", "--service.thread_count=X"}),
+    std::runtime_error
+  );
 }
 
 
@@ -180,6 +198,8 @@ TEST_F(service_base, throw_during_start)
   ON_CALL(event_handler, service_start(_))
     .WillByDefault(Throw(std::runtime_error(case_name)));
 
+  EXPECT_CALL(event_handler, service_stop());
+
   try
   {
     svc.run(event_handler, 10ms);
@@ -199,6 +219,8 @@ TEST_F(service_base, throw_during_tick)
 
   ON_CALL(event_handler, service_tick(_))
     .WillByDefault(Throw(std::runtime_error(case_name)));
+
+  EXPECT_CALL(event_handler, service_stop());
 
   try
   {

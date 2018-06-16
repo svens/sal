@@ -1,6 +1,7 @@
 #include <sal/service/service_base.hpp>
 #include <sal/error.hpp>
 #include <sal/logger/file_sink.hpp>
+#include <sal/logger/logger.hpp>
 #include <sal/program_options/command_line.hpp>
 #include <sal/program_options/config_reader.hpp>
 #include <condition_variable>
@@ -12,6 +13,9 @@ __sal_begin
 
 
 namespace service {
+
+
+using namespace std::chrono_literals;
 
 
 namespace {
@@ -63,6 +67,21 @@ program_options::option_set_t with_service_options (
 using service_config_t = std::remove_const_t<decltype(service_base_t::config)>;
 
 
+inline size_t to_count (const std::string &name, const std::string &value)
+{
+  try
+  {
+    if (auto result = std::stoul(value))
+    {
+      return result;
+    }
+  }
+  catch (...)
+  { }
+  throw_runtime_error(name, ": invalid value");
+}
+
+
 service_config_t service_config (
   const program_options::option_set_t &options,
   const program_options::argument_map_t &command_line,
@@ -90,7 +109,8 @@ service_config_t service_config (
     },
 
     // thread_count
-    std::stoul(
+    to_count(
+      service_thread_count,
       options.back_or_default(service_thread_count,
         {config_file, command_line}
       )
@@ -131,11 +151,18 @@ logger::async_worker_t service_logger (
 
 struct service_base_t::impl_t
 {
-  std::mutex mutex{};
-  std::condition_variable all_ready{};
-  std::vector<std::thread> threads{};
-  size_t ready_count{};
+  service_base_t &service;
   std::exception_ptr exception{};
+
+  std::mutex mutex{};
+  std::vector<std::thread> threads{};
+  std::condition_variable condition{};
+  size_t ready_count{}, stop_count{};
+
+
+  impl_t (service_base_t &service) noexcept
+    : service(service)
+  {}
 
 
   ~impl_t () noexcept
@@ -147,30 +174,15 @@ struct service_base_t::impl_t
   }
 
 
-  void service_start (service_base_t &service,
-    event_handler_t &event_handler,
-    net::async_service_t::context_t &context) noexcept
+  std::unique_lock<std::mutex> lock () noexcept
   {
-    std::lock_guard lock(mutex);
-    if (++ready_count == service.config.thread_count)
-    {
-      try
-      {
-        event_handler.service_start(context);
-      }
-      catch (...)
-      {
-        exception = std::current_exception();
-      }
-      all_ready.notify_one();
-    }
+    return std::unique_lock(mutex);
   }
 
 
   void store_current_exception () noexcept
   {
-    std::lock_guard lock(mutex);
-    if (!exception)
+    if (auto guard = lock(); !exception)
     {
       exception = std::current_exception();
     }
@@ -179,13 +191,110 @@ struct service_base_t::impl_t
 
   void rethrow_current_exception ()
   {
-    std::lock_guard lock(mutex);
-    if (exception)
+    if (auto guard = lock(); exception)
     {
       std::rethrow_exception(exception);
     }
   }
+
+
+  void suspend_until_threads_ready (std::unique_lock<std::mutex> &guard)
+    noexcept
+  {
+    while (ready_count != service.config.thread_count)
+    {
+      condition.wait(guard);
+    }
+  }
+
+
+  void suspend_until_threads_stop (std::unique_lock<std::mutex> &guard)
+    noexcept
+  {
+    while (stop_count != service.config.thread_count)
+    {
+      condition.wait(guard);
+    }
+  }
+
+
+  bool start (event_handler_t &event_handler,
+    net::async_service_t::context_t &context
+  ) noexcept;
+
+  void poll (event_handler_t &event_handler) noexcept;
+
+  void stop (bool sentinel) noexcept;
 };
+
+
+bool service_base_t::impl_t::start (event_handler_t &event_handler,
+  net::async_service_t::context_t &context) noexcept
+{
+  auto guard = lock();
+
+  if (++ready_count < service.config.thread_count)
+  {
+    suspend_until_threads_ready(guard);
+    return false;
+  }
+
+  try
+  {
+    event_handler.service_start(context);
+  }
+  catch (...)
+  {
+    exception = std::current_exception();
+  }
+
+  condition.notify_all();
+  return true;
+}
+
+
+void service_base_t::impl_t::stop (bool sentinel) noexcept
+{
+  auto guard = lock();
+
+  if (sentinel)
+  {
+  }
+
+  if (++stop_count < service.config.thread_count)
+  {
+    suspend_until_threads_stop(guard);
+  }
+  else
+  {
+    condition.notify_all();
+  }
+}
+
+
+void service_base_t::impl_t::poll (event_handler_t &event_handler) noexcept
+{
+  auto context = service.async_net.make_context();
+  auto sentinel = start(event_handler, context);
+
+  try
+  {
+    std::error_code error;
+    while (service.exit_code_ == no_exit)
+    {
+      if (auto ev = context.poll(10ms, error))
+      {
+        (void)ev;
+      }
+    }
+  }
+  catch (...)
+  {
+    store_current_exception();
+  }
+
+  stop(sentinel);
+}
 
 
 service_base_t::service_base_t (int argc, const char *argv[],
@@ -194,7 +303,7 @@ service_base_t::service_base_t (int argc, const char *argv[],
   , config(service_config(options, command_line, config_file))
   , logger(service_logger(command_line, config))
   , async_net()
-  , impl_(std::make_unique<impl_t>())
+  , impl_()
 {
   if (config.logger.sink == "null")
   {
@@ -207,76 +316,62 @@ service_base_t::~service_base_t () noexcept
 { }
 
 
-void service_base_t::service_start (event_handler_t &event_handler)
+void service_base_t::start (event_handler_t &event_handler)
 {
-  std::unique_lock lock(impl_->mutex);
+  impl_ = std::make_unique<impl_t>(*this);
+  auto guard = impl_->lock();
 
   while (impl_->threads.size() < config.thread_count)
   {
-    impl_->threads.emplace_back(&service_base_t::service_poll, this,
+    impl_->threads.emplace_back(&service_base_t::impl_t::poll, impl_.get(),
       std::ref(event_handler)
     );
   }
 
-  while (impl_->ready_count != config.thread_count)
-  {
-    impl_->all_ready.wait(lock);
-  }
+  impl_->suspend_until_threads_ready(guard);
+
+  now_ = sal::now();
 }
 
 
-void service_base_t::service_poll (event_handler_t &event_handler) noexcept
+bool service_base_t::tick (event_handler_t &event_handler,
+  const std::chrono::milliseconds &tick_interval)
 {
+  if (impl_->exception)
+  {
+    exit(EXIT_FAILURE);
+  }
+
+  if (exit_code_ != no_exit)
+  {
+    return false;
+  }
+
   try
   {
-    auto context = async_net.make_context();
-    impl_->service_start(*this, event_handler, context);
-
-    std::error_code error;
-    while (exit_code_ == -1)
+    event_handler.service_tick(now_);
+    if (exit_code_ == no_exit)
     {
-      using namespace std::chrono_literals;
-      if (auto ev = context.poll(10ms, error))
-      {
-      }
+      std::this_thread::sleep_for(tick_interval);
+      return true;
     }
   }
   catch (...)
   {
     impl_->store_current_exception();
-  }
-}
-
-
-bool service_base_t::service_tick (event_handler_t &event_handler,
-  const std::chrono::milliseconds &tick_interval)
-{
-  try
-  {
-    impl_->rethrow_current_exception();
-
-    now_ = sal::now();
-    event_handler.service_tick(now_);
-
-    if (exit_code_ == -1)
-    {
-      std::this_thread::sleep_for(tick_interval);
-      return true;
-    }
-
-    return false;
-  }
-  catch (...)
-  {
     exit(EXIT_FAILURE);
-    throw;
   }
+
+  auto guard = impl_->lock();
+  impl_->suspend_until_threads_stop(guard);
+  return false;
 }
 
 
-void service_base_t::service_stop (event_handler_t &event_handler)
+void service_base_t::stop (event_handler_t &event_handler)
 {
   event_handler.service_stop();
+  impl_->rethrow_current_exception();
 }
 
 

@@ -114,9 +114,12 @@ public:
     using namespace std::chrono;
     auto tick_interval_ms = duration_cast<milliseconds>(tick_interval);
 
-    service_start(event_handler);
-    while (service_tick(event_handler, tick_interval_ms)) /**/;
-    service_stop(event_handler);
+    start(event_handler);
+    while (tick(event_handler, tick_interval_ms))
+    {
+      now_ = sal::now();
+    }
+    stop(event_handler);
 
     return exit_code_;
   }
@@ -134,7 +137,7 @@ public:
    */
   bool exit (int code) noexcept
   {
-    int run_code = -1;
+    int run_code = no_exit;
     return exit_code_.compare_exchange_strong(run_code, code);
   }
 
@@ -162,22 +165,25 @@ public:
   ///\}
 
 
+protected:
+
+  void start (event_handler_t &event_handler);
+
+  bool tick (event_handler_t &event_handler,
+    const std::chrono::milliseconds &tick_interval
+  );
+
+  void stop (event_handler_t &event_handler);
+
+
 private:
 
-  std::atomic<int> exit_code_{-1};
+  static constexpr int no_exit = -1;
+  std::atomic<int> exit_code_{no_exit};
   sal::time_t now_ = start_time;
 
   struct impl_t;
   std::unique_ptr<impl_t> impl_;
-
-  void service_start (event_handler_t &event_handler);
-  void service_stop (event_handler_t &event_handler);
-
-  bool service_tick (event_handler_t &event_handler,
-    const std::chrono::milliseconds &tick_interval
-  );
-
-  void service_poll (event_handler_t &event_handler) noexcept;
 };
 
 
