@@ -152,6 +152,45 @@ TEST_F(service_base, thread_count_invalid)
 }
 
 
+TEST_F(service_base, control_port_default)
+{
+  auto svc = make_service();
+  EXPECT_EQ(2367U, svc.config.control.port);
+}
+
+
+TEST_F(service_base, control_port)
+{
+  auto svc = make_service({"svc", "--service.control.port=1234"});
+  EXPECT_EQ(1234U, svc.config.control.port);
+}
+
+
+TEST_F(service_base, control_port_disable)
+{
+  auto svc = make_service({"svc", "--service.control.port=0"});
+  EXPECT_EQ(0U, svc.config.control.port);
+}
+
+
+TEST_F(service_base, control_port_overflow)
+{
+  EXPECT_THROW(
+    make_service({"svc", "--service.control.port=256000"}),
+    std::runtime_error
+  );
+}
+
+
+TEST_F(service_base, control_port_invalid)
+{
+  EXPECT_THROW(
+    make_service({"svc", "--service.control.port=X"}),
+    std::runtime_error
+  );
+}
+
+
 TEST_F(service_base, exit_during_start)
 {
   auto svc = make_service();

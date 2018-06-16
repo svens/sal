@@ -25,7 +25,8 @@ namespace {
 static const std::string
   service_logger_dir = "service.logger.dir",
   service_logger_sink = "service.logger.sink",
-  service_thread_count = "service.thread_count";
+  service_thread_count = "service.thread_count",
+  service_control_port = "service.control.port";
 
 
 program_options::option_set_t with_service_options (
@@ -59,12 +60,24 @@ program_options::option_set_t with_service_options (
         "(default: " + service_thread_count_default + ')'
       )
     )
+    .add({service_control_port},
+      requires_argument("INT", 2367),
+      help("service controller listening port\n"
+        "(default: 2367, disable: 0)"
+      )
+    )
   ;
   return option_set;
 }
 
 
 using service_config_t = std::remove_const_t<decltype(service_base_t::config)>;
+
+
+inline void throw_invalid_value [[noreturn]] (const std::string &name)
+{
+  throw_runtime_error(name, ": invalid value");
+}
 
 
 inline size_t to_count (const std::string &name, const std::string &value)
@@ -78,7 +91,23 @@ inline size_t to_count (const std::string &name, const std::string &value)
   }
   catch (...)
   { }
-  throw_runtime_error(name, ": invalid value");
+  throw_invalid_value(name);
+}
+
+
+inline uint16_t to_port (const std::string &name, const std::string &value)
+{
+  try
+  {
+    auto result = std::stoul(value);
+    if (result <= std::numeric_limits<uint16_t>::max())
+    {
+      return static_cast<uint16_t>(result);
+    }
+  }
+  catch (...)
+  { }
+  throw_invalid_value(name);
 }
 
 
@@ -115,6 +144,16 @@ service_config_t service_config (
         {config_file, command_line}
       )
     ),
+
+    // control
+    {
+      to_port(
+        service_control_port,
+        options.back_or_default(service_control_port,
+          {config_file, command_line}
+        )
+      ),
+    },
   };
 }
 
@@ -151,6 +190,14 @@ logger::async_worker_t service_logger (
 
 struct service_base_t::impl_t
 {
+  // Sentinel is randomly chosen thread that:
+  // - invokes event_handler.service_start
+  // - starts control sessions acceptor
+  // - closes control sessions on exit
+  //
+  // Once control acceptor has started, no thread can exit until all control
+  // sessions are stopped because any thread's context might be still in use
+
   service_base_t &service;
   std::exception_ptr exception{};
 
@@ -158,7 +205,6 @@ struct service_base_t::impl_t
   std::vector<std::thread> threads{};
   std::condition_variable condition{};
   size_t ready_count{}, stop_count{};
-
 
   impl_t (service_base_t &service) noexcept
     : service(service)

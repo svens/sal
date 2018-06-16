@@ -64,6 +64,17 @@ public:
      * Configurable using option "service.thread_count".
      */
     size_t thread_count;
+
+    /**
+     * Service controller related configuration
+     */
+    struct
+    {
+      /**
+       * Port where accepting incoming control sessions.
+       */
+      uint16_t port;
+    } control;
   } const config;
 
 
