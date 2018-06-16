@@ -53,6 +53,7 @@ TEST_F(service_base, help)
   EXPECT_NE(help.npos, help.find("service.logger.dir"));
   EXPECT_NE(help.npos, help.find("service.logger.sink"));
   EXPECT_NE(help.npos, help.find("service.thread_count"));
+  EXPECT_NE(help.npos, help.find("service.control.endpoint_port"));
 }
 
 
@@ -152,40 +153,40 @@ TEST_F(service_base, thread_count_invalid)
 }
 
 
-TEST_F(service_base, control_port_default)
+TEST_F(service_base, control_endpoint_port_default)
 {
   auto svc = make_service();
-  EXPECT_EQ(2367U, svc.config.control.port);
+  EXPECT_EQ(2367U, svc.config.control.endpoint.port());
 }
 
 
-TEST_F(service_base, control_port)
+TEST_F(service_base, control_endpoint_port)
 {
-  auto svc = make_service({"svc", "--service.control.port=1234"});
-  EXPECT_EQ(1234U, svc.config.control.port);
+  auto svc = make_service({"svc", "--service.control.endpoint_port=1234"});
+  EXPECT_EQ(1234U, svc.config.control.endpoint.port());
 }
 
 
-TEST_F(service_base, control_port_disable)
+TEST_F(service_base, control_endpoint_port_disable)
 {
-  auto svc = make_service({"svc", "--service.control.port=0"});
-  EXPECT_EQ(0U, svc.config.control.port);
+  auto svc = make_service({"svc", "--service.control.endpoint_port=0"});
+  EXPECT_EQ(0U, svc.config.control.endpoint.port());
 }
 
 
-TEST_F(service_base, control_port_overflow)
+TEST_F(service_base, control_endpoint_port_overflow)
 {
   EXPECT_THROW(
-    make_service({"svc", "--service.control.port=256000"}),
+    make_service({"svc", "--service.control.endpoint_port=256000"}),
     std::runtime_error
   );
 }
 
 
-TEST_F(service_base, control_port_invalid)
+TEST_F(service_base, control_endpoint_port_invalid)
 {
   EXPECT_THROW(
-    make_service({"svc", "--service.control.port=X"}),
+    make_service({"svc", "--service.control.endpoint_port=X"}),
     std::runtime_error
   );
 }
@@ -322,6 +323,31 @@ TEST_F(service_base, tick_frequency)
   constexpr auto tick_interval = 10ms;
   EXPECT_EQ(EXIT_SUCCESS, svc.run(event_handler, tick_interval));
   EXPECT_LE(first + tick_interval, second);
+}
+
+
+TEST_F(service_base, control_connect)
+{
+  std::error_code connect_error;
+
+  {
+    auto svc = make_service({"svc", "--service.logger.sink=null"});
+
+    auto control_thread = std::thread([&]
+    {
+      sal::net::ip::tcp_t::socket_t socket;
+      socket.connect(svc.config.control.endpoint, connect_error);
+      std::this_thread::sleep_for(10ms);
+      svc.exit(EXIT_FAILURE);
+    });
+
+    ::testing::NiceMock<service_event_handler_mock_t> event_handler;
+    svc.run(event_handler, 10ms);
+
+    control_thread.join();
+  }
+
+  EXPECT_TRUE(!connect_error);
 }
 
 

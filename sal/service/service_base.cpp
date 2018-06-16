@@ -6,6 +6,7 @@
 #include <sal/program_options/config_reader.hpp>
 #include <condition_variable>
 #include <exception>
+#include <forward_list>
 #include <mutex>
 
 
@@ -26,7 +27,7 @@ static const std::string
   service_logger_dir = "service.logger.dir",
   service_logger_sink = "service.logger.sink",
   service_thread_count = "service.thread_count",
-  service_control_port = "service.control.port";
+  service_control_port = "service.control.endpoint_port";
 
 
 program_options::option_set_t with_service_options (
@@ -147,12 +148,16 @@ service_config_t service_config (
 
     // control
     {
-      to_port(
-        service_control_port,
-        options.back_or_default(service_control_port,
-          {config_file, command_line}
+      // endpoint
+      {
+        sal::net::ip::address_v4_t::loopback(),
+        to_port(
+          service_control_port,
+          options.back_or_default(service_control_port,
+            {config_file, command_line}
+          )
         )
-      ),
+      },
     },
   };
 }
@@ -185,6 +190,17 @@ logger::async_worker_t service_logger (
 }
 
 
+net::ip::tcp_t::acceptor_t make_acceptor (
+  const net::ip::tcp_t::endpoint_t &endpoint) noexcept
+{
+  if (endpoint.port())
+  {
+    return {endpoint};
+  }
+  return {};
+}
+
+
 } // namespace
 
 
@@ -206,8 +222,27 @@ struct service_base_t::impl_t
   std::condition_variable condition{};
   size_t ready_count{}, stop_count{};
 
+  net::ip::tcp_t::acceptor_t control_acceptor;
+  static constexpr std::chrono::seconds inactivity_expire{3};
+
+  struct control_session_t
+  {
+    net::ip::tcp_t::socket_t socket;
+    sal::time_t expire_time;
+
+    control_session_t (net::ip::tcp_t::socket_t &&x, const sal::time_t &now)
+      : socket(std::move(x))
+      , expire_time(now + inactivity_expire)
+    {}
+
+    using list_t = std::forward_list<control_session_t>;
+  };
+  control_session_t::list_t control_sessions{};
+
+
   impl_t (service_base_t &service) noexcept
     : service(service)
+    , control_acceptor(make_acceptor(service.config.control.endpoint))
   {}
 
 
@@ -271,6 +306,20 @@ struct service_base_t::impl_t
   void poll (event_handler_t &event_handler) noexcept;
 
   void stop (bool sentinel) noexcept;
+
+  void control_start (net::async_service_t::context_t &context) noexcept;
+  void control_stop () noexcept;
+  void control_tick (const sal::time_t &now) noexcept;
+
+  bool control_accept (net::io_ptr &ev) noexcept;
+  bool control_command (net::io_ptr &ev) noexcept;
+
+  void control (net::io_ptr &ev) noexcept
+  {
+    control_accept(ev)
+      || control_command(ev)
+    ;
+  }
 };
 
 
@@ -288,6 +337,7 @@ bool service_base_t::impl_t::start (event_handler_t &event_handler,
   try
   {
     event_handler.service_start(context);
+    control_start(context);
   }
   catch (...)
   {
@@ -305,6 +355,7 @@ void service_base_t::impl_t::stop (bool sentinel) noexcept
 
   if (sentinel)
   {
+    control_stop();
   }
 
   if (++stop_count < service.config.thread_count)
@@ -330,7 +381,14 @@ void service_base_t::impl_t::poll (event_handler_t &event_handler) noexcept
     {
       if (auto ev = context.poll(10ms, error))
       {
-        (void)ev;
+        if (ev->user_data() != reinterpret_cast<uintptr_t>(this))
+        {
+          // application event
+        }
+        else
+        {
+          control(ev);
+        }
       }
     }
   }
@@ -340,6 +398,105 @@ void service_base_t::impl_t::poll (event_handler_t &event_handler) noexcept
   }
 
   stop(sentinel);
+}
+
+
+void service_base_t::impl_t::control_start (
+  net::async_service_t::context_t &context) noexcept
+{
+  if (control_acceptor.is_open())
+  {
+    control_acceptor.non_blocking(true);
+    control_acceptor.associate(service.async_net);
+    control_acceptor.async_accept(context.make_io(this));
+  }
+}
+
+
+void service_base_t::impl_t::control_stop () noexcept
+{
+  if (control_acceptor.is_open())
+  {
+    std::error_code ignore_error;
+    control_acceptor.close(ignore_error);
+    for (auto &control_session: control_sessions)
+    {
+      control_session.socket.close(ignore_error);
+    }
+  }
+}
+
+
+void service_base_t::impl_t::control_tick (const sal::time_t &now) noexcept
+{
+  auto guard = lock();
+
+  control_sessions.remove_if(
+    [&now](const control_session_t &session)
+    {
+      return session.expire_time < now || !session.socket.is_open();
+    }
+  );
+}
+
+
+bool service_base_t::impl_t::control_accept (net::io_ptr &ev) noexcept
+{
+  std::error_code error;
+  auto accept = net::ip::tcp_t::acceptor_t::async_accept_result(ev, error);
+  if (!accept)
+  {
+    return false;
+  }
+
+  if (!error)
+  {
+    auto socket = accept->accepted();
+
+    sal_log(service) << "control_accept"
+      << "; handle=" << socket.native_handle()
+      << "; from=" << accept->remote_endpoint();
+
+    control_session_t *session{};
+    {
+      auto guard = lock();
+      session = &control_sessions.emplace_front(
+        std::move(socket),
+        service.now_
+      );
+    }
+
+    session->socket.associate(service.async_net, error);
+    if (!error)
+    {
+      session->socket.async_receive(ev->this_context().make_io(this));
+    }
+  }
+
+  control_acceptor.async_accept(std::move(ev));
+  return true;
+}
+
+
+bool service_base_t::impl_t::control_command (net::io_ptr &ev) noexcept
+{
+  std::error_code error;
+  auto receive = net::ip::tcp_t::socket_t::async_receive_result(ev, error);
+  if (!receive)
+  {
+    return false;
+  }
+
+  auto socket = receive->socket();
+  if (error)
+  {
+    socket->close(error);
+    return true;
+  }
+
+  // TODO gather and handle message
+  socket->async_receive(std::move(ev));
+  return true;
 }
 
 
@@ -398,6 +555,7 @@ bool service_base_t::tick (event_handler_t &event_handler,
     event_handler.service_tick(now_);
     if (exit_code_ == no_exit)
     {
+      impl_->control_tick(now_);
       std::this_thread::sleep_for(tick_interval);
       return true;
     }

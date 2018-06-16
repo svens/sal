@@ -9,6 +9,7 @@
 #include <sal/service/application.hpp>
 #include <sal/logger/async_worker.hpp>
 #include <sal/net/async_service.hpp>
+#include <sal/net/ip/tcp.hpp>
 
 
 __sal_begin
@@ -71,9 +72,9 @@ public:
     struct
     {
       /**
-       * Port where accepting incoming control sessions.
+       * Endpoint where accepting incoming control sessions.
        */
-      uint16_t port;
+      net::ip::tcp_t::endpoint_t endpoint;
     } control;
   } const config;
 
