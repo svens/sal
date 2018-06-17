@@ -38,37 +38,53 @@ TEST(verify, false)
 }
 
 
-TEST(check_ptr, non_nullptr)
+TEST(check_ptr, raw_pointer)
 {
   const char *ptr = "test";
   EXPECT_EQ(ptr, sal_check_ptr(ptr));
+
+  ptr = nullptr;
+#if !defined(NDEBUG)
+  EXPECT_THROW(sal_check_ptr(ptr), std::logic_error);
+#else
+  EXPECT_EQ(nullptr, sal_check_ptr(ptr));
+#endif
 }
 
 
-TEST(check_ptr, nullptr)
+TEST(check_ptr, unique_ptr)
 {
-  const char *ptr = nullptr, *checked_ptr = "test";
+  auto ptr = std::make_unique<int>(1);
+  EXPECT_EQ(ptr.get(), sal_check_ptr(ptr));
 
+  ptr.reset();
 #if !defined(NDEBUG)
-  EXPECT_THROW(checked_ptr = sal_check_ptr(ptr), std::logic_error);
-  EXPECT_NE(nullptr, checked_ptr);
+  EXPECT_THROW(sal_check_ptr(ptr), std::logic_error);
 #else
-  EXPECT_NO_THROW(checked_ptr = sal_check_ptr(ptr));
-  EXPECT_EQ(nullptr, checked_ptr);
+  EXPECT_EQ(nullptr, sal_check_ptr(ptr));
+#endif
+}
+
+
+TEST(check_ptr, shared_ptr)
+{
+  auto ptr = std::make_shared<int>(1);
+  EXPECT_EQ(ptr.get(), sal_check_ptr(ptr));
+
+  ptr.reset();
+#if !defined(NDEBUG)
+  EXPECT_THROW(sal_check_ptr(ptr), std::logic_error);
+#else
+  EXPECT_EQ(nullptr, sal_check_ptr(ptr));
 #endif
 }
 
 
 TEST(check_ptr, nullptr_t)
 {
-  int dummy;
-  auto *p = static_cast<void *>(&dummy);
-
 #if !defined(NDEBUG)
-  EXPECT_THROW(p = sal_check_ptr(nullptr), std::logic_error);
-  EXPECT_NE(nullptr, p);
+  EXPECT_THROW(sal_check_ptr(nullptr), std::logic_error);
 #else
-  EXPECT_NO_THROW(p = sal_check_ptr(nullptr));
-  EXPECT_EQ(nullptr, p);
+  EXPECT_EQ(nullptr, sal_check_ptr(nullptr));
 #endif
 }
