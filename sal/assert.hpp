@@ -85,6 +85,20 @@ inline T *check_ptr (T *ptr, const char msg[])
 }
 
 
+template <typename T>
+inline T *check_ptr (const std::unique_ptr<T> &ptr, const char msg[])
+{
+  return check_ptr(ptr.get(), msg);
+}
+
+
+template <typename T>
+inline T *check_ptr (const std::shared_ptr<T> &ptr, const char msg[])
+{
+  return check_ptr(ptr.get(), msg);
+}
+
+
 inline void *check_ptr (std::nullptr_t, const char msg[])
 {
   return check_ptr<void>(nullptr, msg);
