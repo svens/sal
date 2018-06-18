@@ -337,6 +337,7 @@ TEST_F(service_base, control_connect)
     {
       sal::net::ip::tcp_t::socket_t socket;
       socket.connect(svc.config.control.endpoint, connect_error);
+      socket.close();
       std::this_thread::sleep_for(10ms);
       svc.exit(EXIT_FAILURE);
     });

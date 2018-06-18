@@ -434,7 +434,7 @@ void service_base_t::impl_t::control_tick (const sal::time_t &now) noexcept
   control_sessions.remove_if(
     [&now](const control_session_t &session)
     {
-      return session.expire_time < now || !session.socket.is_open();
+      return session.expire_time < now;
     }
   );
 }
@@ -486,15 +486,13 @@ bool service_base_t::impl_t::control_command (net::io_ptr &ev) noexcept
   {
     return false;
   }
-
-  auto socket = receive->socket();
-  if (error)
+  else if (error)
   {
-    socket->close(error);
     return true;
   }
 
   // TODO gather and handle message
+  auto socket = receive->socket();
   socket->async_receive(std::move(ev));
   return true;
 }
