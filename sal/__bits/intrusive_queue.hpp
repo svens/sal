@@ -81,7 +81,7 @@ private:
   volatile T *tail_{nullptr};
   volatile unsigned seq_{0};
 
-  char pad0_[__bits::hardware_destructive_interference_size()
+  char pad0_[__bits::hardware_destructive_interference_size
     - sizeof(decltype(tail_))
     - sizeof(decltype(seq_))
   ];
@@ -224,14 +224,14 @@ private:
   // using pad0_ also as sentry_
   T * const sentry_ = reinterpret_cast<T *>(&pad0_);
   char pad0_[
-    sizeof(T) < __bits::hardware_destructive_interference_size() - sizeof(decltype(sentry_))
-    ? __bits::hardware_destructive_interference_size() - sizeof(decltype(sentry_))
+    sizeof(T) < __bits::hardware_destructive_interference_size - sizeof(decltype(sentry_))
+    ? __bits::hardware_destructive_interference_size - sizeof(decltype(sentry_))
     : sizeof(T)
   ];
 
   std::atomic<T *> tail_{sentry_};
   char pad1_[
-    __bits::hardware_destructive_interference_size() - sizeof(decltype(tail_))
+    __bits::hardware_destructive_interference_size - sizeof(decltype(tail_))
   ];
 
   T *head_ = sentry_;

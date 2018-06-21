@@ -1,6 +1,5 @@
 #include <sal/intrusive_stack.hpp>
 #include <sal/common.test.hpp>
-#include <array>
 
 
 namespace {
@@ -20,8 +19,8 @@ struct intrusive_stack
 
 TEST_F(intrusive_stack, ctor)
 {
-  EXPECT_EQ(nullptr, stack.try_pop());
   EXPECT_TRUE(stack.empty());
+  EXPECT_EQ(nullptr, stack.try_pop());
 }
 
 

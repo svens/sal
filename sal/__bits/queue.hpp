@@ -96,7 +96,7 @@ private:
 
   // consumer
   node_t *head_ = &cache_.back();
-  char pad0_[__bits::hardware_destructive_interference_size()];
+  char pad0_[__bits::hardware_destructive_interference_size];
 
   // producer
   node_t *tail_ = head_, *cache_tail_ = head_, *head_copy_ = head_;
