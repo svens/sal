@@ -2,6 +2,7 @@
 
 #include <sal/config.hpp>
 #include <sal/intrusive_queue.hpp>
+#include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/type_id.hpp>
 #include <chrono>
 #include <deque>
@@ -217,34 +218,34 @@ struct async_io_base_t
   union
   {
     // any thread that finishes op pushes to owner's free list
-    mpsc_sync_t::intrusive_queue_hook_t free{};
+    intrusive_mpsc_queue_hook_t<async_io_base_t> free{};
 
     // single thread pushes to completed but socket close can happen on any
-    mpsc_sync_t::intrusive_queue_hook_t completed;
+    intrusive_mpsc_queue_hook_t<async_io_base_t> completed;
 
     // any thread can start receive
     // completing consumer side is synchronized externally
-    mpsc_sync_t::intrusive_queue_hook_t pending_receive;
+    intrusive_mpsc_queue_hook_t<async_io_base_t> pending_receive;
 
     // any thread can start send and complete
     // this queue is synchronized externally
-    no_sync_t::intrusive_queue_hook_t pending_send;
+    intrusive_queue_hook_t<async_io_base_t> pending_send;
   };
 
-  using free_list = intrusive_queue_t<async_io_base_t,
-    mpsc_sync_t,
+  using free_list = intrusive_mpsc_queue_t<
+    async_io_base_t,
     &async_io_base_t::free
   >;
-  using completed_list = intrusive_queue_t<async_io_base_t,
-    mpsc_sync_t,
+  using completed_list = intrusive_mpsc_queue_t<
+    async_io_base_t,
     &async_io_base_t::completed
   >;
-  using pending_receive_list = intrusive_queue_t<async_io_base_t,
-    mpsc_sync_t,
+  using pending_receive_list = intrusive_mpsc_queue_t<
+    async_io_base_t,
     &async_io_base_t::pending_receive
   >;
-  using pending_send_list = intrusive_queue_t<async_io_base_t,
-    no_sync_t,
+  using pending_send_list = intrusive_queue_t<
+    async_io_base_t,
     &async_io_base_t::pending_send
   >;
 

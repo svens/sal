@@ -1,5 +1,7 @@
 #include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/common.test.hpp>
+#include <array>
+#include <thread>
 
 
 namespace {
@@ -306,6 +308,43 @@ TEST_F(intrusive_mpsc_queue, interleaved_push_pop)
   // pop nil
   ASSERT_EQ(nullptr, queue.try_pop());
   ASSERT_TRUE(queue.empty());
+}
+
+
+TEST_F(intrusive_mpsc_queue, threaded_consumer_producer)
+{
+  std::array<foo_t, 10'000> data{};
+
+  // consumer
+  auto consumer = std::thread([&]
+  {
+    auto miss = 0U;
+    for (auto i = 0U;  i != data.size();  /**/)
+    {
+      if (auto p = queue.try_pop())
+      {
+        ASSERT_EQ(&data[i++], p);
+        miss = 0;
+      }
+      else
+      {
+        ASSERT_GT(data.max_size() * data.max_size(),  ++miss);
+      }
+      std::this_thread::yield();
+    }
+  });
+
+  using namespace std::chrono_literals;
+  std::this_thread::sleep_for(1ms);
+
+  // producer
+  for (auto &p: data)
+  {
+    queue.push(&p);
+    std::this_thread::yield();
+  }
+
+  consumer.join();
 }
 
 
