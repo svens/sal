@@ -21,6 +21,7 @@ list(APPEND sal_sources
   sal/hash.hpp
   sal/intrusive_queue.hpp
   sal/__bits/intrusive_queue.hpp
+  sal/intrusive_mpsc_queue.hpp
   sal/intrusive_stack.hpp
   sal/lockable.hpp
   sal/memory.hpp
@@ -50,6 +51,7 @@ list(APPEND sal_unittests_sources
   sal/format.test.cpp
   sal/hash.test.cpp
   sal/intrusive_queue.test.cpp
+  sal/intrusive_mpsc_queue.test.cpp
   sal/intrusive_stack.test.cpp
   sal/lockable.test.cpp
   sal/memory.test.cpp

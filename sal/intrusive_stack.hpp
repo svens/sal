@@ -40,13 +40,13 @@ using intrusive_stack_hook_t = T *;
  * \code
  * class foo_t
  * {
- *   sal::intrusive_stack_hook_t<foo> next;
+ *   sal::intrusive_stack_hook_t<foo_t> next;
  *   int a;
  *   char b;
  * };
- * sal::intrusive_stack_t<&foo::next> stack;
+ * sal::intrusive_stack_t<&foo_t::next> stack;
  *
- * foo f;
+ * foo_t f;
  * stack.push(&f);
  *
  * auto fp = stack.try_pop(); // fp == &f
