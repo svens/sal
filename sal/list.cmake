@@ -25,10 +25,7 @@ list(APPEND sal_sources
   sal/lockable.hpp
   sal/memory.hpp
   sal/memory_writer.hpp
-  sal/queue.hpp
-  sal/__bits/queue.hpp
   sal/spinlock.hpp
-  sal/sync_policy.hpp
   sal/thread.hpp
   sal/thread.cpp
   sal/time.hpp
@@ -55,7 +52,6 @@ list(APPEND sal_unittests_sources
   sal/lockable.test.cpp
   sal/memory.test.cpp
   sal/memory_writer.test.cpp
-  sal/queue.test.cpp
   sal/spinlock.test.cpp
   sal/thread.test.cpp
   sal/time.test.cpp
