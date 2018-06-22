@@ -10,6 +10,4 @@ list(APPEND sal_bench_modules
   bench/logger.cpp
   bench/memory_writer.cpp
   bench/spinlock.cpp
-  bench/udp_echo_client.cpp
-  bench/udp_echo_server.cpp
 )

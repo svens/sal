@@ -8,7 +8,6 @@
 
 #include <sal/config.hpp>
 #include <sal/net/__bits/socket.hpp>
-#include <sal/net/async_service.hpp>
 
 
 __sal_begin
@@ -82,17 +81,7 @@ public:
 
 protected:
 
-  ~socket_base_t ()
-  {}
-
-  /// Setup asynchronous operations helpers for \a socket
-  /// \internal
-  static void associate (__bits::socket_t &socket,
-    async_service_t &service,
-    std::error_code &error) noexcept
-  {
-    socket.associate(service.impl_, error);
-  }
+  ~socket_base_t () = default;
 };
 
 

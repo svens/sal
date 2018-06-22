@@ -4,7 +4,6 @@ list(APPEND sal_sources
   sal/net/__bits/socket.cpp
   sal/net/fwd.hpp
 
-  sal/net/async_service.hpp
   sal/net/basic_socket.hpp
   sal/net/basic_datagram_socket.hpp
   sal/net/basic_stream_socket.hpp
@@ -35,7 +34,6 @@ list(APPEND sal_sources
 # unittests
 list(APPEND sal_unittests_sources
   sal/net/init.test.cpp
-  sal/net/async_service.test.cpp
   sal/net/error.test.cpp
   sal/net/socket.test.cpp
 
