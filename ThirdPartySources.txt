@@ -1,14 +1,10 @@
 This library contains following third party sources
 
 
-== sal/__bits/intrusive_queue.hpp && sal/__bits/queue.hpp {{{1
+== sal/intrusive_mpsc_queue.hpp {{{1
 
 * Intrusive MPSC queue
   http://www.1024cores.net/home/lock-free-algorithms/queues/intrusive-mpsc-node-based-queue
-* Intrusive SPSC queue
-  https://groups.google.com/d/msg/comp.programming.threads/AsNwCD5lgAA/1l63qBiRX3cJ
-* Unbounded SPSC queue
-  http://www.1024cores.net/home/lock-free-algorithms/queues/unbounded-spsc-queue
 
 Copyright (c) 2010-2011 Dmitry Vyukov. All rights reserved.
 

@@ -1,7 +1,7 @@
 #include <sal/logger/async_worker.hpp>
 #include <sal/logger/event.hpp>
 #include <sal/logger/sink.hpp>
-#include <sal/intrusive_queue.hpp>
+#include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/spinlock.hpp>
 #include <deque>
 #include <mutex>
@@ -21,17 +21,19 @@ struct async_worker_t::impl_t
   {
     union
     {
-      spsc_sync_t::intrusive_queue_hook_t free_hook;
-      mpsc_sync_t::intrusive_queue_hook_t write_hook;
+      intrusive_mpsc_queue_hook_t<event_ctl_t> free_hook;
+      intrusive_mpsc_queue_hook_t<event_ctl_t> write_hook;
     };
 
-    using free_list_t = intrusive_queue_t<event_ctl_t,
-      spsc_sync_t, &event_ctl_t::free_hook
+    using free_list_t = intrusive_mpsc_queue_t<
+      event_ctl_t,
+      &event_ctl_t::free_hook
     >;
     free_list_t * const free_list{};
 
-    using write_list_t = intrusive_queue_t<event_ctl_t,
-      mpsc_sync_t, &event_ctl_t::write_hook
+    using write_list_t = intrusive_mpsc_queue_t<
+      event_ctl_t,
+      &event_ctl_t::write_hook
     >;
     write_list_t * const write_list{};
 

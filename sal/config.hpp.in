@@ -27,6 +27,9 @@ namespace __bits {
 using namespace std::string_view_literals;
 constexpr auto version = "@PROJECT_VERSION@"sv;
 
+// TODO: drop once in <new>
+constexpr size_t hardware_destructive_interference_size = 64;
+
 } // namespace __bits
 
 

@@ -1,30 +1,32 @@
-#include <sal/intrusive_queue.hpp>
+#include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/common.test.hpp>
+#include <array>
+#include <thread>
 
 
 namespace {
 
 
-struct intrusive_queue
+struct intrusive_mpsc_queue
   : public sal_test::fixture
 {
   struct foo_t
   {
-    sal::intrusive_queue_hook_t<foo_t> hook;
+    sal::intrusive_mpsc_queue_hook_t<foo_t> hook;
   };
-  using queue_t = sal::intrusive_queue_t<foo_t, &foo_t::hook>;
+  using queue_t = sal::intrusive_mpsc_queue_t<foo_t, &foo_t::hook>;
   queue_t queue{};
 };
 
 
-TEST_F(intrusive_queue, ctor)
+TEST_F(intrusive_mpsc_queue, ctor)
 {
   EXPECT_TRUE(queue.empty());
   EXPECT_EQ(nullptr, queue.try_pop());
 }
 
 
-TEST_F(intrusive_queue, move_ctor_empty)
+TEST_F(intrusive_mpsc_queue, move_ctor_empty)
 {
   ASSERT_EQ(nullptr, queue.try_pop());
 
@@ -34,7 +36,7 @@ TEST_F(intrusive_queue, move_ctor_empty)
 }
 
 
-TEST_F(intrusive_queue, move_ctor_empty_1)
+TEST_F(intrusive_mpsc_queue, move_ctor_empty_1)
 {
   foo_t f;
   queue.push(&f);
@@ -48,7 +50,7 @@ TEST_F(intrusive_queue, move_ctor_empty_1)
 }
 
 
-TEST_F(intrusive_queue, move_ctor_single)
+TEST_F(intrusive_mpsc_queue, move_ctor_single)
 {
   foo_t f;
   queue.push(&f);
@@ -64,7 +66,7 @@ TEST_F(intrusive_queue, move_ctor_single)
 }
 
 
-TEST_F(intrusive_queue, move_ctor_single_1)
+TEST_F(intrusive_mpsc_queue, move_ctor_single_1)
 {
   foo_t f1, f2;
   queue.push(&f1);
@@ -85,7 +87,7 @@ TEST_F(intrusive_queue, move_ctor_single_1)
 }
 
 
-TEST_F(intrusive_queue, move_ctor_multiple)
+TEST_F(intrusive_mpsc_queue, move_ctor_multiple)
 {
   foo_t f1, f2;
   queue.push(&f1);
@@ -105,7 +107,7 @@ TEST_F(intrusive_queue, move_ctor_multiple)
 }
 
 
-TEST_F(intrusive_queue, move_ctor_multiple_1)
+TEST_F(intrusive_mpsc_queue, move_ctor_multiple_1)
 {
   foo_t f1, f2, f3;
   queue.push(&f1);
@@ -127,7 +129,7 @@ TEST_F(intrusive_queue, move_ctor_multiple_1)
 }
 
 
-TEST_F(intrusive_queue, move_assign_empty)
+TEST_F(intrusive_mpsc_queue, move_assign_empty)
 {
   queue_t q;
   q = std::move(queue);
@@ -136,7 +138,7 @@ TEST_F(intrusive_queue, move_assign_empty)
 }
 
 
-TEST_F(intrusive_queue, move_assign_empty_1)
+TEST_F(intrusive_mpsc_queue, move_assign_empty_1)
 {
   queue_t q;
 
@@ -150,7 +152,7 @@ TEST_F(intrusive_queue, move_assign_empty_1)
 }
 
 
-TEST_F(intrusive_queue, move_assign_single)
+TEST_F(intrusive_mpsc_queue, move_assign_single)
 {
   queue_t q;
 
@@ -168,7 +170,7 @@ TEST_F(intrusive_queue, move_assign_single)
 }
 
 
-TEST_F(intrusive_queue, move_assign_single_1)
+TEST_F(intrusive_mpsc_queue, move_assign_single_1)
 {
   queue_t q;
 
@@ -188,7 +190,7 @@ TEST_F(intrusive_queue, move_assign_single_1)
 }
 
 
-TEST_F(intrusive_queue, move_assign_multiple)
+TEST_F(intrusive_mpsc_queue, move_assign_multiple)
 {
   queue_t q;
 
@@ -210,7 +212,7 @@ TEST_F(intrusive_queue, move_assign_multiple)
 }
 
 
-TEST_F(intrusive_queue, move_assign_multiple_1)
+TEST_F(intrusive_mpsc_queue, move_assign_multiple_1)
 {
   queue_t q;
 
@@ -234,7 +236,7 @@ TEST_F(intrusive_queue, move_assign_multiple_1)
 }
 
 
-TEST_F(intrusive_queue, single_push_pop)
+TEST_F(intrusive_mpsc_queue, single_push_pop)
 {
   foo_t f;
   ASSERT_TRUE(queue.empty());
@@ -250,7 +252,7 @@ TEST_F(intrusive_queue, single_push_pop)
 }
 
 
-TEST_F(intrusive_queue, multiple_push_pop)
+TEST_F(intrusive_mpsc_queue, multiple_push_pop)
 {
   foo_t f1, f2, f3;
   ASSERT_TRUE(queue.empty());
@@ -273,7 +275,7 @@ TEST_F(intrusive_queue, multiple_push_pop)
 }
 
 
-TEST_F(intrusive_queue, interleaved_push_pop)
+TEST_F(intrusive_mpsc_queue, interleaved_push_pop)
 {
   // push 1, 2
   foo_t f1, f2;
@@ -306,6 +308,43 @@ TEST_F(intrusive_queue, interleaved_push_pop)
   // pop nil
   ASSERT_EQ(nullptr, queue.try_pop());
   ASSERT_TRUE(queue.empty());
+}
+
+
+TEST_F(intrusive_mpsc_queue, threaded_consumer_producer)
+{
+  std::array<foo_t, 10'000> data{};
+
+  // consumer
+  auto consumer = std::thread([&]
+  {
+    auto miss = 0U;
+    for (auto i = 0U;  i != data.size();  /**/)
+    {
+      if (auto p = queue.try_pop())
+      {
+        ASSERT_EQ(&data[i++], p);
+        miss = 0;
+      }
+      else
+      {
+        ASSERT_GT(data.max_size() * data.max_size(),  ++miss);
+      }
+      std::this_thread::yield();
+    }
+  });
+
+  using namespace std::chrono_literals;
+  std::this_thread::sleep_for(1ms);
+
+  // producer
+  for (auto &p: data)
+  {
+    queue.push(&p);
+    std::this_thread::yield();
+  }
+
+  consumer.join();
 }
 
 

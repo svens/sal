@@ -1,26 +1,27 @@
 #pragma once
 
 /**
- * \file sal/intrusive_queue.hpp
- * Intrusive queue (FIFO).
+ * \file sal/intrusive_stack.hpp
+ * Intrusive stack (LIFO).
  */
 
 #include <sal/config.hpp>
+#include <utility>
 
 
 __sal_begin
 
 
 /**
- * Intrusive queue hook.
- * \see intrusive_queue_t
+ * Intrusive stack hook.
+ * \see intrusive_stack_t
  */
 template <typename T>
-using intrusive_queue_hook_t = T *;
+using intrusive_stack_hook_t = T *;
 
 
 /**
- * Intrusive queue (FIFO).
+ * Intrusive stack (LIFO).
  *
  * Elements of type \a T must provide member address \a Next that stores
  * opaque data managed by container. Any given time specific hook can be used
@@ -39,38 +40,39 @@ using intrusive_queue_hook_t = T *;
  * \code
  * class foo_t
  * {
- *   sal::intrusive_queue_hook_t<foo_t> next;
+ *   sal::intrusive_stack_hook_t<foo_t> next;
  *   int a;
  *   char b;
  * };
- * sal::intrusive_queue_t<&foo_t::next> queue;
+ * sal::intrusive_stack_t<&foo_t::next> stack;
  *
  * foo_t f;
- * queue.push(&f);
+ * stack.push(&f);
  *
- * auto fp = queue.try_pop(); // fp == &f
+ * auto fp = stack.try_pop(); // fp == &f
  * \endcode
  *
  * \note This container is not thread safe.
  */
-template <typename T, intrusive_queue_hook_t<T> T::*Next>
-class intrusive_queue_t
+template <typename T, intrusive_stack_hook_t<T> T::*Next>
+class intrusive_stack_t
 {
 public:
 
-  intrusive_queue_t () noexcept = default;
+  intrusive_stack_t () noexcept = default;
 
-  intrusive_queue_t (const intrusive_queue_t &) = delete;
-  intrusive_queue_t &operator= (const intrusive_queue_t &) = delete;
+  intrusive_stack_t (const intrusive_stack_t &) = delete;
+  intrusive_stack_t &operator= (const intrusive_stack_t &) = delete;
 
 
   /**
-   * Construct new queue with elements from \a that. \a that will be empty
+   * Construct new stack with elements from \a that. \a that will be empty
    * after the move.
    */
-  intrusive_queue_t (intrusive_queue_t &&that) noexcept
+  intrusive_stack_t (intrusive_stack_t &&that) noexcept
+    : top_(that.top_)
   {
-    operator=(std::move(that));
+    that.top_ = nullptr;
   }
 
 
@@ -80,57 +82,61 @@ public:
    * are dynamically allocated, it is application responsibility to release
    * them beforehand.
    */
-  intrusive_queue_t &operator= (intrusive_queue_t &&that) noexcept
+  intrusive_stack_t &operator= (intrusive_stack_t &&that) noexcept
   {
-    head_->*Next = that.head_->*Next;
-    tail_ = that.tail_ == that.head_ ? head_ : that.tail_;
-    that.head_->*Next = that.tail_ = nullptr;
+    top_ = nullptr;
+    swap(*this, that);
     return *this;
   }
 
 
   /**
-   * Push new \a element to back of queue.
+   * Swap elements of \a a and \a b.
    */
-  void push (T *node) noexcept
+  friend inline void swap (intrusive_stack_t &a, intrusive_stack_t &b) noexcept
   {
-    node->*Next = nullptr;
-    tail_ = tail_->*Next = node;
+    using std::swap;
+    swap(a.top_, b.top_);
   }
 
 
   /**
-   * Pop next element from head of queue. If empty, return nullptr.
+   * Push new \a element to top of stack.
+   */
+  void push (T *element) noexcept
+  {
+    element->*Next = top_;
+    top_ = element;
+  }
+
+
+  /**
+   * Pop next element from top of stack. If there is no elements in stack,
+   * nullptr is returned.
    */
   T *try_pop () noexcept
   {
-    if (auto node = head_->*Next)
+    auto element = top_;
+    if (element)
     {
-      head_->*Next = node->*Next;
-      if (head_->*Next == nullptr)
-      {
-        tail_ = head_;
-      }
-      return node;
+      top_ = top_->*Next;
     }
-    return nullptr;
+    return element;
   }
 
 
   /**
-   * Return true if queue has no elements.
+   * Return true if stack is empty.
    */
   bool empty () const noexcept
   {
-    return tail_ == reinterpret_cast<const T *>(&sentry_);
+    return top_ == nullptr;
   }
 
 
 private:
 
-  char sentry_[sizeof(T)];
-  T * const head_{reinterpret_cast<T *>(&sentry_)};
-  T *tail_{head_};
+  T *top_{nullptr};
 };
 
 
