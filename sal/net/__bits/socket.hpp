@@ -81,8 +81,8 @@ struct socket_t
 
   socket_t &operator= (socket_t &&that) noexcept
   {
-    auto tmp{std::move(that)};
-    this->swap(tmp);
+    auto tmp = std::move(*this);
+    swap(that);
     return *this;
   }
 

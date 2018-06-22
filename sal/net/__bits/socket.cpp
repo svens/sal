@@ -8,6 +8,7 @@
   #include <unistd.h>
 #elif __sal_os_windows
   #include <mutex>
+  #include <mswsock.h>
 #endif
 
 
@@ -24,8 +25,10 @@ namespace {
 
 
 struct winsock_t
+  : public RIO_EXTENSION_FUNCTION_TABLE
 {
   winsock_t () noexcept
+    : RIO_EXTENSION_FUNCTION_TABLE{sizeof(winsock_t)}
   {
     init_lib();
   }
@@ -66,6 +69,23 @@ void init_winsock (std::error_code &init_result) noexcept
     ::WSAStartup(MAKEWORD(2, 2), &wsa),
     std::system_category()
   );
+
+  if (!init_result)
+  {
+    GUID rio_guid = WSAID_MULTIPLE_RIO;
+    DWORD bytes;
+
+    auto s = ::socket(AF_INET, SOCK_STREAM, 0);
+    call(::WSAIoctl, init_result, s,
+      SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER,
+      &rio_guid, sizeof(rio_guid),
+      &winsock, sizeof(winsock),
+      &bytes,
+      nullptr,
+      nullptr
+    );
+    (void)::closesocket(s);
+  }
 }
 
 
