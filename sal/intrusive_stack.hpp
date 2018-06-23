@@ -23,7 +23,7 @@ using intrusive_stack_hook_t = T *;
 /**
  * Intrusive stack (LIFO).
  *
- * Elements of type \a T must provide member address \a Next that stores
+ * Elements of this container must provide member address \a Next that stores
  * opaque data managed by container. Any given time specific hook can be used
  * only to store element in single container. Same hook can be used to store
  * element in different containers at different times. If application needs to
@@ -34,7 +34,7 @@ using intrusive_stack_hook_t = T *;
  * application's responsibility to handle node management and make sure that
  * while in container, element is kept alive and it's hook is not interfered
  * with. Also, pushing and popping elements into/from container does not copy
- * them, just hooks/unhooks using specified member \a Next in \a T.
+ * them, just hooks/unhooks using specified member \a Next.
  *
  * Usage:
  * \code
@@ -54,10 +54,23 @@ using intrusive_stack_hook_t = T *;
  *
  * \note This container is not thread safe.
  */
-template <typename T, intrusive_stack_hook_t<T> T::*Next>
+template <auto Next>
 class intrusive_stack_t
 {
+private:
+
+  template <typename T, typename Hook, Hook T::*Member>
+  static T helper (const intrusive_stack_t<Member> *);
+
 public:
+
+  /**
+   * Element type of container.
+   */
+  using element_type = decltype(
+    helper(static_cast<intrusive_stack_t<Next> *>(nullptr))
+  );
+
 
   intrusive_stack_t () noexcept = default;
 
@@ -103,7 +116,7 @@ public:
   /**
    * Push new \a element to top of stack.
    */
-  void push (T *element) noexcept
+  void push (element_type *element) noexcept
   {
     element->*Next = top_;
     top_ = element;
@@ -114,7 +127,7 @@ public:
    * Pop next element from top of stack. If there is no elements in stack,
    * nullptr is returned.
    */
-  T *try_pop () noexcept
+  element_type *try_pop () noexcept
   {
     auto element = top_;
     if (element)
@@ -136,7 +149,7 @@ public:
 
 private:
 
-  T *top_{nullptr};
+  element_type *top_{nullptr};
 };
 
 

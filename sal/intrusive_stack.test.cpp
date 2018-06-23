@@ -12,7 +12,7 @@ struct intrusive_stack
   {
     sal::intrusive_stack_hook_t<foo_t> hook;
   };
-  using stack_t = sal::intrusive_stack_t<foo_t, &foo_t::hook>;
+  using stack_t = sal::intrusive_stack_t<&foo_t::hook>;
   stack_t stack{};
 };
 

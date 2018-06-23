@@ -25,16 +25,10 @@ struct async_worker_t::impl_t
       intrusive_mpsc_queue_hook_t<event_ctl_t> write_hook;
     };
 
-    using free_list_t = intrusive_mpsc_queue_t<
-      event_ctl_t,
-      &event_ctl_t::free_hook
-    >;
+    using free_list_t = intrusive_mpsc_queue_t<&event_ctl_t::free_hook>;
     free_list_t * const free_list{};
 
-    using write_list_t = intrusive_mpsc_queue_t<
-      event_ctl_t,
-      &event_ctl_t::write_hook
-    >;
+    using write_list_t = intrusive_mpsc_queue_t<&event_ctl_t::write_hook>;
     write_list_t * const write_list{};
 
     event_ctl_t (free_list_t *free_list, write_list_t *write_list) noexcept
