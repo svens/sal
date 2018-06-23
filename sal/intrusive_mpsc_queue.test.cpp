@@ -14,7 +14,7 @@ struct intrusive_mpsc_queue
   {
     sal::intrusive_mpsc_queue_hook_t<foo_t> hook;
   };
-  using queue_t = sal::intrusive_mpsc_queue_t<foo_t, &foo_t::hook>;
+  using queue_t = sal::intrusive_mpsc_queue_t<&foo_t::hook>;
   queue_t queue{};
 };
 
