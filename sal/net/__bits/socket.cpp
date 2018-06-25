@@ -8,7 +8,6 @@
   #include <unistd.h>
 #elif __sal_os_windows
   #include <mutex>
-  #include <mswsock.h>
 #endif
 
 
@@ -21,23 +20,10 @@ namespace net { namespace __bits {
 #if __sal_os_windows // {{{1
 
 
+winsock_t winsock{};
+
+
 namespace {
-
-
-struct winsock_t
-  : public RIO_EXTENSION_FUNCTION_TABLE
-{
-  winsock_t () noexcept
-    : RIO_EXTENSION_FUNCTION_TABLE{sizeof(winsock_t)}
-  {
-    init_lib();
-  }
-
-  ~winsock_t () noexcept
-  {
-    (void)::WSACleanup();
-  }
-} winsock{};
 
 
 template <typename T>
@@ -62,29 +48,32 @@ inline T check_call (T result, std::error_code &error) noexcept
 #define call(func,error,...) check_call(func(__VA_ARGS__), error)
 
 
-void init_winsock (std::error_code &init_result) noexcept
+void init_winsock (std::error_code &init_error, winsock_t &functions) noexcept
 {
   WSADATA wsa;
-  init_result.assign(
+  init_error.assign(
     ::WSAStartup(MAKEWORD(2, 2), &wsa),
     std::system_category()
   );
 
-  if (!init_result)
+  //
+  // Load RIO
+  //
+  if (!init_error)
   {
     GUID rio_guid = WSAID_MULTIPLE_RIO;
-    DWORD bytes;
+    DWORD bytes = 0;
 
-    auto s = ::socket(AF_INET, SOCK_STREAM, 0);
-    call(::WSAIoctl, init_result, s,
+    auto socket = ::socket(AF_INET, SOCK_STREAM, 0);
+    call(::WSAIoctl, init_error, socket,
       SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER,
       &rio_guid, sizeof(rio_guid),
-      &winsock, sizeof(winsock),
+      &functions, sizeof(functions),
       &bytes,
       nullptr,
       nullptr
     );
-    (void)::closesocket(s);
+    (void)::closesocket(socket);
   }
 }
 
@@ -92,11 +81,26 @@ void init_winsock (std::error_code &init_result) noexcept
 } // namespace
 
 
+winsock_t::winsock_t () noexcept
+{
+  init_lib();
+}
+
+
+winsock_t::~winsock_t () noexcept
+{
+  (void)::WSACleanup();
+}
+
+
 const std::error_code &init_lib () noexcept
 {
   static std::once_flag once;
   static std::error_code init_result;
-  std::call_once(once, &init_winsock, std::ref(init_result));
+  std::call_once(once, &init_winsock,
+    std::ref(init_result),
+    std::ref(winsock)
+  );
   return init_result;
 }
 
