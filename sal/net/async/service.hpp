@@ -31,28 +31,16 @@ class io_t
 {
 public:
 
-  context_t &this_context () const noexcept
-  {
-    return *reinterpret_cast<context_t *>(impl_->this_context);
-  }
-
-
   template <typename UserData>
   void user_data (UserData *ptr) noexcept
   {
-    impl_->user_data_type = type_v<UserData>;
     impl_->user_data = ptr;
   }
 
 
-  template <typename UserData>
-  UserData *user_data () const noexcept
+  void *user_data () const noexcept
   {
-    if (impl_->user_data_type == type_v<UserData>)
-    {
-      return static_cast<UserData *>(impl_->user_data);
-    }
-    return nullptr;
+    return impl_->user_data;
   }
 
 
@@ -79,7 +67,7 @@ private:
     : impl_(impl)
   { }
 
-  friend class context_t;
+  friend class service_t;
 };
 
 
@@ -90,18 +78,6 @@ class context_t
   : protected __bits::context_t
 {
 public:
-
-  io_t make_io ()
-  {
-    return {__bits::context_t::make_io()};
-  }
-
-
-  template <typename UserData>
-  io_t make_io (UserData *user_data)
-  {
-    return {__bits::context_t::make_io(type_v<UserData>, user_data)};
-  }
 
 
 private:
@@ -124,6 +100,19 @@ public:
   context_t make_context (size_t max_events_per_poll = 16)
   {
     return {impl_, max_events_per_poll};
+  }
+
+
+  io_t make_io ()
+  {
+    return {impl_->make_io()};
+  }
+
+
+  template <typename UserData>
+  io_t make_io (UserData *ptr)
+  {
+    return {impl_->make_io(ptr)};
   }
 
 

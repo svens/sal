@@ -14,10 +14,8 @@ struct net_async_service
 
 TEST_F(net_async_service, ctor)
 {
-  auto context = service.make_context();
-  auto io = context.make_io(&service);
-  EXPECT_EQ(nullptr, io.user_data<net_async_service>());
-  EXPECT_NE(nullptr, io.user_data<sal::net::async::service_t>());
+  auto io = service.make_io(&service);
+  EXPECT_EQ(&service, io.user_data());
 }
 
 
