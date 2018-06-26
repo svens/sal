@@ -60,14 +60,14 @@ static_assert(io_t::data_size > 1500, "io_t::data_size less than MTU size");
 
 struct io_block_t
 {
-  io_t::free_list_t &free_list;
+  io_t::free_list_t &free;
   std::unique_ptr<char[]> data;
 
 #if __sal_os_windows
   RIO_BUFFERID buffer_id;
 #endif
 
-  io_block_t (size_t size, io_t::free_list_t &free_list);
+  io_block_t (size_t size, io_t::free_list_t &free);
   ~io_block_t () noexcept;
 };
 
@@ -76,7 +76,7 @@ struct io_deleter_t
 {
   void operator() (io_t *io) noexcept
   {
-    io->io_block.free_list.push(io);
+    io->io_block.free.push(io);
   }
 };
 using io_ptr = std::unique_ptr<io_t, io_deleter_t>;
@@ -89,29 +89,31 @@ struct service_t
 {
 #if __sal_os_windows
   HANDLE iocp;
+  OVERLAPPED overlapped;
+  RIO_CQ completed;
 #endif
 
   static constexpr size_t max_events_per_poll = 256;
 
   std::deque<io_block_t> pool{};
-  io_t::free_list_t free_list{};
+  io_t::free_list_t free{};
   size_t io_pool_size{0};
 
 
-  service_t (std::error_code &error) noexcept;
+  service_t (size_t completion_queue_size);
   ~service_t () noexcept;
 
 
   io_t *make_io (void *user_data = nullptr)
   {
-    auto io = free_list.try_pop();
+    auto io = free.try_pop();
     if (!io)
     {
       // extend pool (start with 512, 2x every next alloc)
       size_t block_size = 512 * sizeof(io_t) * (1ULL << pool.size());
-      pool.emplace_back(block_size, free_list);
+      pool.emplace_back(block_size, free);
       io_pool_size += block_size;
-      io = free_list.try_pop();
+      io = free.try_pop();
     }
     io->user_data = user_data;
     return static_cast<io_t *>(io);

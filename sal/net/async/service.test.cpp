@@ -8,7 +8,7 @@ namespace {
 struct net_async_service
   : public sal_test::fixture
 {
-  sal::net::async::service_t service{};
+  sal::net::async::service_t service{10};
 };
 
 

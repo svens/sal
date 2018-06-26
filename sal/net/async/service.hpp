@@ -97,6 +97,11 @@ class service_t
 {
 public:
 
+  service_t (size_t completion_queue_size)
+    : impl_(std::make_shared<__bits::service_t>(completion_queue_size))
+  { }
+
+
   context_t make_context (size_t max_events_per_poll = 16)
   {
     return {impl_, max_events_per_poll};
@@ -124,9 +129,7 @@ public:
 
 private:
 
-  __bits::service_ptr impl_ = std::make_shared<__bits::service_t>(
-    throw_on_error("service_t")
-  );
+  __bits::service_ptr impl_;
 };
 
 
