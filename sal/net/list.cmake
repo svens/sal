@@ -16,6 +16,7 @@ list(APPEND sal_sources
 
   sal/net/async/__bits/async.hpp
   sal/net/async/__bits/async.cpp
+  sal/net/async/io.hpp
   sal/net/async/service.hpp
 
   sal/net/internet.hpp
@@ -41,6 +42,7 @@ list(APPEND sal_unittests_sources
   sal/net/error.test.cpp
   sal/net/socket.test.cpp
 
+  sal/net/async/io.test.cpp
   sal/net/async/service.test.cpp
 
   sal/net/ip/address.test.cpp

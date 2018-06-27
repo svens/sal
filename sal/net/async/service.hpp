@@ -8,8 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/async/__bits/async.hpp>
-#include <sal/net/error.hpp>
-#include <sal/type_id.hpp>
+#include <sal/net/async/io.hpp>
 
 
 __sal_begin
@@ -20,55 +19,6 @@ namespace net::async {
 
 class service_t;
 class context_t;
-class io_t;
-class datagram_socket_t;
-
-
-//
-// io
-//
-class io_t
-{
-public:
-
-  template <typename UserData>
-  void user_data (UserData *ptr) noexcept
-  {
-    impl_->user_data = ptr;
-  }
-
-
-  void *user_data () const noexcept
-  {
-    return impl_->user_data;
-  }
-
-
-  template <typename AsyncResult>
-  const AsyncResult *result_for (std::error_code &error) noexcept
-  {
-    error.clear();
-    return nullptr;
-  }
-
-
-  template <typename AsyncResult>
-  const AsyncResult *result_for ()
-  {
-    return result_for<AsyncResult>(throw_on_error("io::result_for"));
-  }
-
-
-private:
-
-  __bits::io_ptr impl_;
-
-  io_t (__bits::io_t *impl) noexcept
-    : impl_(impl)
-  { }
-
-  friend class service_t;
-};
 
 
 //
@@ -130,26 +80,6 @@ public:
 private:
 
   __bits::service_ptr impl_;
-};
-
-
-//
-// datagram socket
-//
-class datagram_socket_t
-{
-public:
-
-  struct receive_from_t
-  {
-    datagram_socket_t *socket;
-    size_t transferred;
-  };
-
-  void start_receive_from (io_t &&io) noexcept;
-
-
-private:
 };
 
 

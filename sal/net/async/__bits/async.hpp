@@ -28,7 +28,13 @@ struct socket_t;
 struct io_base_t
 {
   io_block_t &io_block;
+
   void *user_data{};
+  uintptr_t op_id{};
+  uint8_t op_data[1];
+  std::error_code error{};
+
+  uint8_t *begin{}, *end{};
 
   union
   {
@@ -47,7 +53,7 @@ struct io_t
   : public io_base_t
 {
   static constexpr size_t data_size = 2048 - sizeof(io_base_t);
-  char data[data_size];
+  uint8_t data[data_size];
 
 
   io_t (io_block_t &io_block) noexcept
@@ -106,17 +112,19 @@ struct service_t
 
   io_t *make_io (void *user_data = nullptr)
   {
-    auto io = free.try_pop();
+    auto io = static_cast<io_t *>(free.try_pop());
     if (!io)
     {
       // extend pool (start with 512, 2x every next alloc)
       size_t block_size = 512 * sizeof(io_t) * (1ULL << pool.size());
       pool.emplace_back(block_size, free);
       io_pool_size += block_size;
-      io = free.try_pop();
+      io = static_cast<io_t *>(free.try_pop());
     }
+    io->begin = io->data;
+    io->end = io->data + sizeof(io->data);
     io->user_data = user_data;
-    return static_cast<io_t *>(io);
+    return io;
   }
 };
 using service_ptr = std::shared_ptr<service_t>;
