@@ -14,8 +14,8 @@ namespace net::async::__bits {
 using ::sal::net::__bits::winsock;
 
 
-io_block_t::io_block_t (size_t size, io_t::free_list_t &free)
-  : free(free)
+io_block_t::io_block_t (size_t size, io_t::free_list_t &io_free_list)
+  : io_free_list(io_free_list)
   , data(new char[size])
   , buffer_id(winsock.RIORegisterBuffer(data.get(), static_cast<DWORD>(size)))
 {
@@ -29,7 +29,7 @@ io_block_t::io_block_t (size_t size, io_t::free_list_t &free)
   auto it = data.get(), end = it + size;
   while (it != end)
   {
-    free.push(new(it) io_t(*this));
+    io_free_list.push(new(it) io_t(*this));
     it += sizeof(io_t);
   }
 }
@@ -87,14 +87,14 @@ service_t::~service_t () noexcept
 #elif __sal_os_linux || __sal_os_macos
 
 
-io_block_t::io_block_t (size_t size, io_t::free_list_t &free)
-  : free(free)
+io_block_t::io_block_t (size_t size, io_t::free_list_t &io_free_list)
+  : io_free_list(io_free_list)
   , data(new char[size])
 {
   auto it = data.get(), end = it + size;
   while (it != end)
   {
-    free.push(new(it) io_t(*this));
+    io_free_list.push(new(it) io_t(*this));
     it += sizeof(io_t);
   }
 }
