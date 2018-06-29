@@ -49,7 +49,7 @@ public:
    * Construct and open new acceptor using \a protocol. On failure, throw
    * std::system_error.
    */
-  basic_socket_acceptor_t (const protocol_t &protocol)
+  basic_socket_acceptor_t (const AcceptableProtocol &protocol)
   {
     open(protocol);
   }
@@ -59,7 +59,9 @@ public:
    * Construct new acceptor, open and bind to \a endpoint. On failure, throw
    * std::system_error
    */
-  basic_socket_acceptor_t (const endpoint_t &endpoint, bool reuse_addr=true)
+  basic_socket_acceptor_t (
+      const typename AcceptableProtocol::endpoint_t &endpoint,
+      bool reuse_addr=true)
     : basic_socket_acceptor_t(endpoint.protocol())
   {
     if (reuse_addr)
@@ -75,7 +77,7 @@ public:
    * Construct new acceptor for pre-opened \a handle using \a protocol.
    * On failure, throw std::system_error
    */
-  basic_socket_acceptor_t (const protocol_t &protocol, handle_t handle)
+  basic_socket_acceptor_t (const AcceptableProtocol &protocol, handle_t handle)
   {
     assign(protocol, handle);
   }
@@ -453,6 +455,11 @@ private:
   int family_ = AF_UNSPEC;
   bool enable_connection_aborted_ = false;
 };
+
+
+template <typename Endpoint>
+basic_socket_acceptor_t (const Endpoint &, bool=true)
+  -> basic_socket_acceptor_t<typename Endpoint::protocol_t>;
 
 
 } // namespace net
