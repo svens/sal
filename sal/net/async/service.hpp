@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/net/async/__bits/async.hpp>
 #include <sal/net/async/io.hpp>
+#include <sal/net/async/worker.hpp>
 
 
 __sal_begin
@@ -17,32 +18,6 @@ __sal_begin
 namespace net::async {
 
 
-class service_t;
-class context_t;
-
-
-//
-// context
-//
-class context_t
-  : protected __bits::context_t
-{
-public:
-
-
-private:
-
-  context_t (__bits::service_ptr service, size_t max_events_per_poll)
-    : __bits::context_t(service, max_events_per_poll)
-  { }
-
-  friend class service_t;
-};
-
-
-//
-// service
-//
 class service_t
 {
 public:
@@ -52,9 +27,9 @@ public:
   { }
 
 
-  context_t make_context (size_t max_events_per_poll = 16)
+  worker_t make_worker (size_t max_results_per_poll) noexcept
   {
-    return {impl_, max_events_per_poll};
+    return {impl_, max_results_per_poll};
   }
 
 
@@ -64,10 +39,10 @@ public:
   }
 
 
-  template <typename UserData>
-  io_t make_io (UserData *ptr)
+  template <typename Context>
+  io_t make_io (Context *context)
   {
-    return {impl_->make_io(ptr)};
+    return {impl_->make_io(context, type_v<Context>)};
   }
 
 
@@ -80,6 +55,9 @@ public:
 private:
 
   __bits::service_ptr impl_;
+
+  template <typename Protocol>
+  friend class basic_socket_t;
 };
 
 

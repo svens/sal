@@ -11,6 +11,7 @@
 #include <sal/net/ip/basic_endpoint.hpp>
 #include <sal/net/ip/basic_resolver.hpp>
 #include <sal/net/basic_datagram_socket.hpp>
+#include <sal/net/async/basic_datagram_socket.hpp>
 #include <sal/memory_writer.hpp>
 #include <ostream>
 
@@ -36,6 +37,9 @@ public:
 
   /// UDP datagram socket
   using socket_t = basic_datagram_socket_t<udp_t>;
+
+  // Asynchronous UDP datagram socket
+  using async_socket_t = async::basic_datagram_socket_t<udp_t>;
 
 
   udp_t () = delete;

@@ -8,7 +8,7 @@
 
 #include <sal/config.hpp>
 #include <sal/net/async/__bits/async.hpp>
-#include <sal/net/error.hpp>
+#include <sal/assert.hpp>
 
 
 __sal_begin
@@ -25,13 +25,6 @@ public:
   {
     impl_->begin = impl_->data;
     impl_->end = impl_->data + sizeof(impl_->data);
-    impl_->user_data = nullptr;
-  }
-
-
-  void release () noexcept
-  {
-    impl_.reset();
   }
 
 
@@ -41,16 +34,34 @@ public:
   }
 
 
-  template <typename UserData>
-  void user_data (UserData *ptr) noexcept
+  template <typename Context>
+  void context (Context *context) noexcept
   {
-    impl_->user_data = ptr;
+    impl_->context = context;
+    impl_->context_type = type_v<Context>;
   }
 
 
-  void *user_data () noexcept
+  template <typename Context>
+  Context *context () const noexcept
   {
-    return impl_->user_data;
+    if (impl_->context_type == type_v<Context>)
+    {
+      return static_cast<Context *>(impl_->context);
+    }
+    return nullptr;
+  }
+
+
+  template <typename Context>
+  Context *socket_context () const
+  {
+    auto &socket = *sal_check_ptr(impl_->socket);
+    if (socket.context_type == type_v<Context>)
+    {
+      return static_cast<Context *>(socket.context);
+    }
+    return nullptr;
   }
 
 
@@ -86,7 +97,7 @@ public:
 
   void head_gap (size_t offset_from_head)
   {
-    sal_throw_if(offset_from_head > max_size());
+    sal_assert(offset_from_head <= max_size());
     impl_->begin = impl_->data + offset_from_head;
   }
 
@@ -99,7 +110,7 @@ public:
 
   void tail_gap (size_t offset_from_tail)
   {
-    sal_throw_if(offset_from_tail > max_size());
+    sal_assert(offset_from_tail <= max_size());
     impl_->end = impl_->data + sizeof(impl_->data) - offset_from_tail;
   }
 
@@ -118,7 +129,7 @@ public:
 
   void resize (size_t new_size)
   {
-    sal_throw_if(impl_->begin + new_size > impl_->data + sizeof(impl_->data));
+    sal_assert(impl_->begin + new_size <= impl_->data + sizeof(impl_->data));
     impl_->end = impl_->begin + new_size;
   }
 
@@ -127,23 +138,6 @@ public:
   {
     return sizeof(impl_->data);
   }
-
-
-#if 0
-  template <typename AsyncResult>
-  const AsyncResult *result_for (std::error_code &error) noexcept
-  {
-    error.clear();
-    return nullptr;
-  }
-
-
-  template <typename AsyncResult>
-  const AsyncResult *result_for ()
-  {
-    return result_for<AsyncResult>(throw_on_error("io::result_for"));
-  }
-#endif
 
 
 private:
@@ -155,6 +149,8 @@ private:
   { }
 
   friend class service_t;
+  friend class worker_t;
+  template <typename Protocol> friend class basic_socket_t;
 };
 
 

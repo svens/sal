@@ -113,6 +113,13 @@ struct socket_t
     swap(handle, that.handle);
   }
 
+  handle_t release () noexcept
+  {
+    auto result = handle;
+    handle = invalid;
+    return result;
+  }
+
   void open (int domain,
     int type,
     int protocol,

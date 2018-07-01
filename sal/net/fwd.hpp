@@ -64,6 +64,20 @@ template <typename Protocol> class basic_resolver_t;
 } // namespace ip
 
 
+namespace async {
+
+template <typename Protocol> class basic_socket_t;
+template <typename Protocol> class basic_datagram_socket_t;
+template <typename Protocol> class basic_stream_socket_t;
+template <typename Protocol> class basic_socket_acceptor_t;
+
+class io_t;
+class service_t;
+class worker_t;
+
+} // namespace async
+
+
 } // namespace net
 
 
