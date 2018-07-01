@@ -37,6 +37,16 @@ constexpr size_t hardware_destructive_interference_size = 64;
 constexpr std::string_view version = __bits::version;
 
 
+/// True on Debug build, false otherwise
+constexpr bool is_debug_build =
+#if _DEBUG
+  true
+#else
+  false
+#endif
+;
+
+
 //
 // __sal_arch
 //
