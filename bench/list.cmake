@@ -10,5 +10,5 @@ list(APPEND sal_bench_modules
   bench/logger.cpp
   bench/memory_writer.cpp
   bench/spinlock.cpp
-  bench/udp_relay.cpp
+  bench/udp_server.cpp
 )

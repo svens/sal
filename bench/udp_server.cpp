@@ -55,7 +55,42 @@ struct service_t
 
   sal::net::async::service_t async;
   socket_t client, peer;
-  std::vector<size_t> thread_statistics;
+
+  struct statistics_t
+  {
+    using list_t = std::vector<statistics_t>;
+    size_t client_recv{};
+    size_t client_drop{};
+    size_t client_send{};
+    size_t peer_recv{};
+    size_t peer_drop{};
+    size_t peer_send{};
+
+    statistics_t &operator<< (statistics_t &that) noexcept
+    {
+      client_recv += that.client_recv;
+      that.client_recv = 0;
+
+      client_drop += that.client_drop;
+      that.client_drop = 0;
+
+      client_send += that.client_send;
+      that.client_send = 0;
+
+      peer_recv += that.peer_recv;
+      that.peer_recv = 0;
+
+      peer_drop += that.peer_drop;
+      that.peer_drop = 0;
+
+      peer_send += that.peer_send;
+      that.peer_send = 0;
+
+      return *this;
+    }
+  };
+  statistics_t::list_t thread_statistics;
+  statistics_t total{};
 
   void print_statistics ();
   void run (size_t thread_index);
@@ -71,8 +106,9 @@ struct service_t
   }
 
 
-  void on_client_data (sal::net::async::io_t &&io,
-    const socket_t::receive_from_t *event)
+  void on_client_recv (sal::net::async::io_t &&io,
+    const socket_t::receive_from_t *event,
+    statistics_t &statistics)
   {
     if (event->transferred == sizeof(session_map::key_type))
     {
@@ -80,25 +116,34 @@ struct service_t
         *reinterpret_cast<const session_map::key_type *>(io.data()),
         event->remote_endpoint
       );
+      ++statistics.client_recv;
+    }
+    else
+    {
+      ++statistics.client_drop;
     }
     client.start_receive_from(std::move(io));
   }
 
 
-  void on_peer_data (sal::net::async::io_t &&io, size_t &forward_count)
+  void on_peer_recv (sal::net::async::io_t &&io,
+    const socket_t::receive_from_t *event,
+    statistics_t &statistics)
   {
     auto it = sessions.lock()->find(
       *reinterpret_cast<const session_map::key_type *>(io.data())
     );
     if (it != sessions_data.end())
     {
+      io.resize(event->transferred);
       client.start_send_to(std::move(io), it->second);
       peer.start_receive_from(async.make_io());
-      ++forward_count;
+      ++statistics.peer_recv;
     }
     else
     {
       peer.start_receive_from(std::move(io));
+      ++statistics.peer_drop;
     }
   }
 };
@@ -107,7 +152,7 @@ struct service_t
 void service_t::run (size_t thread_index)
 {
   auto worker = async.make_worker(poll_result_count);
-  auto &forward_count = thread_statistics[thread_index];
+  auto &statistics = thread_statistics[thread_index];
 
   for (;;)
   {
@@ -117,11 +162,22 @@ void service_t::run (size_t thread_index)
       {
         if (io.socket_context<socket_t>() == &peer)
         {
-          on_peer_data(std::move(io), forward_count);
+          on_peer_recv(std::move(io), recv, statistics);
         }
         else
         {
-          on_client_data(std::move(io), recv);
+          on_client_recv(std::move(io), recv, statistics);
+        }
+      }
+      else
+      {
+        if (io.socket_context<socket_t>() == &peer)
+        {
+          ++statistics.peer_send;
+        }
+        else
+        {
+          ++statistics.client_send;
         }
       }
     }
@@ -131,16 +187,40 @@ void service_t::run (size_t thread_index)
 
 void service_t::print_statistics ()
 {
-  size_t sessions_count = sessions.lock()->size(), packets_count = 0;
-  for (auto &count: thread_statistics)
+  size_t sessions_count = sessions.lock()->size();
+
+  statistics_t sum;
+
+  for (auto &statistics: thread_statistics)
   {
-    packets_count += count;
-    count = 0;
+    sum << statistics;
   }
 
   std::cout
-    << "sessions: " << std::setw(10) << std::left << sessions_count
-    << "packets: " << std::setw(10) << std::left << packets_count
+    << "sessions: " << sessions_count
+    << "\tclient: "
+      << sum.client_recv
+      << '/'
+      << sum.client_send
+      << '/'
+      << sum.client_drop
+    << "\tpeer: "
+      << sum.peer_recv
+      << '/'
+      << sum.peer_send
+      << '/'
+      << sum.peer_drop
+  ;
+
+  total << sum;
+
+  std::cout
+    << "\ttotal: "
+      << total.peer_recv
+      << '/'
+      << total.client_send
+      << '/'
+      << static_cast<int>(total.peer_recv - total.client_send)
     << '\n';
 }
 
