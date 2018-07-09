@@ -179,6 +179,7 @@ io_t *worker_t::result_at (typename completed_list::const_iterator it)
   io.socket = reinterpret_cast<async_socket_t *>(result.SocketContext);
   io.status.assign(result.Status, std::system_category());
   *io.transferred = result.BytesTransferred;
+  (*io.outstanding)--;
   return &io;
 }
 
@@ -266,6 +267,11 @@ void async_socket_t::start_receive_from (io_t &io,
     io.status.assign(::WSAGetLastError(), std::system_category());
     service->enqueue_error(&io);
   }
+  else
+  {
+    outstanding_recv++;
+    io.outstanding = &outstanding_recv;
+  }
 }
 
 
@@ -303,6 +309,11 @@ void async_socket_t::start_send_to (io_t &io,
     io.socket = this;
     io.status.assign(::WSAGetLastError(), std::system_category());
     service->enqueue_error(&io);
+  }
+  else
+  {
+    outstanding_send++;
+    io.outstanding = &outstanding_send;
   }
 }
 

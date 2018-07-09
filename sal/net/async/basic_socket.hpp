@@ -71,6 +71,20 @@ public:
   }
 
 
+  size_t outstanding_receives () const noexcept
+  {
+    auto &impl = *sal_check_ptr(impl_);
+    return impl.outstanding_recv;
+  }
+
+
+  size_t outstanding_sends () const noexcept
+  {
+    auto &impl = *sal_check_ptr(impl_);
+    return impl.outstanding_send;
+  }
+
+
 protected:
 
   __bits::async_socket_ptr impl_{};

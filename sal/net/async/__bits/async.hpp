@@ -37,6 +37,8 @@ struct io_base_t //{{{1
 
   uint8_t *begin{}, *end{};
 
+  std::atomic<size_t> *outstanding{};
+
   union
   {
     intrusive_mpsc_queue_hook_t<io_base_t> free{};
@@ -241,6 +243,8 @@ struct async_socket_t //{{{1
   sal::spinlock_t pending_queue_mutex{};
   RIO_RQ pending_queue;
 #endif
+
+  std::atomic<size_t> outstanding_recv{}, outstanding_send{};
 
   static handle_t open (int family, int type, int protocol);
 
