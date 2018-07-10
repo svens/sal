@@ -171,15 +171,29 @@ void service_t::print_statistics ()
     sum << statistics;
   }
 
+  std::string sess = "sess: ";
+  sess += std::to_string(sessions_count);
+
+  std::string io = "I/O: ";
+  io += std::to_string(peer.outstanding_receives());
+  io += '/';
+  io += std::to_string(client.outstanding_sends());
+
+  std::string recv = "recv: ";
+  recv += std::to_string(sum.peer_recv);
+
+  std::string send = "send: ";
+  send += std::to_string(sum.client_send);
+
+  std::string diff = "diff: ";
+  diff += std::to_string(static_cast<int>(sum.peer_recv - sum.client_send));
+
   std::cout
-    << "sessions: " << sessions_count
-    << "\tI/O: "
-      << peer.outstanding_receives()
-      << '/'
-      << client.outstanding_sends()
-    << "\trecv: " << sum.peer_recv
-    << "\tsend: " << sum.client_send
-    << "\tdiff: " << static_cast<int>(sum.peer_recv - sum.client_send)
+    << std::setw(20) << std::left << sess
+    << std::setw(20) << std::left << io
+    << std::setw(20) << std::left << recv
+    << std::setw(20) << std::left << send
+    << std::setw(20) << std::left << diff
     << '\n';
 }
 
