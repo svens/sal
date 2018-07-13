@@ -189,7 +189,7 @@ async_socket_t::handle_t async_socket_t::open (
   int type,
   int protocol)
 {
-  auto result = ::WSASocketW(
+  auto handle = ::WSASocketW(
     family,
     type,
     protocol,
@@ -197,13 +197,35 @@ async_socket_t::handle_t async_socket_t::open (
     0,
     WSA_FLAG_REGISTERED_IO
   );
-  if (result != INVALID_SOCKET)
+  if (handle == INVALID_SOCKET)
   {
-    return result;
+    std::error_code system_error;
+    system_error.assign(::WSAGetLastError(), std::system_category());
+    throw_system_error(system_error, "WSASocket");
   }
-  std::error_code system_error;
-  system_error.assign(::WSAGetLastError(), std::system_category());
-  throw_system_error(system_error, "WSASocket");
+
+  ::SetFileCompletionNotificationModes(
+    reinterpret_cast<HANDLE>(handle),
+    FILE_SKIP_SET_EVENT_ON_HANDLE
+  );
+
+  if (type == SOCK_DGRAM)
+  {
+    bool new_behaviour = false;
+    DWORD ignored;
+    ::WSAIoctl(handle,
+      SIO_UDP_CONNRESET,
+      &new_behaviour,
+      sizeof(new_behaviour),
+      nullptr,
+      0,
+      &ignored,
+      nullptr,
+      nullptr
+    );
+  }
+
+  return handle;
 }
 
 
