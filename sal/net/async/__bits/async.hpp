@@ -50,7 +50,7 @@ struct io_base_t //{{{1
 
   io_base_t (io_block_t &block) noexcept
     : block(block)
-  { }
+  {}
 };
 
 
@@ -63,7 +63,7 @@ struct io_t //{{{1
 
   io_t (io_block_t &block) noexcept
     : io_base_t(block)
-  { }
+  {}
 };
 static_assert(sizeof(io_t) == 2048);
 static_assert(io_t::data_size > 1500, "io_t::data_size less than MTU size");
@@ -96,9 +96,8 @@ using io_ptr = std::unique_ptr<io_t, io_deleter_t>;
 struct service_t //{{{1
 {
 #if __sal_os_windows
-  HANDLE iocp;
   OVERLAPPED overlapped{};
-  RIO_CQ completed_queue;
+  HANDLE iocp;
 #endif
 
   std::mutex io_pool_mutex{};
@@ -110,7 +109,7 @@ struct service_t //{{{1
   io_t::error_queue_t error_queue{};
 
 
-  service_t (size_t completion_queue_size);
+  service_t ();
   ~service_t () noexcept;
 
 
@@ -240,8 +239,9 @@ struct async_socket_t //{{{1
   void *context{};
 
 #if __sal_os_windows
-  sal::spinlock_t pending_queue_mutex{};
-  RIO_RQ pending_queue;
+  RIO_CQ completion_queue;
+  RIO_RQ request_queue;
+  sal::spinlock_t request_queue_mutex{};
 #endif
 
   std::atomic<size_t> outstanding_recv{}, outstanding_send{};
@@ -257,6 +257,8 @@ struct async_socket_t //{{{1
     size_t max_outstanding_sends,
     std::error_code &error
   ) noexcept;
+
+  ~async_socket_t () noexcept;
 
   void start_receive_from (io_t &io,
     void *remote_endpoint,

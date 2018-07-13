@@ -10,7 +10,7 @@ template <typename Socket>
 struct net_async_socket
   : public sal_test::with_type<Socket>
 {
-  sal::net::async::service_t service{10};
+  sal::net::async::service_t service{};
 };
 
 using socket_types = ::testing::Types<

@@ -78,7 +78,7 @@ io_block_t::~io_block_t () noexcept
 }
 
 
-service_t::service_t (size_t completion_queue_size)
+service_t::service_t ()
   : iocp(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0))
 {
   if (iocp == INVALID_HANDLE_VALUE)
@@ -87,34 +87,11 @@ service_t::service_t (size_t completion_queue_size)
     system_error.assign(::GetLastError(), std::system_category());
     throw_system_error(system_error, "CreateIoCompletionPort");
   }
-
-  RIO_NOTIFICATION_COMPLETION notification;
-  notification.Type = RIO_IOCP_COMPLETION;
-  notification.Iocp.IocpHandle = iocp;
-  notification.Iocp.Overlapped = &overlapped;
-  notification.Iocp.CompletionKey = nullptr;
-
-  completed_queue = winsock.RIOCreateCompletionQueue(
-    static_cast<DWORD>(completion_queue_size),
-    &notification
-  );
-  if (completed_queue == RIO_INVALID_CQ)
-  {
-    std::error_code system_error;
-    system_error.assign(::WSAGetLastError(), std::system_category());
-    throw_system_error(system_error, "RIOCreateCompletionQueue");
-  }
-
-  winsock.RIONotify(completed_queue);
 }
 
 
 service_t::~service_t () noexcept
 {
-  if (completed_queue != RIO_INVALID_CQ)
-  {
-    winsock.RIOCloseCompletionQueue(completed_queue);
-  }
   if (iocp != INVALID_HANDLE_VALUE)
   {
     (void)::CloseHandle(iocp);
@@ -127,9 +104,8 @@ bool worker_t::wait_for_more (const std::chrono::milliseconds &timeout,
 {
   first_completed = last_completed = completed.begin();
 
-  OVERLAPPED_ENTRY event[1];
   ULONG event_count;
-
+  OVERLAPPED_ENTRY event[1];
   auto succeeded = ::GetQueuedCompletionStatusEx(
     service->iocp,
     &event[0],
@@ -141,12 +117,14 @@ bool worker_t::wait_for_more (const std::chrono::milliseconds &timeout,
 
   if (succeeded)
   {
+    auto socket = reinterpret_cast<async_socket_t *>(event[0].lpCompletionKey);
+
     auto result_count = winsock.RIODequeueCompletion(
-      service->completed_queue,
+      socket->completion_queue,
       completed.data(),
       static_cast<DWORD>(max_results_per_poll)
     );
-    winsock.RIONotify(service->completed_queue);
+    winsock.RIONotify(socket->completion_queue);
 
     if (result_count != RIO_CORRUPT_CQ)
     {
@@ -235,21 +213,59 @@ async_socket_t::async_socket_t (handle_t handle,
     size_t max_outstanding_sends,
     std::error_code &error) noexcept
   : service(service)
-  , pending_queue(
-      winsock.RIOCreateRequestQueue(handle,
-        static_cast<ULONG>(max_outstanding_receives),
-        1,
-        static_cast<ULONG>(max_outstanding_sends),
-        1,
-        service->completed_queue,
-        service->completed_queue,
-        this
-      )
-    )
 {
-  if (pending_queue == RIO_INVALID_RQ)
+  auto result = ::CreateIoCompletionPort(
+    reinterpret_cast<HANDLE>(handle),
+    service->iocp,
+    0,
+    0
+  );
+  if (!result)
+  {
+    error.assign(::GetLastError(), std::system_category());
+    return;
+  }
+
+  RIO_NOTIFICATION_COMPLETION notification;
+  notification.Type = RIO_IOCP_COMPLETION;
+  notification.Iocp.IocpHandle = service->iocp;
+  notification.Iocp.Overlapped = &service->overlapped;
+  notification.Iocp.CompletionKey = this;
+
+  completion_queue = winsock.RIOCreateCompletionQueue(
+    static_cast<DWORD>(max_outstanding_receives + max_outstanding_sends),
+    &notification
+  );
+  if (completion_queue == RIO_INVALID_CQ)
   {
     error.assign(::WSAGetLastError(), std::system_category());
+    return;
+  }
+
+  request_queue = winsock.RIOCreateRequestQueue(handle,
+    static_cast<ULONG>(max_outstanding_receives),
+    1,
+    static_cast<ULONG>(max_outstanding_sends),
+    1,
+    completion_queue,
+    completion_queue,
+    this
+  );
+  if (request_queue == RIO_INVALID_RQ)
+  {
+    error.assign(::WSAGetLastError(), std::system_category());
+    return;
+  }
+
+  winsock.RIONotify(completion_queue);
+}
+
+
+async_socket_t::~async_socket_t () noexcept
+{
+  if (completion_queue != RIO_INVALID_CQ)
+  {
+    winsock.RIOCloseCompletionQueue(completion_queue);
   }
 }
 
@@ -269,9 +285,9 @@ void async_socket_t::start_receive_from (io_t &io,
 
   bool success;
   {
-    std::lock_guard lock(pending_queue_mutex);
+    std::lock_guard lock(request_queue_mutex);
     success = winsock.RIOReceiveEx(
-      pending_queue,    // SocketQueue
+      request_queue,    // SocketQueue
       &data,            // pData
       1,                // DataBufferCount
       nullptr,          // pLocalAddress
@@ -312,9 +328,9 @@ void async_socket_t::start_send_to (io_t &io,
 
   bool success;
   {
-    std::lock_guard lock(pending_queue_mutex);
+    std::lock_guard lock(request_queue_mutex);
     success = winsock.RIOSendEx(
-      pending_queue,    // SocketQueue
+      request_queue,    // SocketQueue
       &data,            // pData
       1,                // DataBufferCount
       nullptr,          // pLocalAddress
@@ -360,10 +376,8 @@ io_block_t::~io_block_t () noexcept
 {}
 
 
-service_t::service_t (size_t completion_queue_size)
-{
-  (void)completion_queue_size;
-}
+service_t::service_t ()
+{}
 
 
 service_t::~service_t () noexcept
@@ -411,6 +425,10 @@ async_socket_t::async_socket_t (handle_t handle,
   (void)max_outstanding_sends;
   (void)error;
 }
+
+
+async_socket_t::~async_socket_t () noexcept
+{}
 
 
 void async_socket_t::start_receive_from (io_t &io,

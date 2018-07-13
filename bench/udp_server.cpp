@@ -17,7 +17,6 @@ namespace {
 auto address = sal::net::ip::make_address_v4("0.0.0.0");
 size_t worker_count = std::thread::hardware_concurrency();
 size_t poll_result_count = 100;
-size_t completions_count = 200'000;
 size_t receive_count = 50'000;
 size_t send_count = 50'000;
 
@@ -28,8 +27,7 @@ using socket_t = protocol_t::async_socket_t;
 struct service_t
 {
   service_t ()
-    : async(completions_count)
-    , client({address, 3478})
+    : client({address, 3478})
     , peer({address, 3479})
     , thread_statistics(worker_count)
   {
@@ -53,7 +51,7 @@ struct service_t
   // I/O
   //
 
-  sal::net::async::service_t async;
+  sal::net::async::service_t async{};
   socket_t client, peer;
 
   struct statistics_t
@@ -214,10 +212,6 @@ option_set_t options ()
       requires_argument("ADDRESS", address),
       help("UDP echo server IPv4 address")
     )
-    .add({"c", "completions"},
-      requires_argument("INT", completions_count),
-      help("completions queue size")
-    )
     .add({"p", "poll"},
       requires_argument("INT", poll_result_count),
       help("max completions per poll")
@@ -246,12 +240,6 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     options.back_or_default("address", {arguments})
   );
   std::cout << address << '\n';
-
-  std::cout << "completions: ";
-  completions_count = std::stoul(
-    options.back_or_default("completions", {arguments})
-  );
-  std::cout << completions_count << '\n';
 
   std::cout << "       poll: ";
   poll_result_count = std::stoul(

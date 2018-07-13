@@ -60,7 +60,7 @@ struct net_async_datagram_socket
   }
 
 
-  sal::net::async::service_t service{2};
+  sal::net::async::service_t service{};
   sal::net::async::worker_t worker = service.make_worker(10);
   sal::net::ip::udp_t::socket_t test = make_test_socket();
   sal::net::ip::udp_t::endpoint_t test_endpoint = test.local_endpoint();

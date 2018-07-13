@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 struct net_async_worker
   : public sal_test::fixture
 {
-  sal::net::async::service_t service{10};
+  sal::net::async::service_t service{};
 };
 
 

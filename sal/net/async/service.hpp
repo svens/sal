@@ -22,11 +22,6 @@ class service_t
 {
 public:
 
-  service_t (size_t completion_queue_size)
-    : impl_(std::make_shared<__bits::service_t>(completion_queue_size))
-  { }
-
-
   worker_t make_worker (size_t max_results_per_poll) noexcept
   {
     return {impl_, max_results_per_poll};
@@ -54,7 +49,7 @@ public:
 
 private:
 
-  __bits::service_ptr impl_;
+  __bits::service_ptr impl_ = std::make_shared<__bits::service_t>();
 
   template <typename Protocol>
   friend class basic_socket_t;
