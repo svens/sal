@@ -102,8 +102,6 @@ service_t::~service_t () noexcept
 bool worker_t::wait_for_more (const std::chrono::milliseconds &timeout,
   std::error_code &error) noexcept
 {
-  first_completed = last_completed = completed.begin();
-
   ULONG event_count;
   OVERLAPPED_ENTRY event[1];
   auto succeeded = ::GetQueuedCompletionStatusEx(
@@ -128,23 +126,27 @@ bool worker_t::wait_for_more (const std::chrono::milliseconds &timeout,
 
     if (result_count != RIO_CORRUPT_CQ)
     {
+      first_completed = completed.begin();
       last_completed = first_completed + result_count;
       return true;
     }
 
     error = std::make_error_code(std::errc::bad_address);
-    return false;
-  }
-
-  auto e = ::GetLastError();
-  if (e == WAIT_TIMEOUT)
-  {
-    error.clear();
   }
   else
   {
-    error.assign(e, std::system_category());
+    auto e = ::GetLastError();
+    if (e == WAIT_TIMEOUT)
+    {
+      error.clear();
+    }
+    else
+    {
+      error.assign(e, std::system_category());
+    }
   }
+
+  first_completed = last_completed = completed.begin();
   return false;
 }
 
