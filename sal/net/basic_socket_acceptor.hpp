@@ -170,6 +170,7 @@ public:
     if (is_open())
     {
       socket_.close(error);
+      async_.reset();
     }
     else
     {
@@ -449,11 +450,77 @@ public:
   }
 
 
+  /**
+   * Associate this socket with \a service for asynchronous I/O operations.
+   * Using asynchronous API without associating it first with service is
+   * undefined behaviour. Once socket is associated with specific service, it
+   * will remain so until closed.
+   *
+   * On failure, set \a error.
+   */
+  void associate (async::service_t &service, std::error_code &error) noexcept
+  {
+    if (!is_open())
+    {
+      error = std::make_error_code(std::errc::bad_file_descriptor);
+    }
+    else if (async_)
+    {
+      error = make_error_code(socket_errc::already_associated);
+    }
+    else
+    {
+      async_ = async::__bits::make_handler(service.impl_, socket_, error);
+    }
+  }
+
+
+  /**
+   * \see associate (async::service_t &, std::error_code &)
+   * \throws std::system_error on failure
+   */
+  void associate (async::service_t &service)
+  {
+    associate(service, throw_on_error("basic_socket_acceptor::associate"));
+  }
+
+
+  /**
+   * Set application specific context for socket's asynchronous operations. On
+   * asynchronous I/O operation completion it is passed back to application
+   * along with async::io_t (using method async::io_t::socket_context).
+   */
+  template <typename Context>
+  void context (Context *context)
+  {
+    auto &async = *sal_check_ptr(async_);
+    async.context_type = type_v<Context>;
+    async.context = context;
+  }
+
+
+  /**
+   * Get current socket context.
+   * \see void context (Context *)
+   */
+  template <typename Context>
+  Context *context () const
+  {
+    auto &async = *sal_check_ptr(async_);
+    if (async.context_type == type_v<Context>)
+    {
+      return static_cast<Context *>(async.context);
+    }
+    return nullptr;
+  }
+
+
 private:
 
   __bits::socket_t socket_{};
   int family_ = AF_UNSPEC;
   bool enable_connection_aborted_ = false;
+  async::__bits::handler_ptr async_{};
 };
 
 

@@ -17,6 +17,7 @@ __sal_begin
 namespace net::async::__bits {
 
 
+using net::__bits::socket_t;
 struct handler_t;
 
 
@@ -88,6 +89,16 @@ static_assert(io_t::data_size > 1500, "io_t::data_size less than MTU size");
 static_assert(std::is_trivially_destructible_v<io_t>);
 
 
+struct io_deleter_t //{{{1
+{
+  void operator() (io_t *io) noexcept
+  {
+    io->free_list.push(io);
+  }
+};
+using io_ptr = std::unique_ptr<io_t, io_deleter_t>;
+
+
 struct service_t //{{{1
 {
   std::mutex io_pool_mutex{};
@@ -138,19 +149,36 @@ struct handler_t //{{{1
   service_ptr service;
 
   uintptr_t context_type{};
-  void *context;
+  void *context{};
+
+
+  handler_t (service_ptr service, socket_t &socket, std::error_code &error)
+    noexcept;
+
+
+  handler_t (const handler_t &) = delete;
+  handler_t &operator= (const handler_t &) = delete;
 };
 using handler_ptr = std::unique_ptr<handler_t>;
 
 
-struct io_deleter_t //{{{1
+inline handler_ptr make_handler (service_ptr service,
+  socket_t &socket,
+  std::error_code &error) noexcept
 {
-  void operator() (io_t *io) noexcept
+  auto handler = handler_ptr(
+    new(std::nothrow) handler_t(service, socket, error)
+  );
+  if (!handler)
   {
-    io->free_list.push(io);
+    error = std::make_error_code(std::errc::not_enough_memory);
   }
-};
-using io_ptr = std::unique_ptr<io_t, io_deleter_t>;
+  else if (error)
+  {
+    handler.reset();
+  }
+  return handler;
+}
 
 
 //}}}1

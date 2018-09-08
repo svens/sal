@@ -1,16 +1,20 @@
 #include <sal/net/async/service.hpp>
+#include <sal/net/internet.hpp>
 #include <sal/common.test.hpp>
 
 
 namespace {
 
 
-using net_async_service = sal_test::fixture;
+struct net_async_service
+  : public sal_test::fixture
+{
+  sal::net::async::service_t service{};
+};
 
 
 TEST_F(net_async_service, io_pool_size)
 {
-  sal::net::async::service_t service{};
   EXPECT_EQ(0U, service.io_pool_size());
 
   (void)service.make_io();
@@ -20,7 +24,6 @@ TEST_F(net_async_service, io_pool_size)
 
 TEST_F(net_async_service, io_pool_size_increases_after_exhaustion_and_alloc)
 {
-  sal::net::async::service_t service{};
   EXPECT_EQ(0U, service.io_pool_size());
 
   // alloc first
@@ -44,7 +47,6 @@ TEST_F(net_async_service, io_pool_size_increases_after_exhaustion_and_alloc)
 
 TEST_F(net_async_service, io_pool_size_remains_same_after_exhaustion_and_release)
 {
-  sal::net::async::service_t service{};
   EXPECT_EQ(0U, service.io_pool_size());
 
   // alloc first

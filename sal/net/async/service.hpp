@@ -7,6 +7,7 @@
 
 
 #include <sal/config.hpp>
+#include <sal/net/fwd.hpp>
 #include <sal/net/async/__bits/async.hpp>
 #include <sal/net/async/io.hpp>
 
@@ -43,6 +44,9 @@ public:
 private:
 
   __bits::service_ptr impl_ = std::make_shared<__bits::service_t>();
+
+  template <typename Protocol> friend class net::basic_socket_t;
+  template <typename Protocol> friend class net::basic_socket_acceptor_t;
 };
 
 
