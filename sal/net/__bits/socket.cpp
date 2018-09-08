@@ -122,8 +122,31 @@ void socket_t::open (int domain, int type, int protocol,
     protocol,
     nullptr,
     0,
-    0
+    WSA_FLAG_OVERLAPPED
   );
+
+  if (handle != SOCKET_ERROR)
+  {
+    ::SetFileCompletionNotificationModes(
+      reinterpret_cast<HANDLE>(handle),
+      FILE_SKIP_COMPLETION_PORT_ON_SUCCESS |
+      FILE_SKIP_SET_EVENT_ON_HANDLE
+    );
+
+    if (type == SOCK_DGRAM)
+    {
+      bool new_behaviour = false;
+      DWORD ignored;
+      ::WSAIoctl(handle,
+        SIO_UDP_CONNRESET,
+        &new_behaviour, sizeof(new_behaviour),
+        nullptr, 0,
+        &ignored,
+        nullptr,
+        nullptr
+      );
+    }
+  }
 }
 
 
