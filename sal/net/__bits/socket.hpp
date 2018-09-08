@@ -8,6 +8,7 @@
 #elif __sal_os_windows // {{{1
   #include <winsock2.h>
   #include <ws2tcpip.h>
+  #include <mswsock.h>
   #pragma comment(lib, "ws2_32")
 #else // {{{1
   #error Unsupported platform
@@ -31,6 +32,17 @@ const std::error_code &init_lib () noexcept;
 
 using sa_family_t = ::ADDRESS_FAMILY;
 using message_flags_t = DWORD;
+
+struct winsock_t
+{
+  LPFN_CONNECTEX ConnectEx;
+  LPFN_ACCEPTEX AcceptEx;
+  LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs;
+
+  winsock_t () noexcept;
+  ~winsock_t () noexcept;
+};
+extern winsock_t winsock;
 
 #elif __sal_os_macos || __sal_os_linux // {{{1
 

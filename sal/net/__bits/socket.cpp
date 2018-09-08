@@ -14,27 +14,16 @@
 __sal_begin
 
 
-namespace net { namespace __bits {
+namespace net::__bits {
 
 
 #if __sal_os_windows // {{{1
 
 
+winsock_t winsock{};
+
+
 namespace {
-
-
-struct winsock_t
-{
-  winsock_t () noexcept
-  {
-    init_lib();
-  }
-
-  ~winsock_t () noexcept
-  {
-    (void)::WSACleanup();
-  }
-} winsock{};
 
 
 template <typename T>
@@ -59,13 +48,40 @@ inline T check_call (T result, std::error_code &error) noexcept
 #define call(func,error,...) check_call(func(__VA_ARGS__), error)
 
 
-void init_winsock (std::error_code &init_result) noexcept
+template <typename F>
+void load (F *fn, GUID id, SOCKET socket, std::error_code &error) noexcept
+{
+  if (!error)
+  {
+    DWORD bytes;
+    call(::WSAIoctl, error, socket,
+      SIO_GET_EXTENSION_FUNCTION_POINTER,
+      &id, sizeof(id),
+      fn, sizeof(fn),
+      &bytes,
+      nullptr,
+      nullptr
+    );
+  }
+}
+
+
+void init_winsock (std::error_code &init_result, winsock_t &fn) noexcept
 {
   WSADATA wsa;
   init_result.assign(
     ::WSAStartup(MAKEWORD(2, 2), &wsa),
     std::system_category()
   );
+
+  if (!init_result)
+  {
+    auto s = ::socket(AF_INET, SOCK_STREAM, 0);
+    load(&fn.ConnectEx, WSAID_CONNECTEX, s, init_result);
+    load(&fn.AcceptEx, WSAID_ACCEPTEX, s, init_result);
+    load(&fn.GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, s, init_result);
+    (void)::closesocket(s);
+  }
 }
 
 
@@ -76,8 +92,23 @@ const std::error_code &init_lib () noexcept
 {
   static std::once_flag once;
   static std::error_code init_result;
-  std::call_once(once, &init_winsock, std::ref(init_result));
+  std::call_once(once, &init_winsock,
+    std::ref(init_result),
+    std::ref(winsock)
+  );
   return init_result;
+}
+
+
+winsock_t::winsock_t () noexcept
+{
+  init_lib();
+}
+
+
+winsock_t::~winsock_t () noexcept
+{
+  (void)::WSACleanup();
 }
 
 
@@ -862,7 +893,7 @@ size_t socket_t::available (std::error_code &error) const noexcept
 #endif // }}}1
 
 
-}} // namespace net::__bits
+} // namespace net::__bits
 
 
 __sal_end
