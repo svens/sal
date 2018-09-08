@@ -62,7 +62,7 @@ using worker_types = testing::Types<
   sal::logger::async_worker_t
 >;
 
-TYPED_TEST_CASE(logger_ostream_sink, worker_types);
+TYPED_TEST_CASE(logger_ostream_sink, worker_types, );
 
 
 TYPED_TEST(logger_ostream_sink, cout)

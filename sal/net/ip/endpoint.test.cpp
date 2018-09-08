@@ -22,7 +22,7 @@ using protocol_types = testing::Types<
   sal::net::ip::tcp_t,
   sal::net::ip::udp_t
 >;
-TYPED_TEST_CASE(net_ip_endpoint, protocol_types);
+TYPED_TEST_CASE(net_ip_endpoint, protocol_types, );
 
 
 TYPED_TEST(net_ip_endpoint, ctor)

@@ -390,7 +390,7 @@ TEST_F(memory_writer, inserter_c_str_overflow)
 template <typename T>
 using inserter = sal_test::with_type<T>;
 using char_types = testing::Types<char, signed char, unsigned char>;
-TYPED_TEST_CASE(inserter, char_types);
+TYPED_TEST_CASE(inserter, char_types, );
 
 
 TYPED_TEST(inserter, character)

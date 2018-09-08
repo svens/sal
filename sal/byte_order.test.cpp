@@ -86,7 +86,7 @@ using int_types = testing::Types<
   uint64_t
 >;
 
-TYPED_TEST_CASE(byte_order, int_types);
+TYPED_TEST_CASE(byte_order, int_types, );
 
 
 TYPED_TEST(byte_order, native_to_network)

@@ -16,7 +16,7 @@ using protocol_types = testing::Types<
   sal::net::ip::tcp_t,
   sal::net::ip::udp_t
 >;
-TYPED_TEST_CASE(net_socket, protocol_types);
+TYPED_TEST_CASE(net_socket, protocol_types, );
 
 
 template <typename Protocol,

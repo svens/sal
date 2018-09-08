@@ -18,7 +18,7 @@ using worker_types = testing::Types<
   sal::logger::async_worker_t
 >;
 
-TYPED_TEST_CASE(logger_worker, worker_types);
+TYPED_TEST_CASE(logger_worker, worker_types, );
 
 
 TYPED_TEST(logger_worker, default_channel_name)

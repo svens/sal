@@ -164,7 +164,7 @@ using worker_types = testing::Types<
   sal::logger::async_worker_t
 >;
 
-TYPED_TEST_CASE(logger_file_sink, worker_types);
+TYPED_TEST_CASE(logger_file_sink, worker_types, );
 
 
 TYPED_TEST(logger_file_sink, log)

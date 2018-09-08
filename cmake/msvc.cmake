@@ -9,6 +9,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG /Ox /MT")
 add_definitions(
   /D _SBCS
   /D WIN32_LEAN_AND_MEAN
+
+  # TODO: remove once unnecessary
+  # https://developercommunity.visualstudio.com/content/problem/274945/stdmake-shared-is-not-honouring-alignment-of-a.html
+  /D _ENABLE_EXTENDED_ALIGNED_STORAGE
 )
 
 # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default
