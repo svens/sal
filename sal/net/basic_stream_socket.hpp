@@ -44,7 +44,7 @@ public:
   /**
    * Initialise base class using \a protocol
    */
-  basic_stream_socket_t (const protocol_t &protocol)
+  basic_stream_socket_t (const Protocol &protocol)
     : base_t(protocol)
   {}
 
@@ -52,7 +52,7 @@ public:
   /**
    * Initialise base class using \a endpoint
    */
-  basic_stream_socket_t (const endpoint_t &endpoint)
+  basic_stream_socket_t (const typename Protocol::endpoint_t &endpoint)
     : base_t(endpoint)
   {}
 
@@ -179,6 +179,11 @@ public:
     return send(buf, throw_on_error("basic_stream_socket::send"));
   }
 };
+
+
+template <typename Endpoint>
+basic_stream_socket_t (const Endpoint &)
+  -> basic_stream_socket_t<typename Endpoint::protocol_t>;
 
 
 } // namespace net
