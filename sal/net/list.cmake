@@ -14,6 +14,11 @@ list(APPEND sal_sources
   sal/net/socket_base.hpp
   sal/net/socket_options.hpp
 
+  sal/net/async/__bits/async.hpp
+  sal/net/async/__bits/async.cpp
+  sal/net/async/io.hpp
+  sal/net/async/service.hpp
+
   sal/net/internet.hpp
   sal/net/ip/__bits/inet.hpp
   sal/net/ip/address.hpp
@@ -36,6 +41,9 @@ list(APPEND sal_unittests_sources
   sal/net/init.test.cpp
   sal/net/error.test.cpp
   sal/net/socket.test.cpp
+
+  sal/net/async/io.test.cpp
+  sal/net/async/service.test.cpp
 
   sal/net/ip/address.test.cpp
   sal/net/ip/address_v4.test.cpp
