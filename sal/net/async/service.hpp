@@ -10,6 +10,7 @@
 #include <sal/net/fwd.hpp>
 #include <sal/net/async/__bits/async.hpp>
 #include <sal/net/async/io.hpp>
+#include <sal/net/async/worker.hpp>
 
 
 __sal_begin
@@ -38,6 +39,12 @@ public:
   io_t make_io (Context *context)
   {
     return {impl_->make_io(context, type_v<Context>)};
+  }
+
+
+  worker_t make_worker (size_t max_results_per_poll) noexcept
+  {
+    return {impl_, max_results_per_poll};
   }
 
 

@@ -5,6 +5,9 @@
 #include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/intrusive_queue.hpp>
 #include <sal/net/__bits/socket.hpp>
+#include <sal/spinlock.hpp>
+#include <algorithm>
+#include <array>
 #include <deque>
 #include <memory>
 #include <mutex>
@@ -18,6 +21,8 @@ namespace net::async::__bits {
 
 
 using net::__bits::socket_t;
+using net::__bits::message_flags_t;
+
 struct handler_t;
 
 
@@ -25,6 +30,16 @@ struct io_base_t //{{{1
 {
 #if __sal_os_windows
   OVERLAPPED overlapped{};
+
+  struct
+  {
+    DWORD transferred{};
+
+    union
+    {
+      INT remote_endpoint_capacity;
+    } recv_from;
+  } pending;
 #endif
 
   handler_t *current_owner{};
@@ -33,6 +48,8 @@ struct io_base_t //{{{1
 
   uintptr_t result_type{};
   uint8_t result_data[160];
+  size_t *transferred{};
+  message_flags_t *flags{};
   std::error_code status{};
 
   uint8_t *begin{}, *end{};
@@ -40,10 +57,10 @@ struct io_base_t //{{{1
   union
   {
     intrusive_mpsc_queue_hook_t<io_base_t> free{};
-    intrusive_queue_hook_t<io_base_t> completed;
+    intrusive_mpsc_queue_hook_t<io_base_t> completed;
   };
   using free_list_t = intrusive_mpsc_queue_t<&io_base_t::free>;
-  using completed_queue_t = intrusive_mpsc_queue_t<&io_base_t::completed>;
+  using completed_list_t = intrusive_mpsc_queue_t<&io_base_t::completed>;
 
   free_list_t &free_list;
 
@@ -101,10 +118,17 @@ using io_ptr = std::unique_ptr<io_t, io_deleter_t>;
 
 struct service_t //{{{1
 {
+#if __sal_os_windows
+  HANDLE iocp;
+#endif
+
   std::mutex io_pool_mutex{};
   std::deque<std::vector<io_t>> io_pool{};
   io_t::free_list_t free_list{};
   size_t io_pool_size{};
+
+  sal::spinlock_t completed_mutex{};
+  io_t::completed_list_t completed_list{};
 
 
   service_t ();
@@ -135,18 +159,99 @@ struct service_t //{{{1
     io->reset();
     return io;
   }
+
+
+  void enqueue (io_t *io) noexcept
+  {
+    completed_list.push(io);
+  }
+
+
+  io_t *dequeue () noexcept
+  {
+    std::lock_guard lock(completed_mutex);
+    return static_cast<io_t *>(completed_list.try_pop());
+  }
 };
 using service_ptr = std::shared_ptr<service_t>;
 
 
 struct worker_t //{{{1
 {
+  service_ptr service;
+
+#if __sal_os_windows
+  using completed_array_t = std::array<OVERLAPPED_ENTRY, 256>;
+#else
+  using completed_array_t = std::array<int, 256>;
+#endif
+
+  completed_array_t completed{};
+  typename completed_array_t::iterator
+    first_completed = completed.begin(),
+    last_completed = completed.begin();
+
+  static constexpr size_t min_results_per_poll = 1;
+  const size_t max_results_per_poll;
+
+
+  worker_t (service_ptr service, size_t max_results_per_poll) noexcept
+    : service(service)
+    , max_results_per_poll(
+        std::clamp(
+          max_results_per_poll,
+          min_results_per_poll,
+          completed.max_size()
+        )
+      )
+  { }
+
+
+  worker_t () = delete;
+  worker_t (const worker_t &) = delete;
+  worker_t &operator= (const worker_t &) = delete;
+
+  worker_t (worker_t &&) = default;
+  worker_t &operator= (worker_t &&) = default;
+
+
+  bool wait_for_more (const std::chrono::milliseconds &timeout,
+    std::error_code &error
+  ) noexcept;
+
+  io_t *result_at (typename completed_array_t::const_iterator it) noexcept;
+
+
+  io_t *try_get () noexcept
+  {
+    if (first_completed != last_completed)
+    {
+      return result_at(first_completed++);
+    }
+    return service->dequeue();
+  }
+
+
+  io_t *poll (const std::chrono::milliseconds &timeout, std::error_code &error)
+    noexcept
+  {
+    do
+    {
+      if (auto io = try_get())
+      {
+        return io;
+      }
+    } while (wait_for_more(timeout, error));
+
+    return {};
+  }
 };
 
 
 struct handler_t //{{{1
 {
   service_ptr service;
+  socket_t::handle_t handle;
 
   uintptr_t context_type{};
   void *context{};
@@ -158,6 +263,14 @@ struct handler_t //{{{1
 
   handler_t (const handler_t &) = delete;
   handler_t &operator= (const handler_t &) = delete;
+
+
+  void start_receive_from (io_t *io,
+    void *remote_endpoint,
+    size_t remote_endpoint_capacity,
+    size_t *transferred,
+    message_flags_t *flags
+  ) noexcept;
 };
 using handler_ptr = std::unique_ptr<handler_t>;
 

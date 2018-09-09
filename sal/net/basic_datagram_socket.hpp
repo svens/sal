@@ -9,6 +9,7 @@
 #include <sal/config.hpp>
 #include <sal/memory.hpp>
 #include <sal/net/basic_socket.hpp>
+#include <sal/net/async/io.hpp>
 
 
 __sal_begin
@@ -319,6 +320,54 @@ public:
   size_t send (const Data &buf)
   {
     return send(buf, throw_on_error("basic_datagram_socket::send"));
+  }
+
+
+  //
+  // Asynchronous API
+  //
+
+  struct receive_from_t
+  {
+    size_t transferred;
+    endpoint_t remote_endpoint;
+    socket_base_t::message_flags_t flags;
+  };
+
+
+  void receive_from_async (async::io_t &&io, socket_base_t::message_flags_t flags)
+    noexcept
+  {
+    receive_from_t *result;
+    auto op = base_t::to_async_op(std::move(io), &result);
+    result->flags = flags;
+    base_t::async_->start_receive_from(op,
+      result->remote_endpoint.data(),
+      result->remote_endpoint.capacity(),
+      &result->transferred,
+      &result->flags
+    );
+  }
+
+
+  void receive_from_async (async::io_t &&io) noexcept
+  {
+    receive_from_async(std::move(io), {});
+  }
+
+
+  static const receive_from_t *receive_from_result (const async::io_t &io,
+    std::error_code &error) noexcept
+  {
+    return base_t::template from_async_op<receive_from_t>(io, error);
+  }
+
+
+  static const receive_from_t *receive_from_result (const async::io_t &io)
+  {
+    return receive_from_result(io,
+      throw_on_error("basic_datagram_socket::receive_from_result")
+    );
   }
 };
 

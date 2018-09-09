@@ -7,6 +7,7 @@
 
 
 #include <sal/config.hpp>
+#include <sal/net/fwd.hpp>
 #include <sal/net/async/__bits/async.hpp>
 #include <sal/assert.hpp>
 #include <sal/type_id.hpp>
@@ -149,6 +150,8 @@ private:
   { }
 
   friend class service_t;
+  friend class worker_t;
+  friend class net::socket_base_t;
 };
 
 
