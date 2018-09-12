@@ -31,14 +31,19 @@ struct io_base_t //{{{1
 #if __sal_os_windows
   OVERLAPPED overlapped{};
 
-  struct
+  union
   {
-    DWORD transferred{};
-
-    union
+    struct
     {
+      DWORD transferred;
       INT remote_endpoint_capacity;
+      message_flags_t *flags;
     } recv_from;
+
+    struct
+    {
+      DWORD transferred;
+    } send_to;
   } pending;
 #endif
 
@@ -49,7 +54,6 @@ struct io_base_t //{{{1
   uintptr_t result_type{};
   uint8_t result_data[160];
   size_t *transferred{};
-  message_flags_t *flags{};
   std::error_code status{};
 
   uint8_t *begin{}, *end{};
@@ -270,6 +274,14 @@ struct handler_t //{{{1
     size_t remote_endpoint_capacity,
     size_t *transferred,
     message_flags_t *flags
+  ) noexcept;
+
+
+  void start_send_to (io_t *io,
+    const void *remote_endpoint,
+    size_t remote_endpoint_size,
+    size_t *transferred,
+    message_flags_t flags
   ) noexcept;
 };
 using handler_ptr = std::unique_ptr<handler_t>;

@@ -369,6 +369,49 @@ public:
       throw_on_error("basic_datagram_socket::receive_from_result")
     );
   }
+
+
+  struct send_to_t
+  {
+    size_t transferred;
+  };
+
+
+  void send_to_async (async::io_t &&io,
+    const endpoint_t &remote_endpoint,
+    socket_base_t::message_flags_t flags) noexcept
+  {
+    send_to_t *result;
+    auto op = base_t::to_async_op(std::move(io), &result);
+    base_t::async_->start_send_to(op,
+      remote_endpoint.data(),
+      remote_endpoint.size(),
+      &result->transferred,
+      flags
+    );
+  }
+
+
+  void send_to_async (async::io_t &&io, const endpoint_t &remote_endpoint)
+    noexcept
+  {
+    send_to_async(std::move(io), remote_endpoint, {});
+  }
+
+
+  static const send_to_t *send_to_result (const async::io_t &io,
+    std::error_code &error) noexcept
+  {
+    return base_t::template from_async_op<send_to_t>(io, error);
+  }
+
+
+  static const send_to_t *send_to_result (const async::io_t &io)
+  {
+    return send_to_result(io,
+      throw_on_error("basic_datagram_socket::send_to_result")
+    );
+  }
 };
 
 

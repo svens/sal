@@ -117,7 +117,7 @@ handler_t::handler_t (service_ptr service,
 namespace {
 
 
-inline auto make_buf (io_t *io) noexcept
+inline WSABUF make_buf (io_t *io) noexcept
 {
   WSABUF result;
   result.buf = reinterpret_cast<CHAR *>(io->begin);
@@ -126,33 +126,21 @@ inline auto make_buf (io_t *io) noexcept
 }
 
 
-void io_result_check (io_t *io, int result) noexcept
+inline void io_result_handle (io_t *io, int result) noexcept
 {
-  // caller still owns io
-
   if (result == 0)
   {
-    // completed immediately, move ownership to library
     io->status.clear();
-    *io->transferred = io->pending.transferred;
     io->current_owner->service->enqueue(io);
     return;
   }
 
   auto e = ::WSAGetLastError();
-  if (e == WSA_IO_PENDING)
-  {
-    // pending, OS owns io
-    return;
-  }
-
-  // failed, move ownership to library
-  else
+  if (e != WSA_IO_PENDING)
   {
     io->status.assign(e, std::system_category());
+    io->current_owner->service->enqueue(io);
   }
-
-  io->current_owner->service->enqueue(io);
 }
 
 
@@ -166,25 +154,62 @@ void handler_t::start_receive_from (io_t *io,
   message_flags_t *flags) noexcept
 {
   io->current_owner = this;
+  io->transferred = transferred;
+
   io->pending.recv_from.remote_endpoint_capacity =
     static_cast<INT>(remote_endpoint_capacity);
-  io->transferred = transferred;
-  io->flags = flags;
+  io->pending.recv_from.flags = flags;
 
   auto buf = make_buf(io);
-  io_result_check(io,
-    ::WSARecvFrom(
-      handle,
-      &buf,
-      1,
-      &io->pending.transferred,
-      io->flags,
-      static_cast<sockaddr *>(remote_endpoint),
-      &io->pending.recv_from.remote_endpoint_capacity,
-      &io->overlapped,
-      nullptr
-    )
+  auto result = ::WSARecvFrom(
+    handle,
+    &buf,
+    1,
+    &io->pending.recv_from.transferred,
+    io->pending.recv_from.flags,
+    static_cast<sockaddr *>(remote_endpoint),
+    &io->pending.recv_from.remote_endpoint_capacity,
+    &io->overlapped,
+    nullptr
   );
+
+  if (result == 0)
+  {
+    *io->transferred = io->pending.recv_from.transferred;
+  }
+
+  io_result_handle(io, result);
+}
+
+
+void handler_t::start_send_to (io_t *io,
+  const void *remote_endpoint,
+  size_t remote_endpoint_size,
+  size_t *transferred,
+  message_flags_t flags) noexcept
+{
+  io->current_owner = this;
+  io->transferred = transferred;
+
+  auto buf = make_buf(io);
+  auto result = ::WSASendTo(
+    handle,
+    &buf,
+    1,
+    &io->pending.send_to.transferred,
+    flags,
+    static_cast<const sockaddr *>(remote_endpoint),
+    static_cast<int>(remote_endpoint_size),
+    &io->overlapped,
+    nullptr
+  );
+
+  if (result == 0)
+  {
+    *io->transferred = io->pending.send_to.transferred;
+  }
+
+  io_result_handle(io, result);
 }
 
 
@@ -235,6 +260,20 @@ void handler_t::start_receive_from (io_t *io,
   (void)io;
   (void)remote_endpoint;
   (void)remote_endpoint_capacity;
+  (void)transferred;
+  (void)flags;
+}
+
+
+void handler_t::start_send_to (io_t *io,
+  void *remote_endpoint,
+  size_t remote_endpoint_size,
+  size_t *transferred,
+  message_flags_t flags) noexcept
+{
+  (void)io;
+  (void)remote_endpoint;
+  (void)remote_endpoint_size;
   (void)transferred;
   (void)flags;
 }
