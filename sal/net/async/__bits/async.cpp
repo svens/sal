@@ -266,7 +266,7 @@ void handler_t::start_receive_from (io_t *io,
 
 
 void handler_t::start_send_to (io_t *io,
-  void *remote_endpoint,
+  const void *remote_endpoint,
   size_t remote_endpoint_size,
   size_t *transferred,
   message_flags_t flags) noexcept
