@@ -371,6 +371,47 @@ public:
   }
 
 
+  struct receive_t
+  {
+    size_t transferred;
+    socket_base_t::message_flags_t flags;
+  };
+
+
+  void receive_async (async::io_t &&io, socket_base_t::message_flags_t flags)
+    noexcept
+  {
+    receive_t *result;
+    auto op = base_t::to_async_op(std::move(io), &result);
+    result->flags = flags;
+    base_t::async_->start_receive(op,
+      &result->transferred,
+      &result->flags
+    );
+  }
+
+
+  void receive_async (async::io_t &&io) noexcept
+  {
+    receive_async(std::move(io), {});
+  }
+
+
+  static const receive_t *receive_result (const async::io_t &io,
+    std::error_code &error) noexcept
+  {
+    return base_t::template from_async_op<receive_t>(io, error);
+  }
+
+
+  static const receive_t *receive_result (const async::io_t &io)
+  {
+    return base_t::template from_async_op<receive_t>(io,
+      throw_on_error("basic_datagram_socket::receive_result")
+    );
+  }
+
+
   struct send_to_t
   {
     size_t transferred;
@@ -410,6 +451,42 @@ public:
   {
     return send_to_result(io,
       throw_on_error("basic_datagram_socket::send_to_result")
+    );
+  }
+
+
+  struct send_t
+  {
+    size_t transferred;
+  };
+
+
+  void send_async (async::io_t &&io, socket_base_t::message_flags_t flags)
+    noexcept
+  {
+    send_t *result;
+    auto op = base_t::to_async_op(std::move(io), &result);
+    base_t::async_->start_send(op, &result->transferred, flags);
+  }
+
+
+  void send_async (async::io_t &&io) noexcept
+  {
+    send_async(std::move(io), {});
+  }
+
+
+  static const send_t *send_result (const async::io_t &io,
+    std::error_code &error) noexcept
+  {
+    return base_t::template from_async_op<send_t>(io, error);
+  }
+
+
+  static const send_t *send_result (const async::io_t &io)
+  {
+    return send_result(io,
+      throw_on_error("basic_datagram_socket::send_result")
     );
   }
 };

@@ -82,6 +82,8 @@ TYPED_TEST(net_async_datagram_socket, DISABLED_receive_from_async) //{{{1
   auto io = TestFixture::worker.poll();
   ASSERT_FALSE(!io);
 
+  ASSERT_EQ(nullptr, socket_t::receive_result(io));
+
   auto result = socket_t::receive_from_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
@@ -268,6 +270,199 @@ TYPED_TEST(net_async_datagram_socket, DISABLED_receive_from_async_after_send_emp
 //}}}1
 
 
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async) //{{{1
+{
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+  TestFixture::send(TestFixture::case_name);
+
+  auto io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  ASSERT_EQ(nullptr, socket_t::receive_from_result(io));
+
+  auto result = socket_t::receive_result(io);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(TestFixture::case_name, to_view(io, result));
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_after_send) //{{{1
+{
+  TestFixture::send(TestFixture::case_name);
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+
+  auto io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  auto result = socket_t::receive_result(io);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(TestFixture::case_name, to_view(io, result));
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_with_context) //{{{1
+{
+  int socket_ctx = 1, io_ctx = 2;
+  TestFixture::socket.context(&socket_ctx);
+
+  TestFixture::socket.receive_async(TestFixture::service.make_io(&io_ctx));
+  TestFixture::send(TestFixture::case_name);
+
+  auto io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  EXPECT_EQ(&io_ctx, io.template context<int>());
+  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
+
+  auto result = socket_t::receive_result(io);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(TestFixture::case_name, to_view(io, result));
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_canceled_on_close) //{{{1
+{
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+  TestFixture::socket.close();
+
+  auto io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = socket_t::receive_result(io, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::operation_canceled, error);
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_no_sender) //{{{1
+{
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+  EXPECT_TRUE(!TestFixture::worker.try_poll());
+  EXPECT_TRUE(!TestFixture::worker.try_get());
+  TestFixture::socket.close();
+
+  auto io = TestFixture::worker.try_poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = socket_t::receive_result(io, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::operation_canceled, error);
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_peek) //{{{1
+{
+  TestFixture::socket.receive_async(TestFixture::service.make_io(), socket_t::peek);
+  TestFixture::send(TestFixture::case_name);
+
+  // regardless of peek, completion should be removed from queue
+  EXPECT_FALSE(!TestFixture::worker.poll());
+  EXPECT_TRUE(!TestFixture::worker.try_poll());
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_peek_after_send) //{{{1
+{
+  TestFixture::send(TestFixture::case_name);
+  TestFixture::socket.receive_async(TestFixture::service.make_io(), socket_t::peek);
+
+  // regardless of peek, completion should be removed from queue
+  EXPECT_FALSE(!TestFixture::worker.poll());
+  EXPECT_TRUE(!TestFixture::worker.try_poll());
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_less_than_send) //{{{1
+{
+  std::string_view data{
+    TestFixture::case_name.data(),
+    TestFixture::case_name.size() / 2,
+  };
+
+  auto io = TestFixture::service.make_io();
+  io.resize(data.size());
+  TestFixture::socket.receive_async(std::move(io));
+  TestFixture::send(TestFixture::case_name);
+
+  io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = socket_t::receive_result(io, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::message_size, error);
+  EXPECT_EQ(data.size(), result->transferred);
+  EXPECT_EQ(data, to_view(io, result));
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_after_send_less_than_send) //{{{1
+{
+  TestFixture::send(TestFixture::case_name);
+
+  std::string_view data{
+    TestFixture::case_name.data(),
+    TestFixture::case_name.size() / 2,
+  };
+
+  auto io = TestFixture::service.make_io();
+  io.resize(data.size());
+  TestFixture::socket.receive_async(std::move(io));
+
+  io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = socket_t::receive_result(io, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::message_size, error);
+  EXPECT_EQ(data.size(), result->transferred);
+  EXPECT_EQ(data, to_view(io, result));
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_empty_buf) //{{{1
+{
+  auto io = TestFixture::service.make_io();
+  io.resize(0);
+  TestFixture::socket.receive_async(std::move(io));
+  TestFixture::send(TestFixture::case_name);
+
+  io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = socket_t::receive_result(io, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::message_size, error);
+  EXPECT_EQ(0U, result->transferred);
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_receive_async_after_send_empty_buf) //{{{1
+{
+  TestFixture::send(TestFixture::case_name);
+
+  auto io = TestFixture::service.make_io();
+  io.resize(0);
+  TestFixture::socket.receive_async(std::move(io));
+
+  io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = socket_t::receive_result(io, error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::message_size, error);
+  EXPECT_EQ(0U, result->transferred);
+}
+
+
+//}}}1
+
+
 TYPED_TEST(net_async_datagram_socket, DISABLED_send_to_async) //{{{1
 {
   auto io = TestFixture::service.make_io();
@@ -325,6 +520,71 @@ TYPED_TEST(net_async_datagram_socket, DISABLED_send_to_async_empty_buf) //{{{1
   ASSERT_FALSE(!io);
 
   auto result = socket_t::send_to_result(io);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(0U, result->transferred);
+}
+
+
+//}}}1
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_send_async) //{{{1
+{
+  TestFixture::socket.connect(TestFixture::test_socket.local_endpoint());
+
+  auto io = TestFixture::service.make_io();
+  TestFixture::fill(io, TestFixture::case_name);
+  TestFixture::socket.send_async(std::move(io));
+  EXPECT_EQ(TestFixture::case_name, TestFixture::receive());
+
+  io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  auto result = socket_t::send_result(io);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(TestFixture::case_name.size(), result->transferred);
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_send_async_with_context) //{{{1
+{
+  TestFixture::socket.connect(TestFixture::test_socket.local_endpoint());
+
+  int socket_ctx = 1, io_ctx = 2;
+  TestFixture::socket.context(&socket_ctx);
+
+  auto io = TestFixture::service.make_io(&io_ctx);
+  TestFixture::fill(io, TestFixture::case_name);
+  TestFixture::socket.send_async(std::move(io));
+  EXPECT_EQ(TestFixture::case_name, TestFixture::receive());
+
+  io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  EXPECT_EQ(&io_ctx, io.template context<int>());
+  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
+
+  auto result = socket_t::send_result(io);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(TestFixture::case_name.size(), result->transferred);
+}
+
+
+TYPED_TEST(net_async_datagram_socket, DISABLED_send_async_empty_buf) //{{{1
+{
+  TestFixture::socket.connect(TestFixture::test_socket.local_endpoint());
+
+  auto io = TestFixture::service.make_io();
+  io.resize(0);
+  TestFixture::socket.send_async(std::move(io));
+
+  char buf[1024];
+  EXPECT_EQ(0U, TestFixture::test_socket.receive(buf));
+
+  io = TestFixture::worker.poll();
+  ASSERT_FALSE(!io);
+
+  auto result = socket_t::send_result(io);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred);
 }

@@ -43,7 +43,18 @@ struct io_base_t //{{{1
     struct
     {
       DWORD transferred;
+      message_flags_t *flags;
+    } receive;
+
+    struct
+    {
+      DWORD transferred;
     } send_to;
+
+    struct
+    {
+      DWORD transferred;
+    } send;
   } pending;
 #endif
 
@@ -277,9 +288,21 @@ struct handler_t //{{{1
   ) noexcept;
 
 
+  void start_receive (io_t *io,
+    size_t *transferred,
+    message_flags_t *flags
+  ) noexcept;
+
+
   void start_send_to (io_t *io,
     const void *remote_endpoint,
     size_t remote_endpoint_size,
+    size_t *transferred,
+    message_flags_t flags
+  ) noexcept;
+
+
+  void start_send (io_t *io,
     size_t *transferred,
     message_flags_t flags
   ) noexcept;

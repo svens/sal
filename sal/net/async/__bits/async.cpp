@@ -182,6 +182,35 @@ void handler_t::start_receive_from (io_t *io,
 }
 
 
+void handler_t::start_receive (io_t *io,
+  size_t *transferred,
+  message_flags_t *flags) noexcept
+{
+  io->current_owner = this;
+  io->transferred = transferred;
+
+  io->pending.receive.flags = flags;
+
+  auto buf = make_buf(io);
+  auto result = ::WSARecv(
+    handle,
+    &buf,
+    1,
+    &io->pending.receive.transferred,
+    io->pending.receive.flags,
+    &io->overlapped,
+    nullptr
+  );
+
+  if (result == 0)
+  {
+    *io->transferred = io->pending.receive.transferred;
+  }
+
+  io_result_handle(io, result);
+}
+
+
 void handler_t::start_send_to (io_t *io,
   const void *remote_endpoint,
   size_t remote_endpoint_size,
@@ -207,6 +236,33 @@ void handler_t::start_send_to (io_t *io,
   if (result == 0)
   {
     *io->transferred = io->pending.send_to.transferred;
+  }
+
+  io_result_handle(io, result);
+}
+
+
+void handler_t::start_send (io_t *io,
+  size_t *transferred,
+  message_flags_t flags) noexcept
+{
+  io->current_owner = this;
+  io->transferred = transferred;
+
+  auto buf = make_buf(io);
+  auto result = ::WSASend(
+    handle,
+    &buf,
+    1,
+    &io->pending.send.transferred,
+    flags,
+    &io->overlapped,
+    nullptr
+  );
+
+  if (result == 0)
+  {
+    *io->transferred = io->pending.send.transferred;
   }
 
   io_result_handle(io, result);
@@ -265,6 +321,16 @@ void handler_t::start_receive_from (io_t *io,
 }
 
 
+void handler_t::start_receive (io_t *io,
+  size_t *transferred,
+  message_flags_t *flags) noexcept
+{
+  (void)io;
+  (void)transferred;
+  (void)flags;
+}
+
+
 void handler_t::start_send_to (io_t *io,
   const void *remote_endpoint,
   size_t remote_endpoint_size,
@@ -274,6 +340,16 @@ void handler_t::start_send_to (io_t *io,
   (void)io;
   (void)remote_endpoint;
   (void)remote_endpoint_size;
+  (void)transferred;
+  (void)flags;
+}
+
+
+void handler_t::start_send (io_t *io,
+  size_t *transferred,
+  message_flags_t flags) noexcept
+{
+  (void)io;
   (void)transferred;
   (void)flags;
 }
