@@ -339,7 +339,7 @@ public:
     noexcept
   {
     receive_from_t *result;
-    auto op = base_t::to_async_op(std::move(io), &result);
+    auto op = io.to_async_op(&result);
     result->flags = flags;
     base_t::async_->start_receive_from(op,
       result->remote_endpoint.data(),
@@ -356,21 +356,6 @@ public:
   }
 
 
-  static const receive_from_t *receive_from_result (const async::io_t &io,
-    std::error_code &error) noexcept
-  {
-    return base_t::template from_async_op<receive_from_t>(io, error);
-  }
-
-
-  static const receive_from_t *receive_from_result (const async::io_t &io)
-  {
-    return receive_from_result(io,
-      throw_on_error("basic_datagram_socket::receive_from_result")
-    );
-  }
-
-
   struct receive_t
   {
     size_t transferred;
@@ -382,7 +367,7 @@ public:
     noexcept
   {
     receive_t *result;
-    auto op = base_t::to_async_op(std::move(io), &result);
+    auto op = io.to_async_op(&result);
     result->flags = flags;
     base_t::async_->start_receive(op,
       &result->transferred,
@@ -397,21 +382,6 @@ public:
   }
 
 
-  static const receive_t *receive_result (const async::io_t &io,
-    std::error_code &error) noexcept
-  {
-    return base_t::template from_async_op<receive_t>(io, error);
-  }
-
-
-  static const receive_t *receive_result (const async::io_t &io)
-  {
-    return base_t::template from_async_op<receive_t>(io,
-      throw_on_error("basic_datagram_socket::receive_result")
-    );
-  }
-
-
   struct send_to_t
   {
     size_t transferred;
@@ -423,7 +393,7 @@ public:
     socket_base_t::message_flags_t flags) noexcept
   {
     send_to_t *result;
-    auto op = base_t::to_async_op(std::move(io), &result);
+    auto op = io.to_async_op(&result);
     base_t::async_->start_send_to(op,
       remote_endpoint.data(),
       remote_endpoint.size(),
@@ -440,21 +410,6 @@ public:
   }
 
 
-  static const send_to_t *send_to_result (const async::io_t &io,
-    std::error_code &error) noexcept
-  {
-    return base_t::template from_async_op<send_to_t>(io, error);
-  }
-
-
-  static const send_to_t *send_to_result (const async::io_t &io)
-  {
-    return send_to_result(io,
-      throw_on_error("basic_datagram_socket::send_to_result")
-    );
-  }
-
-
   struct send_t
   {
     size_t transferred;
@@ -465,7 +420,7 @@ public:
     noexcept
   {
     send_t *result;
-    auto op = base_t::to_async_op(std::move(io), &result);
+    auto op = io.to_async_op(&result);
     base_t::async_->start_send(op, &result->transferred, flags);
   }
 
@@ -473,21 +428,6 @@ public:
   void send_async (async::io_t &&io) noexcept
   {
     send_async(std::move(io), {});
-  }
-
-
-  static const send_t *send_result (const async::io_t &io,
-    std::error_code &error) noexcept
-  {
-    return base_t::template from_async_op<send_t>(io, error);
-  }
-
-
-  static const send_t *send_result (const async::io_t &io)
-  {
-    return send_result(io,
-      throw_on_error("basic_datagram_socket::send_result")
-    );
   }
 };
 

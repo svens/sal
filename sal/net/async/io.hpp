@@ -141,6 +141,25 @@ public:
   }
 
 
+  template <typename Result>
+  const Result *get_if (std::error_code &error) const noexcept
+  {
+    if (impl_->result_type == type_v<Result>)
+    {
+      error = impl_->status;
+      return reinterpret_cast<const Result *>(impl_->result_data);
+    }
+    return nullptr;
+  }
+
+
+  template <typename Result>
+  const Result *get_if () const
+  {
+    return get_if<Result>(throw_on_error("async::io::get_if"));
+  }
+
+
 private:
 
   __bits::io_ptr impl_;
@@ -149,9 +168,22 @@ private:
     : impl_(impl)
   { }
 
+
+  template <typename Result>
+  __bits::io_t *to_async_op (Result **result) noexcept
+  {
+    auto op = impl_.release();
+    static_assert(std::is_trivially_destructible_v<Result>);
+    static_assert(sizeof(Result) <= sizeof(op->result_data));
+    op->result_type = type_v<Result>;
+    *result = reinterpret_cast<Result *>(op->result_data);
+    return op;
+  }
+
+
   friend class service_t;
   friend class worker_t;
-  friend class net::socket_base_t;
+  template <typename Protocol> friend class net::basic_datagram_socket_t;
 };
 
 

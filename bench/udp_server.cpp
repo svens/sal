@@ -132,7 +132,7 @@ void service_t::run (size_t thread_index)
   {
     if (auto io = worker.poll())
     {
-      if (auto recv = socket_t::receive_from_result(io))
+      if (auto recv = io.get_if<socket_t::receive_from_t>())
       {
         if (io.socket_context<socket_t>() == &peer)
         {

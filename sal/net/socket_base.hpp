@@ -83,32 +83,6 @@ public:
 protected:
 
   ~socket_base_t () = default;
-
-
-  template <typename Result>
-  static async::__bits::io_t *to_async_op (async::io_t &&io, Result **result)
-    noexcept
-  {
-    auto op = io.impl_.release();
-    static_assert(std::is_trivially_destructible_v<Result>);
-    static_assert(sizeof(Result) <= sizeof(op->result_data));
-    op->result_type = type_v<Result>;
-    *result = reinterpret_cast<Result *>(op->result_data);
-    return op;
-  }
-
-
-  template <typename Result>
-  static const Result *from_async_op (const async::io_t &io, std::error_code &error)
-    noexcept
-  {
-    if (io.impl_->result_type == type_v<Result>)
-    {
-      error = io.impl_->status;
-      return reinterpret_cast<const Result *>(io.impl_->result_data);
-    }
-    return nullptr;
-  }
 };
 
 
