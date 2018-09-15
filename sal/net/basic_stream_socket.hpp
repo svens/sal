@@ -194,6 +194,50 @@ public:
     auto op = io.to_async_op(&result);
     base_t::async_->start_connect(op, endpoint.data(), endpoint.size());
   }
+
+
+  struct receive_t
+  {
+    size_t transferred;
+    socket_base_t::message_flags_t flags;
+  };
+
+
+  void receive_async (async::io_t &&io, socket_base_t::message_flags_t flags)
+    noexcept
+  {
+    receive_t *result;
+    auto op = io.to_async_op(&result);
+    result->flags = flags;
+    base_t::async_->start_receive(op, &result->transferred, &result->flags);
+  }
+
+
+  void receive_async (async::io_t &&io) noexcept
+  {
+    receive_async(std::move(io), {});
+  }
+
+
+  struct send_t
+  {
+    size_t transferred;
+  };
+
+
+  void send_async (async::io_t &&io, socket_base_t::message_flags_t flags)
+    noexcept
+  {
+    send_t *result;
+    auto op = io.to_async_op(&result);
+    base_t::async_->start_send(op, &result->transferred, flags);
+  }
+
+
+  void send_async (async::io_t &&io) noexcept
+  {
+    send_async(std::move(io), {});
+  }
 };
 
 

@@ -35,12 +35,21 @@ inline void io_result_handle (io_t *io, int result) noexcept
     return;
   }
 
-  auto e = ::WSAGetLastError();
-  if (e != WSA_IO_PENDING)
+  switch (auto e = ::WSAGetLastError())
   {
-    io->status.assign(e, std::system_category());
-    io->current_owner->service->enqueue(io);
+    case WSA_IO_PENDING:
+      return;
+
+    case WSAESHUTDOWN:
+      io->status = std::make_error_code(std::errc::broken_pipe);
+      break;
+
+    default:
+      io->status.assign(e, std::system_category());
+      break;
   }
+
+  io->current_owner->service->enqueue(io);
 }
 
 
@@ -163,6 +172,10 @@ io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
 
       case STATUS_INVALID_ADDRESS_COMPONENT:
         io.status = std::make_error_code(std::errc::address_not_available);
+        break;
+
+      case STATUS_CONNECTION_ABORTED:
+        io.status = std::make_error_code(std::errc::operation_canceled);
         break;
 
       case STATUS_CONNECTION_REFUSED:

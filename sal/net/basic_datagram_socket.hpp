@@ -369,10 +369,7 @@ public:
     receive_t *result;
     auto op = io.to_async_op(&result);
     result->flags = flags;
-    base_t::async_->start_receive(op,
-      &result->transferred,
-      &result->flags
-    );
+    base_t::async_->start_receive(op, &result->transferred, &result->flags);
   }
 
 
