@@ -178,6 +178,22 @@ public:
   {
     return send(buf, throw_on_error("basic_stream_socket::send"));
   }
+
+
+  //
+  // Asynchronous API
+  //
+
+  struct connect_t
+  { };
+
+
+  void connect_async (async::io_t &&io, const endpoint_t &endpoint) noexcept
+  {
+    connect_t *result;
+    auto op = io.to_async_op(&result);
+    base_t::async_->start_connect(op, endpoint.data(), endpoint.size());
+  }
 };
 
 

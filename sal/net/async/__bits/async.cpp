@@ -44,20 +44,30 @@ inline void io_result_handle (io_t *io, int result) noexcept
 }
 
 
-inline int end_accept (io_t &io) noexcept
+inline int complete_connection (io_t &io) noexcept
 {
-  // AcceptEx should be usually followed by GetAcceptExSockaddrs to extract
-  // remote and local endpoint and possible received data. But we just call
-  // setsockopt(SO_UPDATE_ACCEPT_CONTEXT) that allows application to use
-  // getsockname & getpeername if it wishes
-
-  return ::setsockopt(
-    *io.pending.accept.socket_handle,
-    SOL_SOCKET,
-    SO_UPDATE_ACCEPT_CONTEXT,
-    reinterpret_cast<char *>(&io.current_owner->handle),
-    sizeof(io.current_owner->handle)
-  );
+  // see worker_t::result_at()
+  if (io.lib_context == SO_UPDATE_ACCEPT_CONTEXT)
+  {
+    return ::setsockopt(
+      *io.pending.accept.socket_handle,
+      SOL_SOCKET,
+      SO_UPDATE_ACCEPT_CONTEXT,
+      reinterpret_cast<char *>(&io.current_owner->handle),
+      sizeof(io.current_owner->handle)
+    );
+  }
+  else if (io.lib_context == SO_UPDATE_CONNECT_CONTEXT)
+  {
+    return ::setsockopt(
+      io.current_owner->handle,
+      SOL_SOCKET,
+      SO_UPDATE_CONNECT_CONTEXT,
+      nullptr,
+      0
+    );
+  }
+  return !SOCKET_ERROR;
 }
 
 
@@ -125,17 +135,16 @@ io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
 {
   auto &result = *it;
   auto &io = *reinterpret_cast<io_t *>(result.lpOverlapped);
-  *io.transferred = result.dwNumberOfBytesTransferred;
   auto status = static_cast<NTSTATUS>(io.overlapped.Internal);
 
   if (NT_SUCCESS(status))
   {
-    // ugly hack: AcceptEx must be accompanied with GetAcceptExSockaddrs
-    // and/or setsockopt(SO_UPDATE_ACCEPT_CONTEXT). If io.transferred points
-    // to internal variable, we know finished operation was AcceptEx
+    // ugly hack: AcceptEx/ConnectEx must be accompanied with setsockopt()
+    // If io.transferred points to &io.lib_context, then complete connection
+    // with separate call
 
-    if (io.transferred != &io.lib_transferred
-      || end_accept(io) != SOCKET_ERROR)
+    if (io.transferred != &io.lib_context
+      || complete_connection(io) != SOCKET_ERROR)
     {
       io.status.clear();
     }
@@ -146,16 +155,30 @@ io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
   }
   else
   {
-    if (status == STATUS_BUFFER_OVERFLOW)
+    switch (status)
     {
-      io.status.assign(WSAEMSGSIZE, std::system_category());
-    }
-    else
-    {
-      io.status.assign(::RtlNtStatusToDosError(status), std::system_category());
+      case STATUS_BUFFER_OVERFLOW:
+        io.status = std::make_error_code(std::errc::message_size);
+        break;
+
+      case STATUS_INVALID_ADDRESS_COMPONENT:
+        io.status = std::make_error_code(std::errc::address_not_available);
+        break;
+
+      case STATUS_CONNECTION_REFUSED:
+        io.status = std::make_error_code(std::errc::connection_refused);
+        break;
+
+      default:
+        io.status.assign(
+          ::RtlNtStatusToDosError(status),
+          std::system_category()
+        );
+        break;
     }
   }
 
+  *io.transferred = result.dwNumberOfBytesTransferred;
   return &io;
 }
 
@@ -306,8 +329,11 @@ void handler_t::start_accept (io_t *io,
   socket_t::handle_t *socket_handle) noexcept
 {
   io->current_owner = this;
-  io->transferred = &io->lib_transferred;
   io->pending.accept.socket_handle = socket_handle;
+
+  // see worker_t::result_at
+  io->lib_context = SO_UPDATE_ACCEPT_CONTEXT;
+  io->transferred = &io->lib_context;
 
   socket_t new_socket;
   new_socket.open(family, SOCK_STREAM, IPPROTO_TCP, io->status);
@@ -333,7 +359,33 @@ void handler_t::start_accept (io_t *io,
   );
 
   io_result_handle(io,
-    success == TRUE ? end_accept(*io) : SOCKET_ERROR
+    success == TRUE ? complete_connection(*io) : SOCKET_ERROR
+  );
+}
+
+
+void handler_t::start_connect (io_t *io,
+  const void *remote_endpoint,
+  size_t remote_endpoint_size) noexcept
+{
+  io->current_owner = this;
+
+  // see worker_t::result_at
+  io->lib_context = SO_UPDATE_CONNECT_CONTEXT;
+  io->transferred = &io->lib_context;
+
+  auto success = winsock.ConnectEx(
+    handle,
+    static_cast<const sockaddr *>(remote_endpoint),
+    static_cast<int>(remote_endpoint_size),
+    nullptr,
+    0,
+    nullptr,
+    &io->overlapped
+  );
+
+  io_result_handle(io,
+    success == TRUE ? complete_connection(*io) : SOCKET_ERROR
   );
 }
 
@@ -431,6 +483,16 @@ void handler_t::start_accept (io_t *io,
   (void)io;
   (void)family;
   (void)socket_handle;
+}
+
+
+void handler_t::start_connect (io_t *io,
+  const void *remote_endpoint,
+  size_t remote_endpoint_size) noexcept
+{
+  (void)io;
+  (void)remote_endpoint;
+  (void)remote_endpoint_size;
 }
 
 

@@ -55,8 +55,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async) //{{{1
   auto io = TestFixture::worker.poll();
   ASSERT_FALSE(!io);
 
-  // TODO
-  // EXPECT_EQ(nullptr, io.template get_if<socket_t::connect_t>());
+  EXPECT_EQ(nullptr, io.template get_if<socket_t::connect_t>());
 
   auto result = io.template get_if<acceptor_t::accept_t>();
   ASSERT_NE(nullptr, result);

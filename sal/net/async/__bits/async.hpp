@@ -63,7 +63,7 @@ struct io_base_t //{{{1
   } pending;
 
   // see worker::result_at()
-  size_t lib_transferred{};
+  size_t lib_context{};
 #endif
 
   handler_t *current_owner{};
@@ -319,6 +319,12 @@ struct handler_t //{{{1
   void start_accept (io_t *io,
     int family,
     socket_t::handle_t *socket_handle
+  ) noexcept;
+
+
+  void start_connect (io_t *io,
+    const void *remote_endpoint,
+    size_t remote_endpoint_size
   ) noexcept;
 };
 using handler_ptr = std::unique_ptr<handler_t>;
