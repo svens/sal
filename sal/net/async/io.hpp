@@ -160,6 +160,25 @@ public:
   }
 
 
+  template <typename Result>
+  Result *get_if (std::error_code &error) noexcept
+  {
+    if (impl_->result_type == type_v<Result>)
+    {
+      error = impl_->status;
+      return reinterpret_cast<Result *>(impl_->result_data);
+    }
+    return nullptr;
+  }
+
+
+  template <typename Result>
+  Result *get_if ()
+  {
+    return get_if<Result>(throw_on_error("async::io::get_if"));
+  }
+
+
 private:
 
   __bits::io_ptr impl_;
@@ -184,6 +203,7 @@ private:
   friend class service_t;
   friend class worker_t;
   template <typename Protocol> friend class net::basic_datagram_socket_t;
+  template <typename Protocol> friend class net::basic_socket_acceptor_t;
 };
 
 

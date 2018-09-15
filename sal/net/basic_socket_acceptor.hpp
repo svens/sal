@@ -515,6 +515,42 @@ public:
   }
 
 
+  // TODO: document that if accepted_socket not moved, it will be leaked
+  struct accept_t
+  {
+  public:
+
+    socket_t accepted_socket (std::error_code &error) noexcept
+    {
+      socket_t result;
+      result.assign(accepted_socket_handle_, error);
+      accepted_socket_handle_ = __bits::socket_t::invalid;
+      return result;
+    }
+
+    socket_t accepted_socket ()
+    {
+      return accepted_socket(
+        throw_on_error("basic_socket_acceptor::accepted_socket")
+      );
+    }
+
+
+  private:
+
+    __bits::socket_t::handle_t accepted_socket_handle_;
+    friend class basic_socket_acceptor_t;
+  };
+
+
+  void accept_async (async::io_t &&io) noexcept
+  {
+    accept_t *result;
+    auto op = io.to_async_op(&result);
+    async_->start_accept(op, family_, &result->accepted_socket_handle_);
+  }
+
+
 private:
 
   __bits::socket_t socket_{};

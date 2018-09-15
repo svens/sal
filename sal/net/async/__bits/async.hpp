@@ -55,7 +55,15 @@ struct io_base_t //{{{1
     {
       DWORD transferred;
     } send;
+
+    struct
+    {
+      socket_t::handle_t *socket_handle;
+    } accept;
   } pending;
+
+  // see worker::result_at()
+  size_t lib_transferred{};
 #endif
 
   handler_t *current_owner{};
@@ -305,6 +313,12 @@ struct handler_t //{{{1
   void start_send (io_t *io,
     size_t *transferred,
     message_flags_t flags
+  ) noexcept;
+
+
+  void start_accept (io_t *io,
+    int family,
+    socket_t::handle_t *socket_handle
   ) noexcept;
 };
 using handler_ptr = std::unique_ptr<handler_t>;

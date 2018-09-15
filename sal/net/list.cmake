@@ -47,6 +47,7 @@ list(APPEND sal_unittests_sources
   sal/net/async/service.test.cpp
   sal/net/async/socket.test.cpp
   sal/net/async/datagram_socket.test.cpp
+  sal/net/async/socket_acceptor.test.cpp
 
   sal/net/ip/address.test.cpp
   sal/net/ip/address_v4.test.cpp

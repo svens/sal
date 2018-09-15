@@ -11,6 +11,59 @@ namespace net::async::__bits {
 #if __sal_os_windows //{{{1
 
 
+namespace {
+
+using net::__bits::winsock;
+constexpr DWORD acceptex_address_size = sizeof(sockaddr_storage) + 16;
+
+
+inline WSABUF make_buf (io_t *io) noexcept
+{
+  WSABUF result;
+  result.buf = reinterpret_cast<CHAR *>(io->begin);
+  result.len = static_cast<ULONG>(io->end - io->begin);
+  return result;
+}
+
+
+inline void io_result_handle (io_t *io, int result) noexcept
+{
+  if (result == 0)
+  {
+    io->status.clear();
+    io->current_owner->service->enqueue(io);
+    return;
+  }
+
+  auto e = ::WSAGetLastError();
+  if (e != WSA_IO_PENDING)
+  {
+    io->status.assign(e, std::system_category());
+    io->current_owner->service->enqueue(io);
+  }
+}
+
+
+inline int end_accept (io_t &io) noexcept
+{
+  // AcceptEx should be usually followed by GetAcceptExSockaddrs to extract
+  // remote and local endpoint and possible received data. But we just call
+  // setsockopt(SO_UPDATE_ACCEPT_CONTEXT) that allows application to use
+  // getsockname & getpeername if it wishes
+
+  return ::setsockopt(
+    *io.pending.accept.socket_handle,
+    SOL_SOCKET,
+    SO_UPDATE_ACCEPT_CONTEXT,
+    reinterpret_cast<char *>(&io.current_owner->handle),
+    sizeof(io.current_owner->handle)
+  );
+}
+
+
+} // namespace
+
+
 service_t::service_t ()
   : iocp(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0))
 {
@@ -77,7 +130,19 @@ io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
 
   if (NT_SUCCESS(status))
   {
-    io.status.clear();
+    // ugly hack: AcceptEx must be accompanied with GetAcceptExSockaddrs
+    // and/or setsockopt(SO_UPDATE_ACCEPT_CONTEXT). If io.transferred points
+    // to internal variable, we know finished operation was AcceptEx
+
+    if (io.transferred != &io.lib_transferred
+      || end_accept(io) != SOCKET_ERROR)
+    {
+      io.status.clear();
+    }
+    else
+    {
+      io.status.assign(::WSAGetLastError(), std::system_category());
+    }
   }
   else
   {
@@ -112,39 +177,6 @@ handler_t::handler_t (service_ptr service,
     error.assign(::GetLastError(), std::system_category());
   }
 }
-
-
-namespace {
-
-
-inline WSABUF make_buf (io_t *io) noexcept
-{
-  WSABUF result;
-  result.buf = reinterpret_cast<CHAR *>(io->begin);
-  result.len = static_cast<ULONG>(io->end - io->begin);
-  return result;
-}
-
-
-inline void io_result_handle (io_t *io, int result) noexcept
-{
-  if (result == 0)
-  {
-    io->status.clear();
-    io->current_owner->service->enqueue(io);
-    return;
-  }
-
-  auto e = ::WSAGetLastError();
-  if (e != WSA_IO_PENDING)
-  {
-    io->status.assign(e, std::system_category());
-    io->current_owner->service->enqueue(io);
-  }
-}
-
-
-} // namespace
 
 
 void handler_t::start_receive_from (io_t *io,
@@ -269,6 +301,43 @@ void handler_t::start_send (io_t *io,
 }
 
 
+void handler_t::start_accept (io_t *io,
+  int family,
+  socket_t::handle_t *socket_handle) noexcept
+{
+  io->current_owner = this;
+  io->transferred = &io->lib_transferred;
+  io->pending.accept.socket_handle = socket_handle;
+
+  socket_t new_socket;
+  new_socket.open(family, SOCK_STREAM, IPPROTO_TCP, io->status);
+  *io->pending.accept.socket_handle = new_socket.handle;
+
+  if (io->status)
+  {
+    io->current_owner->service->enqueue(io);
+    return;
+  }
+
+  new_socket.handle = socket_t::invalid;
+
+  auto success = winsock.AcceptEx(
+    handle,
+    *io->pending.accept.socket_handle,
+    io->data,
+    0,
+    0,
+    acceptex_address_size,
+    nullptr,
+    &io->overlapped
+  );
+
+  io_result_handle(io,
+    success == TRUE ? end_accept(*io) : SOCKET_ERROR
+  );
+}
+
+
 #elif __sal_os_linux || __sal_os_macos //{{{1
 
 
@@ -352,6 +421,16 @@ void handler_t::start_send (io_t *io,
   (void)io;
   (void)transferred;
   (void)flags;
+}
+
+
+void handler_t::start_accept (io_t *io,
+  int family,
+  socket_t::handle_t *socket_handle) noexcept
+{
+  (void)io;
+  (void)family;
+  (void)socket_handle;
 }
 
 
