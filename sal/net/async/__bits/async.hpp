@@ -1,7 +1,6 @@
 #pragma once
 
 #include <sal/config.hpp>
-#include <sal/assert.hpp>
 #include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/intrusive_queue.hpp>
 #include <sal/net/__bits/socket.hpp>
@@ -175,7 +174,7 @@ struct service_t //{{{1
 
   io_t *make_io (void *context, uintptr_t context_type)
   {
-    auto io = sal_check_ptr(alloc_io());
+    auto io = alloc_io();
     io->current_owner = nullptr;
     io->context_type = context_type;
     io->context = context;
@@ -274,7 +273,7 @@ struct worker_t //{{{1
 struct handler_t //{{{1
 {
   service_ptr service;
-  socket_t::handle_t handle;
+  socket_t socket;
 
   uintptr_t context_type{};
   void *context{};
@@ -282,6 +281,13 @@ struct handler_t //{{{1
 
   handler_t (service_ptr service, socket_t &socket, std::error_code &error)
     noexcept;
+
+
+  ~handler_t () noexcept
+  {
+    // we actually don't own socket, prevent closing it
+    socket.handle = socket.invalid;
+  }
 
 
   handler_t (const handler_t &) = delete;

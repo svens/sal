@@ -1,5 +1,6 @@
 #include <sal/__bits/platform_sdk.hpp>
 #include <sal/net/async/__bits/async.hpp>
+#include <sal/error.hpp>
 
 
 __sal_begin
@@ -62,14 +63,14 @@ inline int complete_connection (io_t &io) noexcept
       *io.pending.accept.socket_handle,
       SOL_SOCKET,
       SO_UPDATE_ACCEPT_CONTEXT,
-      reinterpret_cast<char *>(&io.current_owner->handle),
-      sizeof(io.current_owner->handle)
+      reinterpret_cast<char *>(&io.current_owner->socket.handle),
+      sizeof(io.current_owner->socket.handle)
     );
   }
   else if (io.lib_context == SO_UPDATE_CONNECT_CONTEXT)
   {
     return ::setsockopt(
-      io.current_owner->handle,
+      io.current_owner->socket.handle,
       SOL_SOCKET,
       SO_UPDATE_CONNECT_CONTEXT,
       nullptr,
@@ -200,10 +201,10 @@ handler_t::handler_t (service_ptr service,
     socket_t &socket,
     std::error_code &error) noexcept
   : service(service)
-  , handle(socket.handle)
+  , socket(socket.handle)
 {
   auto result = ::CreateIoCompletionPort(
-    reinterpret_cast<HANDLE>(handle),
+    reinterpret_cast<HANDLE>(socket.handle),
     service->iocp,
     0,
     0
@@ -230,7 +231,7 @@ void handler_t::start_receive_from (io_t *io,
 
   auto buf = make_buf(io);
   auto result = ::WSARecvFrom(
-    handle,
+    socket.handle,
     &buf,
     1,
     &io->pending.recv_from.transferred,
@@ -261,7 +262,7 @@ void handler_t::start_receive (io_t *io,
 
   auto buf = make_buf(io);
   auto result = ::WSARecv(
-    handle,
+    socket.handle,
     &buf,
     1,
     &io->pending.receive.transferred,
@@ -290,7 +291,7 @@ void handler_t::start_send_to (io_t *io,
 
   auto buf = make_buf(io);
   auto result = ::WSASendTo(
-    handle,
+    socket.handle,
     &buf,
     1,
     &io->pending.send_to.transferred,
@@ -319,7 +320,7 @@ void handler_t::start_send (io_t *io,
 
   auto buf = make_buf(io);
   auto result = ::WSASend(
-    handle,
+    socket.handle,
     &buf,
     1,
     &io->pending.send.transferred,
@@ -361,7 +362,7 @@ void handler_t::start_accept (io_t *io,
   new_socket.handle = socket_t::invalid;
 
   auto success = winsock.AcceptEx(
-    handle,
+    socket.handle,
     *io->pending.accept.socket_handle,
     io->data,
     0,
@@ -388,7 +389,7 @@ void handler_t::start_connect (io_t *io,
   io->transferred = &io->lib_context;
 
   auto success = winsock.ConnectEx(
-    handle,
+    socket.handle,
     static_cast<const sockaddr *>(remote_endpoint),
     static_cast<int>(remote_endpoint_size),
     nullptr,
@@ -435,7 +436,7 @@ handler_t::handler_t (service_ptr service,
     socket_t &socket,
     std::error_code &error) noexcept
   : service(service)
-  , handle(socket.handle)
+  , socket(socket.handle)
 {
   error.clear();
 }
