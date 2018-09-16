@@ -520,6 +520,8 @@ public:
   {
   public:
 
+    static constexpr async::io_t::op_t op = async::io_t::op_t::accept;
+
     socket_t accepted_socket (std::error_code &error) noexcept
     {
       socket_t result;

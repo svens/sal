@@ -144,10 +144,10 @@ public:
   template <typename Result>
   const Result *get_if (std::error_code &error) const noexcept
   {
-    if (impl_->result_type == type_v<Result>)
+    if (impl_->op == Result::op)
     {
       error = impl_->status;
-      return reinterpret_cast<const Result *>(impl_->result_data);
+      return reinterpret_cast<const Result *>(impl_->result);
     }
     return nullptr;
   }
@@ -163,10 +163,10 @@ public:
   template <typename Result>
   Result *get_if (std::error_code &error) noexcept
   {
-    if (impl_->result_type == type_v<Result>)
+    if (impl_->op == Result::op)
     {
       error = impl_->status;
-      return reinterpret_cast<Result *>(impl_->result_data);
+      return reinterpret_cast<Result *>(impl_->result);
     }
     return nullptr;
   }
@@ -188,14 +188,17 @@ private:
   { }
 
 
+  using op_t = __bits::op_t;
+
+
   template <typename Result>
   __bits::io_t *to_async_op (Result **result) noexcept
   {
     auto op = impl_.release();
     static_assert(std::is_trivially_destructible_v<Result>);
-    static_assert(sizeof(Result) <= sizeof(op->result_data));
-    op->result_type = type_v<Result>;
-    *result = reinterpret_cast<Result *>(op->result_data);
+    static_assert(sizeof(Result) <= sizeof(op->result));
+    op->op = Result::op;
+    *result = reinterpret_cast<Result *>(op->result);
     return op;
   }
 

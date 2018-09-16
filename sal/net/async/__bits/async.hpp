@@ -25,52 +25,70 @@ using net::__bits::message_flags_t;
 struct handler_t;
 
 
+enum class op_t
+{
+  receive_from,
+  receive,
+  send_to,
+  send,
+  accept,
+  connect,
+};
+
+
 struct io_base_t //{{{1
 {
 #if __sal_os_windows
+
   OVERLAPPED overlapped{};
+  using transferred_size_t = DWORD;
+  using endpoint_size_t = INT;
+
+#else
+
+  using transferred_size_t = size_t;
+  using endpoint_size_t = size_t;
+
+#endif
+
+  op_t op{};
 
   union
   {
     struct
     {
-      DWORD transferred;
-      INT remote_endpoint_capacity;
+      transferred_size_t transferred;
+      endpoint_size_t remote_endpoint_capacity;
       message_flags_t *flags;
     } recv_from;
 
     struct
     {
-      DWORD transferred;
+      transferred_size_t transferred;
       message_flags_t *flags;
     } receive;
 
     struct
     {
-      DWORD transferred;
+      transferred_size_t transferred;
     } send_to;
 
     struct
     {
-      DWORD transferred;
+      transferred_size_t transferred;
     } send;
 
     struct
     {
       socket_t::handle_t *socket_handle;
     } accept;
-  } pending;
-
-  // see worker::result_at()
-  size_t lib_context{};
-#endif
+  } pending{};
 
   handler_t *current_owner{};
   uintptr_t context_type{};
   void *context{};
 
-  uintptr_t result_type{};
-  uint8_t result_data[160];
+  uint8_t result[160];
   size_t *transferred{};
   std::error_code status{};
 

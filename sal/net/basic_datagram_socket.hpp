@@ -329,6 +329,7 @@ public:
 
   struct receive_from_t
   {
+    static constexpr async::io_t::op_t op = async::io_t::op_t::receive_from;
     size_t transferred;
     endpoint_t remote_endpoint;
     socket_base_t::message_flags_t flags;
@@ -358,6 +359,7 @@ public:
 
   struct receive_t
   {
+    static constexpr async::io_t::op_t op = async::io_t::op_t::receive;
     size_t transferred;
     socket_base_t::message_flags_t flags;
   };
@@ -381,6 +383,7 @@ public:
 
   struct send_to_t
   {
+    static constexpr async::io_t::op_t op = async::io_t::op_t::send_to;
     size_t transferred;
   };
 
@@ -409,6 +412,7 @@ public:
 
   struct send_t
   {
+    static constexpr async::io_t::op_t op = async::io_t::op_t::send;
     size_t transferred;
   };
 

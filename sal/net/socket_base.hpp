@@ -8,7 +8,6 @@
 
 #include <sal/config.hpp>
 #include <sal/net/__bits/socket.hpp>
-#include <sal/net/async/io.hpp>
 
 
 __sal_begin

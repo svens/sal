@@ -185,7 +185,9 @@ public:
   //
 
   struct connect_t
-  { };
+  {
+    static constexpr async::io_t::op_t op = async::io_t::op_t::connect;
+  };
 
 
   void connect_async (async::io_t &&io, const endpoint_t &endpoint) noexcept
@@ -198,6 +200,7 @@ public:
 
   struct receive_t
   {
+    static constexpr async::io_t::op_t op = async::io_t::op_t::receive;
     size_t transferred;
     socket_base_t::message_flags_t flags;
   };
@@ -221,6 +224,7 @@ public:
 
   struct send_t
   {
+    static constexpr async::io_t::op_t op = async::io_t::op_t::send;
     size_t transferred;
   };
 

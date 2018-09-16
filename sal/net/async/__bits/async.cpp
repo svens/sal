@@ -57,7 +57,7 @@ inline void io_result_handle (io_t *io, int result) noexcept
 inline int complete_connection (io_t &io) noexcept
 {
   // see worker_t::result_at()
-  if (io.lib_context == SO_UPDATE_ACCEPT_CONTEXT)
+  if (io.op == op_t::accept)
   {
     return ::setsockopt(
       *io.pending.accept.socket_handle,
@@ -67,7 +67,7 @@ inline int complete_connection (io_t &io) noexcept
       sizeof(io.current_owner->socket.handle)
     );
   }
-  else if (io.lib_context == SO_UPDATE_CONNECT_CONTEXT)
+  else if (io.op == op_t::connect)
   {
     return ::setsockopt(
       io.current_owner->socket.handle,
@@ -146,21 +146,24 @@ io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
   auto &result = *it;
   auto &io = *reinterpret_cast<io_t *>(result.lpOverlapped);
   auto status = static_cast<NTSTATUS>(io.overlapped.Internal);
+  *io.transferred = result.dwNumberOfBytesTransferred;
 
   if (NT_SUCCESS(status))
   {
-    // ugly hack: AcceptEx/ConnectEx must be accompanied with setsockopt()
-    // If io.transferred points to &io.lib_context, then complete connection
-    // with separate call
+    switch (io.op)
+    {
+      case op_t::accept:
+      case op_t::connect:
+        if (complete_connection(io) == SOCKET_ERROR)
+        {
+          io.status.assign(::WSAGetLastError(), std::system_category());
+          break;
+        }
+        [[fallthrough]];
 
-    if (io.transferred != &io.lib_context
-      || complete_connection(io) != SOCKET_ERROR)
-    {
-      io.status.clear();
-    }
-    else
-    {
-      io.status.assign(::WSAGetLastError(), std::system_category());
+      default:
+        io.status.clear();
+        break;
     }
   }
   else
@@ -192,7 +195,6 @@ io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
     }
   }
 
-  *io.transferred = result.dwNumberOfBytesTransferred;
   return &io;
 }
 
@@ -345,10 +347,6 @@ void handler_t::start_accept (io_t *io,
   io->current_owner = this;
   io->pending.accept.socket_handle = socket_handle;
 
-  // see worker_t::result_at
-  io->lib_context = SO_UPDATE_ACCEPT_CONTEXT;
-  io->transferred = &io->lib_context;
-
   socket_t new_socket;
   new_socket.open(family, SOCK_STREAM, IPPROTO_TCP, io->status);
   *io->pending.accept.socket_handle = new_socket.handle;
@@ -383,10 +381,6 @@ void handler_t::start_connect (io_t *io,
   size_t remote_endpoint_size) noexcept
 {
   io->current_owner = this;
-
-  // see worker_t::result_at
-  io->lib_context = SO_UPDATE_CONNECT_CONTEXT;
-  io->transferred = &io->lib_context;
 
   auto success = winsock.ConnectEx(
     socket.handle,
