@@ -306,10 +306,9 @@ size_t socket_t::receive_from (void *data, size_t data_size,
   if (result != SOCKET_ERROR)
   {
     *address_size = tmp_address_size;
-    return transferred;
   }
 
-  return 0;
+  return transferred;
 }
 
 
@@ -743,7 +742,6 @@ size_t socket_t::receive_from (void *data, size_t data_size,
     if (msg.msg_flags & MSG_TRUNC)
     {
       error.assign(EMSGSIZE, std::generic_category());
-      size = 0;
     }
     else
     {

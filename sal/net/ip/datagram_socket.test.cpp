@@ -217,7 +217,7 @@ TEST_P(datagram_socket, receive_from_less_than_send_to)
     socket_t::endpoint_t endpoint;
     char buf[1024];
     std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(0U,
+    EXPECT_EQ(case_name.size() / 2,
       r.receive_from(sal::make_buf(buf, case_name.size() / 2), endpoint, error)
     );
     EXPECT_EQ(std::errc::message_size, error);
@@ -396,7 +396,9 @@ TEST_P(datagram_socket, receive_less_than_send)
     std::error_code error;
     char buf[1024];
     std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(0U, r.receive(sal::make_buf(buf, case_name.size() / 2), error));
+    EXPECT_EQ(case_name.size() / 2,
+      r.receive(sal::make_buf(buf, case_name.size() / 2), error)
+    );
     EXPECT_EQ(std::errc::message_size, error);
     EXPECT_FALSE(r.wait(r.wait_read, 0s));
   }
