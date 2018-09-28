@@ -131,6 +131,15 @@ public:
 
 
   /**
+   * Retun head of queue without removing it. If empty, return nullptr.
+   */
+  element_type *head () const noexcept
+  {
+    return head_->*Next;
+  }
+
+
+  /**
    * Return true if queue has no elements.
    */
   bool empty () const noexcept
