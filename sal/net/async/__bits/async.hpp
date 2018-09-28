@@ -81,7 +81,13 @@ struct io_base_t //{{{1
     struct
     {
       socket_t::handle_t *socket_handle;
+      size_t unused;
     } accept;
+
+    struct
+    {
+      size_t unused;
+    } connect;
   } pending{};
 
   handler_t *current_owner{};

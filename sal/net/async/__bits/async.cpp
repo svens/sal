@@ -345,6 +345,7 @@ void handler_t::start_accept (io_t *io,
   socket_t::handle_t *socket_handle) noexcept
 {
   io->current_owner = this;
+  io->transferred = &io->pending.accept.unused;
   io->pending.accept.socket_handle = socket_handle;
 
   socket_t new_socket;
@@ -381,6 +382,7 @@ void handler_t::start_connect (io_t *io,
   size_t remote_endpoint_size) noexcept
 {
   io->current_owner = this;
+  io->transferred = &io->pending.connect.unused;
 
   auto success = winsock.ConnectEx(
     socket.handle,
