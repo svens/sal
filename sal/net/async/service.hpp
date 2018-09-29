@@ -10,7 +10,7 @@
 #include <sal/net/fwd.hpp>
 #include <sal/net/async/__bits/async.hpp>
 #include <sal/net/async/io.hpp>
-#include <sal/net/async/worker.hpp>
+#include <chrono>
 
 
 __sal_begin
@@ -42,9 +42,48 @@ public:
   }
 
 
-  worker_t make_worker (size_t max_results_per_poll) noexcept
+  io_t try_get () noexcept
   {
-    return {impl_, max_results_per_poll};
+    return {impl_->dequeue()};
+  }
+
+
+  template <typename Rep, typename Period>
+  io_t poll (const std::chrono::duration<Rep, Period> &timeout,
+    std::error_code &error) noexcept
+  {
+    return {impl_->poll(timeout, error)};
+  }
+
+
+  template <typename Rep, typename Period>
+  io_t poll (const std::chrono::duration<Rep, Period> &timeout)
+  {
+    return poll(timeout, throw_on_error("service::poll"));
+  }
+
+
+  io_t poll (std::error_code &error) noexcept
+  {
+    return poll((std::chrono::milliseconds::max)(), error);
+  }
+
+
+  io_t poll ()
+  {
+    return poll((std::chrono::milliseconds::max)());
+  }
+
+
+  io_t try_poll (std::error_code &error) noexcept
+  {
+    return poll(std::chrono::milliseconds(0), error);
+  }
+
+
+  io_t try_poll ()
+  {
+    return poll(std::chrono::milliseconds(0));
   }
 
 

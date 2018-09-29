@@ -16,7 +16,6 @@ namespace {
 
 auto address = sal::net::ip::make_address_v4("0.0.0.0");
 size_t worker_count = std::thread::hardware_concurrency();
-size_t poll_result_count = 20;
 size_t receive_count = 10'000;
 
 using protocol_t = sal::net::ip::udp_t;
@@ -30,10 +29,10 @@ struct service_t
     , peer({address, 3479})
     , thread_statistics(worker_count)
   {
-    client.associate(async);
+    client.associate(service);
     client.context(&client);
 
-    peer.associate(async);
+    peer.associate(service);
     peer.context(&peer);
   }
 
@@ -50,7 +49,7 @@ struct service_t
   // I/O
   //
 
-  sal::net::async::service_t async{};
+  sal::net::async::service_t service{};
   socket_t client, peer;
 
   struct statistics_t
@@ -81,8 +80,8 @@ struct service_t
   {
     for (auto i = receive_count;  i;  --i)
     {
-      client.receive_from_async(async.make_io());
-      peer.receive_from_async(async.make_io());
+      client.receive_from_async(service.make_io());
+      peer.receive_from_async(service.make_io());
     }
   }
 
@@ -125,12 +124,11 @@ struct service_t
 
 void service_t::run (size_t thread_index)
 {
-  auto worker = async.make_worker(poll_result_count);
   auto &statistics = thread_statistics[thread_index];
 
   for (;;)
   {
-    if (auto io = worker.poll())
+    if (auto io = service.poll())
     {
       if (auto recv = io.get_if<socket_t::receive_from_t>())
       {
@@ -205,10 +203,6 @@ option_set_t options ()
       requires_argument("ADDRESS", address),
       help("UDP echo server IPv4 address")
     )
-    .add({"p", "poll"},
-      requires_argument("INT", poll_result_count),
-      help("max completions per poll")
-    )
     .add({"r", "receives"},
       requires_argument("INT", receive_count),
       help("max outstanding receives")
@@ -229,12 +223,6 @@ int run (const option_set_t &options, const argument_map_t &arguments)
     options.back_or_default("address", {arguments})
   );
   std::cout << address << '\n';
-
-  std::cout << "       poll: ";
-  poll_result_count = std::stoul(
-    options.back_or_default("poll", {arguments})
-  );
-  std::cout << poll_result_count << '\n';
 
   std::cout << "   receives: ";
   receive_count = std::stoul(

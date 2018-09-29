@@ -2,6 +2,19 @@
 #include <sal/net/async/__bits/async.hpp>
 #include <sal/error.hpp>
 
+#if __sal_os_linux || __sal_os_macos
+  #include <cstring>
+  #include <unistd.h>
+#endif
+
+#if __sal_os_linux
+  #include <sys/epoll.h>
+#elif __sal_os_macos
+  #include <sys/event.h>
+  #include <sys/time.h>
+  #include <sys/types.h>
+#endif
+
 
 __sal_begin
 
@@ -56,7 +69,6 @@ inline void io_result_handle (io_t *io, int result) noexcept
 
 inline int complete_connection (io_t &io) noexcept
 {
-  // see worker_t::result_at()
   if (io.op == op_t::accept)
   {
     return ::setsockopt(
@@ -81,73 +93,12 @@ inline int complete_connection (io_t &io) noexcept
 }
 
 
-} // namespace
-
-
-service_t::service_t ()
-  : iocp(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0))
+io_t *to_io (::OVERLAPPED_ENTRY &event) noexcept
 {
-  if (iocp == INVALID_HANDLE_VALUE)
-  {
-    std::error_code error;
-    error.assign(::GetLastError(), std::system_category());
-    throw_system_error(error, "CreateIoCompletionPort");
-  }
-}
+  auto &io = *reinterpret_cast<io_t *>(event.lpOverlapped);
+  *io.transferred = event.dwNumberOfBytesTransferred;
 
-
-service_t::~service_t () noexcept
-{
-  if (iocp != INVALID_HANDLE_VALUE)
-  {
-    (void)::CloseHandle(iocp);
-  }
-}
-
-
-bool worker_t::wait_for_more (const std::chrono::milliseconds &timeout,
-  std::error_code &error) noexcept
-{
-  ULONG event_count;
-  auto succeeded = ::GetQueuedCompletionStatusEx(
-    service->iocp,
-    completed.data(),
-    static_cast<DWORD>(max_results_per_poll),
-    &event_count,
-    static_cast<DWORD>(timeout.count()),
-    false
-  );
-
-  if (succeeded)
-  {
-    first_completed = completed.begin();
-    last_completed = first_completed + event_count;
-    return true;
-  }
-
-  auto e = ::GetLastError();
-  if (e == WAIT_TIMEOUT)
-  {
-    error.clear();
-  }
-  else
-  {
-    error.assign(e, std::system_category());
-  }
-
-  first_completed = last_completed = completed.begin();
-  return false;
-}
-
-
-io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
-  noexcept
-{
-  auto &result = *it;
-  auto &io = *reinterpret_cast<io_t *>(result.lpOverlapped);
   auto status = static_cast<NTSTATUS>(io.overlapped.Internal);
-  *io.transferred = result.dwNumberOfBytesTransferred;
-
   if (NT_SUCCESS(status))
   {
     switch (io.op)
@@ -199,6 +150,68 @@ io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
 }
 
 
+} // namespace
+
+
+service_t::service_t ()
+  : iocp(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0))
+{
+  if (iocp == INVALID_HANDLE_VALUE)
+  {
+    std::error_code error;
+    error.assign(::GetLastError(), std::system_category());
+    throw_system_error(error, "CreateIoCompletionPort");
+  }
+}
+
+
+service_t::~service_t () noexcept
+{
+  if (iocp != INVALID_HANDLE_VALUE)
+  {
+    (void)::CloseHandle(iocp);
+  }
+}
+
+
+bool service_t::wait_for_more (const std::chrono::milliseconds &timeout,
+  std::error_code &error) noexcept
+{
+  constexpr DWORD max_events = 256;
+  ::OVERLAPPED_ENTRY events[max_events];
+  ULONG events_count;
+
+  auto succeeded = ::GetQueuedCompletionStatusEx(
+    iocp,
+    events,
+    max_events,
+    &events_count,
+    static_cast<DWORD>(timeout.count()),
+    false
+  );
+
+  if (succeeded)
+  {
+    for (auto event = &events[0];  event != &events[0] + events_count;  ++event)
+    {
+      enqueue(to_io(*event));
+    }
+    return true;
+  }
+
+  auto e = ::GetLastError();
+  if (e == WAIT_TIMEOUT)
+  {
+    error.clear();
+  }
+  else
+  {
+    error.assign(e, std::system_category());
+  }
+  return false;
+}
+
+
 handler_t::handler_t (service_ptr service,
     socket_t &socket,
     std::error_code &error) noexcept
@@ -218,6 +231,12 @@ handler_t::handler_t (service_ptr service,
 }
 
 
+handler_t::~handler_t () noexcept
+{
+  socket.handle = socket.invalid;
+}
+
+
 void handler_t::start_receive_from (io_t *io,
   void *remote_endpoint,
   size_t remote_endpoint_capacity,
@@ -227,26 +246,26 @@ void handler_t::start_receive_from (io_t *io,
   io->current_owner = this;
   io->transferred = transferred;
 
-  io->pending.recv_from.remote_endpoint_capacity =
+  io->pending.receive_from.remote_endpoint_capacity =
     static_cast<INT>(remote_endpoint_capacity);
-  io->pending.recv_from.flags = flags;
+  io->pending.receive_from.flags = flags;
 
   auto buf = make_buf(io);
   auto result = ::WSARecvFrom(
     socket.handle,
     &buf,
     1,
-    &io->pending.recv_from.transferred,
-    io->pending.recv_from.flags,
+    &io->pending.receive_from.transferred,
+    io->pending.receive_from.flags,
     static_cast<sockaddr *>(remote_endpoint),
-    &io->pending.recv_from.remote_endpoint_capacity,
+    &io->pending.receive_from.remote_endpoint_capacity,
     &io->overlapped,
     nullptr
   );
 
   if (result == 0)
   {
-    *io->transferred = io->pending.recv_from.transferred;
+    *io->transferred = io->pending.receive_from.transferred;
   }
 
   io_result_handle(io, result);
@@ -354,7 +373,7 @@ void handler_t::start_accept (io_t *io,
 
   if (io->status)
   {
-    io->current_owner->service->enqueue(io);
+    service->enqueue(io);
     return;
   }
 
@@ -400,31 +419,322 @@ void handler_t::start_connect (io_t *io,
 }
 
 
-#elif __sal_os_linux || __sal_os_macos //{{{1
+#elif __sal_os_linux //{{{1
 
 
-service_t::service_t ()
-{ }
+namespace {
 
 
-service_t::~service_t () noexcept
-{ }
-
-
-bool worker_t::wait_for_more (const std::chrono::milliseconds &timeout,
-  std::error_code &error) noexcept
+inline int make_queue () noexcept
 {
-  (void)timeout;
-  (void)error;
+  return ::epoll_create1(0);
+}
+
+
+void register_handler (handler_t &handler, std::error_code &error)
+  noexcept
+{
+  struct ::epoll_event change;
+  change.events = handler.await_events = EPOLLET;
+  change.data.ptr = &handler;
+
+  auto result = ::epoll_ctl(
+    handler.service->queue,
+    EPOLL_CTL_ADD,
+    handler.socket.handle,
+    &change
+  );
+
+  if (result > -1)
+  {
+    error.clear();
+  }
+  else
+  {
+    error.assign(errno, std::generic_category());
+  }
+}
+
+
+bool await_io (handler_t &handler, uint32_t await_events, std::error_code &error)
+  noexcept
+{
+  if (handler.await_events != await_events)
+  {
+    struct ::epoll_event change;
+    change.events = handler.await_events = await_events;
+    change.data.ptr = &handler;
+
+    auto result = ::epoll_ctl(
+      handler.service->queue,
+      EPOLL_CTL_MOD,
+      handler.socket.handle,
+      &change
+    );
+
+    if (result < 0)
+    {
+      error.assign(errno, std::generic_category());
+      return true;
+    }
+  }
+
   return false;
 }
 
 
-io_t *worker_t::result_at (typename completed_array_t::const_iterator it)
-  noexcept
+inline bool await_read (io_t *io) noexcept
 {
-  (void)it;
+  if (io->status == std::errc::operation_would_block)
+  {
+    auto &handler = *io->current_owner;
+    return await_io(handler, handler.await_events | EPOLLIN, io->status);
+  }
+  return true;
+}
+
+
+inline bool await_write (io_t *io) noexcept
+{
+  if (io->status == std::errc::operation_would_block)
+  {
+    auto &handler = *io->current_owner;
+    return await_io(handler, handler.await_events | EPOLLOUT, io->status);
+  }
+  return true;
+}
+
+
+bool drain (handler_t &handler, handler_t::pending_t &pending) noexcept
+{
+  std::lock_guard lock(pending.mutex);
+
+  while (auto io = static_cast<io_t *>(pending.list.head()))
+  {
+    if (handler.try_finish(io, lock))
+    {
+      (void)pending.list.try_pop();
+      handler.service->enqueue(io);
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+void drain (struct ::epoll_event &event) noexcept
+{
+  auto &handler = *static_cast<handler_t *>(event.data.ptr);
+  auto await_events = handler.await_events;
+
+  if ((event.events & EPOLLIN) && drain(handler, handler.pending_read))
+  {
+    await_events &= ~EPOLLIN;
+  }
+
+  if ((event.events & EPOLLOUT) && drain(handler, handler.pending_write))
+  {
+    await_events &= ~EPOLLOUT;
+  }
+
+  if (handler.await_events != await_events)
+  {
+    std::error_code ignore_error;
+    await_io(handler, await_events, ignore_error);
+  }
+}
+
+
+} // namespace
+
+
+#elif __sal_os_macos //{{{1
+
+
+namespace {
+
+
+inline ::timespec *to_timespec (::timespec *ts,
+  const std::chrono::milliseconds &timeout) noexcept
+{
+  using namespace std::chrono;
+
+  if (timeout != (milliseconds::max)())
+  {
+    auto s = duration_cast<seconds>(timeout);
+    ts->tv_nsec = duration_cast<nanoseconds>(timeout - s).count();
+    ts->tv_sec = s.count();
+    return ts;
+  }
   return nullptr;
+}
+
+
+inline int make_queue () noexcept
+{
+  return ::kqueue();
+}
+
+
+inline void register_handler (handler_t &, std::error_code &error) noexcept
+{
+  error.clear();
+}
+
+
+bool await_io (io_t *io, int16_t filter, uint16_t flags) noexcept
+{
+  if (io->status != std::errc::operation_would_block)
+  {
+    return true;
+  }
+
+  auto &handler = *io->current_owner;
+
+  struct ::kevent change;
+  EV_SET(&change,
+    handler.socket.handle,
+    filter,
+    flags,
+    0,
+    0,
+    &handler
+  );
+
+  auto result = ::kevent(
+    handler.service->queue,
+    &change,
+    1,
+    nullptr,
+    0,
+    nullptr
+  );
+
+  if (result > -1)
+  {
+    return false;
+  }
+
+  io->status.assign(errno, std::generic_category());
+  return true;
+}
+
+
+inline bool await_read (io_t *io) noexcept
+{
+  return await_io(io, EVFILT_READ, EV_ADD | EV_CLEAR);
+}
+
+
+inline bool await_write (io_t *io) noexcept
+{
+  return await_io(io, EVFILT_WRITE, EV_ADD | EV_CLEAR);
+}
+
+
+void drain (struct ::kevent &event) noexcept
+{
+  handler_t::pending_t *pending_io{};
+
+  auto &handler = *static_cast<handler_t *>(event.udata);
+  if (event.filter == EVFILT_READ)
+  {
+    pending_io = &handler.pending_read;
+  }
+  else if (event.filter == EVFILT_WRITE)
+  {
+    pending_io = &handler.pending_write;
+  }
+
+  std::lock_guard lock(pending_io->mutex);
+
+  while (auto io = static_cast<io_t *>(pending_io->list.head()))
+  {
+    if (handler.try_finish(io, lock))
+    {
+      (void)pending_io->list.try_pop();
+      handler.service->enqueue(io);
+    }
+    else
+    {
+      return;
+    }
+  }
+}
+
+
+} // namespace
+
+
+#endif //}}}1
+
+
+#if __sal_os_linux || __sal_os_macos //{{{1
+
+
+service_t::service_t ()
+  : queue(make_queue())
+{
+  if (queue < 0)
+  {
+    std::error_code error;
+    error.assign(errno, std::generic_category());
+    throw_system_error(error, "async::service::make_queue");
+  }
+}
+
+
+service_t::~service_t () noexcept
+{
+  (void)::close(queue);
+}
+
+
+bool service_t::wait_for_more (const std::chrono::milliseconds &timeout,
+  std::error_code &error) noexcept
+{
+  constexpr size_t max_events = 256;
+
+#if __sal_os_linux
+
+  struct ::epoll_event events[max_events];
+  auto events_count = ::epoll_wait(
+    queue,
+    &events[0],
+    max_events,
+    timeout == timeout.max() ? -1 : timeout.count()
+  );
+
+#elif __sal_os_macos
+
+  ::timespec ts, *timeout_p = to_timespec(&ts, timeout);
+  struct ::kevent events[max_events];
+  auto events_count = ::kevent(
+    queue,
+    nullptr,
+    0,
+    &events[0],
+    max_events,
+    timeout_p
+  );
+
+#endif
+
+  if (events_count > -1)
+  {
+    for (auto event = &events[0];  event != &events[0] + events_count;  ++event)
+    {
+      drain(*event);
+    }
+    return events_count > 0;
+  }
+
+  error.assign(errno, std::generic_category());
+  return false;
 }
 
 
@@ -434,7 +744,66 @@ handler_t::handler_t (service_ptr service,
   : service(service)
   , socket(socket.handle)
 {
-  error.clear();
+  register_handler(*this, error);
+}
+
+
+handler_t::~handler_t () noexcept
+{
+  socket.handle = socket.invalid;
+
+  while (auto io = pending_read.list.try_pop())
+  {
+    io->status = std::make_error_code(std::errc::operation_canceled);
+    service->enqueue(static_cast<io_t *>(io));
+  }
+}
+
+
+bool handler_t::try_finish (io_t *io,
+  const std::lock_guard<std::mutex> & pending_list_lock) noexcept
+{
+  (void)pending_list_lock;
+
+  switch (io->op)
+  {
+    case op_t::receive_from:
+      *io->transferred = socket.receive_from(
+        io->begin,
+        io->end - io->begin,
+        io->pending.receive_from.remote_endpoint,
+        &io->pending.receive_from.remote_endpoint_capacity,
+        *io->pending.receive_from.flags,
+        io->status
+      );
+      return await_read(io);
+
+    case op_t::receive:
+      return await_read(io);
+
+    case op_t::accept:
+      return await_read(io);
+
+    case op_t::send_to:
+      *io->transferred = socket.send_to(
+        io->begin,
+        io->end - io->begin,
+        &io->pending.send_to.remote_endpoint,
+        io->pending.send_to.remote_endpoint_size,
+        io->pending.send_to.flags,
+        io->status
+      );
+      return await_write(io);
+
+    case op_t::send:
+      return await_write(io);
+
+    case op_t::connect:
+      return await_write(io);
+  }
+
+  io->status = std::make_error_code(std::errc::function_not_supported);
+  return true;
 }
 
 
@@ -444,11 +813,15 @@ void handler_t::start_receive_from (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
-  (void)io;
-  (void)remote_endpoint;
-  (void)remote_endpoint_capacity;
-  (void)transferred;
-  (void)flags;
+  io->current_owner = this;
+  io->transferred = transferred;
+
+  *flags |= MSG_DONTWAIT;
+  io->pending.receive_from.flags = flags;
+  io->pending.receive_from.remote_endpoint = remote_endpoint;
+  io->pending.receive_from.remote_endpoint_capacity = remote_endpoint_capacity;
+
+  start(io, pending_read);
 }
 
 
@@ -468,11 +841,19 @@ void handler_t::start_send_to (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
-  (void)io;
-  (void)remote_endpoint;
-  (void)remote_endpoint_size;
-  (void)transferred;
-  (void)flags;
+  io->current_owner = this;
+  io->transferred = transferred;
+
+  io->pending.send_to.flags = flags | MSG_DONTWAIT;
+
+  io->pending.send_to.remote_endpoint_size = remote_endpoint_size;
+  memcpy(
+    &io->pending.send_to.remote_endpoint,
+    remote_endpoint,
+    remote_endpoint_size
+  );
+
+  start(io, pending_write);
 }
 
 

@@ -204,7 +204,6 @@ private:
 
 
   friend class service_t;
-  friend class worker_t;
   template <typename Protocol> friend class net::basic_datagram_socket_t;
   template <typename Protocol> friend class net::basic_stream_socket_t;
   template <typename Protocol> friend class net::basic_socket_acceptor_t;

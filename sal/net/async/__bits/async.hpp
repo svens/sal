@@ -39,16 +39,12 @@ enum class op_t
 struct io_base_t //{{{1
 {
 #if __sal_os_windows
-
   OVERLAPPED overlapped{};
   using transferred_size_t = DWORD;
   using endpoint_size_t = INT;
-
-#else
-
+#elif __sal_os_linux || __sal_os_macos
   using transferred_size_t = size_t;
   using endpoint_size_t = size_t;
-
 #endif
 
   op_t op{};
@@ -58,9 +54,10 @@ struct io_base_t //{{{1
     struct
     {
       transferred_size_t transferred;
+      void *remote_endpoint;
       endpoint_size_t remote_endpoint_capacity;
       message_flags_t *flags;
-    } recv_from;
+    } receive_from;
 
     struct
     {
@@ -71,6 +68,11 @@ struct io_base_t //{{{1
     struct
     {
       transferred_size_t transferred;
+#if __sal_os_linux || __sal_os_macos
+      message_flags_t flags;
+      sockaddr_storage remote_endpoint;
+      size_t remote_endpoint_size;
+#endif
     } send_to;
 
     struct
@@ -104,9 +106,11 @@ struct io_base_t //{{{1
   {
     intrusive_mpsc_queue_hook_t<io_base_t> free{};
     intrusive_mpsc_queue_hook_t<io_base_t> completed;
+    intrusive_queue_hook_t<io_base_t> pending_io;
   };
   using free_list_t = intrusive_mpsc_queue_t<&io_base_t::free>;
   using completed_list_t = intrusive_mpsc_queue_t<&io_base_t::completed>;
+  using pending_io_list_t = intrusive_queue_t<&io_base_t::pending_io>;
 
   free_list_t &free_list;
 
@@ -166,6 +170,8 @@ struct service_t //{{{1
 {
 #if __sal_os_windows
   HANDLE iocp;
+#elif __sal_os_linux || __sal_os_macos
+  int queue;
 #endif
 
   std::mutex io_pool_mutex{};
@@ -218,64 +224,11 @@ struct service_t //{{{1
     std::lock_guard lock(completed_mutex);
     return static_cast<io_t *>(completed_list.try_pop());
   }
-};
-using service_ptr = std::shared_ptr<service_t>;
-
-
-struct worker_t //{{{1
-{
-  service_ptr service;
-
-#if __sal_os_windows
-  using completed_array_t = std::array<OVERLAPPED_ENTRY, 256>;
-#else
-  using completed_array_t = std::array<int, 256>;
-#endif
-
-  completed_array_t completed{};
-  typename completed_array_t::iterator
-    first_completed = completed.begin(),
-    last_completed = completed.begin();
-
-  static constexpr size_t min_results_per_poll = 1;
-  const size_t max_results_per_poll;
-
-
-  worker_t (service_ptr service, size_t max_results_per_poll) noexcept
-    : service(service)
-    , max_results_per_poll(
-        std::clamp(
-          max_results_per_poll,
-          min_results_per_poll,
-          completed.max_size()
-        )
-      )
-  { }
-
-
-  worker_t () = delete;
-  worker_t (const worker_t &) = delete;
-  worker_t &operator= (const worker_t &) = delete;
-
-  worker_t (worker_t &&) = default;
-  worker_t &operator= (worker_t &&) = default;
 
 
   bool wait_for_more (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
-
-  io_t *result_at (typename completed_array_t::const_iterator it) noexcept;
-
-
-  io_t *try_get () noexcept
-  {
-    if (first_completed != last_completed)
-    {
-      return result_at(first_completed++);
-    }
-    return service->dequeue();
-  }
 
 
   io_t *poll (const std::chrono::milliseconds &timeout, std::error_code &error)
@@ -283,7 +236,7 @@ struct worker_t //{{{1
   {
     do
     {
-      if (auto io = try_get())
+      if (auto io = dequeue())
       {
         return io;
       }
@@ -292,6 +245,7 @@ struct worker_t //{{{1
     return {};
   }
 };
+using service_ptr = std::shared_ptr<service_t>;
 
 
 struct handler_t //{{{1
@@ -303,19 +257,45 @@ struct handler_t //{{{1
   void *context{};
 
 
-  handler_t (service_ptr service, socket_t &socket, std::error_code &error)
-    noexcept;
-
-
-  ~handler_t () noexcept
-  {
-    // we actually don't own socket, prevent closing it
-    socket.handle = socket.invalid;
-  }
-
+  handler_t (service_ptr service, socket_t &socket, std::error_code &error) noexcept;
+  ~handler_t () noexcept;
 
   handler_t (const handler_t &) = delete;
   handler_t &operator= (const handler_t &) = delete;
+
+
+#if __sal_os_linux || __sal_os_macos
+
+  #if __sal_os_linux
+    uint32_t await_events{};
+  #endif
+
+  struct pending_t
+  {
+    std::mutex mutex{};
+    io_t::pending_io_list_t list{};
+  } pending_read{}, pending_write{};
+
+
+  void start (io_t *io, pending_t &pending) noexcept
+  {
+    std::lock_guard lock(pending.mutex);
+    if (pending.list.empty() && try_finish(io, lock))
+    {
+      service->enqueue(io);
+    }
+    else
+    {
+      pending.list.push(io);
+    }
+  }
+
+
+  bool try_finish (io_t *io,
+    const std::lock_guard<std::mutex> &pending_list_lock
+  ) noexcept;
+
+#endif
 
 
   void start_receive_from (io_t *io,

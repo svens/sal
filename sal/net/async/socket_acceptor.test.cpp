@@ -26,7 +26,6 @@ struct net_async_socket_acceptor
   };
 
   sal::net::async::service_t service{};
-  sal::net::async::worker_t worker = service.make_worker(2);
   acceptor_t acceptor{endpoint};
 
 
@@ -52,7 +51,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async) //{{{1
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  auto io = TestFixture::worker.poll();
+  auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(nullptr, io.template get_if<socket_t::connect_t>());
@@ -74,7 +73,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_immediate_completion
 
   TestFixture::acceptor.accept_async(TestFixture::service.make_io());
 
-  auto io = TestFixture::worker.poll();
+  auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<acceptor_t::accept_t>();
@@ -94,7 +93,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_result_multiple_time
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  auto io = TestFixture::worker.poll();
+  auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<acceptor_t::accept_t>();
@@ -117,7 +116,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_and_close) //{{{1
   TestFixture::acceptor.accept_async(TestFixture::service.make_io());
   TestFixture::acceptor.close();
 
-  auto io = TestFixture::worker.poll();
+  auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -136,7 +135,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_close_before_accept)
 
   TestFixture::acceptor.accept_async(TestFixture::service.make_io());
 
-  auto io = TestFixture::worker.poll();
+  auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
 
   // accept succeeds
@@ -162,7 +161,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_close_after_accept) 
   a.close();
   std::this_thread::yield();
 
-  auto io = TestFixture::worker.poll();
+  auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
 
   // accept succeeds
