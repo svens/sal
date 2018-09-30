@@ -103,6 +103,17 @@ io_t *to_io (::OVERLAPPED_ENTRY &event) noexcept
   {
     switch (io.op)
     {
+      case op_t::receive:
+        if (event.dwNumberOfBytesTransferred > 0)
+        {
+          io.status.clear();
+        }
+        else
+        {
+          io.status = std::make_error_code(std::errc::broken_pipe);
+        }
+        break;
+
       case op_t::accept:
       case op_t::connect:
         if (complete_connection(io) == SOCKET_ERROR)
@@ -295,6 +306,11 @@ void handler_t::start_receive (io_t *io,
   if (result == 0)
   {
     *io->transferred = io->pending.receive.transferred;
+    if (*io->transferred == 0)
+    {
+      result = SOCKET_ERROR;
+      ::WSASetLastError(WSAESHUTDOWN);
+    }
   }
 
   io_result_handle(io, result);

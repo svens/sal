@@ -6,6 +6,7 @@
 namespace {
 
 
+using namespace std::chrono_literals;
 using socket_t = sal::net::ip::tcp_t::socket_t;
 using acceptor_t = sal::net::ip::tcp_t::acceptor_t;
 
@@ -43,9 +44,20 @@ struct net_async_stream_socket
   }
 
 
-  void send (const std::string &data)
+  void disconnect ()
+  {
+    test_socket.close();
+    std::this_thread::sleep_for(10ms);
+  }
+
+
+  void send (const std::string &data, bool pause_after_send = false)
   {
     test_socket.send(data);
+    if (pause_after_send)
+    {
+      std::this_thread::sleep_for(1ms);
+    }
   }
 
 
@@ -166,7 +178,7 @@ inline std::string_view to_view (sal::net::async::io_t &io,
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async) //{{{1
 {
   TestFixture::connect();
 
@@ -184,7 +196,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_after_send) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_after_send) //{{{1
 {
   TestFixture::connect();
 
@@ -200,7 +212,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_after_send) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_with_context) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_with_context) //{{{1
 {
   TestFixture::connect();
 
@@ -222,7 +234,62 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_with_context) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_canceled_on_close) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_two_sends) //{{{1
+{
+  TestFixture::connect();
+
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+  TestFixture::send(TestFixture::case_name);
+  TestFixture::send(TestFixture::case_name, true);
+
+  for (auto i = 0U;  i < 2;  ++i)
+  {
+    auto io = TestFixture::service.poll();
+    ASSERT_FALSE(!io);
+
+    auto result = io.template get_if<socket_t::receive_t>();
+    ASSERT_NE(nullptr, result);
+
+    if (TestFixture::case_name.size() == result->transferred)
+    {
+      // got one receive, wait for another
+      EXPECT_EQ(TestFixture::case_name, to_view(io, result));
+    }
+    else
+    {
+      // got both receives, we are done
+      EXPECT_EQ(
+        TestFixture::case_name + TestFixture::case_name,
+        to_view(io, result)
+      );
+      break;
+    }
+  }
+}
+
+
+TYPED_TEST(net_async_stream_socket, receive_async_after_two_sends) //{{{1
+{
+  TestFixture::connect();
+
+  TestFixture::send(TestFixture::case_name);
+  TestFixture::send(TestFixture::case_name, true);
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  auto result = io.template get_if<socket_t::receive_t>();
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(
+    TestFixture::case_name + TestFixture::case_name,
+    to_view(io, result)
+  );
+}
+
+
+TYPED_TEST(net_async_stream_socket, receive_async_canceled_on_close) //{{{1
 {
   TestFixture::connect();
 
@@ -239,7 +306,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_canceled_on_close) //
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_no_sender) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_no_sender) //{{{1
 {
   TestFixture::connect();
 
@@ -258,7 +325,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_no_sender) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_peek) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_peek) //{{{1
 {
   TestFixture::connect();
 
@@ -279,7 +346,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_peek) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_peek_after_send) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_peek_after_send) //{{{1
 {
   TestFixture::connect();
 
@@ -300,7 +367,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_peek_after_send) //{{
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_less_than_send) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_less_than_send) //{{{1
 {
   TestFixture::connect();
 
@@ -327,7 +394,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_less_than_send) //{{{
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_after_send_less_than_send) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_after_send_less_than_send) //{{{1
 {
   TestFixture::connect();
   TestFixture::send(TestFixture::case_name);
@@ -353,12 +420,11 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_after_send_less_than_
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_from_disconnected) //{{{1
+TYPED_TEST(net_async_stream_socket, receive_async_from_disconnected) //{{{1
 {
   TestFixture::connect();
-
   TestFixture::socket.receive_async(TestFixture::service.make_io());
-  TestFixture::test_socket.close();
+  TestFixture::disconnect();
 
   auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
@@ -367,14 +433,72 @@ TYPED_TEST(net_async_stream_socket, DISABLED_receive_async_from_disconnected) //
   auto result = io.template get_if<socket_t::receive_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred);
-  EXPECT_TRUE(!error);
+  EXPECT_EQ(std::errc::broken_pipe, error);
+}
+
+
+TYPED_TEST(net_async_stream_socket, receive_async_after_from_disconnected) //{{{1
+{
+  TestFixture::connect();
+  TestFixture::disconnect();
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = io.template get_if<socket_t::receive_t>(error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(0U, result->transferred);
+  EXPECT_EQ(std::errc::broken_pipe, error);
+}
+
+
+TYPED_TEST(net_async_stream_socket, receive_async_before_shutdown) //{{{1
+{
+  TestFixture::connect();
+
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+  TestFixture::socket.shutdown(socket_t::shutdown_receive);
+
+  TestFixture::send(TestFixture::case_name);
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = io.template get_if<socket_t::receive_t>(error);
+  ASSERT_NE(nullptr, result);
+
+#if __sal_os_macos
+  EXPECT_EQ(std::errc::broken_pipe, error);
+#else
+  EXPECT_EQ(TestFixture::case_name, to_view(io, result));
+#endif
+}
+
+
+TYPED_TEST(net_async_stream_socket, receive_async_after_shutdown) //{{{1
+{
+  TestFixture::connect();
+
+  TestFixture::socket.shutdown(socket_t::shutdown_receive);
+  TestFixture::socket.receive_async(TestFixture::service.make_io());
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = io.template get_if<socket_t::receive_t>(error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::broken_pipe, error);
 }
 
 
 // }}}1
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_send_async) //{{{1
+TYPED_TEST(net_async_stream_socket, send_async) //{{{1
 {
   TestFixture::connect();
 
@@ -392,7 +516,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_send_async) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_send_async_with_context) //{{{1
+TYPED_TEST(net_async_stream_socket, send_async_with_context) //{{{1
 {
   TestFixture::connect();
 
@@ -416,7 +540,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_send_async_with_context) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_send_async_not_connected) //{{{1
+TYPED_TEST(net_async_stream_socket, send_async_not_connected) //{{{1
 {
   auto io = TestFixture::service.make_io();
   TestFixture::fill(io, TestFixture::case_name);
@@ -428,11 +552,15 @@ TYPED_TEST(net_async_stream_socket, DISABLED_send_async_not_connected) //{{{1
   std::error_code error;
   auto result = io.template get_if<socket_t::send_t>(error);
   ASSERT_NE(nullptr, result);
+#if __sal_os_linux
+  EXPECT_EQ(std::errc::broken_pipe, error);
+#else
   EXPECT_EQ(std::errc::not_connected, error);
+#endif
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_send_async_before_shutdown) //{{{1
+TYPED_TEST(net_async_stream_socket, send_async_before_shutdown) //{{{1
 {
   TestFixture::connect();
 
@@ -450,7 +578,7 @@ TYPED_TEST(net_async_stream_socket, DISABLED_send_async_before_shutdown) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_send_async_after_shutdown) //{{{1
+TYPED_TEST(net_async_stream_socket, send_async_after_shutdown) //{{{1
 {
   TestFixture::connect();
   TestFixture::socket.shutdown(socket_t::shutdown_send);
