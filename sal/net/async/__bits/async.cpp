@@ -752,11 +752,17 @@ handler_t::~handler_t () noexcept
 {
   socket.handle = socket.invalid;
 
-  while (auto io = pending_read.list.try_pop())
+  auto cancel = [&](auto &pending)
   {
-    io->status = std::make_error_code(std::errc::operation_canceled);
-    service->enqueue(static_cast<io_t *>(io));
-  }
+    while (auto io = pending.list.try_pop())
+    {
+      io->status = std::make_error_code(std::errc::operation_canceled);
+      io->current_owner = nullptr;
+      service->enqueue(static_cast<io_t *>(io));
+    }
+  };
+  cancel(pending_read);
+  cancel(pending_write);
 }
 
 
@@ -779,6 +785,12 @@ bool handler_t::try_finish (io_t *io,
       return await_read(io);
 
     case op_t::receive:
+      *io->transferred = socket.receive(
+        io->begin,
+        io->end - io->begin,
+        *io->pending.receive_from.flags,
+        io->status
+      );
       return await_read(io);
 
     case op_t::accept:
@@ -796,6 +808,12 @@ bool handler_t::try_finish (io_t *io,
       return await_write(io);
 
     case op_t::send:
+      *io->transferred = socket.send(
+        io->begin,
+        io->end - io->begin,
+        io->pending.send_to.flags,
+        io->status
+      );
       return await_write(io);
 
     case op_t::connect:
@@ -829,9 +847,13 @@ void handler_t::start_receive (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
-  (void)io;
-  (void)transferred;
-  (void)flags;
+  io->current_owner = this;
+  io->transferred = transferred;
+
+  *flags |= MSG_DONTWAIT;
+  io->pending.receive_from.flags = flags;
+
+  start(io, pending_read);
 }
 
 
@@ -861,9 +883,12 @@ void handler_t::start_send (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
-  (void)io;
-  (void)transferred;
-  (void)flags;
+  io->current_owner = this;
+  io->transferred = transferred;
+
+  io->pending.send.flags = flags | MSG_DONTWAIT;
+
+  start(io, pending_write);
 }
 
 

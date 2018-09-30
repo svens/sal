@@ -711,7 +711,6 @@ size_t socket_t::receive (void *data, size_t data_size, message_flags_t flags,
   else if (msg.msg_flags & MSG_TRUNC)
   {
     error.assign(EMSGSIZE, std::generic_category());
-    size = 0;
   }
   return size;
 }

@@ -77,6 +77,9 @@ struct io_base_t //{{{1
 
     struct
     {
+#if __sal_os_linux || __sal_os_macos
+      message_flags_t flags;
+#endif
       transferred_size_t transferred;
     } send;
 
