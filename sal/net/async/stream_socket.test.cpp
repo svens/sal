@@ -15,8 +15,10 @@ template <typename Address>
 struct net_async_stream_socket
   : public sal_test::with_type<Address>
 {
-  const sal::net::ip::tcp_t protocol =
-    std::is_same_v<Address, sal::net::ip::address_v4_t>
+  static constexpr bool with_ipv4 =
+    std::is_same_v<Address, sal::net::ip::address_v4_t>;
+
+  const sal::net::ip::tcp_t protocol = with_ipv4
       ? sal::net::ip::tcp_t::v4()
       : sal::net::ip::tcp_t::v6()
   ;
@@ -24,6 +26,11 @@ struct net_async_stream_socket
   const sal::net::ip::tcp_t::endpoint_t endpoint{
     Address::loopback(),
     8195
+  };
+
+  const sal::net::ip::tcp_t::endpoint_t not_supported_family_endpoint{
+    with_ipv4 ? sal::net::ip::tcp_t::v6() : sal::net::ip::tcp_t::v4(),
+    endpoint.port()
   };
 
   sal::net::async::service_t service{};
@@ -84,7 +91,7 @@ using address_types = ::testing::Types<
 TYPED_TEST_CASE(net_async_stream_socket, address_types, );
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_connect_async) //{{{1
+TYPED_TEST(net_async_stream_socket, connect_async) //{{{1
 {
   TestFixture::socket.connect_async(
     TestFixture::service.make_io(),
@@ -106,7 +113,56 @@ TYPED_TEST(net_async_stream_socket, DISABLED_connect_async) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_connect_async_refused) //{{{1
+TYPED_TEST(net_async_stream_socket, connect_async_non_blocking) //{{{1
+{
+  TestFixture::socket.non_blocking(true);
+  TestFixture::socket.connect_async(
+    TestFixture::service.make_io(),
+    TestFixture::endpoint
+  );
+
+  auto a = TestFixture::acceptor.accept();
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  auto result = io.template get_if<socket_t::connect_t>();
+  ASSERT_NE(nullptr, result);
+
+  EXPECT_EQ(a.local_endpoint(), TestFixture::socket.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), TestFixture::socket.local_endpoint());
+}
+
+
+TYPED_TEST(net_async_stream_socket, connect_async_with_context) //{{{1
+{
+  int socket_ctx = 1, io_ctx = 2;
+  TestFixture::socket.context(&socket_ctx);
+
+  TestFixture::socket.connect_async(
+    TestFixture::service.make_io(&io_ctx),
+    TestFixture::endpoint
+  );
+
+  auto a = TestFixture::acceptor.accept();
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  EXPECT_EQ(&io_ctx, io.template context<int>());
+  EXPECT_EQ(nullptr, io.template context<socket_t>());
+  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
+  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
+
+  auto result = io.template get_if<socket_t::connect_t>();
+  ASSERT_NE(nullptr, result);
+
+  EXPECT_EQ(a.local_endpoint(), TestFixture::socket.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), TestFixture::socket.local_endpoint());
+}
+
+
+TYPED_TEST(net_async_stream_socket, connect_async_refused) //{{{1
 {
   auto echo_endpoint = TestFixture::endpoint;
   echo_endpoint.port(7);
@@ -126,7 +182,28 @@ TYPED_TEST(net_async_stream_socket, DISABLED_connect_async_refused) //{{{1
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_connect_async_already_connected) //{{{1
+TYPED_TEST(net_async_stream_socket, connect_async_non_blocking_refused) //{{{1
+{
+  auto echo_endpoint = TestFixture::endpoint;
+  echo_endpoint.port(7);
+
+  TestFixture::socket.non_blocking(true);
+  TestFixture::socket.connect_async(
+    TestFixture::service.make_io(),
+    echo_endpoint
+  );
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = io.template get_if<socket_t::connect_t>(error);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(std::errc::connection_refused, error);
+}
+
+
+TYPED_TEST(net_async_stream_socket, connect_async_already_connected) //{{{1
 {
   TestFixture::socket.connect(TestFixture::endpoint);
   auto a = TestFixture::acceptor.accept();
@@ -149,12 +226,18 @@ TYPED_TEST(net_async_stream_socket, DISABLED_connect_async_already_connected) //
 }
 
 
-TYPED_TEST(net_async_stream_socket, DISABLED_connect_async_address_not_available) //{{{1
+TYPED_TEST(net_async_stream_socket, connect_async_non_blocking_already_connected) //{{{1
 {
-  // connect from loopback to any
+  TestFixture::socket.connect(TestFixture::endpoint);
+  auto a = TestFixture::acceptor.accept();
+
+  auto echo_endpoint = TestFixture::endpoint;
+  echo_endpoint.port(7);
+
+  TestFixture::socket.non_blocking(true);
   TestFixture::socket.connect_async(
     TestFixture::service.make_io(),
-    {TypeParam::any(), TestFixture::endpoint.port()}
+    echo_endpoint
   );
 
   auto io = TestFixture::service.poll();
@@ -163,7 +246,69 @@ TYPED_TEST(net_async_stream_socket, DISABLED_connect_async_address_not_available
   std::error_code error;
   auto result = io.template get_if<socket_t::connect_t>(error);
   ASSERT_NE(nullptr, result);
-  EXPECT_EQ(std::errc::address_not_available, error);
+  EXPECT_EQ(std::errc::already_connected, error);
+}
+
+
+TYPED_TEST(net_async_stream_socket, connect_async_address_family_not_supported) //{{{1
+{
+  // connect from loopback to any
+  TestFixture::socket.connect_async(
+    TestFixture::service.make_io(),
+    TestFixture::not_supported_family_endpoint
+  );
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = io.template get_if<socket_t::connect_t>(error);
+  ASSERT_NE(nullptr, result);
+
+#if __sal_os_linux
+  if constexpr (TestFixture::with_ipv4)
+  {
+    EXPECT_EQ(std::errc::address_family_not_supported, error);
+  }
+  else
+  {
+    EXPECT_EQ(std::errc::invalid_argument, error);
+  }
+#else
+  EXPECT_EQ(std::errc::address_family_not_supported, error);
+#endif
+}
+
+
+TYPED_TEST(net_async_stream_socket, connect_async_non_blocking_address_family_not_supported) //{{{1
+{
+  TestFixture::socket.non_blocking(true);
+
+  // connect from loopback to any
+  TestFixture::socket.connect_async(
+    TestFixture::service.make_io(),
+    TestFixture::not_supported_family_endpoint
+  );
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  std::error_code error;
+  auto result = io.template get_if<socket_t::connect_t>(error);
+  ASSERT_NE(nullptr, result);
+
+#if __sal_os_linux
+  if constexpr (TestFixture::with_ipv4)
+  {
+    EXPECT_EQ(std::errc::address_family_not_supported, error);
+  }
+  else
+  {
+    EXPECT_EQ(std::errc::invalid_argument, error);
+  }
+#else
+  EXPECT_EQ(std::errc::address_family_not_supported, error);
+#endif
 }
 
 

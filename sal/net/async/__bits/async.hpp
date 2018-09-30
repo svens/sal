@@ -283,7 +283,7 @@ struct handler_t //{{{1
   void start (io_t *io, pending_t &pending) noexcept
   {
     std::lock_guard lock(pending.mutex);
-    if (pending.list.empty() && try_finish(io, lock))
+    if (pending.list.empty() && try_finish(io, 0, 0, lock))
     {
       service->enqueue(io);
     }
@@ -295,6 +295,8 @@ struct handler_t //{{{1
 
 
   bool try_finish (io_t *io,
+    uint16_t flags,
+    uint32_t fflags,
     const std::lock_guard<std::mutex> &pending_list_lock
   ) noexcept;
 

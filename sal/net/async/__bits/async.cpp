@@ -137,7 +137,7 @@ io_t *to_io (::OVERLAPPED_ENTRY &event) noexcept
         break;
 
       case STATUS_INVALID_ADDRESS_COMPONENT:
-        io.status = std::make_error_code(std::errc::address_not_available);
+        io.status = std::make_error_code(std::errc::address_family_not_supported);
         break;
 
       case STATUS_CONNECTION_ABORTED:
@@ -521,13 +521,14 @@ inline bool await_write (io_t *io) noexcept
 }
 
 
-bool drain (handler_t &handler, handler_t::pending_t &pending) noexcept
+bool drain (handler_t &handler, handler_t::pending_t &pending, uint32_t events)
+  noexcept
 {
   std::lock_guard lock(pending.mutex);
 
   while (auto io = static_cast<io_t *>(pending.list.head()))
   {
-    if (handler.try_finish(io, lock))
+    if (handler.try_finish(io, 0, events, lock))
     {
       (void)pending.list.try_pop();
       handler.service->enqueue(io);
@@ -547,12 +548,14 @@ void drain (struct ::epoll_event &event) noexcept
   auto &handler = *static_cast<handler_t *>(event.data.ptr);
   auto await_events = handler.await_events;
 
-  if ((event.events & EPOLLIN) && drain(handler, handler.pending_read))
+  if ((event.events & EPOLLIN)
+    && drain(handler, handler.pending_read, event.events))
   {
     await_events &= ~EPOLLIN;
   }
 
-  if ((event.events & EPOLLOUT) && drain(handler, handler.pending_write))
+  if ((event.events & EPOLLOUT)
+    && drain(handler, handler.pending_write, event.events))
   {
     await_events &= ~EPOLLOUT;
   }
@@ -562,6 +565,38 @@ void drain (struct ::epoll_event &event) noexcept
     std::error_code ignore_error;
     await_io(handler, await_events, ignore_error);
   }
+}
+
+
+inline bool complete_connection (io_t *io, uint16_t /**/, uint32_t events)
+  noexcept
+{
+  if (events & EPOLLERR)
+  {
+    int data;
+    socklen_t size = sizeof(data);
+    auto result = ::getsockopt(
+      io->current_owner->socket.handle,
+      SOL_SOCKET,
+      SO_ERROR,
+      &data,
+      &size
+    );
+    if (result == 0)
+    {
+      io->status.assign(data, std::generic_category());
+    }
+    else
+    {
+      io->status.assign(errno, std::generic_category());
+    }
+  }
+  else
+  {
+    io->status.clear();
+  }
+
+  return true;
 }
 
 
@@ -652,7 +687,7 @@ inline bool await_write (io_t *io) noexcept
 }
 
 
-void drain (struct ::kevent &event) noexcept
+void drain (const struct ::kevent &event) noexcept
 {
   handler_t::pending_t *pending_io{};
 
@@ -670,7 +705,7 @@ void drain (struct ::kevent &event) noexcept
 
   while (auto io = static_cast<io_t *>(pending_io->list.head()))
   {
-    if (handler.try_finish(io, lock))
+    if (handler.try_finish(io, event.flags, event.fflags, lock))
     {
       (void)pending_io->list.try_pop();
       handler.service->enqueue(io);
@@ -680,6 +715,21 @@ void drain (struct ::kevent &event) noexcept
       return;
     }
   }
+}
+
+
+inline bool complete_connection (io_t *io, uint16_t flags, uint32_t fflags)
+  noexcept
+{
+  if (flags & EV_EOF)
+  {
+    io->status.assign(fflags, std::generic_category());
+  }
+  else
+  {
+    io->status.clear();
+  }
+  return true;
 }
 
 
@@ -783,6 +833,8 @@ handler_t::~handler_t () noexcept
 
 
 bool handler_t::try_finish (io_t *io,
+  uint16_t flags,
+  uint32_t fflags,
   const std::lock_guard<std::mutex> & pending_list_lock) noexcept
 {
   (void)pending_list_lock;
@@ -833,7 +885,23 @@ bool handler_t::try_finish (io_t *io,
       return await_write(io);
 
     case op_t::connect:
-      return await_write(io);
+      if (io->status == std::errc::operation_in_progress)
+      {
+        // just started socket.connect() in start_connect()
+        // wait socket to become writable
+        io->status = std::make_error_code(std::errc::operation_would_block);
+        return await_write(io);
+      }
+      else if (io->status != std::errc::operation_would_block)
+      {
+        // blocking socket, we know result immediately
+        return true;
+      }
+      else
+      {
+        // final state (connected, rejected, etc)
+        return complete_connection(io, flags, fflags);
+      }
   }
 
   io->status = std::make_error_code(std::errc::function_not_supported);
@@ -922,9 +990,9 @@ void handler_t::start_connect (io_t *io,
   const void *remote_endpoint,
   size_t remote_endpoint_size) noexcept
 {
-  (void)io;
-  (void)remote_endpoint;
-  (void)remote_endpoint_size;
+  io->current_owner = this;
+  socket.connect(remote_endpoint, remote_endpoint_size, io->status);
+  start(io, pending_write);
 }
 
 
