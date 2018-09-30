@@ -122,7 +122,9 @@ TYPED_TEST(net_async_datagram_socket, receive_from_async_with_context) //{{{1
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(&io_ctx, io.template context<int>());
+  EXPECT_EQ(nullptr, io.template context<socket_t>());
   EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
+  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
 
   auto result = io.template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
@@ -427,7 +429,9 @@ TYPED_TEST(net_async_datagram_socket, receive_async_with_context) //{{{1
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(&io_ctx, io.template context<int>());
+  EXPECT_EQ(nullptr, io.template context<socket_t>());
   EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
+  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
 
   auto result = io.template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
@@ -723,7 +727,9 @@ TYPED_TEST(net_async_datagram_socket, send_to_async_with_context) //{{{1
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(&io_ctx, io.template context<int>());
+  EXPECT_EQ(nullptr, io.template context<socket_t>());
   EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
+  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
 
   auto result = io.template get_if<socket_t::send_to_t>();
   ASSERT_NE(nullptr, result);
@@ -875,7 +881,9 @@ TYPED_TEST(net_async_datagram_socket, send_async_with_context) //{{{1
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(&io_ctx, io.template context<int>());
+  EXPECT_EQ(nullptr, io.template context<socket_t>());
   EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
+  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
 
   auto result = io.template get_if<socket_t::send_t>();
   ASSERT_NE(nullptr, result);

@@ -66,6 +66,34 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async) //{{{1
 }
 
 
+TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_with_context) //{{{1
+{
+  int socket_ctx = 1, io_ctx = 2;
+  TestFixture::acceptor.context(&socket_ctx);
+
+  TestFixture::acceptor.accept_async(TestFixture::service.make_io(&io_ctx));
+
+  socket_t a;
+  a.connect(TestFixture::endpoint);
+
+  auto io = TestFixture::service.poll();
+  ASSERT_FALSE(!io);
+
+  EXPECT_EQ(&io_ctx, io.template context<int>());
+  EXPECT_EQ(nullptr, io.template context<socket_t>());
+  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
+  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
+
+  auto result = io.template get_if<acceptor_t::accept_t>();
+  ASSERT_NE(nullptr, result);
+
+  auto b = result->accepted_socket();
+  EXPECT_TRUE(b.is_open());
+  EXPECT_EQ(a.local_endpoint(), b.remote_endpoint());
+  EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
+}
+
+
 TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_immediate_completion) //{{{1
 {
   socket_t a;
