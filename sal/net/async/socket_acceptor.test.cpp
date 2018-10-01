@@ -44,7 +44,7 @@ using address_types = ::testing::Types<
 TYPED_TEST_CASE(net_async_socket_acceptor, address_types, );
 
 
-TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async) //{{{1
+TYPED_TEST(net_async_socket_acceptor, accept_async) //{{{1
 {
   TestFixture::acceptor.accept_async(TestFixture::service.make_io());
 
@@ -66,7 +66,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_with_context) //{{{1
+TYPED_TEST(net_async_socket_acceptor, accept_async_with_context) //{{{1
 {
   int socket_ctx = 1, io_ctx = 2;
   TestFixture::acceptor.context(&socket_ctx);
@@ -94,7 +94,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_with_context) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_immediate_completion) //{{{1
+TYPED_TEST(net_async_socket_acceptor, accept_async_immediate_completion) //{{{1
 {
   socket_t a;
   a.connect(TestFixture::endpoint);
@@ -114,7 +114,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_immediate_completion
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_result_multiple_times) //{{{1
+TYPED_TEST(net_async_socket_acceptor, accept_async_result_multiple_times) //{{{1
 {
   TestFixture::acceptor.accept_async(TestFixture::service.make_io());
 
@@ -139,7 +139,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_result_multiple_time
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_and_close) //{{{1
+TYPED_TEST(net_async_socket_acceptor, accept_async_and_close) //{{{1
 {
   TestFixture::acceptor.accept_async(TestFixture::service.make_io());
   TestFixture::acceptor.close();
@@ -154,7 +154,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_and_close) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_close_before_accept) //{{{1
+TYPED_TEST(net_async_socket_acceptor, accept_async_close_before_accept) //{{{1
 {
   socket_t a;
   a.connect(TestFixture::endpoint);
@@ -180,7 +180,7 @@ TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_close_before_accept)
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, DISABLED_accept_async_close_after_accept) //{{{1
+TYPED_TEST(net_async_socket_acceptor, accept_async_close_after_accept) //{{{1
 {
   TestFixture::acceptor.accept_async(TestFixture::service.make_io());
 

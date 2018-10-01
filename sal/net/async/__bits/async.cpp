@@ -862,6 +862,12 @@ bool handler_t::try_finish (io_t *io,
       return await_read(io);
 
     case op_t::accept:
+      *io->pending.accept.socket_handle = socket.accept(
+        nullptr,
+        nullptr,
+        false,
+        io->status
+      );
       return await_read(io);
 
     case op_t::send_to:
@@ -977,12 +983,12 @@ void handler_t::start_send (io_t *io,
 
 
 void handler_t::start_accept (io_t *io,
-  int family,
+  int /*family*/,
   socket_t::handle_t *socket_handle) noexcept
 {
-  (void)io;
-  (void)family;
-  (void)socket_handle;
+  io->current_owner = this;
+  io->pending.accept.socket_handle = socket_handle;
+  start(io, pending_read);
 }
 
 
