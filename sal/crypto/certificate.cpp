@@ -670,18 +670,13 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 {
   if (impl_.ref)
   {
-    __bits::public_key_t key;
-    auto status = ::SecCertificateCopyPublicKey(impl_.ref, &key.ref);
-    if (status == errSecSuccess)
+    if (auto key = ::SecCertificateCopyKey(impl_.ref))
     {
-      return std::move(key);
+      error.clear();
+      return {key};
     }
-    error.assign(status, category());
   }
-  else
-  {
-    error = std::make_error_code(std::errc::bad_address);
-  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 
