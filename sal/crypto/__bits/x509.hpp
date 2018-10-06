@@ -25,7 +25,7 @@
 __sal_begin
 
 
-namespace crypto { namespace __bits {
+namespace crypto::__bits {
 
 
 #if __sal_os_macos //{{{1
@@ -102,7 +102,7 @@ uint8_t *pem_to_der (
 ) noexcept;
 
 
-}} // namespace crypto::__bits
+} // namespace crypto::__bits
 
 
 __sal_end

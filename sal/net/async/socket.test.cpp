@@ -24,14 +24,14 @@ TYPED_TEST_CASE(net_async_socket, socket_types, );
 
 TYPED_TEST(net_async_socket, associate)
 {
-  TypeParam socket(TypeParam::protocol_t::v4());
+  TypeParam socket(TypeParam::protocol_t::v4);
   EXPECT_NO_THROW(socket.associate(TestFixture::service));
 }
 
 
 TYPED_TEST(net_async_socket, associate_already_associated)
 {
-  TypeParam socket(TypeParam::protocol_t::v4());
+  TypeParam socket(TypeParam::protocol_t::v4);
   EXPECT_NO_THROW(socket.associate(TestFixture::service));
 
   {
@@ -64,7 +64,7 @@ TYPED_TEST(net_async_socket, associate_invalid_socket)
 
 TYPED_TEST(net_async_socket, context)
 {
-  TypeParam socket(TypeParam::protocol_t::v4());
+  TypeParam socket(TypeParam::protocol_t::v4);
   socket.associate(TestFixture::service);
 
   socket.context(&socket);
@@ -75,7 +75,7 @@ TYPED_TEST(net_async_socket, context)
 
 TYPED_TEST(net_async_socket, context_none)
 {
-  TypeParam socket(TypeParam::protocol_t::v4());
+  TypeParam socket(TypeParam::protocol_t::v4);
   socket.associate(TestFixture::service);
 
   EXPECT_EQ(nullptr, socket.template context<decltype(socket)>());

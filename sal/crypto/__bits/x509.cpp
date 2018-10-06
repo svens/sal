@@ -6,7 +6,7 @@
 __sal_begin
 
 
-namespace crypto { namespace __bits {
+namespace crypto::__bits {
 
 
 namespace {
@@ -126,7 +126,7 @@ uint8_t *pem_to_der (const uint8_t *pem_first, const uint8_t *pem_last,
 }
 
 
-}} // namespace crypto::__bits
+} // namespace crypto::__bits
 
 
 __sal_end

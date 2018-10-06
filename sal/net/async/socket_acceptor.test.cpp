@@ -16,12 +16,12 @@ struct net_async_socket_acceptor
 {
   const sal::net::ip::tcp_t protocol =
     std::is_same_v<Address, sal::net::ip::address_v4_t>
-      ? sal::net::ip::tcp_t::v4()
-      : sal::net::ip::tcp_t::v6()
+      ? sal::net::ip::tcp_t::v4
+      : sal::net::ip::tcp_t::v6
   ;
 
   const sal::net::ip::tcp_t::endpoint_t endpoint{
-    Address::loopback(),
+    Address::loopback,
     8195
   };
 

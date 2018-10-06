@@ -18,7 +18,7 @@
 __sal_begin
 
 
-namespace net { namespace __bits {
+namespace net::__bits {
 
 
 const std::error_code &init_lib () noexcept;
@@ -192,7 +192,7 @@ struct socket_t
 };
 
 
-}} // namespace net::__bits
+} // namespace net::__bits
 
 
 __sal_end

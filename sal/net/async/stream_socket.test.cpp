@@ -19,23 +19,23 @@ struct net_async_stream_socket
     std::is_same_v<Address, sal::net::ip::address_v4_t>;
 
   const sal::net::ip::tcp_t protocol = with_ipv4
-      ? sal::net::ip::tcp_t::v4()
-      : sal::net::ip::tcp_t::v6()
+      ? sal::net::ip::tcp_t::v4
+      : sal::net::ip::tcp_t::v6
   ;
 
   const sal::net::ip::tcp_t::endpoint_t endpoint{
-    Address::loopback(),
+    Address::loopback,
     8195
   };
 
   const sal::net::ip::tcp_t::endpoint_t not_supported_family_endpoint{
-    with_ipv4 ? sal::net::ip::tcp_t::v6() : sal::net::ip::tcp_t::v4(),
+    with_ipv4 ? sal::net::ip::tcp_t::v6 : sal::net::ip::tcp_t::v4,
     endpoint.port()
   };
 
   sal::net::async::service_t service{};
   acceptor_t acceptor{endpoint};
-  socket_t socket{{Address::loopback(), 0}}, test_socket{};
+  socket_t socket{{Address::loopback, 0}}, test_socket{};
 
 
   void SetUp ()

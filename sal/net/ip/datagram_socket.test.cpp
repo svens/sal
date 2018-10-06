@@ -18,9 +18,9 @@ struct datagram_socket
 
   socket_t::endpoint_t loopback (const sal::net::ip::udp_t &protocol) const
   {
-    return protocol == sal::net::ip::udp_t::v4()
-      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
-      : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
+    return protocol == sal::net::ip::udp_t::v4
+      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback, port)
+      : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback, port)
     ;
   }
 };
@@ -30,8 +30,8 @@ constexpr sal::net::ip::port_t datagram_socket::port;
 
 INSTANTIATE_TEST_CASE_P(net_ip, datagram_socket,
   ::testing::Values(
-    sal::net::ip::udp_t::v4(),
-    sal::net::ip::udp_t::v6()
+    sal::net::ip::udp_t::v4,
+    sal::net::ip::udp_t::v6
   ),
 );
 

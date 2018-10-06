@@ -17,7 +17,7 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net::ip {
 
 
 /**
@@ -220,7 +220,7 @@ basic_resolver_results_t<Protocol> basic_resolver_t<Protocol>::resolve (
 }
 
 
-}} // namespace net::ip
+} // namespace net::ip
 
 
 __sal_end

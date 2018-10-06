@@ -15,9 +15,9 @@ struct socket_acceptor
 
   acceptor_t::endpoint_t loopback (const sal::net::ip::tcp_t &protocol) const
   {
-    return protocol == sal::net::ip::tcp_t::v4()
-      ? acceptor_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
-      : acceptor_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
+    return protocol == sal::net::ip::tcp_t::v4
+      ? acceptor_t::endpoint_t(sal::net::ip::address_v4_t::loopback, port)
+      : acceptor_t::endpoint_t(sal::net::ip::address_v6_t::loopback, port)
     ;
   }
 };
@@ -27,8 +27,8 @@ constexpr sal::net::ip::port_t socket_acceptor::port;
 
 INSTANTIATE_TEST_CASE_P(net_ip, socket_acceptor,
   ::testing::Values(
-    sal::net::ip::tcp_t::v4(),
-    sal::net::ip::tcp_t::v6()
+    sal::net::ip::tcp_t::v4,
+    sal::net::ip::tcp_t::v6
   ),
 );
 

@@ -19,7 +19,7 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net::ip {
 
 
 /**
@@ -73,21 +73,15 @@ public:
 
 
   /**
-   * Return TCP/IPv4 internet protocol instance.
+   * TCP/IPv4 internet protocol.
    */
-  static constexpr tcp_t v4 () noexcept
-  {
-    return tcp_t{AF_INET};
-  }
+  static const tcp_t v4;
 
 
   /**
-   * Return TCP/IPv6 internet protocol instance.
+   * TCP/IPv6 internet protocol.
    */
-  static constexpr tcp_t v6 () noexcept
-  {
-    return tcp_t{AF_INET6};
-  }
+  static const tcp_t v6;
 
 
   /**
@@ -167,7 +161,7 @@ inline std::ostream &operator<< (std::ostream &os, const tcp_t &protocol)
 }
 
 
-}} // namespace net::ip
+} // namespace net::ip
 
 
 __sal_end

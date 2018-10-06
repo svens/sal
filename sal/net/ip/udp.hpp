@@ -18,7 +18,7 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net::ip {
 
 
 /**
@@ -69,21 +69,15 @@ public:
 
 
   /**
-   * Return UDP/IPv4 internet protocol instance.
+   * TCP/IPv4 internet protocol.
    */
-  static constexpr udp_t v4 () noexcept
-  {
-    return udp_t{AF_INET};
-  }
+  static const udp_t v4;
 
 
   /**
-   * Return UDP/IPv6 internet protocol instance.
+   * TCP/IPv6 internet protocol.
    */
-  static constexpr udp_t v6 () noexcept
-  {
-    return udp_t{AF_INET6};
-  }
+  static const udp_t v6;
 
 
 private:
@@ -140,7 +134,7 @@ inline std::ostream &operator<< (std::ostream &os, const udp_t &protocol)
 }
 
 
-}} // namespace net::ip
+} // namespace net::ip
 
 
 __sal_end

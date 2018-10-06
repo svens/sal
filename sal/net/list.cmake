@@ -23,7 +23,9 @@ list(APPEND sal_sources
   sal/net/ip/__bits/inet.hpp
   sal/net/ip/address.hpp
   sal/net/ip/address_v4.hpp
+  sal/net/ip/address_v4.cpp
   sal/net/ip/address_v6.hpp
+  sal/net/ip/address_v6.cpp
   sal/net/ip/basic_endpoint.hpp
   sal/net/ip/basic_resolver.hpp
   sal/net/ip/basic_resolver_entry.hpp
@@ -32,7 +34,9 @@ list(APPEND sal_sources
   sal/net/ip/resolver.hpp
   sal/net/ip/resolver_base.hpp
   sal/net/ip/tcp.hpp
+  sal/net/ip/tcp.cpp
   sal/net/ip/udp.hpp
+  sal/net/ip/udp.cpp
 )
 
 

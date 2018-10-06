@@ -61,13 +61,13 @@ void ctor_move (const Protocol &protocol)
 
 TYPED_TEST(net_socket, ctor_move_v4)
 {
-  ctor_move(TypeParam::v4());
+  ctor_move(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, ctor_move_v6)
 {
-  ctor_move(TypeParam::v6());
+  ctor_move(TypeParam::v6);
 }
 
 
@@ -83,14 +83,14 @@ TYPED_TEST(net_socket, ctor_move_no_handle)
 
 TYPED_TEST(net_socket, ctor_protocol_v4)
 {
-  socket_t<TypeParam> socket(TypeParam::v4());
+  socket_t<TypeParam> socket(TypeParam::v4);
   EXPECT_TRUE(socket.is_open());
 }
 
 
 TYPED_TEST(net_socket, ctor_protocol_v6)
 {
-  socket_t<TypeParam> socket(TypeParam::v6());
+  socket_t<TypeParam> socket(TypeParam::v6);
   EXPECT_TRUE(socket.is_open());
 }
 
@@ -109,13 +109,13 @@ void ctor_protocol_and_handle (const Protocol &)
 
 TYPED_TEST(net_socket, ctor_protocol_and_handle_v4)
 {
-  ctor_protocol_and_handle(TypeParam::v4());
+  ctor_protocol_and_handle(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, ctor_protocol_and_handle_v6)
 {
-  ctor_protocol_and_handle(TypeParam::v6());
+  ctor_protocol_and_handle(TypeParam::v6);
 }
 
 
@@ -133,13 +133,13 @@ void ctor_endpoint (const Protocol &protocol)
 
 TYPED_TEST(net_socket, ctor_endpoint_v4)
 {
-  ctor_endpoint(TypeParam::v4());
+  ctor_endpoint(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, ctor_endpoint_v6)
 {
-  ctor_endpoint(TypeParam::v6());
+  ctor_endpoint(TypeParam::v6);
 }
 
 
@@ -160,20 +160,20 @@ void assign_move (const Protocol &protocol)
 
 TYPED_TEST(net_socket, assign_move_v4)
 {
-  assign_move(TypeParam::v4());
+  assign_move(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, assign_move_v6)
 {
-  assign_move(TypeParam::v6());
+  assign_move(TypeParam::v6);
 }
 
 
 TYPED_TEST(net_socket, open_v4)
 {
   socket_t<TypeParam> socket;
-  socket.open(TypeParam::v4());
+  socket.open(TypeParam::v4);
   EXPECT_TRUE(socket.is_open());
 }
 
@@ -181,7 +181,7 @@ TYPED_TEST(net_socket, open_v4)
 TYPED_TEST(net_socket, open_v6)
 {
   socket_t<TypeParam> socket;
-  socket.open(TypeParam::v6());
+  socket.open(TypeParam::v6);
   EXPECT_TRUE(socket.is_open());
 }
 
@@ -207,13 +207,13 @@ void open_already_open (const Protocol &protocol)
 
 TYPED_TEST(net_socket, open_already_open_v4)
 {
-  open_already_open(TypeParam::v4());
+  open_already_open(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, open_already_open_v6)
 {
-  open_already_open(TypeParam::v6());
+  open_already_open(TypeParam::v6);
 }
 
 
@@ -234,13 +234,13 @@ void assign (const Protocol &)
 
 TYPED_TEST(net_socket, assign_v4)
 {
-  assign(TypeParam::v4());
+  assign(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, assign_v6)
 {
-  assign(TypeParam::v6());
+  assign(TypeParam::v6);
 }
 
 
@@ -264,13 +264,13 @@ void assign_not_closed (const Protocol &protocol)
 
 TYPED_TEST(net_socket, assign_not_closed_v4)
 {
-  assign_not_closed(TypeParam::v4());
+  assign_not_closed(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, assign_not_closed_v6)
 {
-  assign_not_closed(TypeParam::v6());
+  assign_not_closed(TypeParam::v6);
 }
 
 
@@ -294,13 +294,13 @@ void assign_no_handle (const Protocol &)
 
 TYPED_TEST(net_socket, assign_no_handle_v4)
 {
-  assign_no_handle(TypeParam::v4());
+  assign_no_handle(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, assign_no_handle_v6)
 {
-  assign_no_handle(TypeParam::v6());
+  assign_no_handle(TypeParam::v6);
 }
 
 
@@ -319,13 +319,13 @@ void close (const Protocol &protocol)
 
 TYPED_TEST(net_socket, close_v4)
 {
-  close(TypeParam::v4());
+  close(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, close_v6)
 {
-  close(TypeParam::v6());
+  close(TypeParam::v6);
 }
 
 
@@ -364,13 +364,13 @@ void close_bad_file_descriptor (const Protocol &)
 
 TYPED_TEST(net_socket, close_bad_file_descriptor_v4)
 {
-  close_bad_file_descriptor(TypeParam::v4());
+  close_bad_file_descriptor(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, close_bad_file_descriptor_v6)
 {
-  close_bad_file_descriptor(TypeParam::v6());
+  close_bad_file_descriptor(TypeParam::v6);
 }
 
 
@@ -395,13 +395,13 @@ void broadcast (const sal::net::ip::tcp_t &)
 
 TYPED_TEST(net_socket, broadcast_v4)
 {
-  broadcast(TypeParam::v4());
+  broadcast(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, broadcast_v6)
 {
-  broadcast(TypeParam::v6());
+  broadcast(TypeParam::v6);
 }
 
 
@@ -462,13 +462,13 @@ void debug (const Protocol &protocol)
 
 TYPED_TEST(net_socket, debug_v4)
 {
-  debug(TypeParam::v4());
+  debug(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, debug_v6)
 {
-  debug(TypeParam::v6());
+  debug(TypeParam::v6);
 }
 
 
@@ -529,13 +529,13 @@ void do_not_route (const Protocol &protocol)
 
 TYPED_TEST(net_socket, do_not_route_v4)
 {
-  do_not_route(TypeParam::v4());
+  do_not_route(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, do_not_route_v6)
 {
-  do_not_route(TypeParam::v6());
+  do_not_route(TypeParam::v6);
 }
 
 
@@ -598,13 +598,13 @@ void keep_alive (const sal::net::ip::udp_t &)
 
 TYPED_TEST(net_socket, keep_alive_v4)
 {
-  keep_alive(TypeParam::v4());
+  keep_alive(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, keep_alive_v6)
 {
-  keep_alive(TypeParam::v6());
+  keep_alive(TypeParam::v6);
 }
 
 
@@ -656,13 +656,13 @@ void reuse_address (const Protocol &protocol)
 
 TYPED_TEST(net_socket, reuse_address_v4)
 {
-  reuse_address(TypeParam::v4());
+  reuse_address(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, reuse_address_v6)
 {
-  reuse_address(TypeParam::v6());
+  reuse_address(TypeParam::v6);
 }
 
 
@@ -714,13 +714,13 @@ void receive_buffer_size (const Protocol &protocol)
 
 TYPED_TEST(net_socket, receive_buffer_size_v4)
 {
-  receive_buffer_size(TypeParam::v4());
+  receive_buffer_size(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, receive_buffer_size_v6)
 {
-  receive_buffer_size(TypeParam::v6());
+  receive_buffer_size(TypeParam::v6);
 }
 
 
@@ -780,13 +780,13 @@ void receive_low_watermark (const Protocol &protocol)
 
 TYPED_TEST(net_socket, receive_low_watermark_v4)
 {
-  receive_low_watermark(TypeParam::v4());
+  receive_low_watermark(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, receive_low_watermark_v6)
 {
-  receive_low_watermark(TypeParam::v6());
+  receive_low_watermark(TypeParam::v6);
 }
 
 
@@ -838,13 +838,13 @@ void send_buffer_size (const Protocol &protocol)
 
 TYPED_TEST(net_socket, send_buffer_size_v4)
 {
-  send_buffer_size(TypeParam::v4());
+  send_buffer_size(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, send_buffer_size_v6)
 {
-  send_buffer_size(TypeParam::v6());
+  send_buffer_size(TypeParam::v6);
 }
 
 
@@ -905,13 +905,13 @@ void send_low_watermark (const Protocol &protocol)
 
 TYPED_TEST(net_socket, send_low_watermark_v4)
 {
-  send_low_watermark(TypeParam::v4());
+  send_low_watermark(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, send_low_watermark_v6)
 {
-  send_low_watermark(TypeParam::v6());
+  send_low_watermark(TypeParam::v6);
 }
 
 
@@ -977,13 +977,13 @@ void linger (const sal::net::ip::udp_t &)
 
 TYPED_TEST(net_socket, linger_v4)
 {
-  linger(TypeParam::v4());
+  linger(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, linger_v6)
 {
-  linger(TypeParam::v6());
+  linger(TypeParam::v6);
 }
 
 
@@ -1048,13 +1048,13 @@ void non_blocking (const Protocol &protocol)
 
 TYPED_TEST(net_socket, non_blocking_v4)
 {
-  non_blocking(TypeParam::v4());
+  non_blocking(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, non_blocking_v6)
 {
-  non_blocking(TypeParam::v6());
+  non_blocking(TypeParam::v6);
 }
 
 
@@ -1104,13 +1104,13 @@ void available (const Protocol &protocol)
 
 TYPED_TEST(net_socket, available_v4)
 {
-  available(TypeParam::v4());
+  available(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, available_v6)
 {
-  available(TypeParam::v6());
+  available(TypeParam::v6);
 }
 
 
@@ -1148,13 +1148,13 @@ void bind (const Protocol &protocol)
 
 TYPED_TEST(net_socket, bind_v4)
 {
-  bind(TypeParam::v4());
+  bind(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, bind_v6)
 {
-  bind(TypeParam::v6());
+  bind(TypeParam::v6);
 }
 
 
@@ -1218,13 +1218,13 @@ void local_endpoint_not_bound (const Protocol &protocol)
 
 TYPED_TEST(net_socket, local_endpoint_not_bound_v4)
 {
-  local_endpoint_not_bound(TypeParam::v4());
+  local_endpoint_not_bound(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, local_endpoint_not_bound_v6)
 {
-  local_endpoint_not_bound(TypeParam::v6());
+  local_endpoint_not_bound(TypeParam::v6);
 }
 
 
@@ -1261,13 +1261,13 @@ void remote_endpoint_not_connected (const Protocol &protocol)
 
 TYPED_TEST(net_socket, remote_endpoint_not_connected_v4)
 {
-  remote_endpoint_not_connected(TypeParam::v4());
+  remote_endpoint_not_connected(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, remote_endpoint_not_connected_v6)
 {
-  remote_endpoint_not_connected(TypeParam::v6());
+  remote_endpoint_not_connected(TypeParam::v6);
 }
 
 
@@ -1315,16 +1315,16 @@ void connect_no_listener (const sal::net::ip::udp_t &protocol,
 
 TYPED_TEST(net_socket, connect_no_listener_v4)
 {
-  connect_no_listener(TypeParam::v4(),
-    sal::net::ip::address_v4_t::loopback()
+  connect_no_listener(TypeParam::v4,
+    sal::net::ip::address_v4_t::loopback
   );
 }
 
 
 TYPED_TEST(net_socket, connect_no_listener_v6)
 {
-  connect_no_listener(TypeParam::v6(),
-    sal::net::ip::address_v6_t::loopback()
+  connect_no_listener(TypeParam::v6,
+    sal::net::ip::address_v6_t::loopback
   );
 }
 
@@ -1373,16 +1373,16 @@ void connect_with_no_pre_open (const sal::net::ip::udp_t &,
 
 TYPED_TEST(net_socket, connect_with_no_pre_open_v4)
 {
-  connect_with_no_pre_open(TypeParam::v4(),
-    sal::net::ip::address_v4_t::loopback()
+  connect_with_no_pre_open(TypeParam::v4,
+    sal::net::ip::address_v4_t::loopback
   );
 }
 
 
 TYPED_TEST(net_socket, connect_with_no_pre_open_v6)
 {
-  connect_with_no_pre_open(TypeParam::v6(),
-    sal::net::ip::address_v6_t::loopback()
+  connect_with_no_pre_open(TypeParam::v6,
+    sal::net::ip::address_v6_t::loopback
   );
 }
 
@@ -1412,13 +1412,13 @@ void shutdown (const sal::net::ip::udp_t &)
 
 TYPED_TEST(net_socket, shutdown_v4)
 {
-  shutdown(TypeParam::v4());
+  shutdown(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, shutdown_v6)
 {
-  shutdown(TypeParam::v6());
+  shutdown(TypeParam::v6);
 }
 
 
@@ -1477,13 +1477,13 @@ void wait (const sal::net::ip::udp_t &protocol)
 
 TYPED_TEST(net_socket, wait_v4)
 {
-  wait(TypeParam::v4());
+  wait(TypeParam::v4);
 }
 
 
 TYPED_TEST(net_socket, wait_v6)
 {
-  wait(TypeParam::v6());
+  wait(TypeParam::v6);
 }
 
 

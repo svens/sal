@@ -26,7 +26,7 @@
 __sal_begin
 
 
-namespace crypto { namespace __bits {
+namespace crypto::__bits {
 
 
 void random (void *data, size_t size)
@@ -52,7 +52,7 @@ void random (void *data, size_t size)
 }
 
 
-}} // namespace crypto::__bits
+} // namespace crypto::__bits
 
 
 __sal_end

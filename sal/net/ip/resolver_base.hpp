@@ -13,7 +13,7 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net::ip {
 
 
 /**
@@ -79,7 +79,7 @@ protected:
 };
 
 
-}} // namespace net::ip
+} // namespace net::ip
 
 
 __sal_end

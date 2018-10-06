@@ -13,7 +13,7 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net::ip {
 
 
 /**
@@ -111,7 +111,7 @@ private:
 };
 
 
-}} // namespace net::ip
+} // namespace net::ip
 
 
 __sal_end

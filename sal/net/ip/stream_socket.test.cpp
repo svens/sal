@@ -17,25 +17,25 @@ struct stream_socket
 
   socket_t::endpoint_t loopback (const sal::net::ip::tcp_t &protocol) const
   {
-    return protocol == sal::net::ip::tcp_t::v4()
-      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
-      : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
+    return protocol == sal::net::ip::tcp_t::v4
+      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback, port)
+      : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback, port)
     ;
   }
 
   socket_t::endpoint_t other_loopback (const sal::net::ip::tcp_t &protocol) const
   {
-    return protocol == sal::net::ip::tcp_t::v4()
-      ? socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback(), port)
-      : socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback(), port)
+    return protocol == sal::net::ip::tcp_t::v4
+      ? socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback, port)
+      : socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback, port)
     ;
   }
 
   socket_t::endpoint_t any (const sal::net::ip::tcp_t &protocol) const
   {
-    return protocol == sal::net::ip::tcp_t::v4()
-      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::any(), port)
-      : socket_t::endpoint_t(sal::net::ip::address_v6_t::any(), port)
+    return protocol == sal::net::ip::tcp_t::v4
+      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::any, port)
+      : socket_t::endpoint_t(sal::net::ip::address_v6_t::any, port)
     ;
   }
 };
@@ -45,8 +45,8 @@ constexpr sal::net::ip::port_t stream_socket::port;
 
 INSTANTIATE_TEST_CASE_P(net_ip, stream_socket,
   ::testing::Values(
-    sal::net::ip::tcp_t::v4(),
-    sal::net::ip::tcp_t::v6()
+    sal::net::ip::tcp_t::v4,
+    sal::net::ip::tcp_t::v6
   ),
 );
 

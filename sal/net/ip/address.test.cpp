@@ -36,7 +36,7 @@ TEST_F(net_ip_address, ctor)
 
 TEST_F(net_ip_address, ctor_v4_any)
 {
-  addr_t a{addr_v4_t::any()};
+  addr_t a{addr_v4_t::any};
   EXPECT_TRUE(a.is_v4());
   EXPECT_FALSE(a.is_v6());
   EXPECT_TRUE(a.is_unspecified());
@@ -45,7 +45,7 @@ TEST_F(net_ip_address, ctor_v4_any)
 
 TEST_F(net_ip_address, ctor_v6_any)
 {
-  addr_t a{addr_v6_t::any()};
+  addr_t a{addr_v6_t::any};
   EXPECT_TRUE(a.is_v6());
   EXPECT_FALSE(a.is_v4());
   EXPECT_TRUE(a.is_unspecified());
@@ -54,7 +54,7 @@ TEST_F(net_ip_address, ctor_v6_any)
 
 TEST_F(net_ip_address, ctor_v4_loopback)
 {
-  addr_t a{addr_v4_t::loopback()};
+  addr_t a{addr_v4_t::loopback};
   EXPECT_TRUE(a.is_v4());
   EXPECT_FALSE(a.is_v6());
   EXPECT_TRUE(a.is_loopback());
@@ -63,7 +63,7 @@ TEST_F(net_ip_address, ctor_v4_loopback)
 
 TEST_F(net_ip_address, ctor_v6_loopback)
 {
-  addr_t a{addr_v6_t::loopback()};
+  addr_t a{addr_v6_t::loopback};
   EXPECT_TRUE(a.is_v6());
   EXPECT_FALSE(a.is_v4());
   EXPECT_TRUE(a.is_loopback());
@@ -97,7 +97,7 @@ TEST_F(net_ip_address, ctor_sockaddr_v4)
 
   addr_t addr{buf};
   ASSERT_TRUE(addr.is_v4());
-  EXPECT_EQ(addr_v4_t::loopback(), addr.to_v4());
+  EXPECT_EQ(addr_v4_t::loopback, addr.to_v4());
 }
 
 
@@ -110,7 +110,7 @@ TEST_F(net_ip_address, ctor_sockaddr_v6)
 
   addr_t addr{buf};
   ASSERT_TRUE(addr.is_v6());
-  EXPECT_EQ(addr_v6_t::loopback(), addr.to_v6());
+  EXPECT_EQ(addr_v6_t::loopback, addr.to_v6());
 }
 
 
@@ -132,7 +132,7 @@ TEST_F(net_ip_address, try_load_v4)
   addr_t addr;
   ASSERT_TRUE(addr.try_load(buf));
   EXPECT_TRUE(addr.is_v4());
-  EXPECT_EQ(addr_v4_t::loopback(), addr.to_v4());
+  EXPECT_EQ(addr_v4_t::loopback, addr.to_v4());
 }
 
 
@@ -146,7 +146,7 @@ TEST_F(net_ip_address, try_load_v6)
   addr_t addr;
   ASSERT_TRUE(addr.try_load(buf));
   EXPECT_TRUE(addr.is_v6());
-  EXPECT_EQ(addr_v6_t::loopback(), addr.to_v6());
+  EXPECT_EQ(addr_v6_t::loopback, addr.to_v6());
 }
 
 
@@ -169,7 +169,7 @@ TEST_F(net_ip_address, load_v4)
   addr_t addr;
   addr.load(buf);
   ASSERT_TRUE(addr.is_v4());
-  EXPECT_EQ(addr_v4_t::loopback(), addr.to_v4());
+  EXPECT_EQ(addr_v4_t::loopback, addr.to_v4());
 }
 
 
@@ -183,7 +183,7 @@ TEST_F(net_ip_address, load_v6)
   addr_t addr;
   addr.load(buf);
   ASSERT_TRUE(addr.is_v6());
-  EXPECT_EQ(addr_v6_t::loopback(), addr.to_v6());
+  EXPECT_EQ(addr_v6_t::loopback, addr.to_v6());
 }
 
 
@@ -198,7 +198,7 @@ TEST_F(net_ip_address, load_invalid)
 
 TEST_F(net_ip_address, store_v4)
 {
-  addr_t addr{addr_v4_t::loopback()};
+  addr_t addr{addr_v4_t::loopback};
 
   sockaddr_storage buf;
   addr.store(buf);
@@ -211,7 +211,7 @@ TEST_F(net_ip_address, store_v4)
 
 TEST_F(net_ip_address, store_v6)
 {
-  addr_t addr{addr_v6_t::loopback()};
+  addr_t addr{addr_v6_t::loopback};
 
   sockaddr_storage buf;
   addr.store(buf);
@@ -234,7 +234,7 @@ TEST_F(net_ip_address, assign)
 
 TEST_F(net_ip_address, assign_v4_any)
 {
-  addr_t a, b{addr_v4_t::any()};
+  addr_t a, b{addr_v4_t::any};
   a = b;
   EXPECT_TRUE(a.is_v4());
   EXPECT_FALSE(a.is_v6());
@@ -244,7 +244,7 @@ TEST_F(net_ip_address, assign_v4_any)
 
 TEST_F(net_ip_address, assign_v6_any)
 {
-  addr_t a, b{addr_v6_t::any()};
+  addr_t a, b{addr_v6_t::any};
   a = b;
   EXPECT_TRUE(a.is_v6());
   EXPECT_FALSE(a.is_v4());
@@ -254,7 +254,7 @@ TEST_F(net_ip_address, assign_v6_any)
 
 TEST_F(net_ip_address, assign_v4_loopback)
 {
-  addr_t a, b{addr_v4_t::loopback()};
+  addr_t a, b{addr_v4_t::loopback};
   a = b;
   EXPECT_TRUE(a.is_v4());
   EXPECT_FALSE(a.is_v6());
@@ -264,7 +264,7 @@ TEST_F(net_ip_address, assign_v4_loopback)
 
 TEST_F(net_ip_address, assign_v6_loopback)
 {
-  addr_t a, b{addr_v6_t::loopback()};
+  addr_t a, b{addr_v6_t::loopback};
   a = b;
   EXPECT_TRUE(a.is_v6());
   EXPECT_FALSE(a.is_v4());
@@ -367,12 +367,12 @@ TEST_F(net_ip_address, to_string_v6)
 TEST_F(net_ip_address, hash_v4)
 {
   EXPECT_EQ(
-    addr_t{addr_v4_t::any()}.hash(),
-    addr_t{addr_v4_t::any()}.hash()
+    addr_t{addr_v4_t::any}.hash(),
+    addr_t{addr_v4_t::any}.hash()
   );
   EXPECT_NE(
-    addr_t{addr_v4_t::any()}.hash(),
-    addr_t{addr_v4_t::loopback()}.hash()
+    addr_t{addr_v4_t::any}.hash(),
+    addr_t{addr_v4_t::loopback}.hash()
   );
 }
 
@@ -380,12 +380,12 @@ TEST_F(net_ip_address, hash_v4)
 TEST_F(net_ip_address, hash_v6)
 {
   EXPECT_EQ(
-    addr_t{addr_v6_t::any()}.hash(),
-    addr_t{addr_v6_t::any()}.hash()
+    addr_t{addr_v6_t::any}.hash(),
+    addr_t{addr_v6_t::any}.hash()
   );
   EXPECT_NE(
-    addr_t{addr_v6_t::any()}.hash(),
-    addr_t{addr_v6_t::loopback()}.hash()
+    addr_t{addr_v6_t::any}.hash(),
+    addr_t{addr_v6_t::loopback}.hash()
   );
 }
 
@@ -393,12 +393,12 @@ TEST_F(net_ip_address, hash_v6)
 TEST_F(net_ip_address, hash_v4_v6)
 {
   EXPECT_NE(
-    addr_t{addr_v4_t::any()}.hash(),
-    addr_t{addr_v6_t::any()}.hash()
+    addr_t{addr_v4_t::any}.hash(),
+    addr_t{addr_v6_t::any}.hash()
   );
   EXPECT_NE(
-    addr_t{addr_v4_t::any()}.hash(),
-    addr_t{addr_v6_t::loopback()}.hash()
+    addr_t{addr_v4_t::any}.hash(),
+    addr_t{addr_v6_t::loopback}.hash()
   );
 }
 
@@ -425,7 +425,7 @@ TEST_F(net_ip_address, memory_writer_inserter_v4_exact)
 {
   char data[1024];
   sal::memory_writer_t writer{data, data + sizeof("0.0.0.0")};
-  EXPECT_TRUE(bool(writer << addr_t{addr_v4_t::any()}));
+  EXPECT_TRUE(bool(writer << addr_t{addr_v4_t::any}));
   EXPECT_STREQ("0.0.0.0", data);
 }
 
@@ -434,7 +434,7 @@ TEST_F(net_ip_address, memory_writer_inserter_v6_exact)
 {
   char data[1024];
   sal::memory_writer_t writer{data, data + sizeof("::")};
-  EXPECT_TRUE(bool(writer << addr_t{addr_v6_t::any()}));
+  EXPECT_TRUE(bool(writer << addr_t{addr_v6_t::any}));
   EXPECT_STREQ("::", data);
 }
 
@@ -473,7 +473,7 @@ TEST_F(net_ip_address, ostream_inserter_v6)
 
 TEST_F(net_ip_address, comparisons_v4)
 {
-  auto a = addr_t{addr_v4_t::any()};
+  auto a = addr_t{addr_v4_t::any};
   auto b = addr_t{multicast_v4};
   auto c = a;
 
@@ -505,7 +505,7 @@ TEST_F(net_ip_address, comparisons_v4)
 
 TEST_F(net_ip_address, comparisons_v6)
 {
-  auto a = addr_t{addr_v6_t::any()};
+  auto a = addr_t{addr_v6_t::any};
   auto b = addr_t{multicast_v6};
   auto c = a;
 
@@ -537,7 +537,7 @@ TEST_F(net_ip_address, comparisons_v6)
 
 TEST_F(net_ip_address, comparisons_v4_v6)
 {
-  auto a = addr_t{addr_v4_t::any()};
+  auto a = addr_t{addr_v4_t::any};
   auto b = addr_t{multicast_v6};
   auto c = a;
 
@@ -569,7 +569,7 @@ TEST_F(net_ip_address, comparisons_v4_v6)
 
 TEST_F(net_ip_address, comparisons_v6_v4)
 {
-  auto a = addr_t{addr_v6_t::any()};
+  auto a = addr_t{addr_v6_t::any};
   auto b = addr_t{multicast_v4};
   auto c = a;
 
