@@ -14,18 +14,19 @@ struct datagram_socket
   : public sal_test::with_value<sal::net::ip::udp_t>
 {
   using socket_t = sal::net::ip::udp_t::socket_t;
-  static constexpr sal::net::ip::port_t port = 8195;
 
-  socket_t::endpoint_t loopback (const sal::net::ip::udp_t &protocol) const
-  {
-    return protocol == sal::net::ip::udp_t::v4
-      ? socket_t::endpoint_t(sal::net::ip::address_v4_t::loopback, port)
-      : socket_t::endpoint_t(sal::net::ip::address_v6_t::loopback, port)
-    ;
-  }
+  const sal::net::ip::udp_t protocol = GetParam();
+
+  const socket_t::endpoint_t endpoint =
+    protocol == sal::net::ip::udp_t::v4
+      ? socket_t::endpoint_t{sal::net::ip::address_v4_t::loopback, 8195}
+      : socket_t::endpoint_t{sal::net::ip::address_v6_t::loopback, 8195}
+  ;
+
+  socket_t::endpoint_t remote_endpoint{endpoint.address(), 0};
+
+  socket_t receiver{endpoint}, sender{remote_endpoint};
 };
-
-constexpr sal::net::ip::port_t datagram_socket::port;
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, datagram_socket,
@@ -45,11 +46,10 @@ TEST_P(datagram_socket, ctor)
 
 TEST_P(datagram_socket, ctor_move)
 {
-  socket_t a(GetParam());
-  EXPECT_TRUE(a.is_open());
-  auto b = std::move(a);
-  EXPECT_TRUE(b.is_open());
-  EXPECT_FALSE(a.is_open());
+  EXPECT_TRUE(receiver.is_open());
+  auto socket = std::move(receiver);
+  EXPECT_TRUE(socket.is_open());
+  EXPECT_FALSE(receiver.is_open());
 }
 
 
@@ -65,12 +65,12 @@ TEST_P(datagram_socket, ctor_move_no_handle)
 
 TEST_P(datagram_socket, ctor_protocol)
 {
-  socket_t socket(GetParam());
+  socket_t socket(protocol);
   EXPECT_TRUE(socket.is_open());
 }
 
 
-TEST_P(datagram_socket, ctor_protocol_and_handle)
+TEST_P(datagram_socket, ctor_handle)
 {
   auto handle = sal::net::socket_base_t::invalid - 1;
   socket_t socket(handle);
@@ -83,45 +83,37 @@ TEST_P(datagram_socket, ctor_protocol_and_handle)
 
 TEST_P(datagram_socket, ctor_endpoint)
 {
-  socket_t::endpoint_t endpoint(GetParam(), port);
-  socket_t socket(endpoint);
-
-  endpoint = socket.local_endpoint();
-  EXPECT_TRUE(endpoint.address().is_unspecified());
-  EXPECT_EQ(port, endpoint.port());
+  EXPECT_EQ(endpoint, receiver.local_endpoint());
 }
 
 
 TEST_P(datagram_socket, assign_move)
 {
-  socket_t a(GetParam()), b;
-  EXPECT_TRUE(a.is_open());
-  EXPECT_FALSE(b.is_open());
+  EXPECT_TRUE(receiver.is_open());
+  EXPECT_TRUE(sender.is_open());
 
-  auto handle = a.native_handle();
-  b = std::move(a);
-  EXPECT_EQ(handle, b.native_handle());
-  EXPECT_TRUE(b.is_open());
-  EXPECT_FALSE(a.is_open());
+  auto handle = sender.native_handle();
+  receiver = std::move(sender);
+  EXPECT_EQ(handle, receiver.native_handle());
+  EXPECT_TRUE(receiver.is_open());
+  EXPECT_FALSE(sender.is_open());
 }
 
 
 TEST_P(datagram_socket, receive_from_invalid)
 {
-  socket_t::endpoint_t endpoint;
-  socket_t socket;
-
+  receiver.close();
   char buf[1024];
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive_from(buf, endpoint, error));
+    EXPECT_EQ(0U, receiver.receive_from(buf, remote_endpoint, error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.receive_from(buf, endpoint),
+      (void)receiver.receive_from(buf, remote_endpoint),
       std::system_error
     );
   }
@@ -130,21 +122,18 @@ TEST_P(datagram_socket, receive_from_invalid)
 
 TEST_P(datagram_socket, receive_from_no_sender_non_blocking)
 {
-  auto endpoint = loopback(GetParam());
-  socket_t socket(endpoint);
-  socket.non_blocking(true);
-
+  receiver.non_blocking(true);
   char buf[1024];
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive_from(buf, endpoint, error));
+    EXPECT_EQ(0U, receiver.receive_from(buf, remote_endpoint, error));
     EXPECT_EQ(std::errc::operation_would_block, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.receive_from(buf, endpoint),
+      (void)receiver.receive_from(buf, remote_endpoint),
       std::system_error
     );
   }
@@ -153,18 +142,17 @@ TEST_P(datagram_socket, receive_from_no_sender_non_blocking)
 
 TEST_P(datagram_socket, send_to_invalid)
 {
-  socket_t::endpoint_t endpoint;
-  socket_t socket;
+  sender.close();
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.send_to(case_name, endpoint, error));
+    EXPECT_EQ(0U, sender.send_to(case_name, endpoint, error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.send_to(case_name, endpoint),
+      (void)sender.send_to(case_name, endpoint),
       std::system_error
     );
   }
@@ -173,121 +161,97 @@ TEST_P(datagram_socket, send_to_invalid)
 
 TEST_P(datagram_socket, send_to_and_receive_from)
 {
-  socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
-  socket_t r(ra), s(sa);
+  ASSERT_FALSE(receiver.wait(receiver.wait_read, 0s));
 
-  ASSERT_FALSE(r.wait(r.wait_read, 0s));
+  EXPECT_EQ(case_name.size(), sender.send_to(case_name, endpoint));
+  ASSERT_TRUE(receiver.wait(receiver.wait_read, 10s));
 
-  // sender
-  {
-    EXPECT_EQ(case_name.size(), s.send_to(case_name, ra));
-  }
-
-  ASSERT_TRUE(r.wait(r.wait_read, 10s));
-
-  // receiver
-  {
-    socket_t::endpoint_t endpoint;
-    char buf[1024];
-    std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(case_name.size(), r.receive_from(buf, endpoint));
-    EXPECT_EQ(buf, case_name);
-    EXPECT_EQ(sa, endpoint);
-  }
+  char buf[1024];
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(case_name.size(), receiver.receive_from(buf, remote_endpoint));
+  EXPECT_EQ(buf, case_name);
+  EXPECT_EQ(sender.local_endpoint(), remote_endpoint);
 }
 
 
 TEST_P(datagram_socket, receive_from_less_than_send_to)
 {
-  socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
-  socket_t r(ra), s(sa);
+  ASSERT_FALSE(receiver.wait(receiver.wait_read, 0s));
 
-  ASSERT_FALSE(r.wait(r.wait_read, 0s));
+  EXPECT_EQ(case_name.size(), sender.send_to(case_name, endpoint));
+  ASSERT_TRUE(receiver.wait(receiver.wait_read, 10s));
 
-  // sender
-  {
-    EXPECT_EQ(case_name.size(), s.send_to(case_name, ra));
-  }
-
-  ASSERT_TRUE(r.wait(r.wait_read, 10s));
-
-  // receiver
-  {
-    std::error_code error;
-    socket_t::endpoint_t endpoint;
-    char buf[1024];
-    std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(case_name.size() / 2,
-      r.receive_from(sal::make_buf(buf, case_name.size() / 2), endpoint, error)
-    );
-    EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_FALSE(r.wait(r.wait_read, 0s));
-  }
+  std::error_code error;
+  char buf[1024];
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(
+    case_name.size() / 2,
+    receiver.receive_from(
+      sal::make_buf(buf, case_name.size() / 2),
+      remote_endpoint,
+      error
+    )
+  );
+  EXPECT_EQ(std::errc::message_size, error);
+  EXPECT_EQ(sender.local_endpoint(), remote_endpoint);
+  EXPECT_FALSE(receiver.wait(receiver.wait_read, 0s));
 }
 
 
 TEST_P(datagram_socket, receive_from_peek)
 {
-  socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
-  socket_t r(ra), s(sa);
-
-  // sender
-  EXPECT_EQ(case_name.size(), s.send_to(case_name, ra));
-
-  socket_t::endpoint_t endpoint;
+  EXPECT_EQ(case_name.size(), sender.send_to(case_name, endpoint));
   char buf[1024];
 
-  // receiver: peek
+  // peek
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), r.receive_from(buf, endpoint, r.peek));
+  EXPECT_EQ(
+    case_name.size(),
+    receiver.receive_from(buf, remote_endpoint, receiver.peek)
+  );
   EXPECT_EQ(buf, case_name);
-  EXPECT_EQ(sa, endpoint);
+  EXPECT_EQ(sender.local_endpoint(), remote_endpoint);
 
-  // receiver: actually extract
+  // actually extract
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), r.receive_from(buf, endpoint));
+  EXPECT_EQ(case_name.size(), receiver.receive_from(buf, remote_endpoint));
   EXPECT_EQ(buf, case_name);
-  EXPECT_EQ(sa, endpoint);
+  EXPECT_EQ(sender.local_endpoint(), remote_endpoint);
 }
 
 
 TEST_P(datagram_socket, send_to_do_not_route)
 {
-  socket_t::endpoint_t ra(loopback(GetParam())), sa(ra.address(), ra.port() + 1);
-  socket_t r(ra), s(sa);
-
   // sender
   EXPECT_EQ(
     case_name.size(),
-    s.send_to(case_name, ra, s.do_not_route)
+    sender.send_to(case_name, endpoint, sender.do_not_route)
   );
 
-  socket_t::endpoint_t endpoint;
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
 
   // receiver
-  EXPECT_EQ(case_name.size(), r.receive_from(buf, endpoint));
+  EXPECT_EQ(case_name.size(), receiver.receive_from(buf, remote_endpoint));
   EXPECT_EQ(buf, case_name);
-  EXPECT_EQ(sa, endpoint);
+  EXPECT_EQ(sender.local_endpoint(), remote_endpoint);
 }
 
 
 TEST_P(datagram_socket, receive_invalid)
 {
-  socket_t socket;
-
+  receiver.close();
   char buf[1024];
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive(buf, error));
+    EXPECT_EQ(0U, receiver.receive(buf, error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.receive(buf),
+      (void)receiver.receive(buf),
       std::system_error
     );
   }
@@ -296,20 +260,18 @@ TEST_P(datagram_socket, receive_invalid)
 
 TEST_P(datagram_socket, receive_no_sender_non_blocking)
 {
-  socket_t socket(loopback(GetParam()));
-  socket.non_blocking(true);
-
+  receiver.non_blocking(true);
   char buf[1024];
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.receive(buf, error));
+    EXPECT_EQ(0U, receiver.receive(buf, error));
     EXPECT_EQ(std::errc::operation_would_block, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.receive(buf),
+      (void)receiver.receive(buf),
       std::system_error
     );
   }
@@ -318,17 +280,17 @@ TEST_P(datagram_socket, receive_no_sender_non_blocking)
 
 TEST_P(datagram_socket, send_invalid)
 {
-  socket_t socket;
+  sender.close();
 
   {
     std::error_code error;
-    EXPECT_EQ(0U, socket.send(case_name, error));
+    EXPECT_EQ(0U, sender.send(case_name, error));
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      (void)socket.send(case_name),
+      (void)sender.send(case_name),
       std::system_error
     );
   }
@@ -337,114 +299,85 @@ TEST_P(datagram_socket, send_invalid)
 
 TEST_P(datagram_socket, send_not_connected)
 {
-  socket_t socket(loopback(GetParam()));
-
   {
     std::error_code error;
-    socket.send(case_name, error);
+    sender.send(case_name, error);
     EXPECT_EQ(std::errc::not_connected, error);
   }
 
   {
-    EXPECT_THROW(socket.send(case_name), std::system_error);
+    EXPECT_THROW(sender.send(case_name), std::system_error);
   }
 }
 
 
 TEST_P(datagram_socket, send_and_receive)
 {
-  socket_t::endpoint_t ra(loopback(GetParam()));
-  socket_t r(ra), s(GetParam());
+  ASSERT_FALSE(receiver.wait(receiver.wait_read, 0s));
 
-  ASSERT_FALSE(r.wait(r.wait_read, 0s));
+  ASSERT_NO_THROW(sender.connect(endpoint));
+  EXPECT_EQ(case_name.size(), sender.send(case_name));
 
-  // sender
-  {
-    ASSERT_NO_THROW(s.connect(ra));
-    EXPECT_EQ(case_name.size(), s.send(case_name));
-  }
+  ASSERT_TRUE(receiver.wait(receiver.wait_read, 10s));
 
-  ASSERT_TRUE(r.wait(r.wait_read, 10s));
-
-  // receiver
-  {
-    char buf[1024];
-    std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(case_name.size(), r.receive(buf));
-    EXPECT_EQ(buf, case_name);
-  }
+  char buf[1024];
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(case_name.size(), receiver.receive(buf));
+  EXPECT_EQ(buf, case_name);
 }
 
 
 TEST_P(datagram_socket, receive_less_than_send)
 {
-  socket_t::endpoint_t ra(loopback(GetParam()));
-  socket_t r(ra), s(GetParam());
+  ASSERT_FALSE(receiver.wait(receiver.wait_read, 0s));
 
-  ASSERT_FALSE(r.wait(r.wait_read, 0s));
+  ASSERT_NO_THROW(sender.connect(endpoint));
+  EXPECT_EQ(case_name.size(), sender.send(case_name));
 
-  // sender
-  {
-    ASSERT_NO_THROW(s.connect(ra));
-    EXPECT_EQ(case_name.size(), s.send(case_name));
-  }
+  ASSERT_TRUE(receiver.wait(receiver.wait_read, 10s));
 
-  ASSERT_TRUE(r.wait(r.wait_read, 10s));
-
-  // receiver
-  {
-    std::error_code error;
-    char buf[1024];
-    std::memset(buf, '\0', sizeof(buf));
-    EXPECT_EQ(case_name.size() / 2,
-      r.receive(sal::make_buf(buf, case_name.size() / 2), error)
-    );
-    EXPECT_EQ(std::errc::message_size, error);
-    EXPECT_FALSE(r.wait(r.wait_read, 0s));
-  }
+  std::error_code error;
+  char buf[1024];
+  std::memset(buf, '\0', sizeof(buf));
+  EXPECT_EQ(
+    case_name.size() / 2,
+    receiver.receive(sal::make_buf(buf, case_name.size() / 2), error)
+  );
+  EXPECT_EQ(std::errc::message_size, error);
+  EXPECT_FALSE(receiver.wait(receiver.wait_read, 0s));
 }
 
 
 TEST_P(datagram_socket, receive_peek)
 {
-  socket_t::endpoint_t ra(loopback(GetParam()));
-  socket_t r(ra), s(GetParam());
-
   // sender
-  ASSERT_NO_THROW(s.connect(ra));
-  EXPECT_EQ(case_name.size(), s.send(case_name));
-
+  ASSERT_NO_THROW(sender.connect(endpoint));
+  EXPECT_EQ(case_name.size(), sender.send(case_name));
   char buf[1024];
 
-  // receiver: peek
+  // peek
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), r.receive(buf, r.peek));
+  EXPECT_EQ(case_name.size(), receiver.receive(buf, receiver.peek));
   EXPECT_EQ(buf, case_name);
 
-  // receiver: actually extract
+  // actually extract
   std::memset(buf, '\0', sizeof(buf));
-  EXPECT_EQ(case_name.size(), r.receive(buf));
+  EXPECT_EQ(case_name.size(), receiver.receive(buf));
   EXPECT_EQ(buf, case_name);
 }
 
 
 TEST_P(datagram_socket, send_do_not_route)
 {
-  socket_t::endpoint_t ra(loopback(GetParam()));
-  socket_t r(ra), s(GetParam());
-
-  // sender
-  ASSERT_NO_THROW(s.connect(ra));
+  ASSERT_NO_THROW(sender.connect(endpoint));
   EXPECT_EQ(
     case_name.size(),
-    s.send(case_name, s.do_not_route)
+    sender.send(case_name, sender.do_not_route)
   );
 
   char buf[1024];
   std::memset(buf, '\0', sizeof(buf));
-
-  // receiver
-  EXPECT_EQ(case_name.size(), r.receive(buf));
+  EXPECT_EQ(case_name.size(), receiver.receive(buf));
   EXPECT_EQ(buf, case_name);
 }
 

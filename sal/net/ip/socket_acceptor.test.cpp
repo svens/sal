@@ -6,23 +6,23 @@
 namespace {
 
 
+using namespace std::chrono_literals;
+
+
 struct socket_acceptor
   : public sal_test::with_value<sal::net::ip::tcp_t>
 {
   using socket_t = sal::net::ip::tcp_t::socket_t;
   using acceptor_t = sal::net::ip::tcp_t::acceptor_t;
-  static constexpr sal::net::ip::port_t port = 8193;
 
-  acceptor_t::endpoint_t loopback (const sal::net::ip::tcp_t &protocol) const
-  {
-    return protocol == sal::net::ip::tcp_t::v4
-      ? acceptor_t::endpoint_t(sal::net::ip::address_v4_t::loopback, port)
-      : acceptor_t::endpoint_t(sal::net::ip::address_v6_t::loopback, port)
-    ;
-  }
+  const sal::net::ip::tcp_t protocol = GetParam();
+
+  const socket_t::endpoint_t endpoint =
+    protocol == sal::net::ip::tcp_t::v4
+      ? socket_t::endpoint_t{sal::net::ip::address_v4_t::loopback, 8195}
+      : socket_t::endpoint_t{sal::net::ip::address_v6_t::loopback, 8195}
+  ;
 };
-
-constexpr sal::net::ip::port_t socket_acceptor::port;
 
 
 INSTANTIATE_TEST_CASE_P(net_ip, socket_acceptor,
@@ -43,7 +43,7 @@ TEST_P(socket_acceptor, ctor)
 
 TEST_P(socket_acceptor, ctor_move)
 {
-  acceptor_t a(GetParam());
+  acceptor_t a(protocol);
   EXPECT_TRUE(a.is_open());
   auto b = std::move(a);
   EXPECT_TRUE(b.is_open());
@@ -63,15 +63,15 @@ TEST_P(socket_acceptor, ctor_move_invalid_handle)
 
 TEST_P(socket_acceptor, ctor_protocol)
 {
-  acceptor_t acceptor(GetParam());
+  acceptor_t acceptor(protocol);
   EXPECT_TRUE(acceptor.is_open());
 }
 
 
-TEST_P(socket_acceptor, ctor_protocol_and_handle)
+TEST_P(socket_acceptor, ctor_handle)
 {
   auto handle = sal::net::socket_base_t::invalid - 1;
-  acceptor_t acceptor(GetParam(), handle);
+  acceptor_t acceptor(protocol, handle);
   EXPECT_EQ(handle, acceptor.native_handle());
 
   std::error_code ignored;
@@ -81,14 +81,9 @@ TEST_P(socket_acceptor, ctor_protocol_and_handle)
 
 TEST_P(socket_acceptor, ctor_endpoint)
 {
-  acceptor_t::endpoint_t endpoint(GetParam(), port);
   acceptor_t acceptor(endpoint);
   EXPECT_TRUE(acceptor.is_open());
   EXPECT_FALSE(acceptor.enable_connection_aborted());
-
-  endpoint = acceptor.local_endpoint();
-  EXPECT_TRUE(endpoint.address().is_unspecified());
-  EXPECT_EQ(port, endpoint.port());
 
   bool reuse_address;
   acceptor.get_option(sal::net::reuse_address(&reuse_address));
@@ -98,7 +93,6 @@ TEST_P(socket_acceptor, ctor_endpoint)
 
 TEST_P(socket_acceptor, ctor_address_already_in_use)
 {
-  acceptor_t::endpoint_t endpoint(GetParam(), port);
   acceptor_t a(endpoint);
   EXPECT_THROW(acceptor_t b(endpoint, false), std::system_error);
 }
@@ -107,13 +101,13 @@ TEST_P(socket_acceptor, ctor_address_already_in_use)
 TEST_P(socket_acceptor, ctor_invalid_handle)
 {
   auto h = sal::net::socket_base_t::invalid;
-  EXPECT_THROW(acceptor_t(GetParam(), h), std::system_error);
+  EXPECT_THROW(acceptor_t(protocol, h), std::system_error);
 }
 
 
 TEST_P(socket_acceptor, assign_move)
 {
-  acceptor_t a(GetParam()), b;
+  acceptor_t a(protocol), b;
   EXPECT_TRUE(a.is_open());
   EXPECT_FALSE(b.is_open());
 
@@ -130,7 +124,7 @@ TEST_P(socket_acceptor, assign)
   acceptor_t acceptor;
 
   auto h = sal::net::socket_base_t::invalid - 1;
-  acceptor.assign(GetParam(), h);
+  acceptor.assign(protocol, h);
   EXPECT_TRUE(acceptor.is_open());
   EXPECT_EQ(h, acceptor.native_handle());
 
@@ -141,17 +135,17 @@ TEST_P(socket_acceptor, assign)
 
 TEST_P(socket_acceptor, assign_not_closed)
 {
-  acceptor_t acceptor(GetParam());
+  acceptor_t acceptor(protocol);
   auto h = sal::net::socket_base_t::invalid - 1;
 
   {
     std::error_code error;
-    acceptor.assign(GetParam(), h, error);
+    acceptor.assign(protocol, h, error);
     EXPECT_EQ(sal::net::socket_errc::already_open, error);
   }
 
   {
-    EXPECT_THROW(acceptor.assign(GetParam(), h), std::system_error);
+    EXPECT_THROW(acceptor.assign(protocol, h), std::system_error);
   }
 }
 
@@ -163,12 +157,12 @@ TEST_P(socket_acceptor, assign_invalid_handle)
 
   {
     std::error_code error;
-    acceptor.assign(GetParam(), h, error);
+    acceptor.assign(protocol, h, error);
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(acceptor.assign(GetParam(), h), std::system_error);
+    EXPECT_THROW(acceptor.assign(protocol, h), std::system_error);
   }
 }
 
@@ -176,24 +170,24 @@ TEST_P(socket_acceptor, assign_invalid_handle)
 TEST_P(socket_acceptor, open)
 {
   acceptor_t acceptor;
-  acceptor.open(GetParam());
+  acceptor.open(protocol);
   EXPECT_TRUE(acceptor.is_open());
 }
 
 
 TEST_P(socket_acceptor, open_already_open)
 {
-  acceptor_t acceptor(GetParam());
+  acceptor_t acceptor(protocol);
 
   {
     std::error_code error;
-    acceptor.open(GetParam(), error);
+    acceptor.open(protocol, error);
     EXPECT_EQ(sal::net::socket_errc::already_open, error);
     EXPECT_TRUE(acceptor.is_open());
   }
 
   {
-    EXPECT_THROW(acceptor.open(GetParam()), std::system_error);
+    EXPECT_THROW(acceptor.open(protocol), std::system_error);
     EXPECT_TRUE(acceptor.is_open());
   }
 }
@@ -203,7 +197,7 @@ TEST_P(socket_acceptor, close)
 {
   acceptor_t acceptor;
 
-  acceptor.open(GetParam());
+  acceptor.open(protocol);
   EXPECT_TRUE(acceptor.is_open());
 
   acceptor.close();
@@ -229,7 +223,7 @@ TEST_P(socket_acceptor, close_invalid_handle)
 
 TEST_P(socket_acceptor, close_bad_file_descriptor)
 {
-  acceptor_t acceptor(GetParam(), sal::net::socket_base_t::invalid - 1);
+  acceptor_t acceptor(protocol, sal::net::socket_base_t::invalid - 1);
 
   {
     std::error_code error;
@@ -245,7 +239,7 @@ TEST_P(socket_acceptor, close_bad_file_descriptor)
 
 TEST_P(socket_acceptor, non_blocking)
 {
-  acceptor_t acceptor(GetParam());
+  acceptor_t acceptor(protocol);
 
 #if __sal_os_windows
 
@@ -303,10 +297,10 @@ TEST_P(socket_acceptor, non_blocking_invalid)
 
 TEST_P(socket_acceptor, bind)
 {
-  acceptor_t acceptor(GetParam());
+  acceptor_t acceptor(protocol);
   acceptor.set_option(sal::net::reuse_address(true));
-  acceptor.bind(loopback(GetParam()));
-  EXPECT_EQ(loopback(GetParam()), acceptor.local_endpoint());
+  acceptor.bind(endpoint);
+  EXPECT_EQ(endpoint, acceptor.local_endpoint());
 }
 
 
@@ -316,13 +310,13 @@ TEST_P(socket_acceptor, bind_invalid)
 
   {
     std::error_code error;
-    acceptor.bind(loopback(GetParam()), error);
+    acceptor.bind(endpoint, error);
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
     EXPECT_THROW(
-      acceptor.bind(loopback(GetParam())),
+      acceptor.bind(endpoint),
       std::system_error
     );
   }
@@ -331,15 +325,14 @@ TEST_P(socket_acceptor, bind_invalid)
 
 TEST_P(socket_acceptor, listen)
 {
-  acceptor_t acceptor(GetParam());
+  acceptor_t acceptor(protocol);
   acceptor.set_option(sal::net::reuse_address(true));
-  acceptor.bind(loopback(GetParam()));
+  acceptor.bind(endpoint);
   acceptor.listen();
 
   socket_t a;
-  a.connect(loopback(GetParam()));
+  a.connect(endpoint);
 
-  socket_t::endpoint_t endpoint;
   auto b = acceptor.accept();
   EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
   EXPECT_EQ(b.remote_endpoint(), a.local_endpoint());
@@ -364,15 +357,15 @@ TEST_P(socket_acceptor, listen_invalid)
 
 TEST_P(socket_acceptor, accept)
 {
-  acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor_t acceptor(endpoint, true);
 
   socket_t a;
-  a.connect(loopback(GetParam()));
+  a.connect(endpoint);
 
-  socket_t::endpoint_t endpoint;
-  auto b = acceptor.accept(endpoint);
+  socket_t::endpoint_t remote_endpoint;
+  auto b = acceptor.accept(remote_endpoint);
 
-  EXPECT_EQ(endpoint, b.remote_endpoint());
+  EXPECT_EQ(remote_endpoint, b.remote_endpoint());
   EXPECT_EQ(a.remote_endpoint(), b.local_endpoint());
   EXPECT_EQ(b.remote_endpoint(), a.local_endpoint());
 }
@@ -397,29 +390,27 @@ TEST_P(socket_acceptor, accept_with_invalid_socket)
 TEST_P(socket_acceptor, accept_with_invalid_socket_and_endpoint)
 {
   acceptor_t acceptor;
-  acceptor_t::endpoint_t endpoint;
+  acceptor_t::endpoint_t remote_endpoint;
 
   {
     std::error_code error;
-    acceptor.accept(endpoint, error);
+    acceptor.accept(remote_endpoint, error);
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(acceptor.accept(endpoint), std::system_error);
+    EXPECT_THROW(acceptor.accept(remote_endpoint), std::system_error);
   }
 }
 
 
 TEST_P(socket_acceptor, wait)
 {
-  using namespace std::chrono_literals;
-
-  acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor_t acceptor(endpoint, true);
   EXPECT_FALSE(acceptor.wait(acceptor.wait_read, 0s));
 
   socket_t a;
-  a.connect(loopback(GetParam()));
+  a.connect(endpoint);
   EXPECT_TRUE(acceptor.wait(acceptor.wait_read, 10s));
   acceptor.accept();
 }
@@ -427,7 +418,7 @@ TEST_P(socket_acceptor, wait)
 
 TEST_P(socket_acceptor, enable_connection_aborted)
 {
-  acceptor_t acceptor(loopback(GetParam()), true);
+  acceptor_t acceptor(endpoint, true);
   acceptor.enable_connection_aborted(true);
   EXPECT_TRUE(acceptor.enable_connection_aborted());
 
@@ -436,9 +427,8 @@ TEST_P(socket_acceptor, enable_connection_aborted)
 
   /*
   socket_t socket;
-  socket.connect(loopback(GetParam()));
+  socket.connect(endpoint);
 
-  using namespace std::chrono_literals;
   socket.set_option(sal::net::linger(true, 0s));
 
   socket_t::endpoint_t endpoint;
@@ -451,7 +441,6 @@ TEST_P(socket_acceptor, enable_connection_aborted)
 
 TEST_P(socket_acceptor, local_endpoint)
 {
-  auto endpoint = loopback(GetParam());
   acceptor_t acceptor(endpoint);
   EXPECT_EQ(endpoint, acceptor.local_endpoint());
 }
