@@ -46,64 +46,68 @@ channel.send(sal::make_buf(data, size));
 ```
 
 
-
 Asynchronous operations {#async-mode}
 -----------------------
 
 For asynchronous API, there are multiple parts working together:
-  - sal::net::async_service_t provides internal OS-specific underlying
-    functionality (IOCP/epoll/kqueue handle, used by
-    sal::net::async_service_t::context_t, not application directly).
-  - sal::net::async_service_t::context_t maintains thread-specific
-    resources and forwards asynchronous calls completions to application
-    domain
-  - sal::net::async_service_t::io_t represents single asynchronous
-    operations and related resources.
+  - sal::net::async::service_t wraps OS-specific proactor (IOCP) or reactor
+    (epoll/kqueue) into unified proactor-based class
+  - sal::net::async::io_t represents single asynchronous operation and related
+    I/O buffer (size above MTU size but below 2kB)
 
-There is usually one sal::net::async_service_t per application. Each
-thread that invokes callbacks from OS to application, does it by invoking
-repeatedly method sal::net::async_service_t::context_t::poll that
-returns one completed operation or ```nullptr``` if there is none. Returned
-sal::net::io_ptr (std::unique_ptr to sal::net::async_service_t::io_t) is
-generic completed asynchronous operation. To detect which exactly,
-call ```SOCKET_TYPE::async_OPERATION_result```. If buffer represents given
-operation, pointer to result data is returned or ```nullptr``` otherwise.
+There is usually one sal::net::async::service_t instance per application. Each
+worker thread that wants to receive I/O completion notifications, does it by
+invoking repeatedly sal::net::async::service_t::poll() (or similar related
+methods). This method returns one completed operation or if returned object
+bool cast returns false, there is none. This instance is generic completed
+asynchronous opoerations. To detect which operation exactly finished, use
+sal::net::async::io_t::get_if<ResultType>() that returns pointer to result
+data or ```nullptr``` if completed operation is not ResultType. Possible
+ResultType types can be found in specific socket class as nested structs with
+name ```OperationType_t``` (for example,
+sal::net::basic_datagram_socket_t::receive_from_t, etc).
 
 Sample usage (pseudocode):
+
 ```{.cpp}
-// global I/O service
-sal::net::async_service_t svc;
+// global I/O completion poller
+sal::net::async::service_t io_svc;
 
-// for each thread
-sal::net::async_service_t::context_t ctx = svc.make_context();
-
-// create channel associated with async service
+// create socket and associate it with service to support asynchronous I/O
 using socket_t = sal::net::ip::udp_t::socket_t;
-socket_t channel;
-channel.associate(svc);
+socket_t socket;
+socket.associate(io_svc);
 
-// allocate asynchronous operation handle (application owns io)
-sal::net::io_ptr io = ctx.make_io();
+// allocate asynchronous I/O handle (application is owner)
+sal::net::async::io_t io = io_svc.make_io();
 
-// start asynchronous receive_from (networking library owns io)
-channel.async_receive_from(std::move(io));
+// start asynchronous recvfrom (io_svc is owner)
+socket.receive_from_async(std::move(io));
 
 // handle completions while not stopped
 while (!stopped)
 {
-  // block and wait until there are completions to handle
-  // (if some operation has already completed, returns immediately)
-  if (auto io = ctx.poll())
+  // block until thre are completions to handle
+  // (or if any operation is already completed, return immediately)
+  if (auto io = io_svc.poll())
   {
-    if (auto *result = socket_t::async_receive_from_result(io))
-    {
-      // handle completed receive from, result provides information about it
-    }
-    // else: list other operations' result handlers
-  }
+    // application owns io
 
-  // application owns io: it can be reused or simply dropped, in which
-  // case ctx will automatically return it to internal free list
+    // detect and handle completed I/O type
+    if (auto result = io.get_if<socket_t::receive_from_t>())
+    {
+      // received data from result->remote_endpoint
+      // in [io.data(), io.data() + result->transferred)
+    }
+    else if (auto result = io.get_if<socket_t::send_to_t>())
+    {
+      // ...
+    }
+
+    // application owns io. It can be reused for different operation. If not
+    // reused, on leaving scope it is automatically released into pool (io_svc
+    // becomes owner)
+  }
 }
 ```
 

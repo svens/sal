@@ -515,13 +515,22 @@ public:
   }
 
 
-  // TODO: document that if accepted_socket not moved, it will be leaked
+  /**
+   * accept_async() result type
+   */
   struct accept_t
   {
   public:
 
+    /// I/O type
+    /// \internal
     static constexpr async::io_t::op_t op = async::io_t::op_t::accept;
 
+    /**
+     * Return accepted socket.
+     * \note It returns valid socket only on first call. Following calls
+     * return invalid socket.
+     */
     socket_t accepted_socket (std::error_code &error) noexcept
     {
       socket_t result;
@@ -530,6 +539,9 @@ public:
       return result;
     }
 
+    /**
+     * \see accepted_socket(std::error_code &)
+     */
     socket_t accepted_socket ()
     {
       return accepted_socket(
@@ -545,6 +557,9 @@ public:
   };
 
 
+  /**
+   * Asynchronously start accept().
+   */
   void accept_async (async::io_t &&io) noexcept
   {
     accept_t *result;
@@ -562,6 +577,10 @@ private:
 };
 
 
+/**
+ * basic_socket_acceptor_t deduction guide using constructor that binds socket
+ * to \tparam Endpoint
+ */
 template <typename Endpoint>
 basic_socket_acceptor_t (const Endpoint &, bool=true)
   -> basic_socket_acceptor_t<typename Endpoint::protocol_t>;

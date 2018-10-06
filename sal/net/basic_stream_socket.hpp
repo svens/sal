@@ -184,12 +184,20 @@ public:
   // Asynchronous API
   //
 
+  /**
+   * connect_async() result type
+   */
   struct connect_t
   {
+    /// I/O type
+    /// \internal
     static constexpr async::io_t::op_t op = async::io_t::op_t::connect;
   };
 
 
+  /**
+   * Asynchronously start connect() to \a endpoint using \a io.
+   */
   void connect_async (async::io_t &&io, const endpoint_t &endpoint) noexcept
   {
     connect_t *result;
@@ -198,14 +206,26 @@ public:
   }
 
 
+  /**
+   * receive_async() result type
+   */
   struct receive_t
   {
+    /// I/O type
+    /// \internal
     static constexpr async::io_t::op_t op = async::io_t::op_t::receive;
+
+    /// Number of bytes transferred
     size_t transferred;
+
+    /// Message receiving flags
     socket_base_t::message_flags_t flags;
   };
 
 
+  /**
+   * Asynchronously start receive() operation using \a io with \a flags.
+   */
   void receive_async (async::io_t &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
@@ -216,19 +236,32 @@ public:
   }
 
 
+  /**
+   * Asynchronously start receive() operation using \a io with default flags.
+   */
   void receive_async (async::io_t &&io) noexcept
   {
     receive_async(std::move(io), {});
   }
 
 
+  /**
+   * send_async() result type
+   */
   struct send_t
   {
+    /// I/O type
+    /// \internal
     static constexpr async::io_t::op_t op = async::io_t::op_t::send;
+
+    /// Number of bytes transferred
     size_t transferred;
   };
 
 
+  /**
+   * Asynchronously start send() operation using \a io with \a flags.
+   */
   void send_async (async::io_t &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
@@ -238,6 +271,9 @@ public:
   }
 
 
+  /**
+   * Asynchronously start send() operation using \a io with default flags.
+   */
   void send_async (async::io_t &&io) noexcept
   {
     send_async(std::move(io), {});
@@ -245,6 +281,10 @@ public:
 };
 
 
+/**
+ * basic_stream_socket_t deduction guide using constructor that binds socket
+ * to \tparam Endpoint
+ */
 template <typename Endpoint>
 basic_stream_socket_t (const Endpoint &)
   -> basic_stream_socket_t<typename Endpoint::protocol_t>;
