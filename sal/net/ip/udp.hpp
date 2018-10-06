@@ -117,8 +117,8 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
   const udp_t &protocol) noexcept
 {
   return protocol.family() == AF_INET
-    ? writer.print("AF_INET")
-    : writer.print("AF_INET6")
+    ? writer.print("UDP/IPv4")
+    : writer.print("UDP/IPv6")
   ;
 }
 
@@ -128,7 +128,7 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
  */
 inline std::ostream &operator<< (std::ostream &os, const udp_t &protocol)
 {
-  char_array_t<sizeof("AF_INET6")> buf;
+  char_array_t<sizeof("UDP/IPvX")> buf;
   buf << protocol;
   return (os << buf.c_str());
 }
