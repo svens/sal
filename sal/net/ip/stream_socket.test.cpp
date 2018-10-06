@@ -181,6 +181,8 @@ TEST_P(stream_socket, send_and_receive)
 TEST_P(stream_socket, receive_no_sender_non_blocking)
 {
   auto [a, b] = make_connected_socket_pair();
+  (void)a;
+
   b.non_blocking(true);
 
   char buf[1024];
@@ -233,6 +235,8 @@ TEST_P(stream_socket, receive_peek)
 TEST_P(stream_socket, send_after_shutdown)
 {
   auto [a, b] = make_connected_socket_pair();
+  (void)b;
+
   a.shutdown(a.shutdown_send);
 
   {
@@ -275,6 +279,8 @@ TEST_P(stream_socket, send_after_remote_close)
 TEST_P(stream_socket, receive_after_shutdown)
 {
   auto [a, b] = make_connected_socket_pair();
+  (void)a;
+
   b.shutdown(b.shutdown_receive);
 
   char buf[1024];
