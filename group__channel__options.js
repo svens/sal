@@ -10,6 +10,6 @@ var group__channel__options =
       [ "value", "structsal_1_1crypto_1_1peer__name__t.html#a9536d043c1870ca9073066b0c9ec0679", null ]
     ] ],
     [ "peer_name", "group__channel__options.html#ga5ff13de34495b54890aefc15c170e51d", null ],
-    [ "mutual_auth", "group__channel__options.html#ga093d259c63653f6c7b617bb5667d47f1", null ],
-    [ "no_mutual_auth", "group__channel__options.html#ga6bbb229fb0881a57ca13eb8262c1c000", null ]
+    [ "mutual_auth", "group__channel__options.html#ga4555182b2fad358a2d2d016fff713f59", null ],
+    [ "no_mutual_auth", "group__channel__options.html#ga977cd5a3554fb0947f3e5ab5dce30dc1", null ]
 ];

@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -98,7 +98,8 @@ $(document).ready(function(){initNavTree('basic__socket__acceptor_8hpp.html','')
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">basic_socket_acceptor.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -118,8 +119,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Object of class <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html" title="Object of class basic_socket_acceptor_t is used to listen and queue incoming socket connections...">basic_socket_acceptor_t</a> is used to listen and queue incoming socket connections.  <a href="classsal_1_1net_1_1basic__socket__acceptor__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;::async_accept_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> result.  <a href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1accept__t.html">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;::accept_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a1c120039ee53d72a098e75526cce4c9b" title="Asynchronously start accept(). ">accept_async()</a> result type  <a href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1accept__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -127,6 +128,13 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacesal_1_1net"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html">sal::net</a></td></tr>
 <tr class="memdesc:namespacesal_1_1net"><td class="mdescLeft">&#160;</td><td class="mdescRight">Networking primitives (sockets, resolver, etc) <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:add337861975ad9508bf32a09b68c3f0a"><td class="memTemplParams" colspan="2">template&lt;typename Endpoint &gt; </td></tr>
+<tr class="memitem:add337861975ad9508bf32a09b68c3f0a"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#add337861975ad9508bf32a09b68c3f0a">sal::net::basic_socket_acceptor_t</a> (const Endpoint &amp;, bool=true) -&gt; basic_socket_acceptor_t&lt; typename Endpoint::protocol_t &gt;</td></tr>
+<tr class="memdesc:add337861975ad9508bf32a09b68c3f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html" title="Object of class basic_socket_acceptor_t is used to listen and queue incoming socket connections...">basic_socket_acceptor_t</a> deduction guide using constructor that binds socket to  <a href="namespacesal_1_1net.html#add337861975ad9508bf32a09b68c3f0a">More...</a><br /></td></tr>
+<tr class="separator:add337861975ad9508bf32a09b68c3f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Socket acceptor. </p>

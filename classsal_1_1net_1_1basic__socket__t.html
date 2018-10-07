@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -101,7 +101,6 @@ $(document).ready(function(){initNavTree('classsal_1_1net_1_1basic__socket__t.ht
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
-<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classsal_1_1net_1_1basic__socket__t-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -240,11 +239,19 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:ac7a0051ce5ba1898a4581015e91c24dc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#aaeae680378245aa54a5b6560a2896adc">endpoint_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#ac7a0051ce5ba1898a4581015e91c24dc">remote_endpoint</a> () const</td></tr>
 <tr class="memdesc:ac7a0051ce5ba1898a4581015e91c24dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the remote endpoint associated with the socket.  <a href="#ac7a0051ce5ba1898a4581015e91c24dc">More...</a><br /></td></tr>
 <tr class="separator:ac7a0051ce5ba1898a4581015e91c24dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ade4ad82c3bbe02a0267b842169b6e7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a2ade4ad82c3bbe02a0267b842169b6e7">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a2ade4ad82c3bbe02a0267b842169b6e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associate this socket with <em>service</em> for asynchronous I/O operations.  <a href="#a2ade4ad82c3bbe02a0267b842169b6e7">More...</a><br /></td></tr>
-<tr class="separator:a2ade4ad82c3bbe02a0267b842169b6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b9a3df9b2a5c61b2a2f3e123a53c45a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a7b9a3df9b2a5c61b2a2f3e123a53c45a">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service)</td></tr>
-<tr class="separator:a7b9a3df9b2a5c61b2a2f3e123a53c45a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a743c5ac3305f827e602529e0974c978e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a743c5ac3305f827e602529e0974c978e">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a743c5ac3305f827e602529e0974c978e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associate this socket with <em>service</em> for asynchronous I/O operations.  <a href="#a743c5ac3305f827e602529e0974c978e">More...</a><br /></td></tr>
+<tr class="separator:a743c5ac3305f827e602529e0974c978e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60382162584ddd597d3a6bdda2cf4935"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a60382162584ddd597d3a6bdda2cf4935">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;service)</td></tr>
+<tr class="separator:a60382162584ddd597d3a6bdda2cf4935"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a376a3385c1365031088434aa7e829730"><td class="memTemplParams" colspan="2">template&lt;typename Context &gt; </td></tr>
+<tr class="memitem:a376a3385c1365031088434aa7e829730"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a376a3385c1365031088434aa7e829730">context</a> (Context *context)</td></tr>
+<tr class="memdesc:a376a3385c1365031088434aa7e829730"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set application specific context for socket's asynchronous operations.  <a href="#a376a3385c1365031088434aa7e829730">More...</a><br /></td></tr>
+<tr class="separator:a376a3385c1365031088434aa7e829730"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af808e641c74f071205a5cbce77254f0d"><td class="memTemplParams" colspan="2">template&lt;typename Context &gt; </td></tr>
+<tr class="memitem:af808e641c74f071205a5cbce77254f0d"><td class="memTemplItemLeft" align="right" valign="top">Context *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#af808e641c74f071205a5cbce77254f0d">context</a> () const</td></tr>
+<tr class="memdesc:af808e641c74f071205a5cbce77254f0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current socket context.  <a href="#af808e641c74f071205a5cbce77254f0d">More...</a><br /></td></tr>
+<tr class="separator:af808e641c74f071205a5cbce77254f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -281,19 +288,16 @@ Protected Member Functions</h2></td></tr>
 <tr class="memdesc:a275e78cc28e7053f4df12b8274a394e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new socket, acquiring <em>handle</em>. <br /></td></tr>
 <tr class="separator:a275e78cc28e7053f4df12b8274a394e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
-Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:a235adca0c5c193db14d12bea47277740"><td class="memItemLeft" align="right" valign="top"><a id="a235adca0c5c193db14d12bea47277740"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a235adca0c5c193db14d12bea47277740">associate</a> (__bits::socket_t &amp;socket, <a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a235adca0c5c193db14d12bea47277740"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup asynchronous operations helpers for <em>socket</em>. <br /></td></tr>
-<tr class="separator:a235adca0c5c193db14d12bea47277740"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a20cd73d24ad08b369f6ea34a8d10e2e2"><td class="memItemLeft" align="right" valign="top"><a id="a20cd73d24ad08b369f6ea34a8d10e2e2"></a>
 __bits::socket_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a20cd73d24ad08b369f6ea34a8d10e2e2">socket_</a> {}</td></tr>
 <tr class="memdesc:a20cd73d24ad08b369f6ea34a8d10e2e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Low-level OS socket. <br /></td></tr>
 <tr class="separator:a20cd73d24ad08b369f6ea34a8d10e2e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a986af633517e42695f635fd0ea0d2b"><td class="memItemLeft" align="right" valign="top"><a id="a0a986af633517e42695f635fd0ea0d2b"></a>
+async::__bits::handler_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a0a986af633517e42695f635fd0ea0d2b">async_</a> {}</td></tr>
+<tr class="memdesc:a0a986af633517e42695f635fd0ea0d2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Low-level OS socket asynchronous I/O handler. <br /></td></tr>
+<tr class="separator:a0a986af633517e42695f635fd0ea0d2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2bc6559d009c029a34b3aab21c6100e8"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a2bc6559d009c029a34b3aab21c6100e8">shutdown_t</a> = __bits::shutdown_t</td></tr>
 <tr class="separator:a2bc6559d009c029a34b3aab21c6100e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b723c63f58e7afd4d61820788d605c7"><td class="memItemLeft" align="right" valign="top"><a id="a4b723c63f58e7afd4d61820788d605c7"></a>
@@ -575,8 +579,8 @@ template&lt;typename Protocol &gt; </div>
 
 </div>
 </div>
-<a id="a2ade4ad82c3bbe02a0267b842169b6e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ade4ad82c3bbe02a0267b842169b6e7">&#9670;&nbsp;</a></span>associate() <span class="overload">[1/2]</span></h2>
+<a id="a743c5ac3305f827e602529e0974c978e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a743c5ac3305f827e602529e0974c978e">&#9670;&nbsp;</a></span>associate() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -589,7 +593,7 @@ template&lt;typename Protocol &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__t.html">sal::net::basic_socket_t</a>&lt; Protocol &gt;::associate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;&#160;</td>
           <td class="paramname"><em>service</em>, </td>
         </tr>
         <tr>
@@ -613,12 +617,12 @@ template&lt;typename Protocol &gt; </div>
 
 <p>Associate this socket with <em>service</em> for asynchronous I/O operations. </p>
 <p>Using asynchronous API without associating it first with service is undefined behaviour. Once socket is associated with specific service, it will remain so until closed.</p>
-<p>On failure, set <em>error</em> </p>
+<p>On failure, set <em>error</em>. </p>
 
 </div>
 </div>
-<a id="a7b9a3df9b2a5c61b2a2f3e123a53c45a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7b9a3df9b2a5c61b2a2f3e123a53c45a">&#9670;&nbsp;</a></span>associate() <span class="overload">[2/2]</span></h2>
+<a id="a60382162584ddd597d3a6bdda2cf4935"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60382162584ddd597d3a6bdda2cf4935">&#9670;&nbsp;</a></span>associate() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -631,7 +635,7 @@ template&lt;typename Protocol &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__t.html">sal::net::basic_socket_t</a>&lt; Protocol &gt;::associate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;&#160;</td>
           <td class="paramname"><em>service</em></td><td>)</td>
           <td></td>
         </tr>
@@ -642,7 +646,7 @@ template&lt;typename Protocol &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a2ade4ad82c3bbe02a0267b842169b6e7" title="Associate this socket with service for asynchronous I/O operations. ">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html" title="Asynchronous networking I/O completion service. ">async_service_t</a> &amp;, std::error_code &amp;) </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a743c5ac3305f827e602529e0974c978e" title="Associate this socket with service for asynchronous I/O operations. ">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html" title="Asynchronous networking I/O completion service. ">async::service_t</a> &amp;, std::error_code &amp;) </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::system_error</td><td>on failure </td></tr>
@@ -915,6 +919,71 @@ template&lt;typename Protocol &gt; </div>
 
 <p>Connect this socket to specified remote <em>endpoint</em>. </p>
 <p>If <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#af3d953551f23763c431eb91ae8cfbe71" title="Return boolean indicating whether this socket was opened by previous call to open() or assign()...">is_open()</a> is false, it is <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a658d48f0f818e0d7a0033259f113efcc" title="Create new socket instance of protocol. ">open()</a> first. On failure, throw std:system_error </p>
+
+</div>
+</div>
+<a id="a376a3385c1365031088434aa7e829730"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a376a3385c1365031088434aa7e829730">&#9670;&nbsp;</a></span>context() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<div class="memtemplate">
+template&lt;typename Context &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__t.html">sal::net::basic_socket_t</a>&lt; Protocol &gt;::context </td>
+          <td>(</td>
+          <td class="paramtype">Context *&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set application specific context for socket's asynchronous operations. </p>
+<p>On asynchronous I/O operation completion it is passed back to application along with <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html" title="Asynchronous socket I/O operation handle and associated data for I/O (2kB). ">async::io_t</a> (using method <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a2db14c8f3e625f2d615393232e3c6397" title="Return application-specific socket context. ">async::io_t::socket_context</a>). </p>
+
+</div>
+</div>
+<a id="af808e641c74f071205a5cbce77254f0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af808e641c74f071205a5cbce77254f0d">&#9670;&nbsp;</a></span>context() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<div class="memtemplate">
+template&lt;typename Context &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Context* <a class="el" href="classsal_1_1net_1_1basic__socket__t.html">sal::net::basic_socket_t</a>&lt; Protocol &gt;::context </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get current socket context. </p>
+<dl class="section see"><dt>See also</dt><dd>void <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a376a3385c1365031088434aa7e829730" title="Set application specific context for socket&#39;s asynchronous operations. ">context</a> (Context *) </dd></dl>
 
 </div>
 </div>

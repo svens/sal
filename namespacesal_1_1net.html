@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -99,7 +99,6 @@ $(document).ready(function(){initNavTree('namespacesal_1_1net.html','');});
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
@@ -118,9 +117,6 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronous networking I/O completion service.  <a href="classsal_1_1net_1_1async__service__t.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">basic_datagram_socket_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datagram socket.  <a href="classsal_1_1net_1_1basic__datagram__socket__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -137,13 +133,6 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Common socket types and values.  <a href="classsal_1_1net_1_1socket__base__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a2c1f2af17310f6dedab57469454ce03e"><td class="memItemLeft" align="right" valign="top"><a id="a2c1f2af17310f6dedab57469454ce03e"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> = std::unique_ptr&lt; <a class="el" href="classsal_1_1net_1_1async__service__t_1_1io__t.html">async_service_t::io_t</a>, void(*)(void *)&gt;</td></tr>
-<tr class="memdesc:a2c1f2af17310f6dedab57469454ce03e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Strict ownership pointer to asynchronous I/O operation handle. <br /></td></tr>
-<tr class="separator:a2c1f2af17310f6dedab57469454ce03e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:aafae1b17829b8443483a4437f52ac00f"><td class="memItemLeft" align="right" valign="top"><a id="aafae1b17829b8443483a4437f52ac00f"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#aafae1b17829b8443483a4437f52ac00f">socket_errc</a> { <b>already_open</b> = 1, 
@@ -154,6 +143,18 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a6b5cf8717bb5f445c70d2ac808d11726"><td class="memTemplParams" colspan="2">template&lt;typename Endpoint &gt; </td></tr>
+<tr class="memitem:a6b5cf8717bb5f445c70d2ac808d11726"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a6b5cf8717bb5f445c70d2ac808d11726">basic_datagram_socket_t</a> (const Endpoint &amp;) -&gt; <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">basic_datagram_socket_t</a>&lt; typename Endpoint::protocol_t &gt;</td></tr>
+<tr class="memdesc:a6b5cf8717bb5f445c70d2ac808d11726"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html" title="Datagram socket. ">basic_datagram_socket_t</a> deduction guide using constructor that binds socket to  <a href="#a6b5cf8717bb5f445c70d2ac808d11726">More...</a><br /></td></tr>
+<tr class="separator:a6b5cf8717bb5f445c70d2ac808d11726"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add337861975ad9508bf32a09b68c3f0a"><td class="memTemplParams" colspan="2">template&lt;typename Endpoint &gt; </td></tr>
+<tr class="memitem:add337861975ad9508bf32a09b68c3f0a"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#add337861975ad9508bf32a09b68c3f0a">basic_socket_acceptor_t</a> (const Endpoint &amp;, bool=true) -&gt; <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a>&lt; typename Endpoint::protocol_t &gt;</td></tr>
+<tr class="memdesc:add337861975ad9508bf32a09b68c3f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html" title="Object of class basic_socket_acceptor_t is used to listen and queue incoming socket connections...">basic_socket_acceptor_t</a> deduction guide using constructor that binds socket to  <a href="#add337861975ad9508bf32a09b68c3f0a">More...</a><br /></td></tr>
+<tr class="separator:add337861975ad9508bf32a09b68c3f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1a88628d4a1053bd259ddd4549c7b1b"><td class="memTemplParams" colspan="2">template&lt;typename Endpoint &gt; </td></tr>
+<tr class="memitem:ad1a88628d4a1053bd259ddd4549c7b1b"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#ad1a88628d4a1053bd259ddd4549c7b1b">basic_stream_socket_t</a> (const Endpoint &amp;) -&gt; <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html">basic_stream_socket_t</a>&lt; typename Endpoint::protocol_t &gt;</td></tr>
+<tr class="memdesc:ad1a88628d4a1053bd259ddd4549c7b1b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html" title="Stream socket. ">basic_stream_socket_t</a> deduction guide using constructor that binds socket to  <a href="#ad1a88628d4a1053bd259ddd4549c7b1b">More...</a><br /></td></tr>
+<tr class="separator:ad1a88628d4a1053bd259ddd4549c7b1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4cacb9213a52b174e4806965cd581e3"><td class="memItemLeft" align="right" valign="top">const std::error_category &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#ae4cacb9213a52b174e4806965cd581e3">socket_category</a> () noexcept</td></tr>
 <tr class="memdesc:ae4cacb9213a52b174e4806965cd581e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return reference to socket error category.  <a href="#ae4cacb9213a52b174e4806965cd581e3">More...</a><br /></td></tr>
 <tr class="separator:ae4cacb9213a52b174e4806965cd581e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -242,6 +243,100 @@ auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="name
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Networking primitives (sockets, resolver, etc) </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="a6b5cf8717bb5f445c70d2ac808d11726"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b5cf8717bb5f445c70d2ac808d11726">&#9670;&nbsp;</a></span>basic_datagram_socket_t()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Endpoint &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a> </td>
+          <td>(</td>
+          <td class="paramtype">const Endpoint &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> -&gt;  <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">basic_datagram_socket_t</a>&lt; typename Endpoint::protocol_t &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html" title="Datagram socket. ">basic_datagram_socket_t</a> deduction guide using constructor that binds socket to </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Endpoint</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="add337861975ad9508bf32a09b68c3f0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add337861975ad9508bf32a09b68c3f0a">&#9670;&nbsp;</a></span>basic_socket_acceptor_t()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Endpoint &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a> </td>
+          <td>(</td>
+          <td class="paramtype">const Endpoint &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> -&gt;  <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a>&lt; typename Endpoint::protocol_t &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html" title="Object of class basic_socket_acceptor_t is used to listen and queue incoming socket connections...">basic_socket_acceptor_t</a> deduction guide using constructor that binds socket to </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Endpoint</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ad1a88628d4a1053bd259ddd4549c7b1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1a88628d4a1053bd259ddd4549c7b1b">&#9670;&nbsp;</a></span>basic_stream_socket_t()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Endpoint &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html">sal::net::basic_stream_socket_t</a> </td>
+          <td>(</td>
+          <td class="paramtype">const Endpoint &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td> -&gt;  <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html">basic_stream_socket_t</a>&lt; typename Endpoint::protocol_t &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html" title="Stream socket. ">basic_stream_socket_t</a> deduction guide using constructor that binds socket to </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Endpoint</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ae0ce50aba8c1a8fd2ec0019aaef1ceae"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae0ce50aba8c1a8fd2ec0019aaef1ceae">&#9670;&nbsp;</a></span>broadcast() <span class="overload">[1/2]</span></h2>
 

@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -100,9 +100,7 @@ $(document).ready(function(){initNavTree('classsal_1_1net_1_1basic__socket__acce
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
-<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="classsal_1_1net_1_1basic__socket__acceptor__t-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt; Class Template Reference</div>  </div>
@@ -125,8 +123,8 @@ Inheritance diagram for sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> result.  <a href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1accept__t.html">accept_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a1c120039ee53d72a098e75526cce4c9b" title="Asynchronously start accept(). ">accept_async()</a> result type  <a href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1accept__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
@@ -150,15 +148,15 @@ using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cla
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a96e45b1d1db8122ecbe4fb6b800bc1ce"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a96e45b1d1db8122ecbe4fb6b800bc1ce">basic_socket_acceptor_t</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;protocol)</td></tr>
-<tr class="memdesc:a96e45b1d1db8122ecbe4fb6b800bc1ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct and open new acceptor using <em>protocol</em>.  <a href="#a96e45b1d1db8122ecbe4fb6b800bc1ce">More...</a><br /></td></tr>
-<tr class="separator:a96e45b1d1db8122ecbe4fb6b800bc1ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a04eaea9df72c70ce182c450e2cdfadf3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a04eaea9df72c70ce182c450e2cdfadf3">basic_socket_acceptor_t</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0">endpoint_t</a> &amp;endpoint, bool reuse_addr=true)</td></tr>
-<tr class="memdesc:a04eaea9df72c70ce182c450e2cdfadf3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new acceptor, open and bind to <em>endpoint</em>.  <a href="#a04eaea9df72c70ce182c450e2cdfadf3">More...</a><br /></td></tr>
-<tr class="separator:a04eaea9df72c70ce182c450e2cdfadf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad491f7950394a131553dab4e2584ceee"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad491f7950394a131553dab4e2584ceee">basic_socket_acceptor_t</a> (const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;protocol, <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#aec23024ad84d7e51e8b40edecf7f9196">handle_t</a> handle)</td></tr>
-<tr class="memdesc:ad491f7950394a131553dab4e2584ceee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new acceptor for pre-opened <em>handle</em> using <em>protocol</em>.  <a href="#ad491f7950394a131553dab4e2584ceee">More...</a><br /></td></tr>
-<tr class="separator:ad491f7950394a131553dab4e2584ceee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3912728abe77c64f266d0fbe5f3007f6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a3912728abe77c64f266d0fbe5f3007f6">basic_socket_acceptor_t</a> (const AcceptableProtocol &amp;protocol)</td></tr>
+<tr class="memdesc:a3912728abe77c64f266d0fbe5f3007f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct and open new acceptor using <em>protocol</em>.  <a href="#a3912728abe77c64f266d0fbe5f3007f6">More...</a><br /></td></tr>
+<tr class="separator:a3912728abe77c64f266d0fbe5f3007f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb9fac937a15b5bac31e090de676caa4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#afb9fac937a15b5bac31e090de676caa4">basic_socket_acceptor_t</a> (const typename AcceptableProtocol::endpoint_t &amp;endpoint, bool reuse_addr=true)</td></tr>
+<tr class="memdesc:afb9fac937a15b5bac31e090de676caa4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new acceptor, open and bind to <em>endpoint</em>.  <a href="#afb9fac937a15b5bac31e090de676caa4">More...</a><br /></td></tr>
+<tr class="separator:afb9fac937a15b5bac31e090de676caa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04d3a5c4623a7569f4433f6c1de2cd4b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a04d3a5c4623a7569f4433f6c1de2cd4b">basic_socket_acceptor_t</a> (const AcceptableProtocol &amp;protocol, <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#aec23024ad84d7e51e8b40edecf7f9196">handle_t</a> handle)</td></tr>
+<tr class="memdesc:a04d3a5c4623a7569f4433f6c1de2cd4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new acceptor for pre-opened <em>handle</em> using <em>protocol</em>.  <a href="#a04d3a5c4623a7569f4433f6c1de2cd4b">More...</a><br /></td></tr>
+<tr class="separator:a04d3a5c4623a7569f4433f6c1de2cd4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35332d2304618f9fdab43863e2002063"><td class="memItemLeft" align="right" valign="top"><a id="a35332d2304618f9fdab43863e2002063"></a>
 <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#aec23024ad84d7e51e8b40edecf7f9196">handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a35332d2304618f9fdab43863e2002063">native_handle</a> () const noexcept</td></tr>
 <tr class="memdesc:a35332d2304618f9fdab43863e2002063"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return native representation of this socket. <br /></td></tr>
@@ -258,23 +256,23 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:acfd0e6322617af2b71355091944a09ee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0">endpoint_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#acfd0e6322617af2b71355091944a09ee">local_endpoint</a> () const</td></tr>
 <tr class="memdesc:acfd0e6322617af2b71355091944a09ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the locally-bound endpoint associated with the socket.  <a href="#acfd0e6322617af2b71355091944a09ee">More...</a><br /></td></tr>
 <tr class="separator:acfd0e6322617af2b71355091944a09ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f0af6503bc5f9929d96671c084d11b9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a4f0af6503bc5f9929d96671c084d11b9">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a4f0af6503bc5f9929d96671c084d11b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associate this socket with <em>service</em> for asynchronous I/O operations.  <a href="#a4f0af6503bc5f9929d96671c084d11b9">More...</a><br /></td></tr>
-<tr class="separator:a4f0af6503bc5f9929d96671c084d11b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a64fa8b70bdf3297862366cf4a4763a80"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a64fa8b70bdf3297862366cf4a4763a80">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service)</td></tr>
-<tr class="separator:a64fa8b70bdf3297862366cf4a4763a80"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93e319454738a62643456828ae05fb00"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00">async_accept</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io) noexcept</td></tr>
-<tr class="memdesc:a93e319454738a62643456828ae05fb00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a>  <a href="#a93e319454738a62643456828ae05fb00">More...</a><br /></td></tr>
-<tr class="separator:a93e319454738a62643456828ae05fb00"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aa8b0cde690ae29542ed7284933d912b5"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#aa8b0cde690ae29542ed7284933d912b5">async_accept_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:aa8b0cde690ae29542ed7284933d912b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> operation.  <a href="#aa8b0cde690ae29542ed7284933d912b5">More...</a><br /></td></tr>
-<tr class="separator:aa8b0cde690ae29542ed7284933d912b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af7d965502c77f41b5f51bea7c46fbbfb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#af7d965502c77f41b5f51bea7c46fbbfb">async_accept_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io)</td></tr>
-<tr class="memdesc:af7d965502c77f41b5f51bea7c46fbbfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> operation.  <a href="#af7d965502c77f41b5f51bea7c46fbbfb">More...</a><br /></td></tr>
-<tr class="separator:af7d965502c77f41b5f51bea7c46fbbfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9271f705dfd7700a28a0c21842f8f78"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#aa9271f705dfd7700a28a0c21842f8f78">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:aa9271f705dfd7700a28a0c21842f8f78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associate this socket with <em>service</em> for asynchronous I/O operations.  <a href="#aa9271f705dfd7700a28a0c21842f8f78">More...</a><br /></td></tr>
+<tr class="separator:aa9271f705dfd7700a28a0c21842f8f78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10ad192a37c88c61ed9c39f41fe1dc2d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a10ad192a37c88c61ed9c39f41fe1dc2d">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;service)</td></tr>
+<tr class="separator:a10ad192a37c88c61ed9c39f41fe1dc2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a95e04817aefeef5cb3b3451835042c"><td class="memTemplParams" colspan="2">template&lt;typename Context &gt; </td></tr>
+<tr class="memitem:a9a95e04817aefeef5cb3b3451835042c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a9a95e04817aefeef5cb3b3451835042c">context</a> (Context *context)</td></tr>
+<tr class="memdesc:a9a95e04817aefeef5cb3b3451835042c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set application specific context for socket's asynchronous operations.  <a href="#a9a95e04817aefeef5cb3b3451835042c">More...</a><br /></td></tr>
+<tr class="separator:a9a95e04817aefeef5cb3b3451835042c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a633208fd3c368749d5cb223cc95220c4"><td class="memTemplParams" colspan="2">template&lt;typename Context &gt; </td></tr>
+<tr class="memitem:a633208fd3c368749d5cb223cc95220c4"><td class="memTemplItemLeft" align="right" valign="top">Context *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a633208fd3c368749d5cb223cc95220c4">context</a> () const</td></tr>
+<tr class="memdesc:a633208fd3c368749d5cb223cc95220c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current socket context.  <a href="#a633208fd3c368749d5cb223cc95220c4">More...</a><br /></td></tr>
+<tr class="separator:a633208fd3c368749d5cb223cc95220c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c120039ee53d72a098e75526cce4c9b"><td class="memItemLeft" align="right" valign="top"><a id="a1c120039ee53d72a098e75526cce4c9b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a1c120039ee53d72a098e75526cce4c9b">accept_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io) noexcept</td></tr>
+<tr class="memdesc:a1c120039ee53d72a098e75526cce4c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a>. <br /></td></tr>
+<tr class="separator:a1c120039ee53d72a098e75526cce4c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -286,13 +284,6 @@ static constexpr <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor_
 static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a9b2e860e6c1f101398bfe469c44676f0">max_listen_connections</a> = SOMAXCONN</td></tr>
 <tr class="memdesc:a9b2e860e6c1f101398bfe469c44676f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Limit on length of the queue of pending incoming connections. <br /></td></tr>
 <tr class="separator:a9b2e860e6c1f101398bfe469c44676f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
-Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:a235adca0c5c193db14d12bea47277740"><td class="memItemLeft" align="right" valign="top"><a id="a235adca0c5c193db14d12bea47277740"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a235adca0c5c193db14d12bea47277740">associate</a> (__bits::socket_t &amp;socket, <a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a235adca0c5c193db14d12bea47277740"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup asynchronous operations helpers for <em>socket</em>. <br /></td></tr>
-<tr class="separator:a235adca0c5c193db14d12bea47277740"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2bc6559d009c029a34b3aab21c6100e8"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a2bc6559d009c029a34b3aab21c6100e8">shutdown_t</a> = __bits::shutdown_t</td></tr>
 <tr class="separator:a2bc6559d009c029a34b3aab21c6100e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b723c63f58e7afd4d61820788d605c7"><td class="memItemLeft" align="right" valign="top"><a id="a4b723c63f58e7afd4d61820788d605c7"></a>
@@ -337,8 +328,7 @@ static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24
 class sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</h3>
 
 <p>Object of class <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html" title="Object of class basic_socket_acceptor_t is used to listen and queue incoming socket connections...">basic_socket_acceptor_t</a> is used to listen and queue incoming socket connections. </p>
-<p>Socket object that represent incoming connections are dequeued by calling <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a>.</p>
-<p>For more information about asynchronous API usage, see <a class="el" href="classsal_1_1net_1_1async__service__t.html" title="Asynchronous networking I/O completion service. ">async_service_t</a>. </p>
+<p>Socket object that represent incoming connections are dequeued by calling <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a>. </p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a24268e8dc8c1d0bf429a3ec3e9840b6f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a24268e8dc8c1d0bf429a3ec3e9840b6f">&#9670;&nbsp;</a></span>message_flags_t</h2>
@@ -410,8 +400,8 @@ class sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</h3>
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a96e45b1d1db8122ecbe4fb6b800bc1ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a96e45b1d1db8122ecbe4fb6b800bc1ce">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[1/3]</span></h2>
+<a id="a3912728abe77c64f266d0fbe5f3007f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3912728abe77c64f266d0fbe5f3007f6">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -424,7 +414,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
         <tr>
           <td class="memname"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::<a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;&#160;</td>
+          <td class="paramtype">const AcceptableProtocol &amp;&#160;</td>
           <td class="paramname"><em>protocol</em></td><td>)</td>
           <td></td>
         </tr>
@@ -441,8 +431,8 @@ template&lt;typename AcceptableProtocol &gt; </div>
 
 </div>
 </div>
-<a id="a04eaea9df72c70ce182c450e2cdfadf3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a04eaea9df72c70ce182c450e2cdfadf3">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[2/3]</span></h2>
+<a id="afb9fac937a15b5bac31e090de676caa4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb9fac937a15b5bac31e090de676caa4">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -455,7 +445,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
         <tr>
           <td class="memname"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::<a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ada4aea05c4fbf8b8fba8c8945e2012f0">endpoint_t</a> &amp;&#160;</td>
+          <td class="paramtype">const typename AcceptableProtocol::endpoint_t &amp;&#160;</td>
           <td class="paramname"><em>endpoint</em>, </td>
         </tr>
         <tr>
@@ -482,8 +472,8 @@ template&lt;typename AcceptableProtocol &gt; </div>
 
 </div>
 </div>
-<a id="ad491f7950394a131553dab4e2584ceee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad491f7950394a131553dab4e2584ceee">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[3/3]</span></h2>
+<a id="a04d3a5c4623a7569f4433f6c1de2cd4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04d3a5c4623a7569f4433f6c1de2cd4b">&#9670;&nbsp;</a></span>basic_socket_acceptor_t() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -496,7 +486,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
         <tr>
           <td class="memname"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::<a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">basic_socket_acceptor_t</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a328c75581d731063eda0521b1c8d9c5a">protocol_t</a> &amp;&#160;</td>
+          <td class="paramtype">const AcceptableProtocol &amp;&#160;</td>
           <td class="paramname"><em>protocol</em>, </td>
         </tr>
         <tr>
@@ -745,8 +735,8 @@ template&lt;typename AcceptableProtocol &gt; </div>
 
 </div>
 </div>
-<a id="a4f0af6503bc5f9929d96671c084d11b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f0af6503bc5f9929d96671c084d11b9">&#9670;&nbsp;</a></span>associate() <span class="overload">[1/2]</span></h2>
+<a id="aa9271f705dfd7700a28a0c21842f8f78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9271f705dfd7700a28a0c21842f8f78">&#9670;&nbsp;</a></span>associate() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -759,7 +749,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::associate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;&#160;</td>
           <td class="paramname"><em>service</em>, </td>
         </tr>
         <tr>
@@ -783,12 +773,12 @@ template&lt;typename AcceptableProtocol &gt; </div>
 
 <p>Associate this socket with <em>service</em> for asynchronous I/O operations. </p>
 <p>Using asynchronous API without associating it first with service is undefined behaviour. Once socket is associated with specific service, it will remain so until closed.</p>
-<p>On failure, set <em>error</em> </p>
+<p>On failure, set <em>error</em>. </p>
 
 </div>
 </div>
-<a id="a64fa8b70bdf3297862366cf4a4763a80"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a64fa8b70bdf3297862366cf4a4763a80">&#9670;&nbsp;</a></span>associate() <span class="overload">[2/2]</span></h2>
+<a id="a10ad192a37c88c61ed9c39f41fe1dc2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10ad192a37c88c61ed9c39f41fe1dc2d">&#9670;&nbsp;</a></span>associate() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -801,7 +791,7 @@ template&lt;typename AcceptableProtocol &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::associate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;&#160;</td>
           <td class="paramname"><em>service</em></td><td>)</td>
           <td></td>
         </tr>
@@ -812,116 +802,13 @@ template&lt;typename AcceptableProtocol &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a4f0af6503bc5f9929d96671c084d11b9" title="Associate this socket with service for asynchronous I/O operations. ">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html" title="Asynchronous networking I/O completion service. ">async_service_t</a> &amp;, std::error_code &amp;) </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#aa9271f705dfd7700a28a0c21842f8f78" title="Associate this socket with service for asynchronous I/O operations. ">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html" title="Asynchronous networking I/O completion service. ">async::service_t</a> &amp;, std::error_code &amp;) </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::system_error</td><td>on failure </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a93e319454738a62643456828ae05fb00"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93e319454738a62643456828ae05fb00">&#9670;&nbsp;</a></span>async_accept()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::async_accept </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a> </dd></dl>
-
-</div>
-</div>
-<a id="aa8b0cde690ae29542ed7284933d912b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa8b0cde690ae29542ed7284933d912b5">&#9670;&nbsp;</a></span>async_accept_result() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a>* <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::async_accept_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::error_code &amp;&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> operation. </p>
-<p>If asynchronous accept has failed, set <em>error</em>. </p>
-
-</div>
-</div>
-<a id="af7d965502c77f41b5f51bea7c46fbbfb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7d965502c77f41b5f51bea7c46fbbfb">&#9670;&nbsp;</a></span>async_accept_result() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename AcceptableProtocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html">async_accept_t</a>* <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::async_accept_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00" title="Start asynchronous async_accept() ">async_accept()</a> operation. </p>
-<p>If asynchronous accept has failed, throw std::system_error </p>
 
 </div>
 </div>
@@ -1055,6 +942,71 @@ template&lt;typename AcceptableProtocol &gt; </div>
 
 <p>Close socket, releasing all internal resources. </p>
 <p>On failure, throw std::system_error </p>
+
+</div>
+</div>
+<a id="a9a95e04817aefeef5cb3b3451835042c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a95e04817aefeef5cb3b3451835042c">&#9670;&nbsp;</a></span>context() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename AcceptableProtocol &gt; </div>
+<div class="memtemplate">
+template&lt;typename Context &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::context </td>
+          <td>(</td>
+          <td class="paramtype">Context *&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set application specific context for socket's asynchronous operations. </p>
+<p>On asynchronous I/O operation completion it is passed back to application along with <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html" title="Asynchronous socket I/O operation handle and associated data for I/O (2kB). ">async::io_t</a> (using method <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a2db14c8f3e625f2d615393232e3c6397" title="Return application-specific socket context. ">async::io_t::socket_context</a>). </p>
+
+</div>
+</div>
+<a id="a633208fd3c368749d5cb223cc95220c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a633208fd3c368749d5cb223cc95220c4">&#9670;&nbsp;</a></span>context() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename AcceptableProtocol &gt; </div>
+<div class="memtemplate">
+template&lt;typename Context &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Context* <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html">sal::net::basic_socket_acceptor_t</a>&lt; AcceptableProtocol &gt;::context </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get current socket context. </p>
+<dl class="section see"><dt>See also</dt><dd>void <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a9a95e04817aefeef5cb3b3451835042c" title="Set application specific context for socket&#39;s asynchronous operations. ">context</a> (Context *) </dd></dl>
 
 </div>
 </div>

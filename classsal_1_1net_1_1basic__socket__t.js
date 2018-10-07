@@ -14,8 +14,8 @@ var classsal_1_1net_1_1basic__socket__t =
     [ "basic_socket_t", "classsal_1_1net_1_1basic__socket__t.html#a275e78cc28e7053f4df12b8274a394e2", null ],
     [ "assign", "classsal_1_1net_1_1basic__socket__t.html#a7b5d696c9b0d7daca19d34779632afd8", null ],
     [ "assign", "classsal_1_1net_1_1basic__socket__t.html#a64b396c0fe19663c4fd415324ad67599", null ],
-    [ "associate", "classsal_1_1net_1_1basic__socket__t.html#a2ade4ad82c3bbe02a0267b842169b6e7", null ],
-    [ "associate", "classsal_1_1net_1_1basic__socket__t.html#a7b9a3df9b2a5c61b2a2f3e123a53c45a", null ],
+    [ "associate", "classsal_1_1net_1_1basic__socket__t.html#a743c5ac3305f827e602529e0974c978e", null ],
+    [ "associate", "classsal_1_1net_1_1basic__socket__t.html#a60382162584ddd597d3a6bdda2cf4935", null ],
     [ "available", "classsal_1_1net_1_1basic__socket__t.html#a80bf8139f26f5b89e8b95d06a4478052", null ],
     [ "available", "classsal_1_1net_1_1basic__socket__t.html#ab940170abfff7ce84213e40c227bc65b", null ],
     [ "bind", "classsal_1_1net_1_1basic__socket__t.html#a2209db75642b8a9a2fded8667ac7afd3", null ],
@@ -24,6 +24,8 @@ var classsal_1_1net_1_1basic__socket__t =
     [ "close", "classsal_1_1net_1_1basic__socket__t.html#ab32dcdff124268733cb8ddef47e91aab", null ],
     [ "connect", "classsal_1_1net_1_1basic__socket__t.html#a77a646475c8df4b3adca40985a285e86", null ],
     [ "connect", "classsal_1_1net_1_1basic__socket__t.html#a5d771fd586701f393fb4084cf1bf284a", null ],
+    [ "context", "classsal_1_1net_1_1basic__socket__t.html#a376a3385c1365031088434aa7e829730", null ],
+    [ "context", "classsal_1_1net_1_1basic__socket__t.html#af808e641c74f071205a5cbce77254f0d", null ],
     [ "get_option", "classsal_1_1net_1_1basic__socket__t.html#aa46390cbe4f6a5a6300acc7bd9869315", null ],
     [ "get_option", "classsal_1_1net_1_1basic__socket__t.html#a75041243c1848aa8a486b2d871c33907", null ],
     [ "is_open", "classsal_1_1net_1_1basic__socket__t.html#af3d953551f23763c431eb91ae8cfbe71", null ],
@@ -45,5 +47,6 @@ var classsal_1_1net_1_1basic__socket__t =
     [ "shutdown", "classsal_1_1net_1_1basic__socket__t.html#aa9b0432eaa7fb1624e260d51b73a5664", null ],
     [ "wait", "classsal_1_1net_1_1basic__socket__t.html#a0d100dac8f9d3777e18958044dfd2016", null ],
     [ "wait", "classsal_1_1net_1_1basic__socket__t.html#af77436f1ac6d197e37e08a32e6a2765c", null ],
+    [ "async_", "classsal_1_1net_1_1basic__socket__t.html#a0a986af633517e42695f635fd0ea0d2b", null ],
     [ "socket_", "classsal_1_1net_1_1basic__socket__t.html#a20cd73d24ad08b369f6ea34a8d10e2e2", null ]
 ];

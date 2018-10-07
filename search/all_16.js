@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['yield_5fspin',['yield_spin',['../spinlock_8hpp.html#a51f3a957be07190697a57f29a5a1692f',1,'sal']]]
+  ['_7ebasic_5fresolver_5fresults_5ft',['~basic_resolver_results_t',['../classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#a09a5ed08697a2a74a571da12a5bbf10a',1,'sal::net::ip::basic_resolver_results_t']]],
+  ['_7ebasic_5fsocket_5ft',['~basic_socket_t',['../classsal_1_1net_1_1basic__socket__t.html#a1172a64ad395d4dee48c89981e4d34a2',1,'sal::net::basic_socket_t']]],
+  ['_7elocked_5fptr',['~locked_ptr',['../classsal_1_1locked__ptr.html#af9af174f5a7263e951dca08f53b4a461',1,'sal::locked_ptr']]]
 ];

@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -100,9 +100,7 @@ $(document).ready(function(){initNavTree('classsal_1_1net_1_1basic__datagram__so
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
-<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classsal_1_1net_1_1basic__datagram__socket__t-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -127,17 +125,17 @@ Inheritance diagram for sal::net::basic_datagram_socket_t&lt; Protocol &gt;:</di
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html">async_receive_from_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> result.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1receive__from__t.html">receive_from_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a5f5fa0b6c066cfb19103e0f356fcaafc" title="Asynchronously start receive_from() operation using io with flags. ">receive_from_async()</a> result type.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1receive__from__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html">async_receive_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> result.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1receive__t.html">receive_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a227e79bb728cd29c84e00feb4d46d7ba" title="Asynchronously start receive() operation using io with flags. ">receive_async()</a> result type  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1receive__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html">async_send_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> result.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1send__t.html">send_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a13c362ef5a1d8f1f7b908b8d09329131" title="Asynchronously start send() operation using io with flags. ">send_async()</a> result type  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1send__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html">async_send_to_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> result.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1send__to__t.html">send_to_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af57516607df98b2744ea4c092bcd240d" title="Asynchronously start send_to() operation using io with flags. ">send_to_async()</a> result type  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1send__to__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
@@ -157,14 +155,14 @@ using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cla
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a0267abd39dd0a7df5bbe9dc5f3f64caa"><td class="memItemLeft" align="right" valign="top"><a id="a0267abd39dd0a7df5bbe9dc5f3f64caa"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a0267abd39dd0a7df5bbe9dc5f3f64caa">basic_datagram_socket_t</a> (const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a52647d41d64defa972245e8c3a66a780">protocol_t</a> &amp;protocol)</td></tr>
-<tr class="memdesc:a0267abd39dd0a7df5bbe9dc5f3f64caa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise base class using <em>protocol</em>. <br /></td></tr>
-<tr class="separator:a0267abd39dd0a7df5bbe9dc5f3f64caa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac13095956d2b05d46e08d245b6947cde"><td class="memItemLeft" align="right" valign="top"><a id="ac13095956d2b05d46e08d245b6947cde"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ac13095956d2b05d46e08d245b6947cde">basic_datagram_socket_t</a> (const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;endpoint)</td></tr>
-<tr class="memdesc:ac13095956d2b05d46e08d245b6947cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise base class using <em>endpoint</em>. <br /></td></tr>
-<tr class="separator:ac13095956d2b05d46e08d245b6947cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63306e42f41735346daae7b6b20254fe"><td class="memItemLeft" align="right" valign="top"><a id="a63306e42f41735346daae7b6b20254fe"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a63306e42f41735346daae7b6b20254fe">basic_datagram_socket_t</a> (const Protocol &amp;protocol)</td></tr>
+<tr class="memdesc:a63306e42f41735346daae7b6b20254fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise base class using <em>protocol</em>. <br /></td></tr>
+<tr class="separator:a63306e42f41735346daae7b6b20254fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b9ae0ba26348a798a7de793f690981b"><td class="memItemLeft" align="right" valign="top"><a id="a5b9ae0ba26348a798a7de793f690981b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a5b9ae0ba26348a798a7de793f690981b">basic_datagram_socket_t</a> (const typename Protocol::endpoint_t &amp;endpoint)</td></tr>
+<tr class="memdesc:a5b9ae0ba26348a798a7de793f690981b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise base class using <em>endpoint</em>. <br /></td></tr>
+<tr class="separator:a5b9ae0ba26348a798a7de793f690981b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae090cf48c736a7f873c67550ed8520ab"><td class="memItemLeft" align="right" valign="top"><a id="ae090cf48c736a7f873c67550ed8520ab"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ae090cf48c736a7f873c67550ed8520ab">basic_datagram_socket_t</a> (<a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ab6d88ca56b84b5b1e097c3a7f267ad10">handle_t</a> handle)</td></tr>
 <tr class="memdesc:ae090cf48c736a7f873c67550ed8520ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise base class using <em>handle</em>. <br /></td></tr>
@@ -233,30 +231,36 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad34cffcaefd34e0a641dab7c572b2d73"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad34cffcaefd34e0a641dab7c572b2d73">send</a> (const Data &amp;buf)</td></tr>
 <tr class="memdesc:ad34cffcaefd34e0a641dab7c572b2d73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write data of <em>buf</em> into this socket for delivering to connected endpoint.  <a href="#ad34cffcaefd34e0a641dab7c572b2d73">More...</a><br /></td></tr>
 <tr class="separator:ad34cffcaefd34e0a641dab7c572b2d73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad56e8c224a5f179edf457602551b44c0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0">async_receive_from</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a> flags) noexcept</td></tr>
-<tr class="memdesc:ad56e8c224a5f179edf457602551b44c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a>  <a href="#ad56e8c224a5f179edf457602551b44c0">More...</a><br /></td></tr>
-<tr class="separator:ad56e8c224a5f179edf457602551b44c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4cbc3d94395432c4b2a9dfb3a9eb3b32"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a4cbc3d94395432c4b2a9dfb3a9eb3b32">async_receive_from</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io) noexcept</td></tr>
-<tr class="memdesc:a4cbc3d94395432c4b2a9dfb3a9eb3b32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a>  <a href="#a4cbc3d94395432c4b2a9dfb3a9eb3b32">More...</a><br /></td></tr>
-<tr class="separator:a4cbc3d94395432c4b2a9dfb3a9eb3b32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f78d6f6e07a31e30c7ce9fbd37590de"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de">async_receive</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a> flags) noexcept</td></tr>
-<tr class="memdesc:a9f78d6f6e07a31e30c7ce9fbd37590de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a>  <a href="#a9f78d6f6e07a31e30c7ce9fbd37590de">More...</a><br /></td></tr>
-<tr class="separator:a9f78d6f6e07a31e30c7ce9fbd37590de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1276fb32729dc44486c45f39314bd04d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a1276fb32729dc44486c45f39314bd04d">async_receive</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io) noexcept</td></tr>
-<tr class="memdesc:a1276fb32729dc44486c45f39314bd04d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a>  <a href="#a1276fb32729dc44486c45f39314bd04d">More...</a><br /></td></tr>
-<tr class="separator:a1276fb32729dc44486c45f39314bd04d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9449a7c6ba5915ec68141b4f240e761"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761">async_send_to</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io, const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;endpoint, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a> flags) noexcept</td></tr>
-<tr class="memdesc:af9449a7c6ba5915ec68141b4f240e761"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a>  <a href="#af9449a7c6ba5915ec68141b4f240e761">More...</a><br /></td></tr>
-<tr class="separator:af9449a7c6ba5915ec68141b4f240e761"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3aaf70f855aea10de28bcddc1d0eb25f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a3aaf70f855aea10de28bcddc1d0eb25f">async_send_to</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io, const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;endpoint) noexcept</td></tr>
-<tr class="memdesc:a3aaf70f855aea10de28bcddc1d0eb25f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a>  <a href="#a3aaf70f855aea10de28bcddc1d0eb25f">More...</a><br /></td></tr>
-<tr class="separator:a3aaf70f855aea10de28bcddc1d0eb25f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef0f532b70645834b1f9cdb057b970b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1">async_send</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a> flags) noexcept</td></tr>
-<tr class="memdesc:aef0f532b70645834b1f9cdb057b970b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a>  <a href="#aef0f532b70645834b1f9cdb057b970b1">More...</a><br /></td></tr>
-<tr class="separator:aef0f532b70645834b1f9cdb057b970b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a649ccb4dbd2af7c83f30b0f111868254"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a649ccb4dbd2af7c83f30b0f111868254">async_send</a> (<a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;io) noexcept</td></tr>
-<tr class="memdesc:a649ccb4dbd2af7c83f30b0f111868254"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a>  <a href="#a649ccb4dbd2af7c83f30b0f111868254">More...</a><br /></td></tr>
-<tr class="separator:a649ccb4dbd2af7c83f30b0f111868254"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f5fa0b6c066cfb19103e0f356fcaafc"><td class="memItemLeft" align="right" valign="top"><a id="a5f5fa0b6c066cfb19103e0f356fcaafc"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a5f5fa0b6c066cfb19103e0f356fcaafc">receive_from_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a> flags) noexcept</td></tr>
+<tr class="memdesc:a5f5fa0b6c066cfb19103e0f356fcaafc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a6d2f738556a833b664257a7dadb584fb" title="Receive data from this socket into buf. ">receive_from()</a> operation using <em>io</em> with <em>flags</em>. <br /></td></tr>
+<tr class="separator:a5f5fa0b6c066cfb19103e0f356fcaafc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85a581edbd9773a49155424eb127d400"><td class="memItemLeft" align="right" valign="top"><a id="a85a581edbd9773a49155424eb127d400"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a85a581edbd9773a49155424eb127d400">receive_from_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io) noexcept</td></tr>
+<tr class="memdesc:a85a581edbd9773a49155424eb127d400"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a6d2f738556a833b664257a7dadb584fb" title="Receive data from this socket into buf. ">receive_from()</a> operation using <em>io</em> with default flags. <br /></td></tr>
+<tr class="separator:a85a581edbd9773a49155424eb127d400"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a227e79bb728cd29c84e00feb4d46d7ba"><td class="memItemLeft" align="right" valign="top"><a id="a227e79bb728cd29c84e00feb4d46d7ba"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a227e79bb728cd29c84e00feb4d46d7ba">receive_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a> flags) noexcept</td></tr>
+<tr class="memdesc:a227e79bb728cd29c84e00feb4d46d7ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a66d972f664289f760b085153bed6a158" title="Receive data from this socket into buf. ">receive()</a> operation using <em>io</em> with <em>flags</em>. <br /></td></tr>
+<tr class="separator:a227e79bb728cd29c84e00feb4d46d7ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a946d4c35989188523e8b5d87fffd2e7f"><td class="memItemLeft" align="right" valign="top"><a id="a946d4c35989188523e8b5d87fffd2e7f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a946d4c35989188523e8b5d87fffd2e7f">receive_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io) noexcept</td></tr>
+<tr class="memdesc:a946d4c35989188523e8b5d87fffd2e7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a66d972f664289f760b085153bed6a158" title="Receive data from this socket into buf. ">receive()</a> operation using <em>io</em> with default flags. <br /></td></tr>
+<tr class="separator:a946d4c35989188523e8b5d87fffd2e7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af57516607df98b2744ea4c092bcd240d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af57516607df98b2744ea4c092bcd240d">send_to_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io, const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;<a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a6e22ce0e547ca2cf6f5313054ea3b412">remote_endpoint</a>, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a> flags) noexcept</td></tr>
+<tr class="memdesc:af57516607df98b2744ea4c092bcd240d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adc534d462d1409a674af9b1fd8ad3278" title="Write data of buf into this socket for delivering to endpoint. ">send_to()</a> operation using <em>io</em> with <em>flags</em>.  <a href="#af57516607df98b2744ea4c092bcd240d">More...</a><br /></td></tr>
+<tr class="separator:af57516607df98b2744ea4c092bcd240d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3cda21d745310367e3c8f2f9c77d6190"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a3cda21d745310367e3c8f2f9c77d6190">send_to_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io, const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;<a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a6e22ce0e547ca2cf6f5313054ea3b412">remote_endpoint</a>) noexcept</td></tr>
+<tr class="memdesc:a3cda21d745310367e3c8f2f9c77d6190"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adc534d462d1409a674af9b1fd8ad3278" title="Write data of buf into this socket for delivering to endpoint. ">send_to()</a> operation using <em>io</em> with default flags.  <a href="#a3cda21d745310367e3c8f2f9c77d6190">More...</a><br /></td></tr>
+<tr class="separator:a3cda21d745310367e3c8f2f9c77d6190"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13c362ef5a1d8f1f7b908b8d09329131"><td class="memItemLeft" align="right" valign="top"><a id="a13c362ef5a1d8f1f7b908b8d09329131"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a13c362ef5a1d8f1f7b908b8d09329131">send_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a> flags) noexcept</td></tr>
+<tr class="memdesc:a13c362ef5a1d8f1f7b908b8d09329131"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a54551da89504bcfbf71fdd18a742341c" title="Write data of buf into this socket for delivering to connected endpoint. ">send()</a> operation using <em>io</em> with <em>flags</em>. <br /></td></tr>
+<tr class="separator:a13c362ef5a1d8f1f7b908b8d09329131"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81145aba7386e0dbb11328532cbe9223"><td class="memItemLeft" align="right" valign="top"><a id="a81145aba7386e0dbb11328532cbe9223"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a81145aba7386e0dbb11328532cbe9223">send_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io) noexcept</td></tr>
+<tr class="memdesc:a81145aba7386e0dbb11328532cbe9223"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a54551da89504bcfbf71fdd18a742341c" title="Write data of buf into this socket for delivering to connected endpoint. ">send()</a> operation using <em>io</em> with default flags. <br /></td></tr>
+<tr class="separator:a81145aba7386e0dbb11328532cbe9223"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ba3eebb39e8cd90ee3bbf0023fac443"><td class="memItemLeft" align="right" valign="top"><a id="a2ba3eebb39e8cd90ee3bbf0023fac443"></a>
 <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ab6d88ca56b84b5b1e097c3a7f267ad10">handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a2ba3eebb39e8cd90ee3bbf0023fac443">native_handle</a> () const noexcept</td></tr>
 <tr class="memdesc:a2ba3eebb39e8cd90ee3bbf0023fac443"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return native representation of this socket. <br /></td></tr>
@@ -355,38 +359,19 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:ac7a0051ce5ba1898a4581015e91c24dc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#ac7a0051ce5ba1898a4581015e91c24dc">remote_endpoint</a> () const</td></tr>
 <tr class="memdesc:ac7a0051ce5ba1898a4581015e91c24dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the remote endpoint associated with the socket.  <a href="#ac7a0051ce5ba1898a4581015e91c24dc">More...</a><br /></td></tr>
 <tr class="separator:ac7a0051ce5ba1898a4581015e91c24dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ade4ad82c3bbe02a0267b842169b6e7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a2ade4ad82c3bbe02a0267b842169b6e7">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a2ade4ad82c3bbe02a0267b842169b6e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associate this socket with <em>service</em> for asynchronous I/O operations.  <a href="#a2ade4ad82c3bbe02a0267b842169b6e7">More...</a><br /></td></tr>
-<tr class="separator:a2ade4ad82c3bbe02a0267b842169b6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b9a3df9b2a5c61b2a2f3e123a53c45a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a7b9a3df9b2a5c61b2a2f3e123a53c45a">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service)</td></tr>
-<tr class="separator:a7b9a3df9b2a5c61b2a2f3e123a53c45a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a20cfeaab288763c6129993dd084ac9a0"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html">async_receive_from_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a20cfeaab288763c6129993dd084ac9a0">async_receive_from_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a20cfeaab288763c6129993dd084ac9a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> operation.  <a href="#a20cfeaab288763c6129993dd084ac9a0">More...</a><br /></td></tr>
-<tr class="separator:a20cfeaab288763c6129993dd084ac9a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adde2fcf0d10268eb7069b7de3c7d132f"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html">async_receive_from_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adde2fcf0d10268eb7069b7de3c7d132f">async_receive_from_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io)</td></tr>
-<tr class="memdesc:adde2fcf0d10268eb7069b7de3c7d132f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> operation.  <a href="#adde2fcf0d10268eb7069b7de3c7d132f">More...</a><br /></td></tr>
-<tr class="separator:adde2fcf0d10268eb7069b7de3c7d132f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9b838897440a03fd4d512b1772d1eeb"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html">async_receive_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9b838897440a03fd4d512b1772d1eeb">async_receive_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:af9b838897440a03fd4d512b1772d1eeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> operation.  <a href="#af9b838897440a03fd4d512b1772d1eeb">More...</a><br /></td></tr>
-<tr class="separator:af9b838897440a03fd4d512b1772d1eeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7bfb3d66d469c7129442add70493e23d"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html">async_receive_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a7bfb3d66d469c7129442add70493e23d">async_receive_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io)</td></tr>
-<tr class="memdesc:a7bfb3d66d469c7129442add70493e23d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> operation.  <a href="#a7bfb3d66d469c7129442add70493e23d">More...</a><br /></td></tr>
-<tr class="separator:a7bfb3d66d469c7129442add70493e23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adad4ce11f0c009465a2da0dc8a21d865"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html">async_send_to_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adad4ce11f0c009465a2da0dc8a21d865">async_send_to_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:adad4ce11f0c009465a2da0dc8a21d865"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> operation.  <a href="#adad4ce11f0c009465a2da0dc8a21d865">More...</a><br /></td></tr>
-<tr class="separator:adad4ce11f0c009465a2da0dc8a21d865"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4cc9904546bb5d06b750201b2c962a2b"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html">async_send_to_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a4cc9904546bb5d06b750201b2c962a2b">async_send_to_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io)</td></tr>
-<tr class="memdesc:a4cc9904546bb5d06b750201b2c962a2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> operation.  <a href="#a4cc9904546bb5d06b750201b2c962a2b">More...</a><br /></td></tr>
-<tr class="separator:a4cc9904546bb5d06b750201b2c962a2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75774ee8a401eb0b605a94180e466095"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html">async_send_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a75774ee8a401eb0b605a94180e466095">async_send_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a75774ee8a401eb0b605a94180e466095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> operation.  <a href="#a75774ee8a401eb0b605a94180e466095">More...</a><br /></td></tr>
-<tr class="separator:a75774ee8a401eb0b605a94180e466095"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09a3873a997361472cb546637b43dc68"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html">async_send_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a09a3873a997361472cb546637b43dc68">async_send_result</a> (const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;io)</td></tr>
-<tr class="memdesc:a09a3873a997361472cb546637b43dc68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> operation.  <a href="#a09a3873a997361472cb546637b43dc68">More...</a><br /></td></tr>
-<tr class="separator:a09a3873a997361472cb546637b43dc68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a743c5ac3305f827e602529e0974c978e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a743c5ac3305f827e602529e0974c978e">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
+<tr class="memdesc:a743c5ac3305f827e602529e0974c978e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Associate this socket with <em>service</em> for asynchronous I/O operations.  <a href="#a743c5ac3305f827e602529e0974c978e">More...</a><br /></td></tr>
+<tr class="separator:a743c5ac3305f827e602529e0974c978e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60382162584ddd597d3a6bdda2cf4935"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a60382162584ddd597d3a6bdda2cf4935">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;service)</td></tr>
+<tr class="separator:a60382162584ddd597d3a6bdda2cf4935"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a376a3385c1365031088434aa7e829730"><td class="memTemplParams" colspan="2">template&lt;typename Context &gt; </td></tr>
+<tr class="memitem:a376a3385c1365031088434aa7e829730"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a376a3385c1365031088434aa7e829730">context</a> (Context *context)</td></tr>
+<tr class="memdesc:a376a3385c1365031088434aa7e829730"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set application specific context for socket's asynchronous operations.  <a href="#a376a3385c1365031088434aa7e829730">More...</a><br /></td></tr>
+<tr class="separator:a376a3385c1365031088434aa7e829730"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af808e641c74f071205a5cbce77254f0d"><td class="memTemplParams" colspan="2">template&lt;typename Context &gt; </td></tr>
+<tr class="memitem:af808e641c74f071205a5cbce77254f0d"><td class="memTemplItemLeft" align="right" valign="top">Context *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#af808e641c74f071205a5cbce77254f0d">context</a> () const</td></tr>
+<tr class="memdesc:af808e641c74f071205a5cbce77254f0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current socket context.  <a href="#af808e641c74f071205a5cbce77254f0d">More...</a><br /></td></tr>
+<tr class="separator:af808e641c74f071205a5cbce77254f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -399,19 +384,16 @@ static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class
 <tr class="memdesc:a9b2e860e6c1f101398bfe469c44676f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Limit on length of the queue of pending incoming connections. <br /></td></tr>
 <tr class="separator:a9b2e860e6c1f101398bfe469c44676f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
-Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:a235adca0c5c193db14d12bea47277740"><td class="memItemLeft" align="right" valign="top"><a id="a235adca0c5c193db14d12bea47277740"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a235adca0c5c193db14d12bea47277740">associate</a> (__bits::socket_t &amp;socket, <a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;service, std::error_code &amp;error) noexcept</td></tr>
-<tr class="memdesc:a235adca0c5c193db14d12bea47277740"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup asynchronous operations helpers for <em>socket</em>. <br /></td></tr>
-<tr class="separator:a235adca0c5c193db14d12bea47277740"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a20cd73d24ad08b369f6ea34a8d10e2e2"><td class="memItemLeft" align="right" valign="top"><a id="a20cd73d24ad08b369f6ea34a8d10e2e2"></a>
 __bits::socket_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a20cd73d24ad08b369f6ea34a8d10e2e2">socket_</a> {}</td></tr>
 <tr class="memdesc:a20cd73d24ad08b369f6ea34a8d10e2e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Low-level OS socket. <br /></td></tr>
 <tr class="separator:a20cd73d24ad08b369f6ea34a8d10e2e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a986af633517e42695f635fd0ea0d2b"><td class="memItemLeft" align="right" valign="top"><a id="a0a986af633517e42695f635fd0ea0d2b"></a>
+async::__bits::handler_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a0a986af633517e42695f635fd0ea0d2b">async_</a> {}</td></tr>
+<tr class="memdesc:a0a986af633517e42695f635fd0ea0d2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Low-level OS socket asynchronous I/O handler. <br /></td></tr>
+<tr class="separator:a0a986af633517e42695f635fd0ea0d2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2bc6559d009c029a34b3aab21c6100e8"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a2bc6559d009c029a34b3aab21c6100e8">shutdown_t</a> = __bits::shutdown_t</td></tr>
 <tr class="separator:a2bc6559d009c029a34b3aab21c6100e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b723c63f58e7afd4d61820788d605c7"><td class="memItemLeft" align="right" valign="top"><a id="a4b723c63f58e7afd4d61820788d605c7"></a>
@@ -456,7 +438,6 @@ static constexpr <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24
 class sal::net::basic_datagram_socket_t&lt; Protocol &gt;</h3>
 
 <p>Datagram socket. </p>
-<p>For more information about asynchronous API usage, see <a class="el" href="classsal_1_1net_1_1async__service__t.html" title="Asynchronous networking I/O completion service. ">async_service_t</a>. </p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a24268e8dc8c1d0bf429a3ec3e9840b6f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a24268e8dc8c1d0bf429a3ec3e9840b6f">&#9670;&nbsp;</a></span>message_flags_t</h2>
@@ -600,8 +581,8 @@ template&lt;typename Protocol &gt; </div>
 
 </div>
 </div>
-<a id="a2ade4ad82c3bbe02a0267b842169b6e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ade4ad82c3bbe02a0267b842169b6e7">&#9670;&nbsp;</a></span>associate() <span class="overload">[1/2]</span></h2>
+<a id="a743c5ac3305f827e602529e0974c978e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a743c5ac3305f827e602529e0974c978e">&#9670;&nbsp;</a></span>associate() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -614,7 +595,7 @@ template&lt;typename Protocol &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__t.html">sal::net::basic_socket_t</a>&lt; Protocol &gt;::associate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;&#160;</td>
           <td class="paramname"><em>service</em>, </td>
         </tr>
         <tr>
@@ -638,12 +619,12 @@ template&lt;typename Protocol &gt; </div>
 
 <p>Associate this socket with <em>service</em> for asynchronous I/O operations. </p>
 <p>Using asynchronous API without associating it first with service is undefined behaviour. Once socket is associated with specific service, it will remain so until closed.</p>
-<p>On failure, set <em>error</em> </p>
+<p>On failure, set <em>error</em>. </p>
 
 </div>
 </div>
-<a id="a7b9a3df9b2a5c61b2a2f3e123a53c45a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7b9a3df9b2a5c61b2a2f3e123a53c45a">&#9670;&nbsp;</a></span>associate() <span class="overload">[2/2]</span></h2>
+<a id="a60382162584ddd597d3a6bdda2cf4935"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60382162584ddd597d3a6bdda2cf4935">&#9670;&nbsp;</a></span>associate() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -656,7 +637,7 @@ template&lt;typename Protocol &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__t.html">sal::net::basic_socket_t</a>&lt; Protocol &gt;::associate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async__service__t.html">async_service_t</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async_1_1service__t.html">async::service_t</a> &amp;&#160;</td>
           <td class="paramname"><em>service</em></td><td>)</td>
           <td></td>
         </tr>
@@ -667,605 +648,13 @@ template&lt;typename Protocol &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a2ade4ad82c3bbe02a0267b842169b6e7" title="Associate this socket with service for asynchronous I/O operations. ">associate</a> (<a class="el" href="classsal_1_1net_1_1async__service__t.html" title="Asynchronous networking I/O completion service. ">async_service_t</a> &amp;, std::error_code &amp;) </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a743c5ac3305f827e602529e0974c978e" title="Associate this socket with service for asynchronous I/O operations. ">associate</a> (<a class="el" href="classsal_1_1net_1_1async_1_1service__t.html" title="Asynchronous networking I/O completion service. ">async::service_t</a> &amp;, std::error_code &amp;) </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::system_error</td><td>on failure </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a9f78d6f6e07a31e30c7ce9fbd37590de"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f78d6f6e07a31e30c7ce9fbd37590de">&#9670;&nbsp;</a></span>async_receive() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_receive </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a>&#160;</td>
-          <td class="paramname"><em>flags</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a66d972f664289f760b085153bed6a158" title="Receive data from this socket into buf. ">receive()</a> </dd></dl>
-
-</div>
-</div>
-<a id="a1276fb32729dc44486c45f39314bd04d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1276fb32729dc44486c45f39314bd04d">&#9670;&nbsp;</a></span>async_receive() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_receive </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a66d972f664289f760b085153bed6a158" title="Receive data from this socket into buf. ">receive()</a> </dd></dl>
-
-</div>
-</div>
-<a id="ad56e8c224a5f179edf457602551b44c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad56e8c224a5f179edf457602551b44c0">&#9670;&nbsp;</a></span>async_receive_from() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_receive_from </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a>&#160;</td>
-          <td class="paramname"><em>flags</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a6d2f738556a833b664257a7dadb584fb" title="Receive data from this socket into buf. ">receive_from()</a> </dd></dl>
-
-</div>
-</div>
-<a id="a4cbc3d94395432c4b2a9dfb3a9eb3b32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4cbc3d94395432c4b2a9dfb3a9eb3b32">&#9670;&nbsp;</a></span>async_receive_from() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_receive_from </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a6d2f738556a833b664257a7dadb584fb" title="Receive data from this socket into buf. ">receive_from()</a> </dd></dl>
-
-</div>
-</div>
-<a id="a20cfeaab288763c6129993dd084ac9a0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20cfeaab288763c6129993dd084ac9a0">&#9670;&nbsp;</a></span>async_receive_from_result() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html">async_receive_from_t</a>* <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_receive_from_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::error_code &amp;&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> operation. </p>
-<p>If asynchronous receive has failed, set <em>error</em>. </p>
-
-</div>
-</div>
-<a id="adde2fcf0d10268eb7069b7de3c7d132f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adde2fcf0d10268eb7069b7de3c7d132f">&#9670;&nbsp;</a></span>async_receive_from_result() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html">async_receive_from_t</a>* <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_receive_from_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> operation. </p>
-<p>If asynchronous receive has failed, throw std::system_error </p>
-
-</div>
-</div>
-<a id="af9b838897440a03fd4d512b1772d1eeb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af9b838897440a03fd4d512b1772d1eeb">&#9670;&nbsp;</a></span>async_receive_result() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html">async_receive_t</a>* <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_receive_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::error_code &amp;&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> operation. </p>
-<p>If asynchronous receive has failed, set <em>error</em>. </p>
-
-</div>
-</div>
-<a id="a7bfb3d66d469c7129442add70493e23d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7bfb3d66d469c7129442add70493e23d">&#9670;&nbsp;</a></span>async_receive_result() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html">async_receive_t</a>* <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_receive_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> operation. </p>
-<p>If asynchronous receive has failed, throw std::system_error </p>
-
-</div>
-</div>
-<a id="aef0f532b70645834b1f9cdb057b970b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aef0f532b70645834b1f9cdb057b970b1">&#9670;&nbsp;</a></span>async_send() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_send </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a>&#160;</td>
-          <td class="paramname"><em>flags</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a54551da89504bcfbf71fdd18a742341c" title="Write data of buf into this socket for delivering to connected endpoint. ">send()</a> </dd></dl>
-
-</div>
-</div>
-<a id="a649ccb4dbd2af7c83f30b0f111868254"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a649ccb4dbd2af7c83f30b0f111868254">&#9670;&nbsp;</a></span>async_send() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_send </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a54551da89504bcfbf71fdd18a742341c" title="Write data of buf into this socket for delivering to connected endpoint. ">send()</a> </dd></dl>
-
-</div>
-</div>
-<a id="a75774ee8a401eb0b605a94180e466095"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a75774ee8a401eb0b605a94180e466095">&#9670;&nbsp;</a></span>async_send_result() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html">async_send_t</a>* <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_send_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::error_code &amp;&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> operation. </p>
-<p>If asynchronous send has failed, set <em>error</em>. </p>
-
-</div>
-</div>
-<a id="a09a3873a997361472cb546637b43dc68"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09a3873a997361472cb546637b43dc68">&#9670;&nbsp;</a></span>async_send_result() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html">async_send_t</a>* <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_send_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> operation. </p>
-<p>If asynchronous send has failed, throw std::system_error </p>
-
-</div>
-</div>
-<a id="af9449a7c6ba5915ec68141b4f240e761"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af9449a7c6ba5915ec68141b4f240e761">&#9670;&nbsp;</a></span>async_send_to() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_send_to </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;&#160;</td>
-          <td class="paramname"><em>endpoint</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a>&#160;</td>
-          <td class="paramname"><em>flags</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adc534d462d1409a674af9b1fd8ad3278" title="Write data of buf into this socket for delivering to endpoint. ">send_to()</a> </dd></dl>
-
-</div>
-</div>
-<a id="a3aaf70f855aea10de28bcddc1d0eb25f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3aaf70f855aea10de28bcddc1d0eb25f">&#9670;&nbsp;</a></span>async_send_to() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_send_to </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;&#160;</td>
-          <td class="paramname"><em>endpoint</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Start asynchronous <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adc534d462d1409a674af9b1fd8ad3278" title="Write data of buf into this socket for delivering to endpoint. ">send_to()</a> </dd></dl>
-
-</div>
-</div>
-<a id="adad4ce11f0c009465a2da0dc8a21d865"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adad4ce11f0c009465a2da0dc8a21d865">&#9670;&nbsp;</a></span>async_send_to_result() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html">async_send_to_t</a>* <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_send_to_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::error_code &amp;&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> operation. </p>
-<p>If asynchronous send has failed, set <em>error</em>. </p>
-
-</div>
-</div>
-<a id="a4cc9904546bb5d06b750201b2c962a2b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4cc9904546bb5d06b750201b2c962a2b">&#9670;&nbsp;</a></span>async_send_to_result() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Protocol &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static const <a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html">async_send_to_t</a>* <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::async_send_to_result </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespacesal_1_1net.html#a2c1f2af17310f6dedab57469454ce03e">io_ptr</a> &amp;&#160;</td>
-          <td class="paramname"><em>io</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Extract and return pointer to <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> result from <em>io</em> handle or nullptr if <em>io</em> does not represent <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> operation. </p>
-<p>If asynchronous send has failed, throw std::system_error </p>
 
 </div>
 </div>
@@ -1532,6 +921,71 @@ template&lt;typename Protocol &gt; </div>
 
 <p>Connect this socket to specified remote <em>endpoint</em>. </p>
 <p>If <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#af3d953551f23763c431eb91ae8cfbe71" title="Return boolean indicating whether this socket was opened by previous call to open() or assign()...">is_open()</a> is false, it is <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a658d48f0f818e0d7a0033259f113efcc" title="Create new socket instance of protocol. ">open()</a> first. On failure, throw std:system_error </p>
+
+</div>
+</div>
+<a id="a376a3385c1365031088434aa7e829730"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a376a3385c1365031088434aa7e829730">&#9670;&nbsp;</a></span>context() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<div class="memtemplate">
+template&lt;typename Context &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__socket__t.html">sal::net::basic_socket_t</a>&lt; Protocol &gt;::context </td>
+          <td>(</td>
+          <td class="paramtype">Context *&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set application specific context for socket's asynchronous operations. </p>
+<p>On asynchronous I/O operation completion it is passed back to application along with <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html" title="Asynchronous socket I/O operation handle and associated data for I/O (2kB). ">async::io_t</a> (using method <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a2db14c8f3e625f2d615393232e3c6397" title="Return application-specific socket context. ">async::io_t::socket_context</a>). </p>
+
+</div>
+</div>
+<a id="af808e641c74f071205a5cbce77254f0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af808e641c74f071205a5cbce77254f0d">&#9670;&nbsp;</a></span>context() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<div class="memtemplate">
+template&lt;typename Context &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Context* <a class="el" href="classsal_1_1net_1_1basic__socket__t.html">sal::net::basic_socket_t</a>&lt; Protocol &gt;::context </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get current socket context. </p>
+<dl class="section see"><dt>See also</dt><dd>void <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a376a3385c1365031088434aa7e829730" title="Set application specific context for socket&#39;s asynchronous operations. ">context</a> (Context *) </dd></dl>
 
 </div>
 </div>
@@ -2663,6 +2117,94 @@ template&lt;typename Data &gt; </div>
 
 <p>Write data of <em>buf</em> into this socket for delivering to <em>endpoint</em>. </p>
 <p>On success, returns number of bytes sent. On failure, throw std::system_error </p>
+
+</div>
+</div>
+<a id="af57516607df98b2744ea4c092bcd240d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af57516607df98b2744ea4c092bcd240d">&#9670;&nbsp;</a></span>send_to_async() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::send_to_async </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>io</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>remote_endpoint</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1socket__base__t.html#a24268e8dc8c1d0bf429a3ec3e9840b6f">socket_base_t::message_flags_t</a>&#160;</td>
+          <td class="paramname"><em>flags</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adc534d462d1409a674af9b1fd8ad3278" title="Write data of buf into this socket for delivering to endpoint. ">send_to()</a> operation using <em>io</em> with <em>flags</em>. </p>
+<p>Destination is <em>remote_endpoint</em>. </p>
+
+</div>
+</div>
+<a id="a3cda21d745310367e3c8f2f9c77d6190"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3cda21d745310367e3c8f2f9c77d6190">&#9670;&nbsp;</a></span>send_to_async() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Protocol &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t</a>&lt; Protocol &gt;::send_to_async </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>io</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a8da1dc8c9f5c0c8da867b7a43c62e55c">endpoint_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>remote_endpoint</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adc534d462d1409a674af9b1fd8ad3278" title="Write data of buf into this socket for delivering to endpoint. ">send_to()</a> operation using <em>io</em> with default flags. </p>
+<p>Destination is <em>remote_endpoint</em>. </p>
 
 </div>
 </div>

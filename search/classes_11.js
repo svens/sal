@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['udp_5ft',['udp_t',['../classsal_1_1net_1_1ip_1_1udp__t.html',1,'sal::net::ip']]],
-  ['unknown_5foption_5ferror',['unknown_option_error',['../structsal_1_1program__options_1_1unknown__option__error.html',1,'sal::program_options']]]
+  ['with_5fchain_5ft',['with_chain_t',['../structsal_1_1crypto_1_1with__chain__t.html',1,'sal::crypto']]],
+  ['with_5fprivate_5fkey_5ft',['with_private_key_t',['../structsal_1_1crypto_1_1with__private__key__t.html',1,'sal::crypto']]],
+  ['worker_5ft',['worker_t',['../classsal_1_1logger_1_1worker__t.html',1,'sal::logger']]]
 ];

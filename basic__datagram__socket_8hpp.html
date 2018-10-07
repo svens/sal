@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -98,7 +98,8 @@ $(document).ready(function(){initNavTree('basic__datagram__socket_8hpp.html','')
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">basic_datagram_socket.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -109,6 +110,7 @@ $(document).ready(function(){initNavTree('basic__datagram__socket_8hpp.html','')
 <div class="textblock"><code>#include &lt;sal/config.hpp&gt;</code><br />
 <code>#include &lt;<a class="el" href="memory_8hpp_source.html">sal/memory.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="basic__socket_8hpp_source.html">sal/net/basic_socket.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="io_8hpp_source.html">sal/net/async/io.hpp</a>&gt;</code><br />
 </div>
 <p><a href="basic__datagram__socket_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -117,17 +119,17 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Datagram socket.  <a href="classsal_1_1net_1_1basic__datagram__socket__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;::async_receive_from_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad56e8c224a5f179edf457602551b44c0" title="Start asynchronous async_receive_from() ">async_receive_from()</a> result.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__from__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1receive__from__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;::receive_from_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a5f5fa0b6c066cfb19103e0f356fcaafc" title="Asynchronously start receive_from() operation using io with flags. ">receive_from_async()</a> result type.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1receive__from__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;::async_receive_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de" title="Start asynchronous async_receive() ">async_receive()</a> result.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__receive__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1receive__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;::receive_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a227e79bb728cd29c84e00feb4d46d7ba" title="Asynchronously start receive() operation using io with flags. ">receive_async()</a> result type  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1receive__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;::async_send_to_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9449a7c6ba5915ec68141b4f240e761" title="Start asynchronous async_send_to() ">async_send_to()</a> result.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__to__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1send__to__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;::send_to_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af57516607df98b2744ea4c092bcd240d" title="Asynchronously start send_to() operation using io with flags. ">send_to_async()</a> result type  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1send__to__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;::async_send_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1" title="Start asynchronous async_send() ">async_send()</a> result.  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1async__send__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__datagram__socket__t_1_1send__t.html">sal::net::basic_datagram_socket_t&lt; Protocol &gt;::send_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a13c362ef5a1d8f1f7b908b8d09329131" title="Asynchronously start send() operation using io with flags. ">send_async()</a> result type  <a href="structsal_1_1net_1_1basic__datagram__socket__t_1_1send__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -135,6 +137,13 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacesal_1_1net"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html">sal::net</a></td></tr>
 <tr class="memdesc:namespacesal_1_1net"><td class="mdescLeft">&#160;</td><td class="mdescRight">Networking primitives (sockets, resolver, etc) <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a6b5cf8717bb5f445c70d2ac808d11726"><td class="memTemplParams" colspan="2">template&lt;typename Endpoint &gt; </td></tr>
+<tr class="memitem:a6b5cf8717bb5f445c70d2ac808d11726"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesal_1_1net.html#a6b5cf8717bb5f445c70d2ac808d11726">sal::net::basic_datagram_socket_t</a> (const Endpoint &amp;) -&gt; basic_datagram_socket_t&lt; typename Endpoint::protocol_t &gt;</td></tr>
+<tr class="memdesc:a6b5cf8717bb5f445c70d2ac808d11726"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html" title="Datagram socket. ">basic_datagram_socket_t</a> deduction guide using constructor that binds socket to  <a href="namespacesal_1_1net.html#a6b5cf8717bb5f445c70d2ac808d11726">More...</a><br /></td></tr>
+<tr class="separator:a6b5cf8717bb5f445c70d2ac808d11726"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Datagram socket. </p>

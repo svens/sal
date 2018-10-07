@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -102,8 +102,11 @@ $(document).ready(function(){initNavTree('functions.html','');});
 <li>accept()
 : <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ab9d3116c34243196081446d57d723c35">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
 </li>
-<li>accepted()
-: <a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1async__accept__t.html#a3b669d31440abaec615ff9dce9af3008">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;::async_accept_t</a>
+<li>accept_async()
+: <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a1c120039ee53d72a098e75526cce4c9b">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
+</li>
+<li>accepted_socket()
+: <a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1accept__t.html#aedb47395c7c181b4f674c3e906fbfb1b">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;::accept_t</a>
 </li>
 <li>acceptor_t
 : <a class="el" href="classsal_1_1net_1_1ip_1_1tcp__t.html#a1067b98614b157d49b3671e0d7749e2e">sal::net::ip::tcp_t</a>
@@ -118,10 +121,10 @@ $(document).ready(function(){initNavTree('functions.html','');});
 : <a class="el" href="classsal_1_1net_1_1ip_1_1resolver__base__t.html#aaa24f9f4568b6d8b56e7e385f6551891">sal::net::ip::resolver_base_t</a>
 </li>
 <li>address_t()
-: <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a4aafe6958ec192582f7bbe35787f05f2">sal::net::ip::address_t</a>
+: <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a064815f5c4c1c1a30ac97edf6696f5b8">sal::net::ip::address_t</a>
 </li>
 <li>address_v4_t()
-: <a class="el" href="classsal_1_1net_1_1ip_1_1address__v4__t.html#a19b1b37e3b8d739f1efa822f11931999">sal::net::ip::address_v4_t</a>
+: <a class="el" href="classsal_1_1net_1_1ip_1_1address__v4__t.html#a297f10ff4f316430bb118342a378d9f5">sal::net::ip::address_v4_t</a>
 </li>
 <li>address_v6_t()
 : <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a6c0a92d5dfbcfd90b34b68c13a2072c8">sal::net::ip::address_v6_t</a>
@@ -139,9 +142,9 @@ $(document).ready(function(){initNavTree('functions.html','');});
 <li>alt_name
 : <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a27bbc09d780d81b41e31cdbb331dfd22">sal::crypto::certificate_t</a>
 </li>
-<li>any()
-: <a class="el" href="classsal_1_1net_1_1ip_1_1address__v4__t.html#ab5f0e9acb6a1a201c85a4b8bcd94bc7b">sal::net::ip::address_v4_t</a>
-, <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#ab9392a0e6535099107a2b6fbea509632">sal::net::ip::address_v6_t</a>
+<li>any
+: <a class="el" href="classsal_1_1net_1_1ip_1_1address__v4__t.html#aa0224f8886888b24a6595ae7e0dcbd2d">sal::net::ip::address_v4_t</a>
+, <a class="el" href="classsal_1_1net_1_1ip_1_1address__v6__t.html#a0cd3abfdf4300e936b6e28d1b14e2a02">sal::net::ip::address_v6_t</a>
 </li>
 <li>argument
 : <a class="el" href="structsal_1_1program__options_1_1option__t.html#a0005a60191c30b646aa12bea9e57d2c7">sal::program_options::option_t</a>
@@ -173,55 +176,17 @@ $(document).ready(function(){initNavTree('functions.html','');});
 : <a class="el" href="structsal_1_1program__options_1_1option__t.html#a6718482b40e5c5acc8800c6eb7c97183">sal::program_options::option_t</a>
 </li>
 <li>associate()
-: <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a4f0af6503bc5f9929d96671c084d11b9">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
-, <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a2ade4ad82c3bbe02a0267b842169b6e7">sal::net::basic_socket_t&lt; Protocol &gt;</a>
-, <a class="el" href="classsal_1_1net_1_1socket__base__t.html#a235adca0c5c193db14d12bea47277740">sal::net::socket_base_t</a>
+: <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a10ad192a37c88c61ed9c39f41fe1dc2d">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
+, <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a743c5ac3305f827e602529e0974c978e">sal::net::basic_socket_t&lt; Protocol &gt;</a>
 </li>
-<li>async_accept()
-: <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a93e319454738a62643456828ae05fb00">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
-</li>
-<li>async_accept_result()
-: <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#aa8b0cde690ae29542ed7284933d912b5">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
-</li>
-<li>async_connect()
-: <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a79110485a4221c4e1058c0279798d9fb">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_connect_result()
-: <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a879b338951b55570bf567b5424fb9922">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_receive()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a9f78d6f6e07a31e30c7ce9fbd37590de">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-, <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a30515cf69af903396e410e2dcbe9dd92">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_receive_from()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a4cbc3d94395432c4b2a9dfb3a9eb3b32">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_receive_from_result()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a20cfeaab288763c6129993dd084ac9a0">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_receive_result()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9b838897440a03fd4d512b1772d1eeb">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-, <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a0cc192454d1dfe1104ddb6d44afab87b">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_send()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#aef0f532b70645834b1f9cdb057b970b1">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-, <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a62f6049a03b5ba5071689fdb01e02d29">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_send_result()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a75774ee8a401eb0b605a94180e466095">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-, <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a3cdb7f7bd095b15d39217fbdab9d5cb0">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_send_to()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a3aaf70f855aea10de28bcddc1d0eb25f">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>async_send_to_result()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a4cc9904546bb5d06b750201b2c962a2b">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
+<li>async_
+: <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a0a986af633517e42695f635fd0ea0d2b">sal::net::basic_socket_t&lt; Protocol &gt;</a>
 </li>
 <li>async_worker_t()
 : <a class="el" href="classsal_1_1logger_1_1async__worker__t.html#a03b3d08edf9b2d7bcc7d2a0f82ea5a7d">sal::logger::async_worker_t</a>
 </li>
 <li>authority_key_identifier()
-: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a7c775ab19091aa9b2928d7c32dceb3c0">sal::crypto::certificate_t</a>
+: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2773ecc47e35f5e2cb36ff7c443b15bc">sal::crypto::certificate_t</a>
 </li>
 <li>available()
 : <a class="el" href="classsal_1_1char__array__t.html#aa3dc6af8703965dbe4ba924e9fe8d89c">sal::char_array_t&lt; Size &gt;</a>

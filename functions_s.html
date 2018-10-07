@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -113,14 +113,18 @@ $(document).ready(function(){initNavTree('functions_s.html','');});
 : <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad235e00d656f6e5c3f23469898656f14">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
 , <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a2e5134cdc80b90b120927ad9218e0ad1">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
 </li>
+<li>send_async()
+: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a13c362ef5a1d8f1f7b908b8d09329131">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
+, <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#af9e3dace9f10b4b34cd96e475904c955">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
+</li>
 <li>send_to()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a7a79d76f862d4054eeed471d9b4b31ef">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
+: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adc534d462d1409a674af9b1fd8ad3278">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
+</li>
+<li>send_to_async()
+: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af57516607df98b2744ea4c092bcd240d">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
 </li>
 <li>separator
 : <a class="el" href="structsal_1_1crypto_1_1certificate__t_1_1distinguished__name__format__t.html#a545e62dd8e9d59be9829e8cc720d08fd">sal::crypto::certificate_t::distinguished_name_format_t</a>
-</li>
-<li>seq
-: <a class="el" href="structsal_1_1spsc__sync__t_1_1intrusive__queue__hook__t.html#a279c6ce7d19de5229d710554aada6e9d">sal::spsc_sync_t::intrusive_queue_hook_t</a>
 </li>
 <li>serial_number()
 : <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2fcd48f7af19165244d17b3269e5609a">sal::crypto::certificate_t</a>
@@ -141,7 +145,7 @@ $(document).ready(function(){initNavTree('functions_s.html','');});
 , <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#ac6617eac1c2ff777869dc3875e412359">sal::net::basic_socket_t&lt; Protocol &gt;</a>
 </li>
 <li>shutdown()
-: <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#aa9b0432eaa7fb1624e260d51b73a5664">sal::net::basic_socket_t&lt; Protocol &gt;</a>
+: <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a859df3cb09f44f73be8464e26c801efd">sal::net::basic_socket_t&lt; Protocol &gt;</a>
 </li>
 <li>shutdown_both
 : <a class="el" href="classsal_1_1net_1_1socket__base__t.html#ae8c14c939fcfa5b56423eef0b4fe77a3">sal::net::socket_base_t</a>
@@ -175,7 +179,7 @@ $(document).ready(function(){initNavTree('functions_s.html','');});
 , <a class="el" href="classsal_1_1char__array__t.html#a851cb1da59ecae4f0f782293bd5fb529">sal::char_array_t&lt; Size &gt;</a>
 , <a class="el" href="classsal_1_1const__buf__ptr.html#a74526cd0736f9f56360aca4b2b2b72b8">sal::const_buf_ptr</a>
 , <a class="el" href="classsal_1_1memory__writer__t.html#a86aa39a54d7f8072ca946f59e9015614">sal::memory_writer_t</a>
-, <a class="el" href="classsal_1_1net_1_1async__service__t_1_1io__t.html#a5e0c4e7bcf07f2216b4b1b41301ff268">sal::net::async_service_t::io_t</a>
+, <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a13b4c71cb1e79bb6054fa7780684f3f4">sal::net::async::io_t</a>
 , <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a515def2af60e747035892a392c99eeed">sal::net::ip::basic_endpoint_t&lt; Protocol &gt;</a>
 , <a class="el" href="classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#a22db93c778f5138b221c4af242544f8a">sal::net::ip::basic_resolver_results_t&lt; Protocol &gt;</a>
 </li>
@@ -187,6 +191,9 @@ $(document).ready(function(){initNavTree('functions_s.html','');});
 </li>
 <li>socket_
 : <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a20cd73d24ad08b369f6ea34a8d10e2e2">sal::net::basic_socket_t&lt; Protocol &gt;</a>
+</li>
+<li>socket_context()
+: <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a2db14c8f3e625f2d615393232e3c6397">sal::net::async::io_t</a>
 </li>
 <li>socket_t
 : <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#ad7fae10be2d7ed8a2184cd3e97919240">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
@@ -203,19 +210,20 @@ $(document).ready(function(){initNavTree('functions_s.html','');});
 : <a class="el" href="classsal_1_1program__options_1_1argument__map__t.html#a28a39c2a7fc997dda6571a51aab51817">sal::program_options::argument_map_t</a>
 </li>
 <li>subject()
-: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a44980ebc66bf90456e5520fa88bf9898">sal::crypto::certificate_t</a>
+: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a16503b475b82f2ded8ce10b1e56df422">sal::crypto::certificate_t</a>
 </li>
 <li>subject_alt_names()
 : <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a851c3cb0cb11bc8aa0fa80fcd946b4de">sal::crypto::certificate_t</a>
 </li>
 <li>subject_key_identifier()
-: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#af417b026d37b19e71a765784527d58e3">sal::crypto::certificate_t</a>
+: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#ab4f013d34fcd708aeb3b4206f9edc2e4">sal::crypto::certificate_t</a>
 </li>
 <li>swap()
 : <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a5ed69cdf9f7208db3d00a1d7455d70c3">sal::crypto::certificate_t</a>
 , <a class="el" href="classsal_1_1crypto_1_1private__key__t.html#abdb0eebe7244ef29cec7359b31c72f4f">sal::crypto::private_key_t</a>
 , <a class="el" href="classsal_1_1crypto_1_1public__key__t.html#a6d2c6adbdf8ce006102ec9edaa089dcb">sal::crypto::public_key_t</a>
 , <a class="el" href="classsal_1_1file__t.html#a32e3705de9ce5816e9de04b5fd5d28bb">sal::file_t</a>
+, <a class="el" href="classsal_1_1intrusive__stack__t.html#a82c13b15d7098354bc62057b58aace20">sal::intrusive_stack_t&lt; Next &gt;</a>
 , <a class="el" href="classsal_1_1locked__ptr.html#af9be5b66f13e4d1d51cffb31e277da03">sal::locked_ptr&lt; T, Mutex &gt;</a>
 , <a class="el" href="classsal_1_1memory__writer__t.html#a863afae3195fee65c8442105ccea9e24">sal::memory_writer_t</a>
 , <a class="el" href="classsal_1_1net_1_1ip_1_1basic__resolver__results__t.html#a4e9b43ea321c06fc2acc3c1679764696">sal::net::ip::basic_resolver_results_t&lt; Protocol &gt;</a>

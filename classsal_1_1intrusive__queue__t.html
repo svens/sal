@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>sal: sal::intrusive_queue_t&lt; T, SyncPolicy, Hook &gt; Class Template Reference</title>
+<title>sal: sal::intrusive_queue_t&lt; Next &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.29.0</span>
+   &#160;<span id="projectnumber">0.31.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -97,67 +97,79 @@ $(document).ready(function(){initNavTree('classsal_1_1intrusive__queue__t.html',
 
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classsal_1_1intrusive__queue__t-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">sal::intrusive_queue_t&lt; T, SyncPolicy, Hook &gt; Class Template Reference</div>  </div>
+<div class="title">sal::intrusive_queue_t&lt; Next &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Intrusive queue (FIFO) with possible concurrent usage.  
+<p>Intrusive queue (FIFO).  
  <a href="classsal_1_1intrusive__queue__t.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="intrusive__queue_8hpp_source.html">intrusive_queue.hpp</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a016bae0c4bfdbd0aae351cfd9971e958"><td class="memItemLeft" align="right" valign="top"><a id="a016bae0c4bfdbd0aae351cfd9971e958"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#a016bae0c4bfdbd0aae351cfd9971e958">element_type</a> = decltype(helper(static_cast&lt; <a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a>&lt; Next &gt; * &gt;(nullptr)))</td></tr>
+<tr class="memdesc:a016bae0c4bfdbd0aae351cfd9971e958"><td class="mdescLeft">&#160;</td><td class="mdescRight">Element type of container. <br /></td></tr>
+<tr class="separator:a016bae0c4bfdbd0aae351cfd9971e958"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a807d362a0d9b012bc5dc6152c97d0e31"><td class="memItemLeft" align="right" valign="top"><a id="a807d362a0d9b012bc5dc6152c97d0e31"></a>
+<tr class="memitem:ae0de66b014a606ac881e149750ed4366"><td class="memItemLeft" align="right" valign="top"><a id="ae0de66b014a606ac881e149750ed4366"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>intrusive_queue_t</b> (const <a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;)=delete</td></tr>
-<tr class="separator:a807d362a0d9b012bc5dc6152c97d0e31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa719bd7f8ccb59d71b5f11311e492af4"><td class="memItemLeft" align="right" valign="top"><a id="aa719bd7f8ccb59d71b5f11311e492af4"></a>
+<tr class="separator:ae0de66b014a606ac881e149750ed4366"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4232ff3436f61cf98d47d88cdcf957f4"><td class="memItemLeft" align="right" valign="top"><a id="a4232ff3436f61cf98d47d88cdcf957f4"></a>
 <a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;)=delete</td></tr>
-<tr class="separator:aa719bd7f8ccb59d71b5f11311e492af4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87047e2021e8ee876ca5c75c603f8d80"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#a87047e2021e8ee876ca5c75c603f8d80">intrusive_queue_t</a> (<a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;&amp;that) noexcept</td></tr>
-<tr class="memdesc:a87047e2021e8ee876ca5c75c603f8d80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new queue filled with elements moved from <em>that</em>.  <a href="#a87047e2021e8ee876ca5c75c603f8d80">More...</a><br /></td></tr>
-<tr class="separator:a87047e2021e8ee876ca5c75c603f8d80"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab61295bd1e6c94df551b0ece9e64bddc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#ab61295bd1e6c94df551b0ece9e64bddc">operator=</a> (<a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;&amp;that) noexcept</td></tr>
-<tr class="memdesc:ab61295bd1e6c94df551b0ece9e64bddc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move elements from <em>that</em> to <em>this</em>.  <a href="#ab61295bd1e6c94df551b0ece9e64bddc">More...</a><br /></td></tr>
-<tr class="separator:ab61295bd1e6c94df551b0ece9e64bddc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac7ddb75628944019fae56f6293c598d0"><td class="memItemLeft" align="right" valign="top"><a id="ac7ddb75628944019fae56f6293c598d0"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#ac7ddb75628944019fae56f6293c598d0">push</a> (T *node) noexcept</td></tr>
-<tr class="memdesc:ac7ddb75628944019fae56f6293c598d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push new <em>node</em> into <em>this</em>. <br /></td></tr>
-<tr class="separator:ac7ddb75628944019fae56f6293c598d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adbef7021b05f1580b79df1275e7fe4ab"><td class="memItemLeft" align="right" valign="top"><a id="adbef7021b05f1580b79df1275e7fe4ab"></a>
-T *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#adbef7021b05f1580b79df1275e7fe4ab">try_pop</a> () noexcept</td></tr>
-<tr class="memdesc:adbef7021b05f1580b79df1275e7fe4ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop next element from queue. If empty, return nullptr. <br /></td></tr>
-<tr class="separator:adbef7021b05f1580b79df1275e7fe4ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac20499592f91180b02d30ab7c6f86b67"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#ac20499592f91180b02d30ab7c6f86b67">empty</a> () const noexcept</td></tr>
-<tr class="memdesc:ac20499592f91180b02d30ab7c6f86b67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if queue has no elements.  <a href="#ac20499592f91180b02d30ab7c6f86b67">More...</a><br /></td></tr>
-<tr class="separator:ac20499592f91180b02d30ab7c6f86b67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a4232ff3436f61cf98d47d88cdcf957f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfec089345d61adb9e974475d6445da7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#acfec089345d61adb9e974475d6445da7">intrusive_queue_t</a> (<a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;&amp;that) noexcept</td></tr>
+<tr class="memdesc:acfec089345d61adb9e974475d6445da7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct new queue with elements from <em>that</em>.  <a href="#acfec089345d61adb9e974475d6445da7">More...</a><br /></td></tr>
+<tr class="separator:acfec089345d61adb9e974475d6445da7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5276d4c164a432aa6f00df86a71283bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#a5276d4c164a432aa6f00df86a71283bc">operator=</a> (<a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> &amp;&amp;that) noexcept</td></tr>
+<tr class="memdesc:a5276d4c164a432aa6f00df86a71283bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move elements of <em>that</em> into <em>this</em>.  <a href="#a5276d4c164a432aa6f00df86a71283bc">More...</a><br /></td></tr>
+<tr class="separator:a5276d4c164a432aa6f00df86a71283bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a565fbfbcec2569b7c0ca17d02977f1"><td class="memItemLeft" align="right" valign="top"><a id="a0a565fbfbcec2569b7c0ca17d02977f1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#a0a565fbfbcec2569b7c0ca17d02977f1">push</a> (<a class="el" href="classsal_1_1intrusive__queue__t.html#a016bae0c4bfdbd0aae351cfd9971e958">element_type</a> *node) noexcept</td></tr>
+<tr class="memdesc:a0a565fbfbcec2569b7c0ca17d02977f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push new <em>element</em> to back of queue. <br /></td></tr>
+<tr class="separator:a0a565fbfbcec2569b7c0ca17d02977f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dfb861b115c2982629e8894694bbff3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1intrusive__queue__t.html#a016bae0c4bfdbd0aae351cfd9971e958">element_type</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#a5dfb861b115c2982629e8894694bbff3">try_pop</a> () noexcept</td></tr>
+<tr class="memdesc:a5dfb861b115c2982629e8894694bbff3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop next element from head of queue.  <a href="#a5dfb861b115c2982629e8894694bbff3">More...</a><br /></td></tr>
+<tr class="separator:a5dfb861b115c2982629e8894694bbff3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc2e996b4831b72d7995b9ed099d98a1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsal_1_1intrusive__queue__t.html#a016bae0c4bfdbd0aae351cfd9971e958">element_type</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#afc2e996b4831b72d7995b9ed099d98a1">head</a> () const noexcept</td></tr>
+<tr class="memdesc:afc2e996b4831b72d7995b9ed099d98a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retun head of queue without removing it.  <a href="#afc2e996b4831b72d7995b9ed099d98a1">More...</a><br /></td></tr>
+<tr class="separator:afc2e996b4831b72d7995b9ed099d98a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d9683b508b0bcb03392f51cf6f82ba6"><td class="memItemLeft" align="right" valign="top"><a id="a6d9683b508b0bcb03392f51cf6f82ba6"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1intrusive__queue__t.html#a6d9683b508b0bcb03392f51cf6f82ba6">empty</a> () const noexcept</td></tr>
+<tr class="memdesc:a6d9683b508b0bcb03392f51cf6f82ba6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if queue has no elements. <br /></td></tr>
+<tr class="separator:a6d9683b508b0bcb03392f51cf6f82ba6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename T, typename SyncPolicy, typename SyncPolicy::intrusive_queue_hook_t T::* Hook&gt;<br />
-class sal::intrusive_queue_t&lt; T, SyncPolicy, Hook &gt;</h3>
+<div class="textblock"><h3>template&lt;auto Next&gt;<br />
+class sal::intrusive_queue_t&lt; Next &gt;</h3>
 
-<p>Intrusive queue (FIFO) with possible concurrent usage. </p>
-<p>Queue elements of type <em>T</em> must provide <em>Hook</em> that stores opaque data managed by owning queue. Any given time specific hook can be used only to store element in single queue. Same hook can be used to store element in different queues at different times. If application needs to store element in multiple queues same time, it needs to provide multiple hooks, one per holding queue.</p>
-<p>Being intrusive, queue itself does not deal with node allocation. It is application's responsibility to handle node management and make sure that while in queue, element is kept alive and it's hook is not interfered with. Also, pushing and popping elements into/from queue does not copy them, just hooks/unhooks using specified member <em>Hook</em> in <em>T</em>.</p>
-<p>Usage: </p><div class="fragment"><div class="line"><span class="keyword">class </span>foo</div><div class="line">{</div><div class="line">  <a class="code" href="structsal_1_1mpsc__sync__t.html#a451764ca69e667381e96bbdad3b4b7cb">sal::mpsc_sync_t::intrusive_queue_hook_t</a> hook;</div><div class="line">  <span class="keywordtype">int</span> a;</div><div class="line">  <span class="keywordtype">char</span> b;</div><div class="line">};</div><div class="line"></div><div class="line"><a class="code" href="classsal_1_1queue__t.html">sal::queue_t&lt;foo, sal::mpsc_sync_t, &amp;foo::hook&gt;</a> queue;</div><div class="line"></div><div class="line">foo f;</div><div class="line">queue.<a class="code" href="classsal_1_1queue__t.html#ab01456fea8afdabd681e61c16a2f2ca8">push</a>(&amp;f);</div><div class="line"></div><div class="line"><span class="keyword">auto</span> fp = queue.<a class="code" href="classsal_1_1queue__t.html#a8b7d6d6680e15cd795a161e08bbd338d">try_pop</a>(); <span class="comment">// fp == &amp;f</span></div></div><!-- fragment --> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a87047e2021e8ee876ca5c75c603f8d80"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a87047e2021e8ee876ca5c75c603f8d80">&#9670;&nbsp;</a></span>intrusive_queue_t()</h2>
+<p>Intrusive queue (FIFO). </p>
+<p>Elements of this container must provide member address <em>Next</em> that stores opaque data managed by container. Any given time specific hook can be used only to store element in single container. Same hook can be used to store element in different containers at different times. If application needs to store element in multiple containers same time, it needs to provide multiple hooks, one per owner.</p>
+<p>Being intrusive, container itself does not deal with node allocation. It is application's responsibility to handle node management and make sure that while in container, element is kept alive and it's hook is not interfered with. Also, pushing and popping elements into/from container does not copy them, just hooks/unhooks using specified member <em>Next</em>.</p>
+<p>Usage: </p><div class="fragment"><div class="line"><span class="keyword">class </span>foo_t</div><div class="line">{</div><div class="line">  <a class="code" href="intrusive__queue_8hpp.html#ab9ca4f3714751a0055fb732b7377b560">sal::intrusive_queue_hook_t&lt;foo_t&gt;</a> next;</div><div class="line">  <span class="keywordtype">int</span> a;</div><div class="line">  <span class="keywordtype">char</span> b;</div><div class="line">};</div><div class="line"><a class="code" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t&lt;&amp;foo_t::next&gt;</a> queue;</div><div class="line"></div><div class="line">foo_t f;</div><div class="line">queue.<a class="code" href="classsal_1_1intrusive__queue__t.html#a0a565fbfbcec2569b7c0ca17d02977f1">push</a>(&amp;f);</div><div class="line"></div><div class="line"><span class="keyword">auto</span> fp = queue.<a class="code" href="classsal_1_1intrusive__queue__t.html#a5dfb861b115c2982629e8894694bbff3">try_pop</a>(); <span class="comment">// fp == &amp;f</span></div></div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>This container is not thread safe. </dd></dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="acfec089345d61adb9e974475d6445da7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acfec089345d61adb9e974475d6445da7">&#9670;&nbsp;</a></span>intrusive_queue_t()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T , typename SyncPolicy , typename SyncPolicy::intrusive_queue_hook_t T::* Hook&gt; </div>
+template&lt;auto Next&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t</a>&lt; T, SyncPolicy, Hook &gt;::<a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> </td>
+          <td class="memname"><a class="el" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t</a>&lt; Next &gt;::<a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a>&lt; T, SyncPolicy, Hook &gt; &amp;&amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a>&lt; Next &gt; &amp;&amp;&#160;</td>
           <td class="paramname"><em>that</em></td><td>)</td>
           <td></td>
         </tr>
@@ -169,26 +181,25 @@ template&lt;typename T , typename SyncPolicy , typename SyncPolicy::intrusive_qu
 </table>
 </div><div class="memdoc">
 
-<p>Construct new queue filled with elements moved from <em>that</em>. </p>
-<p>Using <em>that</em> after move is undefined behaviour (until another queue moves it's elements into <em>that</em>).</p>
-<dl class="section note"><dt>Note</dt><dd>Moving elements out of <em>that</em> is not thread-safe. </dd></dl>
+<p>Construct new queue with elements from <em>that</em>. </p>
+<p><em>that</em> will be empty after the move. </p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ac20499592f91180b02d30ab7c6f86b67"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac20499592f91180b02d30ab7c6f86b67">&#9670;&nbsp;</a></span>empty()</h2>
+<a id="afc2e996b4831b72d7995b9ed099d98a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc2e996b4831b72d7995b9ed099d98a1">&#9670;&nbsp;</a></span>head()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T , typename SyncPolicy , typename SyncPolicy::intrusive_queue_hook_t T::* Hook&gt; </div>
+template&lt;auto Next&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t</a>&lt; T, SyncPolicy, Hook &gt;::empty </td>
+          <td class="memname"><a class="el" href="classsal_1_1intrusive__queue__t.html#a016bae0c4bfdbd0aae351cfd9971e958">element_type</a>* <a class="el" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t</a>&lt; Next &gt;::head </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -201,26 +212,26 @@ template&lt;typename T , typename SyncPolicy , typename SyncPolicy::intrusive_qu
 </table>
 </div><div class="memdoc">
 
-<p>Return true if queue has no elements. </p>
-<p>This method returns reliably valid result only from consumer side. </p>
+<p>Retun head of queue without removing it. </p>
+<p>If empty, return nullptr. </p>
 
 </div>
 </div>
-<a id="ab61295bd1e6c94df551b0ece9e64bddc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab61295bd1e6c94df551b0ece9e64bddc">&#9670;&nbsp;</a></span>operator=()</h2>
+<a id="a5276d4c164a432aa6f00df86a71283bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5276d4c164a432aa6f00df86a71283bc">&#9670;&nbsp;</a></span>operator=()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T , typename SyncPolicy , typename SyncPolicy::intrusive_queue_hook_t T::* Hook&gt; </div>
+template&lt;auto Next&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a>&amp; <a class="el" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t</a>&lt; T, SyncPolicy, Hook &gt;::operator= </td>
+          <td class="memname"><a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a>&amp; <a class="el" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t</a>&lt; Next &gt;::operator= </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a>&lt; T, SyncPolicy, Hook &gt; &amp;&amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classsal_1_1intrusive__queue__t.html">intrusive_queue_t</a>&lt; Next &gt; &amp;&amp;&#160;</td>
           <td class="paramname"><em>that</em></td><td>)</td>
           <td></td>
         </tr>
@@ -232,10 +243,38 @@ template&lt;typename T , typename SyncPolicy , typename SyncPolicy::intrusive_qu
 </table>
 </div><div class="memdoc">
 
-<p>Move elements from <em>that</em> to <em>this</em>. </p>
-<p>Using <em>that</em> after move is undefined behaviour (until another queue moves it's elements into <em>that</em>).</p>
-<p>Elements in <em>this</em> are "forgotten" during move. If these are dynamically allocated, it is applications responsibility to release them beforehand.</p>
-<dl class="section note"><dt>Note</dt><dd>Moving elements out of <em>that</em> is not thread-safe. </dd></dl>
+<p>Move elements of <em>that</em> into <em>this</em>. </p>
+<p><em>that</em> will be empty after the move. Existing elements of <em>this</em> are "forgotten" during move. If there are dynamically allocated, it is application responsibility to release them beforehand. </p>
+
+</div>
+</div>
+<a id="a5dfb861b115c2982629e8894694bbff3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dfb861b115c2982629e8894694bbff3">&#9670;&nbsp;</a></span>try_pop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;auto Next&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classsal_1_1intrusive__queue__t.html#a016bae0c4bfdbd0aae351cfd9971e958">element_type</a>* <a class="el" href="classsal_1_1intrusive__queue__t.html">sal::intrusive_queue_t</a>&lt; Next &gt;::try_pop </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Pop next element from head of queue. </p>
+<p>If empty, return nullptr. </p>
 
 </div>
 </div>
