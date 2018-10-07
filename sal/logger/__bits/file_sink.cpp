@@ -61,7 +61,7 @@ constexpr char dir_sep = '/';
 __sal_begin
 
 
-namespace logger { namespace __bits {
+namespace logger::__bits {
 
 
 namespace {
@@ -293,7 +293,7 @@ void file_sink_t::sink_event_write (event_t &event)
 }
 
 
-}} // namespace logger::__bits
+} // namespace logger::__bits
 
 
 __sal_end

@@ -16,7 +16,7 @@ using protocol_types = testing::Types<
   sal::net::ip::tcp_t,
   sal::net::ip::udp_t
 >;
-TYPED_TEST_CASE(net_ip_resolver, protocol_types);
+TYPED_TEST_CASE(net_ip_resolver, protocol_types, );
 
 
 TYPED_TEST(net_ip_resolver, entry_ctor)
@@ -342,7 +342,7 @@ TYPED_TEST(net_ip_resolver, resolve_canonical_name)
 TYPED_TEST(net_ip_resolver, resolve_v4_host_localhost)
 {
   typename TypeParam::resolver_t resolver;
-  auto results = resolver.resolve(TypeParam::v4(),
+  auto results = resolver.resolve(TypeParam::v4,
     "localhost",
     nullptr
   );
@@ -369,7 +369,7 @@ TYPED_TEST(net_ip_resolver, resolve_v6_host_localhost)
 #endif
 
   typename TypeParam::resolver_t resolver;
-  auto results = resolver.resolve(TypeParam::v6(),
+  auto results = resolver.resolve(TypeParam::v6,
     "localhost",
     nullptr
   );
@@ -388,7 +388,7 @@ TYPED_TEST(net_ip_resolver, resolve_v6_host_localhost)
 TYPED_TEST(net_ip_resolver, resolve_v4_service_echo)
 {
   typename TypeParam::resolver_t resolver;
-  auto results = resolver.resolve(TypeParam::v4(), nullptr, "echo");
+  auto results = resolver.resolve(TypeParam::v4, nullptr, "echo");
   EXPECT_FALSE(results.empty());
   EXPECT_TRUE(results.host_name().empty());
   EXPECT_EQ("echo", results.service_name());
@@ -403,7 +403,7 @@ TYPED_TEST(net_ip_resolver, resolve_v4_service_echo)
 TYPED_TEST(net_ip_resolver, resolve_v6_service_echo)
 {
   typename TypeParam::resolver_t resolver;
-  auto results = resolver.resolve(TypeParam::v6(), nullptr, "echo");
+  auto results = resolver.resolve(TypeParam::v6, nullptr, "echo");
   EXPECT_FALSE(results.empty());
   EXPECT_TRUE(results.host_name().empty());
   EXPECT_EQ("echo", results.service_name());
@@ -418,7 +418,7 @@ TYPED_TEST(net_ip_resolver, resolve_v6_service_echo)
 TYPED_TEST(net_ip_resolver, resolve_v4_numeric_host_v4)
 {
   typename TypeParam::resolver_t resolver;
-  auto results = resolver.resolve(TypeParam::v4(),
+  auto results = resolver.resolve(TypeParam::v4,
     "127.0.0.1",
     nullptr,
     resolver.numeric_host
@@ -438,7 +438,7 @@ TYPED_TEST(net_ip_resolver, resolve_v4_numeric_host_v4)
 TYPED_TEST(net_ip_resolver, resolve_v6_numeric_host_v6)
 {
   typename TypeParam::resolver_t resolver;
-  auto results = resolver.resolve(TypeParam::v6(),
+  auto results = resolver.resolve(TypeParam::v6,
     "::1",
     nullptr,
     resolver.numeric_host
@@ -459,7 +459,7 @@ TYPED_TEST(net_ip_resolver, resolve_v4_numeric_host_v6)
 {
   typename TypeParam::resolver_t resolver;
   EXPECT_THROW(
-    resolver.resolve(TypeParam::v4(),
+    resolver.resolve(TypeParam::v4,
       "::1",
       nullptr,
       resolver.numeric_host
@@ -473,7 +473,7 @@ TYPED_TEST(net_ip_resolver, resolve_v6_numeric_host_v4)
 {
   typename TypeParam::resolver_t resolver;
   EXPECT_THROW(
-    resolver.resolve(TypeParam::v6(),
+    resolver.resolve(TypeParam::v6,
       "127.0.0.1",
       nullptr,
       resolver.numeric_host
@@ -488,7 +488,7 @@ TYPED_TEST(net_ip_resolver, resolve_v4_canonical_name)
   // see also resolve_canonical_name
 
   typename TypeParam::resolver_t resolver;
-  auto results = resolver.resolve(TypeParam::v4(),
+  auto results = resolver.resolve(TypeParam::v4,
     "mail.google.com",
     nullptr,
     resolver.canonical_name
@@ -508,7 +508,7 @@ TYPED_TEST(net_ip_resolver, resolve_v6_canonical_name)
   // see also resolve_canonical_name
 
   typename TypeParam::resolver_t resolver;
-  auto results = resolver.resolve(TypeParam::v6(),
+  auto results = resolver.resolve(TypeParam::v6,
     "mail.google.com",
     nullptr,
     resolver.canonical_name | resolver.v4_mapped
@@ -527,7 +527,7 @@ TYPED_TEST(net_ip_resolver, resolve_v4_host_invalid)
 {
   typename TypeParam::resolver_t resolver;
   std::error_code error;
-  auto results = resolver.resolve(TypeParam::v4(),
+  auto results = resolver.resolve(TypeParam::v4,
     sal_test::fixture::case_name.c_str(),
     nullptr,
     error
@@ -542,7 +542,7 @@ TYPED_TEST(net_ip_resolver, resolve_v6_host_invalid)
 {
   typename TypeParam::resolver_t resolver;
   std::error_code error;
-  auto results = resolver.resolve(TypeParam::v6(),
+  auto results = resolver.resolve(TypeParam::v6,
     sal_test::fixture::case_name.c_str(),
     nullptr,
     error

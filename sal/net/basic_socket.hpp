@@ -10,6 +10,7 @@
 #include <sal/net/error.hpp>
 #include <sal/net/socket_base.hpp>
 #include <sal/net/socket_options.hpp>
+#include <sal/net/async/service.hpp>
 
 
 __sal_begin
@@ -128,6 +129,7 @@ public:
     if (is_open())
     {
       socket_.close(error);
+      async_.reset();
     }
     else
     {
@@ -414,21 +416,62 @@ public:
    * undefined behaviour. Once socket is associated with specific service, it
    * will remain so until closed.
    *
-   * On failure, set \a error
+   * On failure, set \a error.
    */
-  void associate (async_service_t &service, std::error_code &error) noexcept
+  void associate (async::service_t &service, std::error_code &error) noexcept
   {
-    socket_base_t::associate(socket_, service, error);
+    if (!is_open())
+    {
+      error = std::make_error_code(std::errc::bad_file_descriptor);
+    }
+    else if (async_)
+    {
+      error = make_error_code(socket_errc::already_associated);
+    }
+    else
+    {
+      async_ = async::__bits::make_handler(service.impl_, socket_, error);
+    }
   }
 
 
   /**
-   * \see associate (async_service_t &, std::error_code &)
+   * \see associate (async::service_t &, std::error_code &)
    * \throws std::system_error on failure
    */
-  void associate (async_service_t &service)
+  void associate (async::service_t &service)
   {
     associate(service, throw_on_error("basic_socket::associate"));
+  }
+
+
+  /**
+   * Set application specific context for socket's asynchronous operations. On
+   * asynchronous I/O operation completion it is passed back to application
+   * along with async::io_t (using method async::io_t::socket_context).
+   */
+  template <typename Context>
+  void context (Context *context)
+  {
+    auto &async = *sal_check_ptr(async_);
+    async.context_type = type_v<Context>;
+    async.context = context;
+  }
+
+
+  /**
+   * Get current socket context.
+   * \see void context (Context *)
+   */
+  template <typename Context>
+  Context *context () const
+  {
+    auto &async = *sal_check_ptr(async_);
+    if (async.context_type == type_v<Context>)
+    {
+      return static_cast<Context *>(async.context);
+    }
+    return nullptr;
   }
 
 
@@ -439,6 +482,12 @@ protected:
    * \internal
    */
   __bits::socket_t socket_{};
+
+  /**
+   * Low-level OS socket asynchronous I/O handler.
+   * \internal
+   */
+  async::__bits::handler_ptr async_{};
 
 
   basic_socket_t () noexcept = default;

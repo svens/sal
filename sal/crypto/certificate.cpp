@@ -670,18 +670,25 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 {
   if (impl_.ref)
   {
-    __bits::public_key_t key;
-    auto status = ::SecCertificateCopyPublicKey(impl_.ref, &key.ref);
-    if (status == errSecSuccess)
-    {
-      return std::move(key);
-    }
-    error.assign(status, category());
+    #if __MAC_OS_X_VERSION_MIN_REQUIRED < 101400
+      // TODO: remove once Travis-CI has SDK 10.14 as default
+      __bits::public_key_t key;
+      auto status = ::SecCertificateCopyPublicKey(impl_.ref, &key.ref);
+      if (status == errSecSuccess)
+      {
+        return std::move(key);
+      }
+      error.assign(status, category());
+      return {};
+    #else
+      if (auto key = ::SecCertificateCopyKey(impl_.ref))
+      {
+        error.clear();
+        return {key};
+      }
+    #endif
   }
-  else
-  {
-    error = std::make_error_code(std::errc::bad_address);
-  }
+  error = std::make_error_code(std::errc::bad_address);
   return {};
 }
 

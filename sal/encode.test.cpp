@@ -15,7 +15,7 @@ using transform_types = testing::Types<
   sal::base64
 >;
 
-TYPED_TEST_CASE(encode, transform_types);
+TYPED_TEST_CASE(encode, transform_types, );
 
 
 using encode_data = std::vector<std::pair<std::string, std::string>>;

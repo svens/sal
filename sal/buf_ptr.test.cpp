@@ -95,7 +95,7 @@ using buf_ptr_types = testing::Types<
   sal::const_buf_ptr
 >;
 
-TYPED_TEST_CASE(buf_ptr, buf_ptr_types);
+TYPED_TEST_CASE(buf_ptr, buf_ptr_types, );
 
 
 TYPED_TEST(buf_ptr, ctor) //{{{1

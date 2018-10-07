@@ -21,7 +21,7 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net::ip {
 
 
 /**
@@ -200,23 +200,15 @@ public:
 
 
   /**
-   * Return unspecified address
+   * Unspecified IPv6 address
    */
-  static const address_v6_t &any () noexcept
-  {
-    static const address_v6_t addr_{in6addr_any};
-    return addr_;
-  }
+  static const address_v6_t any;
 
 
   /**
-   * Return loopback address
+   * IPv6 loopback address
    */
-  static const address_v6_t &loopback () noexcept
-  {
-    static const address_v6_t addr_{in6addr_loopback};
-    return addr_;
-  }
+  static const address_v6_t loopback;
 
 
   /**
@@ -467,7 +459,7 @@ inline address_v6_t make_address_v6 (const address_v4_t &a)
 }
 
 
-}} // namespace net::ip
+} // namespace net::ip
 
 
 __sal_end

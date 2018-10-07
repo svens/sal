@@ -19,8 +19,6 @@ namespace net {
 
 /**
  * Stream socket
- *
- * For more information about asynchronous API usage, see async_service_t.
  */
 template <typename Protocol>
 class basic_stream_socket_t
@@ -46,7 +44,7 @@ public:
   /**
    * Initialise base class using \a protocol
    */
-  basic_stream_socket_t (const protocol_t &protocol)
+  basic_stream_socket_t (const Protocol &protocol)
     : base_t(protocol)
   {}
 
@@ -54,7 +52,7 @@ public:
   /**
    * Initialise base class using \a endpoint
    */
-  basic_stream_socket_t (const endpoint_t &endpoint)
+  basic_stream_socket_t (const typename Protocol::endpoint_t &endpoint)
     : base_t(endpoint)
   {}
 
@@ -186,186 +184,110 @@ public:
   // Asynchronous API
   //
 
-
   /**
-   * async_connect() result.
+   * connect_async() result type
    */
-  struct async_connect_t
-    : public __bits::async_connect_t
-  {};
-
-
-  /**
-   * Start asynchronous async_connect()
-   * \see connect()
-   */
-  void async_connect (io_ptr &&io, const endpoint_t &endpoint) noexcept
+  struct connect_t
   {
-    __bits::async_connect_t::start(io.release(), base_t::socket_,
-      endpoint.data(), endpoint.size()
-    );
-  }
-
-
-  /**
-   * Extract and return pointer to async_connect() result from \a io
-   * handle or nullptr if \a io does not represent async_connect()
-   * operation.
-   * If asynchronous connect has failed, set \a error.
-   */
-  static const async_connect_t *async_connect_result (
-    const io_ptr &io, std::error_code &error) noexcept
-  {
-    return static_cast<async_connect_t *>(
-      __bits::async_connect_t::result(io.get(), error)
-    );
-  }
-
-
-  /**
-   * Extract and return pointer to async_connect() result from \a io
-   * handle or nullptr if \a io does not represent async_connect()
-   * operation.
-   * If asynchronous connect has failed, throw std::system_error
-   */
-  static const async_connect_t *async_connect_result (const io_ptr &io)
-  {
-    return async_connect_result(io,
-      throw_on_error("basic_stream_socket::async_connect")
-    );
-  }
-
-
-  /**
-   * async_receive() result.
-   */
-  struct async_receive_t
-    : public __bits::async_receive_t
-  {
-    /**
-     * Number of bytes received.
-     */
-    size_t transferred () const noexcept
-    {
-      return __bits::async_receive_t::transferred;
-    }
+    /// I/O type
+    /// \internal
+    static constexpr async::io_t::op_t op = async::io_t::op_t::connect;
   };
 
 
   /**
-   * Start asynchronous async_receive()
-   * \see receive()
+   * Asynchronously start connect() to \a endpoint using \a io.
    */
-  void async_receive (io_ptr &&io, socket_base_t::message_flags_t flags)
+  void connect_async (async::io_t &&io, const endpoint_t &endpoint) noexcept
+  {
+    connect_t *result;
+    auto op = io.to_async_op(&result);
+    base_t::async_->start_connect(op, endpoint.data(), endpoint.size());
+  }
+
+
+  /**
+   * receive_async() result type
+   */
+  struct receive_t
+  {
+    /// I/O type
+    /// \internal
+    static constexpr async::io_t::op_t op = async::io_t::op_t::receive;
+
+    /// Number of bytes transferred
+    size_t transferred;
+
+    /// Message receiving flags
+    socket_base_t::message_flags_t flags;
+  };
+
+
+  /**
+   * Asynchronously start receive() operation using \a io with \a flags.
+   */
+  void receive_async (async::io_t &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    __bits::async_receive_t::start(io.release(), base_t::socket_, flags);
+    receive_t *result;
+    auto op = io.to_async_op(&result);
+    result->flags = flags;
+    base_t::async_->start_receive(op, &result->transferred, &result->flags);
   }
 
 
   /**
-   * Start asynchronous async_receive()
-   * \see receive()
+   * Asynchronously start receive() operation using \a io with default flags.
    */
-  void async_receive (io_ptr &&io) noexcept
+  void receive_async (async::io_t &&io) noexcept
   {
-    async_receive(std::move(io), socket_base_t::message_flags_t{});
+    receive_async(std::move(io), {});
   }
 
 
   /**
-   * Extract and return pointer to async_receive() result from \a io
-   * handle or nullptr if \a io does not represent async_receive()
-   * operation.
-   * If asynchronous receive has failed, set \a error.
+   * send_async() result type
    */
-  static const async_receive_t *async_receive_result (
-    const io_ptr &io, std::error_code &error) noexcept
+  struct send_t
   {
-    return static_cast<async_receive_t *>(
-      __bits::async_receive_t::result(io.get(), error)
-    );
-  }
+    /// I/O type
+    /// \internal
+    static constexpr async::io_t::op_t op = async::io_t::op_t::send;
 
-
-  /**
-   * Extract and return pointer to async_receive() result from \a io
-   * handle or nullptr if \a io does not represent async_receive()
-   * operation.
-   * If asynchronous receive has failed, throw std::system_error
-   */
-  static const async_receive_t *async_receive_result (const io_ptr &io)
-  {
-    return async_receive_result(io,
-      throw_on_error("basic_stream_socket::async_receive")
-    );
-  }
-
-
-  /**
-   * async_send() result.
-   */
-  struct async_send_t
-    : public __bits::async_send_t
-  {
-    /**
-     * Number of bytes sent.
-     */
-    size_t transferred () const noexcept
-    {
-      return __bits::async_send_t::transferred;
-    }
+    /// Number of bytes transferred
+    size_t transferred;
   };
 
 
   /**
-   * Start asynchronous async_send()
-   * \see send()
+   * Asynchronously start send() operation using \a io with \a flags.
    */
-  void async_send (io_ptr &&io, socket_base_t::message_flags_t flags) noexcept
+  void send_async (async::io_t &&io, socket_base_t::message_flags_t flags)
+    noexcept
   {
-    __bits::async_send_t::start(io.release(), base_t::socket_, flags);
+    send_t *result;
+    auto op = io.to_async_op(&result);
+    base_t::async_->start_send(op, &result->transferred, flags);
   }
 
 
   /**
-   * Start asynchronous async_send()
-   * \see send()
+   * Asynchronously start send() operation using \a io with default flags.
    */
-  void async_send (io_ptr &&io) noexcept
+  void send_async (async::io_t &&io) noexcept
   {
-    async_send(std::move(io), socket_base_t::message_flags_t{});
-  }
-
-
-  /**
-   * Extract and return pointer to async_send() result from \a io
-   * handle or nullptr if \a io does not represent async_send()
-   * operation.
-   * If asynchronous send has failed, set \a error.
-   */
-  static const async_send_t *async_send_result (
-    const io_ptr &io, std::error_code &error) noexcept
-  {
-    return static_cast<async_send_t *>(
-      __bits::async_send_t::result(io.get(), error)
-    );
-  }
-
-
-  /**
-   * Extract and return pointer to async_send() result from \a io
-   * handle or nullptr if \a io does not represent async_send()
-   * operation.
-   * If asynchronous send has failed, throw std::system_error
-   */
-  static const async_send_t *async_send_result (const io_ptr &io)
-  {
-    return async_send_result(io,
-      throw_on_error("basic_stream_socket::async_send")
-    );
+    send_async(std::move(io), {});
   }
 };
+
+
+/**
+ * basic_stream_socket_t deduction guide using constructor that binds socket
+ * to \tparam Endpoint
+ */
+template <typename Endpoint>
+basic_stream_socket_t (const Endpoint &)
+  -> basic_stream_socket_t<typename Endpoint::protocol_t>;
 
 
 } // namespace net

@@ -19,7 +19,7 @@ using types = ::testing::Types<
   sal::crypto::sha512
 >;
 
-TYPED_TEST_CASE(crypto_hmac, types);
+TYPED_TEST_CASE(crypto_hmac, types, );
 
 
 std::string hmac_key = "key",

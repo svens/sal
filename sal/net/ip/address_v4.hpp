@@ -20,7 +20,7 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net::ip {
 
 
 /**
@@ -165,33 +165,21 @@ public:
 
 
   /**
-   * Return unspecified address
+   * Unspecified IPv4 address
    */
-  static const address_v4_t &any () noexcept
-  {
-    static const address_v4_t addr_{INADDR_ANY};
-    return addr_;
-  }
+  static const address_v4_t any;
 
 
   /**
-   * Return loopback address
+   * IPv4 loopback address
    */
-  static const address_v4_t &loopback () noexcept
-  {
-    static const address_v4_t addr_{INADDR_LOOPBACK};
-    return addr_;
-  }
+  static const address_v4_t loopback;
 
 
   /**
-   * Return broadcast address
+   * IPv4 broadcast address
    */
-  static const address_v4_t &broadcast () noexcept
-  {
-    static const address_v4_t addr_{INADDR_BROADCAST};
-    return addr_;
-  }
+  static const address_v4_t broadcast;
 
 
   /**
@@ -409,7 +397,7 @@ inline address_v4_t make_address_v4 (const std::string &str)
 }
 
 
-}} // namespace net::ip
+} // namespace net::ip
 
 
 __sal_end

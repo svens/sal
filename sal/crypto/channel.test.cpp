@@ -199,7 +199,7 @@ using channel_factory_types = ::testing::Types<
   datagram_t,
   stream_t
 >;
-TYPED_TEST_CASE(crypto_channel, channel_factory_types);
+TYPED_TEST_CASE(crypto_channel, channel_factory_types, );
 
 
 TYPED_TEST(crypto_channel, handshake)

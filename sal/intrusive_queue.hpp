@@ -22,7 +22,7 @@ using intrusive_queue_hook_t = T *;
 /**
  * Intrusive queue (FIFO).
  *
- * Elements of type \a T must provide member address \a Next that stores
+ * Elements of this container must provide member address \a Next that stores
  * opaque data managed by container. Any given time specific hook can be used
  * only to store element in single container. Same hook can be used to store
  * element in different containers at different times. If application needs to
@@ -33,7 +33,7 @@ using intrusive_queue_hook_t = T *;
  * application's responsibility to handle node management and make sure that
  * while in container, element is kept alive and it's hook is not interfered
  * with. Also, pushing and popping elements into/from container does not copy
- * them, just hooks/unhooks using specified member \a Next in \a T.
+ * them, just hooks/unhooks using specified member \a Next.
  *
  * Usage:
  * \code
@@ -53,10 +53,23 @@ using intrusive_queue_hook_t = T *;
  *
  * \note This container is not thread safe.
  */
-template <typename T, intrusive_queue_hook_t<T> T::*Next>
+template <auto Next>
 class intrusive_queue_t
 {
+private:
+
+  template <typename T, typename Hook, Hook T::*Member>
+  static T helper (const intrusive_queue_t<Member> *);
+
 public:
+
+  /**
+   * Element type of container.
+   */
+  using element_type = decltype(
+    helper(static_cast<intrusive_queue_t<Next> *>(nullptr))
+  );
+
 
   intrusive_queue_t () noexcept = default;
 
@@ -92,7 +105,7 @@ public:
   /**
    * Push new \a element to back of queue.
    */
-  void push (T *node) noexcept
+  void push (element_type *node) noexcept
   {
     node->*Next = nullptr;
     tail_ = tail_->*Next = node;
@@ -102,7 +115,7 @@ public:
   /**
    * Pop next element from head of queue. If empty, return nullptr.
    */
-  T *try_pop () noexcept
+  element_type *try_pop () noexcept
   {
     if (auto node = head_->*Next)
     {
@@ -118,19 +131,28 @@ public:
 
 
   /**
+   * Retun head of queue without removing it. If empty, return nullptr.
+   */
+  element_type *head () const noexcept
+  {
+    return head_->*Next;
+  }
+
+
+  /**
    * Return true if queue has no elements.
    */
   bool empty () const noexcept
   {
-    return tail_ == reinterpret_cast<const T *>(&sentry_);
+    return tail_ == reinterpret_cast<const element_type *>(&sentry_);
   }
 
 
 private:
 
-  char sentry_[sizeof(T)];
-  T * const head_{reinterpret_cast<T *>(&sentry_)};
-  T *tail_{head_};
+  char sentry_[sizeof(element_type)];
+  element_type * const head_{reinterpret_cast<element_type *>(&sentry_)};
+  element_type *tail_{head_};
 };
 
 

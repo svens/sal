@@ -17,7 +17,7 @@
 __sal_begin
 
 
-namespace net { namespace ip { namespace __bits {
+namespace net::ip::__bits {
 
 
 inline bool inet_ntop (const in_addr &src, char *dest, size_t size) noexcept
@@ -101,7 +101,7 @@ inline int to_gai_error (int sys_error,
 }
 
 
-}}} // namespace net::ip::__bits
+} // namespace net::ip::__bits
 
 
 __sal_end

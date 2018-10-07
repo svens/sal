@@ -18,7 +18,7 @@
 __sal_begin
 
 
-namespace net { namespace ip {
+namespace net::ip {
 
 
 /**
@@ -69,21 +69,15 @@ public:
 
 
   /**
-   * Return UDP/IPv4 internet protocol instance.
+   * TCP/IPv4 internet protocol.
    */
-  static constexpr udp_t v4 () noexcept
-  {
-    return udp_t{AF_INET};
-  }
+  static const udp_t v4;
 
 
   /**
-   * Return UDP/IPv6 internet protocol instance.
+   * TCP/IPv6 internet protocol.
    */
-  static constexpr udp_t v6 () noexcept
-  {
-    return udp_t{AF_INET6};
-  }
+  static const udp_t v6;
 
 
 private:
@@ -123,8 +117,8 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
   const udp_t &protocol) noexcept
 {
   return protocol.family() == AF_INET
-    ? writer.print("AF_INET")
-    : writer.print("AF_INET6")
+    ? writer.print("UDP/IPv4")
+    : writer.print("UDP/IPv6")
   ;
 }
 
@@ -134,13 +128,13 @@ inline memory_writer_t &operator<< (memory_writer_t &writer,
  */
 inline std::ostream &operator<< (std::ostream &os, const udp_t &protocol)
 {
-  char_array_t<sizeof("AF_INET6")> buf;
+  char_array_t<sizeof("UDP/IPvX")> buf;
   buf << protocol;
   return (os << buf.c_str());
 }
 
 
-}} // namespace net::ip
+} // namespace net::ip
 
 
 __sal_end

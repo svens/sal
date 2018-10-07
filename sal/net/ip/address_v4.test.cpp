@@ -70,7 +70,7 @@ TEST_F(net_ip_address_v4, ctor_in_addr)
   a.s_addr = htonl(INADDR_LOOPBACK);
 
   addr_t addr{a};
-  EXPECT_EQ(addr_t::loopback(), addr);
+  EXPECT_EQ(addr_t::loopback, addr);
 }
 
 
@@ -81,14 +81,14 @@ TEST_F(net_ip_address_v4, load)
 
   addr_t addr;
   addr.load(a);
-  EXPECT_EQ(addr_t::loopback(), addr);
+  EXPECT_EQ(addr_t::loopback, addr);
 }
 
 
 TEST_F(net_ip_address_v4, store)
 {
   in_addr a;
-  addr_t::loopback().store(a);
+  addr_t::loopback.store(a);
   EXPECT_EQ(static_cast<uint32_t>(INADDR_LOOPBACK), ntohl(a.s_addr));
 }
 
@@ -110,9 +110,9 @@ TEST_F(net_ip_address_v4, is_unspecified)
   addr_t b{bytes};
   EXPECT_FALSE(b.is_unspecified());
 
-  EXPECT_TRUE(addr_t::any().is_unspecified());
-  EXPECT_FALSE(addr_t::loopback().is_unspecified());
-  EXPECT_FALSE(addr_t::broadcast().is_unspecified());
+  EXPECT_TRUE(addr_t::any.is_unspecified());
+  EXPECT_FALSE(addr_t::loopback.is_unspecified());
+  EXPECT_FALSE(addr_t::broadcast.is_unspecified());
 }
 
 
@@ -124,9 +124,9 @@ TEST_F(net_ip_address_v4, is_loopback)
   addr_t b{bytes};
   EXPECT_FALSE(b.is_loopback());
 
-  EXPECT_FALSE(addr_t::any().is_loopback());
-  EXPECT_TRUE(addr_t::loopback().is_loopback());
-  EXPECT_FALSE(addr_t::broadcast().is_loopback());
+  EXPECT_FALSE(addr_t::any.is_loopback());
+  EXPECT_TRUE(addr_t::loopback.is_loopback());
+  EXPECT_FALSE(addr_t::broadcast.is_loopback());
 }
 
 
@@ -138,17 +138,17 @@ TEST_F(net_ip_address_v4, is_multicast)
   addr_t b{multicast};
   EXPECT_TRUE(b.is_multicast());
 
-  EXPECT_FALSE(addr_t::any().is_multicast());
-  EXPECT_FALSE(addr_t::loopback().is_multicast());
-  EXPECT_FALSE(addr_t::broadcast().is_multicast());
+  EXPECT_FALSE(addr_t::any.is_multicast());
+  EXPECT_FALSE(addr_t::loopback.is_multicast());
+  EXPECT_FALSE(addr_t::broadcast.is_multicast());
 }
 
 
 TEST_F(net_ip_address_v4, is_private)
 {
-  EXPECT_FALSE(addr_t::any().is_private());
-  EXPECT_FALSE(addr_t::broadcast().is_private());
-  EXPECT_FALSE(addr_t::loopback().is_private());
+  EXPECT_FALSE(addr_t::any.is_private());
+  EXPECT_FALSE(addr_t::broadcast.is_private());
+  EXPECT_FALSE(addr_t::loopback.is_private());
 
   //
   // 10.0.0.0 - 10.255.255.255
@@ -190,9 +190,9 @@ TEST_F(net_ip_address_v4, is_private)
 
 TEST_F(net_ip_address_v4, to_string)
 {
-  EXPECT_EQ("0.0.0.0", addr_t::any().to_string());
-  EXPECT_EQ("127.0.0.1", addr_t::loopback().to_string());
-  EXPECT_EQ("255.255.255.255", addr_t::broadcast().to_string());
+  EXPECT_EQ("0.0.0.0", addr_t::any.to_string());
+  EXPECT_EQ("127.0.0.1", addr_t::loopback.to_string());
+  EXPECT_EQ("255.255.255.255", addr_t::broadcast.to_string());
   EXPECT_EQ("1.2.3.4", addr_t{bytes}.to_string());
   EXPECT_EQ("224.1.2.3", addr_t{multicast}.to_string());
 }
@@ -200,8 +200,8 @@ TEST_F(net_ip_address_v4, to_string)
 
 TEST_F(net_ip_address_v4, hash)
 {
-  EXPECT_EQ(addr_t::any().hash(), addr_t::any().hash());
-  EXPECT_NE(addr_t::any().hash(), addr_t::loopback().hash());
+  EXPECT_EQ(addr_t::any.hash(), addr_t::any.hash());
+  EXPECT_NE(addr_t::any.hash(), addr_t::loopback.hash());
 }
 
 
@@ -210,15 +210,15 @@ TEST_F(net_ip_address_v4, memory_writer_inserter)
   char data[1024];
   sal::memory_writer_t writer{data, data + INET_ADDRSTRLEN};
 
-  writer << addr_t::any();
+  writer << addr_t::any;
   EXPECT_STREQ("0.0.0.0", data);
 
   writer.first = data;
-  writer << addr_t::loopback();
+  writer << addr_t::loopback;
   EXPECT_STREQ("127.0.0.1", data);
 
   writer.first = data;
-  writer << addr_t::broadcast();
+  writer << addr_t::broadcast;
   EXPECT_STREQ("255.255.255.255", data);
 
   writer.first = data;
@@ -235,7 +235,7 @@ TEST_F(net_ip_address_v4, memory_writer_inserter_exact)
 {
   char data[1024];
   sal::memory_writer_t writer{data, data + sizeof("0.0.0.0")};
-  EXPECT_TRUE(bool(writer << addr_t::any()));
+  EXPECT_TRUE(bool(writer << addr_t::any));
   EXPECT_STREQ("0.0.0.0", data);
 }
 
@@ -244,7 +244,7 @@ TEST_F(net_ip_address_v4, memory_writer_inserter_overflow)
 {
   char data[1024];
   sal::memory_writer_t writer{data, data + sizeof("255")};
-  EXPECT_FALSE(bool(writer << addr_t::broadcast()));
+  EXPECT_FALSE(bool(writer << addr_t::broadcast));
 }
 
 
@@ -252,15 +252,15 @@ TEST_F(net_ip_address_v4, ostream_inserter)
 {
   std::ostringstream oss;
 
-  oss << addr_t::any();
+  oss << addr_t::any;
   EXPECT_EQ("0.0.0.0", oss.str());
 
   oss.str("");
-  oss << addr_t::loopback();
+  oss << addr_t::loopback;
   EXPECT_EQ("127.0.0.1", oss.str());
 
   oss.str("");
-  oss << addr_t::broadcast();
+  oss << addr_t::broadcast;
   EXPECT_EQ("255.255.255.255", oss.str());
 
   oss.str("");
@@ -275,8 +275,8 @@ TEST_F(net_ip_address_v4, ostream_inserter)
 
 TEST_F(net_ip_address_v4, comparisons)
 {
-  auto a = addr_t::any();
-  auto b = addr_t::broadcast();
+  auto a = addr_t::any;
+  auto b = addr_t::broadcast;
   auto c = a;
 
   EXPECT_FALSE(a == b);
@@ -307,15 +307,15 @@ TEST_F(net_ip_address_v4, comparisons)
 
 TEST_F(net_ip_address_v4, make_address_bytes)
 {
-  auto a = sal::net::ip::make_address_v4(addr_t::loopback().to_bytes());
-  EXPECT_EQ(addr_t::loopback(), a);
+  auto a = sal::net::ip::make_address_v4(addr_t::loopback.to_bytes());
+  EXPECT_EQ(addr_t::loopback, a);
 }
 
 
 TEST_F(net_ip_address_v4, make_address_uint)
 {
-  auto a = sal::net::ip::make_address_v4(addr_t::loopback().to_uint());
-  EXPECT_EQ(addr_t::loopback(), a);
+  auto a = sal::net::ip::make_address_v4(addr_t::loopback.to_uint());
+  EXPECT_EQ(addr_t::loopback, a);
 }
 
 
@@ -323,7 +323,7 @@ TEST_F(net_ip_address_v4, make_address_cstr)
 {
   std::error_code ec{};
   auto a = sal::net::ip::make_address_v4("127.0.0.1", ec);
-  EXPECT_EQ(addr_t::loopback(), a);
+  EXPECT_EQ(addr_t::loopback, a);
   EXPECT_FALSE(bool(ec));
 }
 
@@ -332,7 +332,7 @@ TEST_F(net_ip_address_v4, make_address_cstr_invalid)
 {
   std::error_code ec{};
   auto a = sal::net::ip::make_address_v4(case_name.c_str(), ec);
-  EXPECT_EQ(addr_t::any(), a);
+  EXPECT_EQ(addr_t::any, a);
   EXPECT_TRUE(bool(ec));
 }
 
@@ -341,7 +341,7 @@ TEST_F(net_ip_address_v4, make_address_string)
 {
   std::error_code ec{};
   auto a = sal::net::ip::make_address_v4(std::string("127.0.0.1"), ec);
-  EXPECT_EQ(addr_t::loopback(), a);
+  EXPECT_EQ(addr_t::loopback, a);
   EXPECT_FALSE(bool(ec));
 }
 
@@ -350,7 +350,7 @@ TEST_F(net_ip_address_v4, make_address_string_invalid)
 {
   std::error_code ec{};
   auto a = sal::net::ip::make_address_v4(case_name, ec);
-  EXPECT_EQ(addr_t::any(), a);
+  EXPECT_EQ(addr_t::any, a);
   EXPECT_TRUE(bool(ec));
 }
 
@@ -358,7 +358,7 @@ TEST_F(net_ip_address_v4, make_address_string_invalid)
 TEST_F(net_ip_address_v4, make_address_cstr_throw)
 {
   auto a = sal::net::ip::make_address_v4("127.0.0.1");
-  EXPECT_EQ(addr_t::loopback(), a);
+  EXPECT_EQ(addr_t::loopback, a);
 }
 
 
@@ -374,7 +374,7 @@ TEST_F(net_ip_address_v4, make_address_cstr_invalid_throw)
 TEST_F(net_ip_address_v4, make_address_string_throw)
 {
   auto a = sal::net::ip::make_address_v4(std::string("127.0.0.1"));
-  EXPECT_EQ(addr_t::loopback(), a);
+  EXPECT_EQ(addr_t::loopback, a);
 }
 
 

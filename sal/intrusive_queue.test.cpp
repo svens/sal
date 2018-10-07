@@ -12,7 +12,7 @@ struct intrusive_queue
   {
     sal::intrusive_queue_hook_t<foo_t> hook;
   };
-  using queue_t = sal::intrusive_queue_t<foo_t, &foo_t::hook>;
+  using queue_t = sal::intrusive_queue_t<&foo_t::hook>;
   queue_t queue{};
 };
 
@@ -238,13 +238,16 @@ TEST_F(intrusive_queue, single_push_pop)
 {
   foo_t f;
   ASSERT_TRUE(queue.empty());
+  EXPECT_EQ(nullptr, queue.head());
 
   queue.push(&f);
   ASSERT_FALSE(queue.empty());
 
+  EXPECT_EQ(&f, queue.head());
   ASSERT_EQ(&f, queue.try_pop());
   ASSERT_TRUE(queue.empty());
 
+  EXPECT_EQ(nullptr, queue.head());
   ASSERT_EQ(nullptr, queue.try_pop());
   ASSERT_TRUE(queue.empty());
 }
@@ -254,20 +257,25 @@ TEST_F(intrusive_queue, multiple_push_pop)
 {
   foo_t f1, f2, f3;
   ASSERT_TRUE(queue.empty());
+  EXPECT_EQ(nullptr, queue.head());
   queue.push(&f1);
   queue.push(&f2);
   queue.push(&f3);
   ASSERT_FALSE(queue.empty());
 
+  EXPECT_EQ(&f1, queue.head());
   ASSERT_EQ(&f1, queue.try_pop());
   ASSERT_FALSE(queue.empty());
 
+  EXPECT_EQ(&f2, queue.head());
   ASSERT_EQ(&f2, queue.try_pop());
   ASSERT_FALSE(queue.empty());
 
+  EXPECT_EQ(&f3, queue.head());
   ASSERT_EQ(&f3, queue.try_pop());
   ASSERT_TRUE(queue.empty());
 
+  EXPECT_EQ(nullptr, queue.head());
   ASSERT_EQ(nullptr, queue.try_pop());
   ASSERT_TRUE(queue.empty());
 }
@@ -282,6 +290,7 @@ TEST_F(intrusive_queue, interleaved_push_pop)
   ASSERT_FALSE(queue.empty());
 
   // pop 1
+  EXPECT_EQ(&f1, queue.head());
   ASSERT_EQ(&f1, queue.try_pop());
   ASSERT_FALSE(queue.empty());
 
@@ -291,19 +300,23 @@ TEST_F(intrusive_queue, interleaved_push_pop)
   ASSERT_FALSE(queue.empty());
 
   // pop 2, push 2
+  EXPECT_EQ(&f2, queue.head());
   ASSERT_EQ(&f2, queue.try_pop());
   queue.push(&f2);
   ASSERT_FALSE(queue.empty());
 
   // pop 3
+  EXPECT_EQ(&f3, queue.head());
   ASSERT_EQ(&f3, queue.try_pop());
   ASSERT_FALSE(queue.empty());
 
   // pop 2
+  EXPECT_EQ(&f2, queue.head());
   ASSERT_EQ(&f2, queue.try_pop());
   ASSERT_TRUE(queue.empty());
 
   // pop nil
+  EXPECT_EQ(nullptr, queue.head());
   ASSERT_EQ(nullptr, queue.try_pop());
   ASSERT_TRUE(queue.empty());
 }

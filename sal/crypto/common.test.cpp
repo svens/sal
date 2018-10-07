@@ -15,7 +15,7 @@ intermediate(s), CA, unrelated
 */
 
 
-namespace sal_test { namespace cert {
+namespace sal_test::cert {
 
 const std::string root = // {{{1
   "MIIFjjCCA3agAwIBAgIJAJECzg7BfU3OMA0GCSqGSIb3DQEBCwUAMFQxCzAJBgNV"
@@ -399,4 +399,4 @@ const std::string without_key_id = // {{{1
 
 // }}}
 
-}} // namespace sal_test::cert
+} // namespace sal_test::cert

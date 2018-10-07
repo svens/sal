@@ -23,7 +23,7 @@
 __sal_begin
 
 
-namespace crypto { namespace __bits {
+namespace crypto::__bits {
 
 
 #if __sal_os_macos //{{{1
@@ -228,7 +228,7 @@ template <> constexpr size_t digest_type_v<sha384_t> = 4U;
 template <> constexpr size_t digest_type_v<sha512_t> = 5U;
 
 
-}} // namespace crypto::__bits
+} // namespace crypto::__bits
 
 
 __sal_end

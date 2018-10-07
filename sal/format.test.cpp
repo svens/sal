@@ -144,7 +144,7 @@ using number_types = testing::Types<
   float, double, long double
 >;
 
-TYPED_TEST_CASE(format_number, number_types);
+TYPED_TEST_CASE(format_number, number_types, );
 
 
 TYPED_TEST(format_number, value_min)
@@ -270,7 +270,7 @@ using int_types = testing::Types<
   short, unsigned short
 >;
 
-TYPED_TEST_CASE(format_int_base, int_types);
+TYPED_TEST_CASE(format_int_base, int_types, );
 
 
 template <typename T, typename Manip>
@@ -686,7 +686,7 @@ struct format_float
 
 using float_types = testing::Types<float, double, long double>;
 
-TYPED_TEST_CASE(format_float, float_types);
+TYPED_TEST_CASE(format_float, float_types, );
 
 
 TYPED_TEST(format_float, nan_minus)

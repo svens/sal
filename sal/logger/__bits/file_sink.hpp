@@ -14,7 +14,7 @@
 __sal_begin
 
 
-namespace logger { namespace __bits {
+namespace logger::__bits {
 
 
 template <int Tag, typename T>
@@ -160,7 +160,7 @@ private:
 };
 
 
-}} // namespace logger::__bits
+} // namespace logger::__bits
 
 
 __sal_end

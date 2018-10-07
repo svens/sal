@@ -10,7 +10,7 @@
 __sal_begin
 
 
-namespace logger { namespace __bits {
+namespace logger::__bits {
 
 
 template <int Tag, typename T>
@@ -75,7 +75,7 @@ struct channel_t final
 };
 
 
-}} // namespace logger::__bits
+} // namespace logger::__bits
 
 
 __sal_end

@@ -15,7 +15,7 @@
 __sal_begin
 
 
-namespace this_thread { namespace __bits {
+namespace this_thread::__bits {
 
 
 thread_id make_id () noexcept
@@ -30,7 +30,7 @@ thread_id make_id () noexcept
 }
 
 
-}} // namespace this_thread::__bits
+} // namespace this_thread::__bits
 
 
 __sal_end
