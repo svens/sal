@@ -1005,6 +1005,30 @@ void handler_t::start_connect (io_t *io,
 #endif //}}}1
 
 
+io_t *service_t::alloc_io ()
+{
+  std::lock_guard lock(io_pool_mutex);
+
+  auto io = free_list.try_pop();
+  if (!io)
+  {
+    auto batch_size = 16 * (1ULL << io_pool.size());
+    auto it = io_pool.emplace_back(new std::byte[batch_size * sizeof(io_t)]).get();
+    io_pool_size += batch_size;
+
+    while (batch_size--)
+    {
+      new(it) io_t(free_list);
+      it += sizeof(io_t);
+    }
+
+    io = free_list.try_pop();
+  }
+
+  return static_cast<io_t *>(io);
+}
+
+
 } // namespace net::async::__bits
 
 

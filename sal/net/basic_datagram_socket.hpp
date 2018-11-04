@@ -350,13 +350,13 @@ public:
   /**
    * Asynchronously start receive_from() operation using \a io with \a flags.
    */
-  void start_receive_from (async::io_t &&io, socket_base_t::message_flags_t flags)
+  void start_receive_from (async::io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    receive_from_t *result;
-    auto op = io.to_async_op(&result);
+    auto result = io->prepare<receive_from_t>();
     result->flags = flags;
-    base_t::async_->start_receive_from(op,
+    base_t::async_->start_receive_from(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
       result->remote_endpoint.data(),
       result->remote_endpoint.capacity(),
       &result->transferred,
@@ -369,7 +369,7 @@ public:
    * Asynchronously start receive_from() operation using \a io with default
    * flags.
    */
-  void start_receive_from (async::io_t &&io) noexcept
+  void start_receive_from (async::io_ptr &&io) noexcept
   {
     start_receive_from(std::move(io), {});
   }
@@ -395,20 +395,23 @@ public:
   /**
    * Asynchronously start receive() operation using \a io with \a flags.
    */
-  void start_receive (async::io_t &&io, socket_base_t::message_flags_t flags)
+  void start_receive (async::io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    receive_t *result;
-    auto op = io.to_async_op(&result);
+    auto result = io->prepare<receive_t>();
     result->flags = flags;
-    base_t::async_->start_receive(op, &result->transferred, &result->flags);
+    base_t::async_->start_receive(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
+      &result->transferred,
+      &result->flags
+    );
   }
 
 
   /**
    * Asynchronously start receive() operation using \a io with default flags.
    */
-  void start_receive (async::io_t &&io) noexcept
+  void start_receive (async::io_ptr &&io) noexcept
   {
     start_receive(std::move(io), {});
   }
@@ -432,13 +435,13 @@ public:
    * Asynchronously start send_to() operation using \a io with \a flags.
    * Destination is \a remote_endpoint.
    */
-  void start_send_to (async::io_t &&io,
+  void start_send_to (async::io_ptr &&io,
     const endpoint_t &remote_endpoint,
     socket_base_t::message_flags_t flags) noexcept
   {
-    send_to_t *result;
-    auto op = io.to_async_op(&result);
-    base_t::async_->start_send_to(op,
+    auto result = io->prepare<send_to_t>();
+    base_t::async_->start_send_to(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
       remote_endpoint.data(),
       remote_endpoint.size(),
       &result->transferred,
@@ -451,7 +454,7 @@ public:
    * Asynchronously start send_to() operation using \a io with default flags.
    * Destination is \a remote_endpoint.
    */
-  void start_send_to (async::io_t &&io, const endpoint_t &remote_endpoint)
+  void start_send_to (async::io_ptr &&io, const endpoint_t &remote_endpoint)
     noexcept
   {
     start_send_to(std::move(io), remote_endpoint, {});
@@ -475,19 +478,22 @@ public:
   /**
    * Asynchronously start send() operation using \a io with \a flags.
    */
-  void start_send (async::io_t &&io, socket_base_t::message_flags_t flags)
+  void start_send (async::io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    send_t *result;
-    auto op = io.to_async_op(&result);
-    base_t::async_->start_send(op, &result->transferred, flags);
+    auto result = io->prepare<send_t>();
+    base_t::async_->start_send(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
+      &result->transferred,
+      flags
+    );
   }
 
 
   /**
    * Asynchronously start send() operation using \a io with default flags.
    */
-  void start_send (async::io_t &&io) noexcept
+  void start_send (async::io_ptr &&io) noexcept
   {
     start_send(std::move(io), {});
   }

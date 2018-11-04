@@ -10,7 +10,6 @@
 #include <deque>
 #include <memory>
 #include <mutex>
-#include <vector>
 
 
 __sal_begin
@@ -99,11 +98,12 @@ struct io_base_t //{{{1
   uintptr_t context_type{};
   void *context{};
 
-  uint8_t result[160];
+  std::byte result[160];
   size_t *transferred{};
   std::error_code status{};
 
-  uint8_t *begin{}, *end{};
+  std::byte *begin{};
+  const std::byte *end{};
 
   union
   {
@@ -120,7 +120,9 @@ struct io_base_t //{{{1
 
   io_base_t (free_list_t &free_list) noexcept
     : free_list(free_list)
-  { }
+  {
+    free_list.push(this);
+  }
 
 
   io_base_t (const io_base_t &) = delete;
@@ -130,43 +132,20 @@ struct io_base_t //{{{1
 struct io_t //{{{1
   : public io_base_t
 {
+  static constexpr size_t mtu_size = 1500;
   static constexpr size_t data_size = 2048 - sizeof(io_base_t);
-  uint8_t data[data_size];
+  static_assert(data_size >= mtu_size);
+
+  std::byte data[data_size];
 
 
   io_t (free_list_t &free_list) noexcept
     : io_base_t(free_list)
   { }
-
-
-  // should be deleted but keeping here for easier service_t::alloc_io new
-  // batch allocation and free_list insertion
-  io_t (const io_t &io) noexcept
-    : io_base_t(io.free_list)
-  {
-    free_list.push(this);
-  }
-
-
-  void reset () noexcept
-  {
-    begin = data;
-    end = data + sizeof(data);
-  }
 };
+
 static_assert(sizeof(io_t) == 2048);
-static_assert(io_t::data_size > 1500, "io_t::data_size less than MTU size");
 static_assert(std::is_trivially_destructible_v<io_t>);
-
-
-struct io_deleter_t //{{{1
-{
-  void operator() (io_t *io) noexcept
-  {
-    io->free_list.push(io);
-  }
-};
-using io_ptr = std::unique_ptr<io_t, io_deleter_t>;
 
 
 struct service_t //{{{1
@@ -178,9 +157,10 @@ struct service_t //{{{1
 #endif
 
   std::mutex io_pool_mutex{};
-  std::deque<std::vector<io_t>> io_pool{};
-  io_t::free_list_t free_list{};
+  std::deque<std::unique_ptr<std::byte[]>> io_pool{};
   size_t io_pool_size{};
+
+  io_t::free_list_t free_list{};
 
   sal::spinlock_t completed_mutex{};
   io_t::completed_list_t completed_list{};
@@ -190,19 +170,7 @@ struct service_t //{{{1
   ~service_t () noexcept;
 
 
-  io_t *alloc_io ()
-  {
-    std::lock_guard lock(io_pool_mutex);
-    auto io = free_list.try_pop();
-    if (!io)
-    {
-      auto batch_size = 16 * (1ULL << io_pool.size());
-      io_pool.emplace_back(batch_size, free_list);
-      io_pool_size += batch_size;
-      io = free_list.try_pop();
-    }
-    return static_cast<io_t *>(io);
-  }
+  io_t *alloc_io ();
 
 
   io_t *make_io (void *context, uintptr_t context_type)
@@ -211,7 +179,6 @@ struct service_t //{{{1
     io->current_owner = nullptr;
     io->context_type = context_type;
     io->context = context;
-    io->reset();
     return io;
   }
 

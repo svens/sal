@@ -49,21 +49,23 @@ public:
 
 
   /**
-   * Allocate new I/O operation.
+   * Allocate new I/O operation with associated \a context.
    */
-  io_t make_io ()
+  template <typename Context>
+  io_ptr make_io (Context *context)
   {
-    return {impl_->make_io(nullptr, type_v<std::nullptr_t>)};
+    auto io = reinterpret_cast<io_t *>(impl_->make_io(context, type_v<Context>));
+    io->reset();
+    return io_ptr{io};
   }
 
 
   /**
-   * Allocate new I/O operation with associated \a context.
+   * Allocate new I/O operation.
    */
-  template <typename Context>
-  io_t make_io (Context *context)
+  io_ptr make_io ()
   {
-    return {impl_->make_io(context, type_v<Context>)};
+    return make_io<std::nullptr_t>(nullptr);
   }
 
 
@@ -72,9 +74,9 @@ public:
    * there is no pending completion immediately available, do not poll
    * underlying OS handle but return empty I/O instance.
    */
-  io_t try_get () noexcept
+  io_ptr try_get () noexcept
   {
-    return {impl_->dequeue()};
+    return io_ptr{reinterpret_cast<io_t *>(impl_->dequeue())};
   }
 
 
@@ -87,7 +89,7 @@ public:
    * On polling failure, set \a error
    */
   template <typename Rep, typename Period>
-  io_t wait_for (const std::chrono::duration<Rep, Period> &timeout,
+  io_ptr wait_for (const std::chrono::duration<Rep, Period> &timeout,
     std::error_code &error) noexcept
   {
     do
@@ -111,7 +113,7 @@ public:
    * \throws std::system_error on polling failure.
    */
   template <typename Rep, typename Period>
-  io_t wait_for (const std::chrono::duration<Rep, Period> &timeout)
+  io_ptr wait_for (const std::chrono::duration<Rep, Period> &timeout)
   {
     return wait_for(timeout, throw_on_error("service::wait_for"));
   }
@@ -123,7 +125,7 @@ public:
    *
    * On polling failure, set \a error
    */
-  io_t wait (std::error_code &error) noexcept
+  io_ptr wait (std::error_code &error) noexcept
   {
     return wait_for((std::chrono::milliseconds::max)(), error);
   }
@@ -135,7 +137,7 @@ public:
    *
    * \throws std::system_error on polling failure.
    */
-  io_t wait ()
+  io_ptr wait ()
   {
     return wait_for((std::chrono::milliseconds::max)());
   }
@@ -147,7 +149,7 @@ public:
    *
    * On polling failure, set \a error
    */
-  io_t poll (std::error_code &error) noexcept
+  io_ptr poll (std::error_code &error) noexcept
   {
     return wait_for(std::chrono::milliseconds::zero(), error);
   }
@@ -159,7 +161,7 @@ public:
    *
    * \throws std::system_error on polling failure.
    */
-  io_t poll ()
+  io_ptr poll ()
   {
     return wait_for(std::chrono::milliseconds::zero());
   }

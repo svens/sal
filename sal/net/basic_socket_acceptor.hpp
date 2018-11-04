@@ -560,11 +560,14 @@ public:
   /**
    * Asynchronously start accept().
    */
-  void start_accept (async::io_t &&io) noexcept
+  void start_accept (async::io_ptr &&io) noexcept
   {
-    accept_t *result;
-    auto op = io.to_async_op(&result);
-    async_->start_accept(op, family_, &result->accepted_socket_handle_);
+    auto result = io->prepare<accept_t>();
+    async_->start_accept(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
+      family_,
+      &result->accepted_socket_handle_
+    );
   }
 
 

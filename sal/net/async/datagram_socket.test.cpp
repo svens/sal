@@ -54,11 +54,11 @@ struct net_async_datagram_socket
   }
 
 
-  void fill (sal::net::async::io_t &io, const std::string_view &data)
+  void fill (sal::net::async::io_ptr &io, const std::string_view &data)
     noexcept
   {
-    io.resize(data.size());
-    std::memcpy(io.data(), data.data(), data.size());
+    io->resize(data.size());
+    std::memcpy(io->data(), data.data(), data.size());
   }
 };
 
@@ -71,10 +71,10 @@ TYPED_TEST_CASE(net_async_datagram_socket, address_types, );
 
 
 template <typename Result>
-inline std::string_view to_view (sal::net::async::io_t &io,
+inline std::string_view to_view (sal::net::async::io_ptr &io,
   const Result *result) noexcept
 {
-  return {reinterpret_cast<const char *>(io.data()), result->transferred};
+  return {reinterpret_cast<const char *>(io->data()), result->transferred};
 }
 
 
@@ -86,9 +86,9 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  ASSERT_EQ(nullptr, io.template get_if<socket_t::receive_t>());
+  ASSERT_EQ(nullptr, io->template get_if<socket_t::receive_t>());
 
-  auto result = io.template get_if<socket_t::receive_from_t>();
+  auto result = io->template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
   EXPECT_EQ(TestFixture::test_socket.local_endpoint(), result->remote_endpoint);
@@ -103,7 +103,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_after_send) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  auto result = io.template get_if<socket_t::receive_from_t>();
+  auto result = io->template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
   EXPECT_EQ(TestFixture::test_socket.local_endpoint(), result->remote_endpoint);
@@ -121,12 +121,12 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_with_context) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  EXPECT_EQ(&io_ctx, io.template context<int>());
-  EXPECT_EQ(nullptr, io.template context<socket_t>());
-  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
-  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
+  EXPECT_EQ(&io_ctx, io->template context<int>());
+  EXPECT_EQ(nullptr, io->template context<socket_t>());
+  EXPECT_EQ(&socket_ctx, io->template socket_context<int>());
+  EXPECT_EQ(nullptr, io->template socket_context<socket_t>());
 
-  auto result = io.template get_if<socket_t::receive_from_t>();
+  auto result = io->template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
   EXPECT_EQ(TestFixture::test_socket.local_endpoint(), result->remote_endpoint);
@@ -142,7 +142,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_canceled_on_close) //{{
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_from_t>(error);
+  auto result = io->template get_if<socket_t::receive_from_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
 }
@@ -159,7 +159,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_no_sender) //{{{1
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_from_t>(error);
+  auto result = io->template get_if<socket_t::receive_from_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
 }
@@ -195,7 +195,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_less_than_send) //{{{1
   };
 
   auto io = TestFixture::service.make_io();
-  io.resize(data.size());
+  io->resize(data.size());
   TestFixture::socket.start_receive_from(std::move(io));
   TestFixture::send(TestFixture::case_name);
 
@@ -203,14 +203,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_less_than_send) //{{{1
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_from_t>(error);
+  auto result = io->template get_if<socket_t::receive_from_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::message_size, error);
   EXPECT_EQ(data.size(), result->transferred);
   EXPECT_EQ(data, to_view(io, result));
 
   // even with partial read, 2nd should have nothing
-  io.reset();
+  io->reset();
   TestFixture::socket.start_receive_from(std::move(io));
   io = TestFixture::service.poll();
   EXPECT_TRUE(!io);
@@ -227,21 +227,21 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_after_send_less_than_se
   };
 
   auto io = TestFixture::service.make_io();
-  io.resize(data.size());
+  io->resize(data.size());
   TestFixture::socket.start_receive_from(std::move(io));
 
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_from_t>(error);
+  auto result = io->template get_if<socket_t::receive_from_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::message_size, error);
   EXPECT_EQ(data.size(), result->transferred);
   EXPECT_EQ(data, to_view(io, result));
 
   // even with partial read, 2nd should have nothing
-  io.reset();
+  io->reset();
   TestFixture::socket.start_receive_from(std::move(io));
   io = TestFixture::service.poll();
   EXPECT_TRUE(!io);
@@ -254,7 +254,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_empty_buf) //{{{1
   // but this is weird case anyway, prefer performance over unification
 
   auto io = TestFixture::service.make_io();
-  io.resize(0);
+  io->resize(0);
   TestFixture::socket.start_receive_from(std::move(io));
   TestFixture::send(TestFixture::case_name);
 
@@ -262,7 +262,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_empty_buf) //{{{1
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_from_t>(error);
+  auto result = io->template get_if<socket_t::receive_from_t>(error);
   ASSERT_NE(nullptr, result);
 
 #if __sal_os_macos
@@ -272,14 +272,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_empty_buf) //{{{1
   EXPECT_TRUE(!error);
   EXPECT_EQ(0U, result->transferred);
 
-  io.reset();
+  io->reset();
   TestFixture::socket.start_receive_from(std::move(io));
 
   // 2nd attempt with appropriately sized buffer succeeds with originally sent
   // data
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  result = io.template get_if<socket_t::receive_from_t>();
+  result = io->template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
 
@@ -290,7 +290,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_empty_buf) //{{{1
   EXPECT_EQ(0U, result->transferred);
 
   // 2st attempt fails with no data
-  io.reset();
+  io->reset();
   TestFixture::socket.start_receive_from(std::move(io));
   io = TestFixture::service.poll();
   EXPECT_TRUE(!io);
@@ -304,14 +304,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_after_send_empty_buf) /
   TestFixture::send(TestFixture::case_name);
 
   auto io = TestFixture::service.make_io();
-  io.resize(0);
+  io->resize(0);
   TestFixture::socket.start_receive_from(std::move(io));
 
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_from_t>(error);
+  auto result = io->template get_if<socket_t::receive_from_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::message_size, error);
   EXPECT_EQ(0U, result->transferred);
@@ -330,7 +330,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_interleaved) //{{{1
 
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  auto result = io.template get_if<socket_t::receive_from_t>();
+  auto result = io->template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ("one", to_view(io, result));
 
@@ -338,14 +338,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_interleaved) //{{{1
   {
     auto i = TestFixture::service.wait();
     ASSERT_FALSE(!i);
-    auto r = i.template get_if<socket_t::receive_from_t>();
+    auto r = i->template get_if<socket_t::receive_from_t>();
     ASSERT_NE(nullptr, r);
     EXPECT_EQ("two", to_view(i, r));
   }).join();
 
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  result = io.template get_if<socket_t::receive_from_t>();
+  result = io->template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ("three", to_view(io, result));
 }
@@ -363,7 +363,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_interleaved_after_send)
 
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  auto result = io.template get_if<socket_t::receive_from_t>();
+  auto result = io->template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ("one", to_view(io, result));
 
@@ -371,14 +371,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_interleaved_after_send)
   {
     auto i = TestFixture::service.wait();
     ASSERT_FALSE(!i);
-    auto r = i.template get_if<socket_t::receive_from_t>();
+    auto r = i->template get_if<socket_t::receive_from_t>();
     ASSERT_NE(nullptr, r);
     EXPECT_EQ("two", to_view(i, r));
   }).join();
 
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  result = io.template get_if<socket_t::receive_from_t>();
+  result = io->template get_if<socket_t::receive_from_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ("three", to_view(io, result));
 }
@@ -395,9 +395,9 @@ TYPED_TEST(net_async_datagram_socket, start_receive) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  ASSERT_EQ(nullptr, io.template get_if<socket_t::receive_from_t>());
+  ASSERT_EQ(nullptr, io->template get_if<socket_t::receive_from_t>());
 
-  auto result = io.template get_if<socket_t::receive_t>();
+  auto result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
 }
@@ -411,7 +411,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_after_send) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  auto result = io.template get_if<socket_t::receive_t>();
+  auto result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
 }
@@ -428,12 +428,12 @@ TYPED_TEST(net_async_datagram_socket, start_receive_with_context) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  EXPECT_EQ(&io_ctx, io.template context<int>());
-  EXPECT_EQ(nullptr, io.template context<socket_t>());
-  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
-  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
+  EXPECT_EQ(&io_ctx, io->template context<int>());
+  EXPECT_EQ(nullptr, io->template context<socket_t>());
+  EXPECT_EQ(&socket_ctx, io->template socket_context<int>());
+  EXPECT_EQ(nullptr, io->template socket_context<socket_t>());
 
-  auto result = io.template get_if<socket_t::receive_t>();
+  auto result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
 }
@@ -448,7 +448,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_canceled_on_close) //{{{1
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_t>(error);
+  auto result = io->template get_if<socket_t::receive_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
 }
@@ -465,7 +465,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_no_sender) //{{{1
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_t>(error);
+  auto result = io->template get_if<socket_t::receive_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
 }
@@ -501,7 +501,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_less_than_send) //{{{1
   };
 
   auto io = TestFixture::service.make_io();
-  io.resize(data.size());
+  io->resize(data.size());
   TestFixture::socket.start_receive(std::move(io));
   TestFixture::send(TestFixture::case_name);
 
@@ -509,14 +509,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_less_than_send) //{{{1
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_t>(error);
+  auto result = io->template get_if<socket_t::receive_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::message_size, error);
   EXPECT_EQ(data.size(), result->transferred);
   EXPECT_EQ(data, to_view(io, result));
 
   // even with partial read, 2nd should have nothing
-  io.reset();
+  io->reset();
   TestFixture::socket.start_receive(std::move(io));
   io = TestFixture::service.poll();
   EXPECT_TRUE(!io);
@@ -533,21 +533,21 @@ TYPED_TEST(net_async_datagram_socket, start_receive_after_send_less_than_send) /
   };
 
   auto io = TestFixture::service.make_io();
-  io.resize(data.size());
+  io->resize(data.size());
   TestFixture::socket.start_receive(std::move(io));
 
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_t>(error);
+  auto result = io->template get_if<socket_t::receive_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::message_size, error);
   EXPECT_EQ(data.size(), result->transferred);
   EXPECT_EQ(data, to_view(io, result));
 
   // even with partial read, 2nd should have nothing
-  io.reset();
+  io->reset();
   TestFixture::socket.start_receive(std::move(io));
   io = TestFixture::service.poll();
   EXPECT_TRUE(!io);
@@ -560,7 +560,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_empty_buf) //{{{1
   // but this is weird case anyway, prefer performance over unification
 
   auto io = TestFixture::service.make_io();
-  io.resize(0);
+  io->resize(0);
   TestFixture::socket.start_receive(std::move(io));
   TestFixture::send(TestFixture::case_name);
 
@@ -568,7 +568,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_empty_buf) //{{{1
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_t>(error);
+  auto result = io->template get_if<socket_t::receive_t>(error);
   ASSERT_NE(nullptr, result);
 
 #if __sal_os_macos
@@ -578,14 +578,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_empty_buf) //{{{1
   EXPECT_TRUE(!error);
   EXPECT_EQ(0U, result->transferred);
 
-  io.reset();
+  io->reset();
   TestFixture::socket.start_receive(std::move(io));
 
   // 2nd attempt with appropriately sized buffer succeeds with originally sent
   // data
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  result = io.template get_if<socket_t::receive_t>();
+  result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
 
@@ -596,7 +596,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_empty_buf) //{{{1
   EXPECT_EQ(0U, result->transferred);
 
   // 2st attempt fails with no data
-  io.reset();
+  io->reset();
   TestFixture::socket.start_receive(std::move(io));
   io = TestFixture::service.poll();
   EXPECT_TRUE(!io);
@@ -610,14 +610,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_after_send_empty_buf) //{{{1
   TestFixture::send(TestFixture::case_name);
 
   auto io = TestFixture::service.make_io();
-  io.resize(0);
+  io->resize(0);
   TestFixture::socket.start_receive(std::move(io));
 
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<socket_t::receive_t>(error);
+  auto result = io->template get_if<socket_t::receive_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::message_size, error);
   EXPECT_EQ(0U, result->transferred);
@@ -636,7 +636,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_interleaved) //{{{1
 
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  auto result = io.template get_if<socket_t::receive_t>();
+  auto result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ("one", to_view(io, result));
 
@@ -644,14 +644,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_interleaved) //{{{1
   {
     auto i = TestFixture::service.wait();
     ASSERT_FALSE(!i);
-    auto r = i.template get_if<socket_t::receive_t>();
+    auto r = i->template get_if<socket_t::receive_t>();
     ASSERT_NE(nullptr, r);
     EXPECT_EQ("two", to_view(i, r));
   }).join();
 
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  result = io.template get_if<socket_t::receive_t>();
+  result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ("three", to_view(io, result));
 }
@@ -669,7 +669,7 @@ TYPED_TEST(net_async_datagram_socket, start_receive_interleaved_after_send) //{{
 
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  auto result = io.template get_if<socket_t::receive_t>();
+  auto result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ("one", to_view(io, result));
 
@@ -677,14 +677,14 @@ TYPED_TEST(net_async_datagram_socket, start_receive_interleaved_after_send) //{{
   {
     auto i = TestFixture::service.wait();
     ASSERT_FALSE(!i);
-    auto r = i.template get_if<socket_t::receive_t>();
+    auto r = i->template get_if<socket_t::receive_t>();
     ASSERT_NE(nullptr, r);
     EXPECT_EQ("two", to_view(i, r));
   }).join();
 
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
-  result = io.template get_if<socket_t::receive_t>();
+  result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ("three", to_view(io, result));
 }
@@ -705,7 +705,7 @@ TYPED_TEST(net_async_datagram_socket, start_send_to) //{{{1
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  auto result = io.template get_if<socket_t::send_to_t>();
+  auto result = io->template get_if<socket_t::send_to_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name.size(), result->transferred);
 }
@@ -726,12 +726,12 @@ TYPED_TEST(net_async_datagram_socket, start_send_to_with_context) //{{{1
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  EXPECT_EQ(&io_ctx, io.template context<int>());
-  EXPECT_EQ(nullptr, io.template context<socket_t>());
-  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
-  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
+  EXPECT_EQ(&io_ctx, io->template context<int>());
+  EXPECT_EQ(nullptr, io->template context<socket_t>());
+  EXPECT_EQ(&socket_ctx, io->template socket_context<int>());
+  EXPECT_EQ(nullptr, io->template socket_context<socket_t>());
 
-  auto result = io.template get_if<socket_t::send_to_t>();
+  auto result = io->template get_if<socket_t::send_to_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name.size(), result->transferred);
 }
@@ -740,7 +740,7 @@ TYPED_TEST(net_async_datagram_socket, start_send_to_with_context) //{{{1
 TYPED_TEST(net_async_datagram_socket, start_send_to_empty_buf) //{{{1
 {
   auto io = TestFixture::service.make_io();
-  io.resize(0);
+  io->resize(0);
   TestFixture::socket.start_send_to(std::move(io),
     TestFixture::test_socket.local_endpoint()
   );
@@ -751,7 +751,7 @@ TYPED_TEST(net_async_datagram_socket, start_send_to_empty_buf) //{{{1
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  auto result = io.template get_if<socket_t::send_to_t>();
+  auto result = io->template get_if<socket_t::send_to_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred);
 }
@@ -798,11 +798,11 @@ TYPED_TEST(net_async_datagram_socket, start_send_to_overflow) //{{{1
         {
           EXPECT_TRUE(!error) << "wait_for: " << error.message();
 
-          if (io.template get_if<socket_t::send_to_t>(error))
+          if (io->template get_if<socket_t::send_to_t>(error))
           {
             sends++;
           }
-          else if (io.template get_if<socket_t::receive_from_t>(error))
+          else if (io->template get_if<socket_t::receive_from_t>(error))
           {
             receives++;
           }
@@ -836,7 +836,7 @@ TYPED_TEST(net_async_datagram_socket, start_send_to_overflow) //{{{1
   std::error_code error;
   while (auto io = TestFixture::service.poll())
   {
-    EXPECT_TRUE(io.template get_if<socket_t::receive_from_t>(error));
+    EXPECT_TRUE(io->template get_if<socket_t::receive_from_t>(error));
     EXPECT_EQ(std::errc::operation_canceled, error);
     canceled++;
   }
@@ -859,7 +859,7 @@ TYPED_TEST(net_async_datagram_socket, start_send) //{{{1
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  auto result = io.template get_if<socket_t::send_t>();
+  auto result = io->template get_if<socket_t::send_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name.size(), result->transferred);
 }
@@ -880,12 +880,12 @@ TYPED_TEST(net_async_datagram_socket, start_send_with_context) //{{{1
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  EXPECT_EQ(&io_ctx, io.template context<int>());
-  EXPECT_EQ(nullptr, io.template context<socket_t>());
-  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
-  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
+  EXPECT_EQ(&io_ctx, io->template context<int>());
+  EXPECT_EQ(nullptr, io->template context<socket_t>());
+  EXPECT_EQ(&socket_ctx, io->template socket_context<int>());
+  EXPECT_EQ(nullptr, io->template socket_context<socket_t>());
 
-  auto result = io.template get_if<socket_t::send_t>();
+  auto result = io->template get_if<socket_t::send_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name.size(), result->transferred);
 }
@@ -896,7 +896,7 @@ TYPED_TEST(net_async_datagram_socket, start_send_empty_buf) //{{{1
   TestFixture::socket.connect(TestFixture::test_socket.local_endpoint());
 
   auto io = TestFixture::service.make_io();
-  io.resize(0);
+  io->resize(0);
   TestFixture::socket.start_send(std::move(io));
 
   char buf[1024];
@@ -905,7 +905,7 @@ TYPED_TEST(net_async_datagram_socket, start_send_empty_buf) //{{{1
   io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  auto result = io.template get_if<socket_t::send_t>();
+  auto result = io->template get_if<socket_t::send_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(0U, result->transferred);
 }
@@ -951,11 +951,11 @@ TYPED_TEST(net_async_datagram_socket, start_send_overflow) //{{{1
         {
           EXPECT_TRUE(!error) << "wait_for: " << error.message();
 
-          if (io.template get_if<socket_t::send_t>(error))
+          if (io->template get_if<socket_t::send_t>(error))
           {
             sends++;
           }
-          else if (io.template get_if<socket_t::receive_t>(error))
+          else if (io->template get_if<socket_t::receive_t>(error))
           {
             receives++;
           }
@@ -989,7 +989,7 @@ TYPED_TEST(net_async_datagram_socket, start_send_overflow) //{{{1
   std::error_code error;
   while (auto io = TestFixture::service.poll())
   {
-    EXPECT_TRUE(io.template get_if<socket_t::receive_t>(error));
+    EXPECT_TRUE(io->template get_if<socket_t::receive_t>(error));
     EXPECT_EQ(std::errc::operation_canceled, error);
     canceled++;
   }

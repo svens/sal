@@ -54,9 +54,9 @@ TYPED_TEST(net_async_socket_acceptor, start_accept) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  EXPECT_EQ(nullptr, io.template get_if<socket_t::connect_t>());
+  EXPECT_EQ(nullptr, io->template get_if<socket_t::connect_t>());
 
-  auto result = io.template get_if<acceptor_t::accept_t>();
+  auto result = io->template get_if<acceptor_t::accept_t>();
   ASSERT_NE(nullptr, result);
 
   auto b = result->accepted_socket();
@@ -79,12 +79,12 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_with_context) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  EXPECT_EQ(&io_ctx, io.template context<int>());
-  EXPECT_EQ(nullptr, io.template context<socket_t>());
-  EXPECT_EQ(&socket_ctx, io.template socket_context<int>());
-  EXPECT_EQ(nullptr, io.template socket_context<socket_t>());
+  EXPECT_EQ(&io_ctx, io->template context<int>());
+  EXPECT_EQ(nullptr, io->template context<socket_t>());
+  EXPECT_EQ(&socket_ctx, io->template socket_context<int>());
+  EXPECT_EQ(nullptr, io->template socket_context<socket_t>());
 
-  auto result = io.template get_if<acceptor_t::accept_t>();
+  auto result = io->template get_if<acceptor_t::accept_t>();
   ASSERT_NE(nullptr, result);
 
   auto b = result->accepted_socket();
@@ -104,7 +104,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_immediate_completion) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  auto result = io.template get_if<acceptor_t::accept_t>();
+  auto result = io->template get_if<acceptor_t::accept_t>();
   ASSERT_NE(nullptr, result);
 
   auto b = result->accepted_socket();
@@ -124,7 +124,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_result_multiple_times) //{{{1
   auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
-  auto result = io.template get_if<acceptor_t::accept_t>();
+  auto result = io->template get_if<acceptor_t::accept_t>();
   ASSERT_NE(nullptr, result);
 
   auto b = result->accepted_socket();
@@ -148,7 +148,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_and_close) //{{{1
   ASSERT_FALSE(!io);
 
   std::error_code error;
-  auto result = io.template get_if<acceptor_t::accept_t>(error);
+  auto result = io->template get_if<acceptor_t::accept_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(std::errc::operation_canceled, error);
 }
@@ -168,7 +168,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_close_before_accept) //{{{1
 
   // accept succeeds
   std::error_code error;
-  auto result = io.template get_if<acceptor_t::accept_t>(error);
+  auto result = io->template get_if<acceptor_t::accept_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_TRUE(!error);
 
@@ -194,7 +194,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_close_after_accept) //{{{1
 
   // accept succeeds
   std::error_code error;
-  auto result = io.template get_if<acceptor_t::accept_t>(error);
+  auto result = io->template get_if<acceptor_t::accept_t>(error);
   ASSERT_NE(nullptr, result);
   EXPECT_TRUE(!error);
 

@@ -86,14 +86,14 @@ struct service_t
   }
 
 
-  void on_client_recv (sal::net::async::io_t &&io,
+  void on_client_recv (sal::net::async::io_ptr &&io,
     const socket_t::receive_from_t *event,
     statistics_t &)
   {
     if (event->transferred == sizeof(session_map::key_type))
     {
       sessions.lock()->try_emplace(
-        *reinterpret_cast<const session_map::key_type *>(io.data()),
+        *reinterpret_cast<const session_map::key_type *>(io->data()),
         event->remote_endpoint
       );
     }
@@ -101,17 +101,17 @@ struct service_t
   }
 
 
-  void on_peer_recv (sal::net::async::io_t &&io,
+  void on_peer_recv (sal::net::async::io_ptr &&io,
     const socket_t::receive_from_t *event,
     statistics_t &statistics)
   {
     auto it = sessions.lock()->find(
-      *reinterpret_cast<const session_map::key_type *>(io.data())
+      *reinterpret_cast<const session_map::key_type *>(io->data())
     );
     if (it != sessions_data.end())
     {
       ++statistics.peer_recv;
-      io.resize(event->transferred);
+      io->resize(event->transferred);
       client.start_send_to(std::move(io), it->second);
     }
     else
@@ -130,9 +130,9 @@ void service_t::run (size_t thread_index)
   {
     if (auto io = service.wait())
     {
-      if (auto recv = io.get_if<socket_t::receive_from_t>())
+      if (auto recv = io->get_if<socket_t::receive_from_t>())
       {
-        if (io.socket_context<socket_t>() == &peer)
+        if (io->socket_context<socket_t>() == &peer)
         {
           on_peer_recv(std::move(io), recv, statistics);
         }
@@ -143,9 +143,9 @@ void service_t::run (size_t thread_index)
       }
       else
       {
-        if (io.socket_context<socket_t>() == &client)
+        if (io->socket_context<socket_t>() == &client)
         {
-          io.reset();
+          io->reset();
           peer.start_receive_from(std::move(io));
           ++statistics.client_send;
         }
