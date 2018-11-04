@@ -232,21 +232,6 @@ struct service_t //{{{1
   bool wait_for_more (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
-
-
-  io_t *poll (const std::chrono::milliseconds &timeout, std::error_code &error)
-    noexcept
-  {
-    do
-    {
-      if (auto io = dequeue())
-      {
-        return io;
-      }
-    } while (wait_for_more(timeout, error));
-
-    return {};
-  }
 };
 using service_ptr = std::shared_ptr<service_t>;
 

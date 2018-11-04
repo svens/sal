@@ -57,7 +57,7 @@ For asynchronous API, there are multiple parts working together:
 
 There is usually one sal::net::async::service_t instance per application. Each
 worker thread that wants to receive I/O completion notifications, does it by
-invoking repeatedly sal::net::async::service_t::poll() (or similar related
+invoking repeatedly sal::net::async::service_t::wait() (or similar related
 methods). This method returns one completed operation or if returned object
 bool cast returns false, there is none. This instance is generic completed
 asynchronous opoerations. To detect which operation exactly finished, use
@@ -89,7 +89,7 @@ while (!stopped)
 {
   // block until thre are completions to handle
   // (or if any operation is already completed, return immediately)
-  if (auto io = io_svc.poll())
+  if (auto io = io_svc.wait())
   {
     // application owns io
 

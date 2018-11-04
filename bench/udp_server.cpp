@@ -128,7 +128,7 @@ void service_t::run (size_t thread_index)
 
   for (;;)
   {
-    if (auto io = service.poll())
+    if (auto io = service.wait())
     {
       if (auto recv = io.get_if<socket_t::receive_from_t>())
       {

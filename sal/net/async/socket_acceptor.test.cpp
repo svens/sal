@@ -51,7 +51,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept) //{{{1
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(nullptr, io.template get_if<socket_t::connect_t>());
@@ -76,7 +76,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_with_context) //{{{1
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(&io_ctx, io.template context<int>());
@@ -101,7 +101,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_immediate_completion) //{{{1
 
   TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<acceptor_t::accept_t>();
@@ -121,7 +121,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_result_multiple_times) //{{{1
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<acceptor_t::accept_t>();
@@ -144,7 +144,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_and_close) //{{{1
   TestFixture::acceptor.start_accept(TestFixture::service.make_io());
   TestFixture::acceptor.close();
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -163,7 +163,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_close_before_accept) //{{{1
 
   TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   // accept succeeds
@@ -189,7 +189,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_close_after_accept) //{{{1
   a.close();
   std::this_thread::yield();
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   // accept succeeds

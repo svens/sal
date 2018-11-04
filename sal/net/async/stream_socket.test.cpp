@@ -100,7 +100,7 @@ TYPED_TEST(net_async_stream_socket, start_connect) //{{{1
 
   auto a = TestFixture::acceptor.accept();
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(nullptr, io.template get_if<acceptor_t::accept_t>());
@@ -123,7 +123,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking) //{{{1
 
   auto a = TestFixture::acceptor.accept();
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<socket_t::connect_t>();
@@ -146,7 +146,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_with_context) //{{{1
 
   auto a = TestFixture::acceptor.accept();
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(&io_ctx, io.template context<int>());
@@ -172,7 +172,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_refused) //{{{1
     echo_endpoint
   );
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -193,7 +193,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking_refused) //{{{1
     echo_endpoint
   );
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -216,7 +216,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_already_connected) //{{{1
     echo_endpoint
   );
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -240,7 +240,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking_already_connected
     echo_endpoint
   );
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -258,7 +258,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_address_family_not_supported) 
     TestFixture::not_supported_family_endpoint
   );
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -290,7 +290,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking_address_family_no
     TestFixture::not_supported_family_endpoint
   );
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -330,7 +330,7 @@ TYPED_TEST(net_async_stream_socket, start_receive) //{{{1
   TestFixture::socket.start_receive(TestFixture::service.make_io());
   TestFixture::send(TestFixture::case_name);
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   ASSERT_EQ(nullptr, io.template get_if<socket_t::send_t>());
@@ -348,7 +348,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_send) //{{{1
   TestFixture::send(TestFixture::case_name);
   TestFixture::socket.start_receive(TestFixture::service.make_io());
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<socket_t::receive_t>();
@@ -367,7 +367,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_with_context) //{{{1
   TestFixture::socket.start_receive(TestFixture::service.make_io(&io_ctx));
   TestFixture::send(TestFixture::case_name);
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(&io_ctx, io.template context<int>());
@@ -392,7 +392,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_two_sends) //{{{1
 
   for (auto i = 0U;  i < 2;  ++i)
   {
-    auto io = TestFixture::service.poll();
+    auto io = TestFixture::service.wait();
     ASSERT_FALSE(!io);
 
     auto result = io.template get_if<socket_t::receive_t>();
@@ -424,7 +424,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_two_sends) //{{{1
   TestFixture::send(TestFixture::case_name, true);
   TestFixture::socket.start_receive(TestFixture::service.make_io());
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<socket_t::receive_t>();
@@ -443,7 +443,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_canceled_on_close) //{{{1
   TestFixture::socket.start_receive(TestFixture::service.make_io());
   TestFixture::socket.close();
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -458,11 +458,11 @@ TYPED_TEST(net_async_stream_socket, start_receive_no_sender) //{{{1
   TestFixture::connect();
 
   TestFixture::socket.start_receive(TestFixture::service.make_io());
-  EXPECT_TRUE(!TestFixture::service.try_poll());
+  EXPECT_TRUE(!TestFixture::service.poll());
   EXPECT_TRUE(!TestFixture::service.try_get());
   TestFixture::socket.close();
 
-  auto io = TestFixture::service.try_poll();
+  auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -480,12 +480,12 @@ TYPED_TEST(net_async_stream_socket, start_receive_peek) //{{{1
   TestFixture::send(TestFixture::case_name);
 
   // regardless of peek, completion should be removed from queue
-  EXPECT_FALSE(!TestFixture::service.poll());
-  EXPECT_TRUE(!TestFixture::service.try_poll());
+  EXPECT_FALSE(!TestFixture::service.wait());
+  EXPECT_TRUE(!TestFixture::service.poll());
 
   // but data must be still there
   TestFixture::socket.start_receive(TestFixture::service.make_io());
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
   auto result = io.template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
@@ -501,12 +501,12 @@ TYPED_TEST(net_async_stream_socket, start_receive_peek_after_send) //{{{1
   TestFixture::socket.start_receive(TestFixture::service.make_io(), socket_t::peek);
 
   // regardless of peek, completion should be removed from queue
-  EXPECT_FALSE(!TestFixture::service.poll());
-  EXPECT_TRUE(!TestFixture::service.try_poll());
+  EXPECT_FALSE(!TestFixture::service.wait());
+  EXPECT_TRUE(!TestFixture::service.poll());
 
   // but data must be still there
   TestFixture::socket.start_receive(TestFixture::service.make_io());
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
   auto result = io.template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
@@ -531,7 +531,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_less_than_send) //{{{1
   std::string data;
   for (auto i = 0;  i < 2;  ++i)
   {
-    io = TestFixture::service.poll();
+    io = TestFixture::service.wait();
     ASSERT_FALSE(!io);
     auto result = io.template get_if<socket_t::receive_t>();
     ASSERT_NE(nullptr, result);
@@ -557,7 +557,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_send_less_than_send) //{
   std::string data;
   for (auto i = 0;  i < 2;  ++i)
   {
-    io = TestFixture::service.poll();
+    io = TestFixture::service.wait();
     ASSERT_FALSE(!io);
     auto result = io.template get_if<socket_t::receive_t>();
     ASSERT_NE(nullptr, result);
@@ -573,7 +573,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_from_disconnected) //{{{1
   TestFixture::socket.start_receive(TestFixture::service.make_io());
   TestFixture::disconnect();
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -590,7 +590,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_from_disconnected) //{{{
   TestFixture::disconnect();
   TestFixture::socket.start_receive(TestFixture::service.make_io());
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -610,7 +610,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_before_shutdown) //{{{1
 
   TestFixture::send(TestFixture::case_name);
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -632,7 +632,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_shutdown) //{{{1
   TestFixture::socket.shutdown(socket_t::shutdown_receive);
   TestFixture::socket.start_receive(TestFixture::service.make_io());
 
-  auto io = TestFixture::service.poll();
+  auto io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -654,7 +654,7 @@ TYPED_TEST(net_async_stream_socket, start_send) //{{{1
   TestFixture::socket.start_send(std::move(io));
   EXPECT_EQ(TestFixture::case_name, TestFixture::receive());
 
-  io = TestFixture::service.poll();
+  io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<socket_t::send_t>();
@@ -675,7 +675,7 @@ TYPED_TEST(net_async_stream_socket, start_send_with_context) //{{{1
   TestFixture::socket.start_send(std::move(io));
   EXPECT_EQ(TestFixture::case_name, TestFixture::receive());
 
-  io = TestFixture::service.poll();
+  io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   EXPECT_EQ(&io_ctx, io.template context<int>());
@@ -695,7 +695,7 @@ TYPED_TEST(net_async_stream_socket, start_send_not_connected) //{{{1
   TestFixture::fill(io, TestFixture::case_name);
   TestFixture::socket.start_send(std::move(io));
 
-  io = TestFixture::service.poll();
+  io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
@@ -718,7 +718,7 @@ TYPED_TEST(net_async_stream_socket, start_send_before_shutdown) //{{{1
   TestFixture::socket.start_send(std::move(io));
   TestFixture::socket.shutdown(socket_t::shutdown_send);
 
-  io = TestFixture::service.poll();
+  io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   auto result = io.template get_if<socket_t::send_t>();
@@ -736,7 +736,7 @@ TYPED_TEST(net_async_stream_socket, start_send_after_shutdown) //{{{1
   TestFixture::fill(io, TestFixture::case_name);
   TestFixture::socket.start_send(std::move(io));
 
-  io = TestFixture::service.poll();
+  io = TestFixture::service.wait();
   ASSERT_FALSE(!io);
 
   std::error_code error;
