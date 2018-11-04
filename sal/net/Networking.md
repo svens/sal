@@ -82,7 +82,7 @@ socket.associate(io_svc);
 sal::net::async::io_t io = io_svc.make_io();
 
 // start asynchronous recvfrom (io_svc is owner)
-socket.receive_from_async(std::move(io));
+socket.start_receive_from(std::move(io));
 
 // handle completions while not stopped
 while (!stopped)

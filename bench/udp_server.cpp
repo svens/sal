@@ -80,8 +80,8 @@ struct service_t
   {
     for (auto i = receive_count;  i;  --i)
     {
-      client.receive_from_async(service.make_io());
-      peer.receive_from_async(service.make_io());
+      client.start_receive_from(service.make_io());
+      peer.start_receive_from(service.make_io());
     }
   }
 
@@ -97,7 +97,7 @@ struct service_t
         event->remote_endpoint
       );
     }
-    client.receive_from_async(std::move(io));
+    client.start_receive_from(std::move(io));
   }
 
 
@@ -112,11 +112,11 @@ struct service_t
     {
       ++statistics.peer_recv;
       io.resize(event->transferred);
-      client.send_to_async(std::move(io), it->second);
+      client.start_send_to(std::move(io), it->second);
     }
     else
     {
-      peer.receive_from_async(std::move(io));
+      peer.start_receive_from(std::move(io));
     }
   }
 };
@@ -146,7 +146,7 @@ void service_t::run (size_t thread_index)
         if (io.socket_context<socket_t>() == &client)
         {
           io.reset();
-          peer.receive_from_async(std::move(io));
+          peer.start_receive_from(std::move(io));
           ++statistics.client_send;
         }
       }

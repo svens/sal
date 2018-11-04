@@ -516,7 +516,7 @@ public:
 
 
   /**
-   * accept_async() result type
+   * start_accept() result type
    */
   struct accept_t
   {
@@ -560,7 +560,7 @@ public:
   /**
    * Asynchronously start accept().
    */
-  void accept_async (async::io_t &&io) noexcept
+  void start_accept (async::io_t &&io) noexcept
   {
     accept_t *result;
     auto op = io.to_async_op(&result);

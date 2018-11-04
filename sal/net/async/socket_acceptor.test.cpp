@@ -44,9 +44,9 @@ using address_types = ::testing::Types<
 TYPED_TEST_CASE(net_async_socket_acceptor, address_types, );
 
 
-TYPED_TEST(net_async_socket_acceptor, accept_async) //{{{1
+TYPED_TEST(net_async_socket_acceptor, start_accept) //{{{1
 {
-  TestFixture::acceptor.accept_async(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
   socket_t a;
   a.connect(TestFixture::endpoint);
@@ -66,12 +66,12 @@ TYPED_TEST(net_async_socket_acceptor, accept_async) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, accept_async_with_context) //{{{1
+TYPED_TEST(net_async_socket_acceptor, start_accept_with_context) //{{{1
 {
   int socket_ctx = 1, io_ctx = 2;
   TestFixture::acceptor.context(&socket_ctx);
 
-  TestFixture::acceptor.accept_async(TestFixture::service.make_io(&io_ctx));
+  TestFixture::acceptor.start_accept(TestFixture::service.make_io(&io_ctx));
 
   socket_t a;
   a.connect(TestFixture::endpoint);
@@ -94,12 +94,12 @@ TYPED_TEST(net_async_socket_acceptor, accept_async_with_context) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, accept_async_immediate_completion) //{{{1
+TYPED_TEST(net_async_socket_acceptor, start_accept_immediate_completion) //{{{1
 {
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  TestFixture::acceptor.accept_async(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
   auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
@@ -114,9 +114,9 @@ TYPED_TEST(net_async_socket_acceptor, accept_async_immediate_completion) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, accept_async_result_multiple_times) //{{{1
+TYPED_TEST(net_async_socket_acceptor, start_accept_result_multiple_times) //{{{1
 {
-  TestFixture::acceptor.accept_async(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
   socket_t a;
   a.connect(TestFixture::endpoint);
@@ -139,9 +139,9 @@ TYPED_TEST(net_async_socket_acceptor, accept_async_result_multiple_times) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, accept_async_and_close) //{{{1
+TYPED_TEST(net_async_socket_acceptor, start_accept_and_close) //{{{1
 {
-  TestFixture::acceptor.accept_async(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
   TestFixture::acceptor.close();
 
   auto io = TestFixture::service.poll();
@@ -154,14 +154,14 @@ TYPED_TEST(net_async_socket_acceptor, accept_async_and_close) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, accept_async_close_before_accept) //{{{1
+TYPED_TEST(net_async_socket_acceptor, start_accept_close_before_accept) //{{{1
 {
   socket_t a;
   a.connect(TestFixture::endpoint);
   a.close();
   std::this_thread::yield();
 
-  TestFixture::acceptor.accept_async(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
   auto io = TestFixture::service.poll();
   ASSERT_FALSE(!io);
@@ -180,9 +180,9 @@ TYPED_TEST(net_async_socket_acceptor, accept_async_close_before_accept) //{{{1
 }
 
 
-TYPED_TEST(net_async_socket_acceptor, accept_async_close_after_accept) //{{{1
+TYPED_TEST(net_async_socket_acceptor, start_accept_close_after_accept) //{{{1
 {
-  TestFixture::acceptor.accept_async(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
   socket_t a;
   a.connect(TestFixture::endpoint);

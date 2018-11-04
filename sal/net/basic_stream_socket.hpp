@@ -185,7 +185,7 @@ public:
   //
 
   /**
-   * connect_async() result type
+   * start_connect() result type
    */
   struct connect_t
   {
@@ -198,7 +198,7 @@ public:
   /**
    * Asynchronously start connect() to \a endpoint using \a io.
    */
-  void connect_async (async::io_t &&io, const endpoint_t &endpoint) noexcept
+  void start_connect (async::io_t &&io, const endpoint_t &endpoint) noexcept
   {
     connect_t *result;
     auto op = io.to_async_op(&result);
@@ -207,7 +207,7 @@ public:
 
 
   /**
-   * receive_async() result type
+   * start_receive() result type
    */
   struct receive_t
   {
@@ -226,7 +226,7 @@ public:
   /**
    * Asynchronously start receive() operation using \a io with \a flags.
    */
-  void receive_async (async::io_t &&io, socket_base_t::message_flags_t flags)
+  void start_receive (async::io_t &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
     receive_t *result;
@@ -239,14 +239,14 @@ public:
   /**
    * Asynchronously start receive() operation using \a io with default flags.
    */
-  void receive_async (async::io_t &&io) noexcept
+  void start_receive (async::io_t &&io) noexcept
   {
-    receive_async(std::move(io), {});
+    start_receive(std::move(io), {});
   }
 
 
   /**
-   * send_async() result type
+   * start_send() result type
    */
   struct send_t
   {
@@ -262,7 +262,7 @@ public:
   /**
    * Asynchronously start send() operation using \a io with \a flags.
    */
-  void send_async (async::io_t &&io, socket_base_t::message_flags_t flags)
+  void start_send (async::io_t &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
     send_t *result;
@@ -274,9 +274,9 @@ public:
   /**
    * Asynchronously start send() operation using \a io with default flags.
    */
-  void send_async (async::io_t &&io) noexcept
+  void start_send (async::io_t &&io) noexcept
   {
-    send_async(std::move(io), {});
+    start_send(std::move(io), {});
   }
 };
 
