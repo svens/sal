@@ -74,7 +74,7 @@ public:
      */
     void operator() (io_t *io) noexcept
     {
-      io->impl_.free_list.push(&io->impl_);
+      io->ctl_.free_list.push(&io->ctl_);
     }
   };
 
@@ -84,8 +84,8 @@ public:
    */
   void reset () noexcept
   {
-    impl_.begin = impl_.data;
-    impl_.end = impl_.data + max_size();
+    ctl_.impl.begin = data_;
+    ctl_.impl.end = data_ + max_size();
   }
 
 
@@ -97,8 +97,8 @@ public:
   template <typename Context>
   void context (Context *context) noexcept
   {
-    impl_.context = context;
-    impl_.context_type = type_v<Context>;
+    ctl_.context = context;
+    ctl_.context_type = type_v<Context>;
   }
 
 
@@ -109,9 +109,9 @@ public:
   template <typename Context>
   Context *context () const noexcept
   {
-    if (impl_.context_type == type_v<Context>)
+    if (ctl_.context_type == type_v<Context>)
     {
-      return static_cast<Context *>(impl_.context);
+      return static_cast<Context *>(ctl_.context);
     }
     return nullptr;
   }
@@ -129,7 +129,7 @@ public:
   template <typename Context>
   Context *socket_context () const
   {
-    auto &current_owner = *sal_check_ptr(impl_.current_owner);
+    auto &current_owner = *sal_check_ptr(ctl_.impl.current_owner);
     if (current_owner.context_type == type_v<Context>)
     {
       return static_cast<Context *>(current_owner.context);
@@ -143,7 +143,7 @@ public:
    */
   const std::byte *head () const noexcept
   {
-    return impl_.data;
+    return data_;
   }
 
 
@@ -152,7 +152,7 @@ public:
    */
   const std::byte *tail () const noexcept
   {
-    return impl_.data + max_size();
+    return data_ + max_size();
   }
 
 
@@ -162,7 +162,7 @@ public:
    */
   std::byte *data () noexcept
   {
-    return impl_.begin;
+    return ctl_.impl.begin;
   }
 
 
@@ -171,7 +171,7 @@ public:
    */
   std::byte *begin () noexcept
   {
-    return impl_.begin;
+    return ctl_.impl.begin;
   }
 
 
@@ -181,7 +181,7 @@ public:
    */
   const std::byte *end () const noexcept
   {
-    return impl_.end;
+    return ctl_.impl.end;
   };
 
 
@@ -192,7 +192,7 @@ public:
   void head_gap (size_t offset_from_head)
   {
     sal_assert(offset_from_head <= max_size());
-    impl_.begin = impl_.data + offset_from_head;
+    ctl_.impl.begin = data_ + offset_from_head;
   }
 
 
@@ -201,7 +201,7 @@ public:
    */
   size_t head_gap () const noexcept
   {
-    return impl_.begin - head();
+    return ctl_.impl.begin - head();
   }
 
 
@@ -212,7 +212,7 @@ public:
   void tail_gap (size_t offset_from_tail)
   {
     sal_assert(offset_from_tail <= max_size());
-    impl_.end = tail() - offset_from_tail;
+    ctl_.impl.end = tail() - offset_from_tail;
   }
 
 
@@ -221,7 +221,7 @@ public:
    */
   size_t tail_gap () const noexcept
   {
-    return tail() - impl_.end;
+    return tail() - ctl_.impl.end;
   }
 
 
@@ -231,7 +231,7 @@ public:
    */
   size_t size () const noexcept
   {
-    return impl_.end - impl_.begin;
+    return ctl_.impl.end - ctl_.impl.begin;
   }
 
 
@@ -241,8 +241,8 @@ public:
    */
   void resize (size_t new_size)
   {
-    sal_assert(impl_.begin + new_size <= tail());
-    impl_.end = impl_.begin + new_size;
+    sal_assert(ctl_.impl.begin + new_size <= tail());
+    ctl_.impl.end = ctl_.impl.begin + new_size;
   }
 
 
@@ -251,7 +251,7 @@ public:
    */
   static constexpr size_t max_size () noexcept
   {
-    return sizeof(impl_.data);
+    return sizeof(data_);
   }
 
 
@@ -267,10 +267,10 @@ public:
   template <typename Result>
   const Result *get_if (std::error_code &error) const noexcept
   {
-    if (impl_.op == Result::op)
+    if (ctl_.impl.op == Result::op)
     {
-      error = impl_.status;
-      return reinterpret_cast<const Result *>(impl_.result);
+      error = ctl_.impl.status;
+      return reinterpret_cast<const Result *>(ctl_.io_result);
     }
     return nullptr;
   }
@@ -286,7 +286,7 @@ public:
   template <typename Result>
   const Result *get_if () const
   {
-    return get_if<Result>(throw_on_error("async::io::get_if"));
+    return get_if<Result>(throw_on_error("io::get_if"));
   }
 
 
@@ -296,10 +296,10 @@ public:
   template <typename Result>
   Result *get_if (std::error_code &error) noexcept
   {
-    if (impl_.op == Result::op)
+    if (ctl_.impl.op == Result::op)
     {
-      error = impl_.status;
-      return reinterpret_cast<Result *>(impl_.result);
+      error = ctl_.impl.status;
+      return reinterpret_cast<Result *>(ctl_.io_result);
     }
     return nullptr;
   }
@@ -311,25 +311,57 @@ public:
   template <typename Result>
   Result *get_if ()
   {
-    return get_if<Result>(throw_on_error("async::io::get_if"));
+    return get_if<Result>(throw_on_error("io::get_if"));
   }
 
 
 private:
 
-  __bits::io_t impl_;
+  struct ctl_t
+  {
+    __bits::io_t impl{};
 
+    std::byte io_result[160];
+
+    uintptr_t context_type{};
+    void *context{};
+
+    union
+    {
+      intrusive_mpsc_queue_hook_t<ctl_t> free{};
+    };
+
+    using free_list_t = intrusive_mpsc_queue_t<&ctl_t::free>;
+    free_list_t &free_list;
+
+    ctl_t (free_list_t &free_list) noexcept
+      : free_list(free_list)
+    { }
+  } ctl_;
+
+  std::byte data_[2048 - sizeof(ctl_)];
+
+  static constexpr size_t mtu_size = 1500;
+  static_assert(sizeof(data_) >= mtu_size);
 
   using op_t = __bits::op_t;
 
 
+  io_t (ctl_t::free_list_t &free_list) noexcept
+    : ctl_(free_list)
+  {
+    ctl_.free_list.push(&ctl_);
+  }
+
+
   template <typename Result>
-  Result *prepare () noexcept
+  Result *prepare (const async::__bits::handler_ptr &owner) noexcept
   {
     static_assert(std::is_trivially_destructible_v<Result>);
-    static_assert(sizeof(Result) <= sizeof(impl_.result));
-    impl_.op = Result::op;
-    return reinterpret_cast<Result *>(impl_.result);
+    static_assert(sizeof(Result) <= sizeof(ctl_.io_result));
+    ctl_.impl.current_owner = owner.get();
+    ctl_.impl.op = Result::op;
+    return reinterpret_cast<Result *>(ctl_.io_result);
   }
 
 
@@ -338,6 +370,8 @@ private:
   template <typename Protocol> friend class net::basic_stream_socket_t;
   template <typename Protocol> friend class net::basic_socket_acceptor_t;
 };
+static_assert(sizeof(io_t) == 2048);
+static_assert(std::is_trivially_destructible_v<io_t>);
 
 
 /**

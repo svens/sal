@@ -200,7 +200,7 @@ public:
    */
   void start_connect (async::io_ptr &&io, const endpoint_t &endpoint) noexcept
   {
-    (void)io->prepare<connect_t>();
+    (void)io->prepare<connect_t>(base_t::async_);
     base_t::async_->start_connect(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       endpoint.data(),
@@ -232,7 +232,7 @@ public:
   void start_receive (async::io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    auto result = io->prepare<receive_t>();
+    auto result = io->prepare<receive_t>(base_t::async_);
     result->flags = flags;
     base_t::async_->start_receive(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
@@ -271,7 +271,7 @@ public:
   void start_send (async::io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    auto result = io->prepare<send_t>();
+    auto result = io->prepare<send_t>(base_t::async_);
     base_t::async_->start_send(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       &result->transferred,

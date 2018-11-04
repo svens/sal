@@ -38,13 +38,19 @@ class service_t
 {
 public:
 
+  /*
+  service_t (const service_t &) = delete;
+  service_t &operator= (const service_t &) = delete;
+  */
+
+
   /**
    * Return number of internally allocated I/O operation instances (both in
    * use and available).
    */
   size_t io_pool_size () const noexcept
   {
-    return impl_->io_pool_size;
+    return io_pool_size_;
   }
 
 
@@ -54,7 +60,8 @@ public:
   template <typename Context>
   io_ptr make_io (Context *context)
   {
-    auto io = reinterpret_cast<io_t *>(impl_->make_io(context, type_v<Context>));
+    auto io = alloc_io();
+    io->context(context);
     io->reset();
     return io_ptr{io};
   }
@@ -170,6 +177,13 @@ public:
 private:
 
   __bits::service_ptr impl_ = std::make_shared<__bits::service_t>();
+
+  size_t io_pool_size_{};
+  std::deque<std::unique_ptr<std::byte[]>> io_pool_{};
+  std::mutex io_pool_mutex_{};
+  io_t::ctl_t::free_list_t free_list_{};
+
+  io_t *alloc_io ();
 
   template <typename Protocol> friend class net::basic_socket_t;
   template <typename Protocol> friend class net::basic_socket_acceptor_t;
