@@ -39,18 +39,20 @@ inline WSABUF make_buf (io_t *io) noexcept
 }
 
 
-inline void io_result_handle (io_t *io, int result) noexcept
+void io_result_handle (io_t *io, int result, decltype(io->on_finish) on_finish)
+  noexcept
 {
   if (result == 0)
   {
     io->status.clear();
-    io->current_owner->service->enqueue(io);
+    io->owner.enqueue(io);
     return;
   }
 
   switch (auto e = ::WSAGetLastError())
   {
     case WSA_IO_PENDING:
+      io->on_finish = on_finish;
       return;
 
     case WSAESHUTDOWN:
@@ -62,98 +64,101 @@ inline void io_result_handle (io_t *io, int result) noexcept
       break;
   }
 
-  io->current_owner->service->enqueue(io);
+  io->owner.enqueue(io);
 }
 
 
-inline int complete_connection (io_t &io) noexcept
+bool finish_any (io_base_t *io) noexcept
 {
-  if (io.op == op_t::accept)
+  DWORD transferred, flags;
+  auto result = ::WSAGetOverlappedResult(
+    io->current_owner->socket.handle,
+    reinterpret_cast<WSAOVERLAPPED *>(io),
+    &transferred,
+    false,
+    &flags
+  );
+  *io->transferred = transferred;
+
+  if (result)
   {
-    return ::setsockopt(
-      *io.pending.accept.socket_handle,
+    return true;
+  }
+
+  switch (auto e = ::WSAGetLastError())
+  {
+    case WSAENOTSOCK:
+      io->status = std::make_error_code(std::errc::operation_canceled);
+      break;
+
+    case WSAEADDRNOTAVAIL:
+      io->status = std::make_error_code(std::errc::address_family_not_supported);
+      break;
+
+    default:
+      io->status.assign(e, std::system_category());
+      break;
+  }
+  return false;
+}
+
+
+bool finish_receive (io_base_t *io) noexcept
+{
+  if (finish_any(io))
+  {
+    if (*io->transferred > 0)
+    {
+      io->status.clear();
+      return true;
+    }
+    io->status = std::make_error_code(std::errc::broken_pipe);
+  }
+  return false;
+}
+
+
+bool finish_accept (io_base_t *io) noexcept
+{
+  if (finish_any(io))
+  {
+    auto result = ::setsockopt(
+      *io->pending.accept.socket_handle,
       SOL_SOCKET,
       SO_UPDATE_ACCEPT_CONTEXT,
-      reinterpret_cast<char *>(&io.current_owner->socket.handle),
-      sizeof(io.current_owner->socket.handle)
+      reinterpret_cast<char *>(&io->current_owner->socket.handle),
+      sizeof(io->current_owner->socket.handle)
     );
+    if (result != SOCKET_ERROR)
+    {
+      io->status.clear();
+      return true;
+    }
+    io->status.assign(::WSAGetLastError(), std::system_category());
   }
-  else if (io.op == op_t::connect)
+  return false;
+}
+
+
+bool finish_connect (io_base_t *io) noexcept
+{
+  if (finish_any(io))
   {
-    return ::setsockopt(
-      io.current_owner->socket.handle,
+    auto result = ::setsockopt(
+      io->current_owner->socket.handle,
       SOL_SOCKET,
       SO_UPDATE_CONNECT_CONTEXT,
       nullptr,
       0
     );
-  }
-  return !SOCKET_ERROR;
-}
-
-
-io_t *to_io (::OVERLAPPED_ENTRY &event) noexcept
-{
-  auto &io = *reinterpret_cast<io_t *>(event.lpOverlapped);
-
-  DWORD transferred, flags;
-  auto result = ::WSAGetOverlappedResult(
-    io.current_owner->socket.handle,
-    &io.overlapped,
-    &transferred,
-    false,
-    &flags
-  );
-  *io.transferred = transferred;
-
-  if (result)
-  {
-    switch (io.op)
+    if (result != SOCKET_ERROR)
     {
-      case op_t::receive:
-        if (*io.transferred > 0)
-        {
-          io.status.clear();
-        }
-        else
-        {
-          io.status = std::make_error_code(std::errc::broken_pipe);
-        }
-        break;
-
-      case op_t::accept:
-      case op_t::connect:
-        if (complete_connection(io) == SOCKET_ERROR)
-        {
-          io.status.assign(::WSAGetLastError(), std::system_category());
-          break;
-        }
-        [[fallthrough]];
-
-      default:
-        io.status.clear();
-        break;
+      io->status.clear();
+      return true;
     }
+    io->status.assign(::WSAGetLastError(), std::system_category());
   }
-  else
-  {
-    switch (auto e = ::WSAGetLastError())
-    {
-      case WSAENOTSOCK:
-        io.status = std::make_error_code(std::errc::operation_canceled);
-        break;
-
-      case WSAEADDRNOTAVAIL:
-        io.status = std::make_error_code(std::errc::address_family_not_supported);
-        break;
-
-      default:
-        io.status.assign(e, std::system_category());
-        break;
-    }
-  }
-
-  return &io;
+  return false;
 }
 
 
@@ -201,7 +206,9 @@ bool service_t::wait_for_more (const std::chrono::milliseconds &timeout,
   {
     for (auto event = &events[0];  event != &events[0] + events_count;  ++event)
     {
-      enqueue(to_io(*event));
+      auto io = reinterpret_cast<io_t *>(event->lpOverlapped);
+      (*io->on_finish)(io);
+      enqueue(io);
     }
     return true;
   }
@@ -275,7 +282,7 @@ void handler_t::start_receive_from (io_t *io,
     *io->transferred = io->pending.receive_from.transferred;
   }
 
-  io_result_handle(io, result);
+  io_result_handle(io, result, finish_any);
 }
 
 
@@ -304,12 +311,12 @@ void handler_t::start_receive (io_t *io,
     *io->transferred = io->pending.receive.transferred;
     if (*io->transferred == 0)
     {
-      result = SOCKET_ERROR;
       ::WSASetLastError(WSAESHUTDOWN);
+      result = SOCKET_ERROR;
     }
   }
 
-  io_result_handle(io, result);
+  io_result_handle(io, result, finish_receive);
 }
 
 
@@ -340,7 +347,7 @@ void handler_t::start_send_to (io_t *io,
     *io->transferred = io->pending.send_to.transferred;
   }
 
-  io_result_handle(io, result);
+  io_result_handle(io, result, finish_any);
 }
 
 
@@ -367,7 +374,7 @@ void handler_t::start_send (io_t *io,
     *io->transferred = io->pending.send.transferred;
   }
 
-  io_result_handle(io, result);
+  io_result_handle(io, result, finish_any);
 }
 
 
@@ -402,9 +409,19 @@ void handler_t::start_accept (io_t *io,
     &io->overlapped
   );
 
-  io_result_handle(io,
-    success == TRUE ? complete_connection(*io) : SOCKET_ERROR
-  );
+  int result = SOCKET_ERROR;
+  if (success)
+  {
+    result = ::setsockopt(
+      *io->pending.accept.socket_handle,
+      SOL_SOCKET,
+      SO_UPDATE_ACCEPT_CONTEXT,
+      reinterpret_cast<char *>(&io->current_owner->socket.handle),
+      sizeof(io->current_owner->socket.handle)
+    );
+  }
+
+  io_result_handle(io, result, finish_accept);
 }
 
 
@@ -425,9 +442,19 @@ void handler_t::start_connect (io_t *io,
     &io->overlapped
   );
 
-  io_result_handle(io,
-    success == TRUE ? complete_connection(*io) : SOCKET_ERROR
-  );
+  auto result = SOCKET_ERROR;
+  if (success)
+  {
+    result = ::setsockopt(
+      io->current_owner->socket.handle,
+      SOL_SOCKET,
+      SO_UPDATE_CONNECT_CONTEXT,
+      nullptr,
+      0
+    );
+  }
+
+  io_result_handle(io, result, finish_connect);
 }
 
 

@@ -48,6 +48,7 @@ struct io_base_t //{{{1
 #endif
 
   op_t op{};
+  bool (*on_finish)(io_base_t *) noexcept = nullptr;
 
   union
   {
