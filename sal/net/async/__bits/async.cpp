@@ -1,4 +1,3 @@
-#include <sal/__bits/platform_sdk.hpp>
 #include <sal/net/async/__bits/async.hpp>
 #include <sal/error.hpp>
 
@@ -96,15 +95,23 @@ inline int complete_connection (io_t &io) noexcept
 io_t *to_io (::OVERLAPPED_ENTRY &event) noexcept
 {
   auto &io = *reinterpret_cast<io_t *>(event.lpOverlapped);
-  *io.transferred = event.dwNumberOfBytesTransferred;
 
-  auto status = static_cast<NTSTATUS>(io.overlapped.Internal);
-  if (NT_SUCCESS(status))
+  DWORD transferred, flags;
+  auto result = ::WSAGetOverlappedResult(
+    io.current_owner->socket.handle,
+    &io.overlapped,
+    &transferred,
+    false,
+    &flags
+  );
+  *io.transferred = transferred;
+
+  if (result)
   {
     switch (io.op)
     {
       case op_t::receive:
-        if (event.dwNumberOfBytesTransferred > 0)
+        if (*io.transferred > 0)
         {
           io.status.clear();
         }
@@ -130,29 +137,18 @@ io_t *to_io (::OVERLAPPED_ENTRY &event) noexcept
   }
   else
   {
-    switch (status)
+    switch (auto e = ::WSAGetLastError())
     {
-      case STATUS_BUFFER_OVERFLOW:
-        io.status = std::make_error_code(std::errc::message_size);
-        break;
-
-      case STATUS_INVALID_ADDRESS_COMPONENT:
-        io.status = std::make_error_code(std::errc::address_family_not_supported);
-        break;
-
-      case STATUS_CONNECTION_ABORTED:
+      case WSAENOTSOCK:
         io.status = std::make_error_code(std::errc::operation_canceled);
         break;
 
-      case STATUS_CONNECTION_REFUSED:
-        io.status = std::make_error_code(std::errc::connection_refused);
+      case WSAEADDRNOTAVAIL:
+        io.status = std::make_error_code(std::errc::address_family_not_supported);
         break;
 
       default:
-        io.status.assign(
-          ::RtlNtStatusToDosError(status),
-          std::system_category()
-        );
+        io.status.assign(e, std::system_category());
         break;
     }
   }
