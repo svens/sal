@@ -18,7 +18,6 @@ list(APPEND sal_sources
   sal/net/async/__bits/async.cpp
   sal/net/async/io.hpp
   sal/net/async/service.hpp
-  sal/net/async/service.cpp
 
   sal/net/internet.hpp
   sal/net/ip/__bits/inet.hpp

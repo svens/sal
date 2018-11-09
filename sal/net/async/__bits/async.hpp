@@ -21,6 +21,7 @@ namespace net::async::__bits {
 using net::__bits::socket_t;
 using net::__bits::message_flags_t;
 
+struct service_t;
 struct handler_t;
 
 
@@ -35,7 +36,7 @@ enum class op_t
 };
 
 
-struct io_t //{{{1
+struct io_base_t //{{{1
 {
 #if __sal_os_windows
   OVERLAPPED overlapped{};
@@ -95,7 +96,10 @@ struct io_t //{{{1
   } pending{};
 
   handler_t *current_owner{};
+  uintptr_t context_type{};
+  void *context{};
 
+  std::byte result[160];
   size_t *transferred{};
   std::error_code status{};
 
@@ -104,12 +108,46 @@ struct io_t //{{{1
 
   union
   {
-    intrusive_mpsc_queue_hook_t<io_t> completed{};
-    intrusive_queue_hook_t<io_t> pending_io;
+    intrusive_mpsc_queue_hook_t<io_base_t> free{};
+    intrusive_mpsc_queue_hook_t<io_base_t> completed;
+    intrusive_queue_hook_t<io_base_t> pending_io;
   };
-  using completed_list_t = intrusive_mpsc_queue_t<&io_t::completed>;
-  using pending_io_list_t = intrusive_queue_t<&io_t::pending_io>;
+  using free_list_t = intrusive_mpsc_queue_t<&io_base_t::free>;
+  using completed_list_t = intrusive_mpsc_queue_t<&io_base_t::completed>;
+  using pending_io_list_t = intrusive_queue_t<&io_base_t::pending_io>;
+
+  service_t &owner;
+
+
+  io_base_t (service_t &owner) noexcept
+    : owner(owner)
+  { }
+
+
+  io_base_t () = delete;
+  io_base_t (const io_base_t &) = delete;
+  io_base_t &operator= (const io_base_t &) = delete;
+  io_base_t (io_base_t &&) = delete;
+  io_base_t &operator= (io_base_t &&) = delete;
 };
+
+
+struct io_t //{{{1
+  : public io_base_t
+{
+  static constexpr size_t mtu_size = 1500;
+  static constexpr size_t data_size = 2048 - sizeof(io_base_t);
+  static_assert(data_size >= mtu_size);
+
+  std::byte data[data_size];
+
+  io_t (service_t &owner) noexcept
+    : io_base_t(owner)
+  { }
+};
+
+static_assert(sizeof(io_t) == 2048);
+static_assert(std::is_trivially_destructible_v<io_t>);
 
 
 struct service_t //{{{1
@@ -120,12 +158,21 @@ struct service_t //{{{1
   int queue;
 #endif
 
+  std::mutex io_pool_mutex{};
+  std::deque<std::unique_ptr<std::byte[]>> io_pool{};
+  size_t io_pool_size{};
+
+  io_t::free_list_t free_list{};
+
   sal::spinlock_t completed_mutex{};
   io_t::completed_list_t completed_list{};
 
 
   service_t ();
   ~service_t () noexcept;
+
+
+  io_t *make_io ();
 
 
   void enqueue (io_t *io) noexcept

@@ -562,7 +562,7 @@ public:
    */
   void start_accept (async::io_ptr &&io) noexcept
   {
-    auto result = io->prepare<accept_t>(async_);
+    auto result = io->prepare<accept_t>();
     async_->start_accept(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       family_,

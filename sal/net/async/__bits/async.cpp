@@ -254,6 +254,7 @@ void handler_t::start_receive_from (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
+  io->current_owner = this;
   io->transferred = transferred;
 
   io->pending.receive_from.remote_endpoint_capacity =
@@ -286,6 +287,7 @@ void handler_t::start_receive (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
+  io->current_owner = this;
   io->transferred = transferred;
 
   io->pending.receive.flags = flags;
@@ -321,6 +323,7 @@ void handler_t::start_send_to (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
+  io->current_owner = this;
   io->transferred = transferred;
 
   auto buf = make_buf(io);
@@ -349,6 +352,7 @@ void handler_t::start_send (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
+  io->current_owner = this;
   io->transferred = transferred;
 
   auto buf = make_buf(io);
@@ -375,6 +379,7 @@ void handler_t::start_accept (io_t *io,
   int family,
   socket_t::handle_t *socket_handle) noexcept
 {
+  io->current_owner = this;
   io->transferred = &io->pending.accept.unused;
   io->pending.accept.socket_handle = socket_handle;
 
@@ -393,7 +398,7 @@ void handler_t::start_accept (io_t *io,
   auto success = winsock.AcceptEx(
     socket.handle,
     *io->pending.accept.socket_handle,
-    io->begin,
+    io->data,
     0,
     0,
     acceptex_address_size,
@@ -411,6 +416,7 @@ void handler_t::start_connect (io_t *io,
   const void *remote_endpoint,
   size_t remote_endpoint_size) noexcept
 {
+  io->current_owner = this;
   io->transferred = &io->pending.connect.unused;
 
   auto success = winsock.ConnectEx(
@@ -915,6 +921,7 @@ void handler_t::start_receive_from (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
+  io->current_owner = this;
   io->transferred = transferred;
 
   *flags |= MSG_DONTWAIT;
@@ -930,6 +937,7 @@ void handler_t::start_receive (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
+  io->current_owner = this;
   io->transferred = transferred;
 
   *flags |= MSG_DONTWAIT;
@@ -945,6 +953,7 @@ void handler_t::start_send_to (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
+  io->current_owner = this;
   io->transferred = transferred;
 
   io->pending.send_to.flags = flags | MSG_DONTWAIT;
@@ -964,6 +973,7 @@ void handler_t::start_send (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
+  io->current_owner = this;
   io->transferred = transferred;
 
   io->pending.send.flags = flags | MSG_DONTWAIT;
@@ -976,6 +986,7 @@ void handler_t::start_accept (io_t *io,
   int /*family*/,
   socket_t::handle_t *socket_handle) noexcept
 {
+  io->current_owner = this;
   io->pending.accept.socket_handle = socket_handle;
   start(io, pending_read);
 }
@@ -985,12 +996,38 @@ void handler_t::start_connect (io_t *io,
   const void *remote_endpoint,
   size_t remote_endpoint_size) noexcept
 {
+  io->current_owner = this;
   socket.connect(remote_endpoint, remote_endpoint_size, io->status);
   start(io, pending_write);
 }
 
 
 #endif //}}}1
+
+
+io_t *service_t::make_io ()
+{
+  std::lock_guard lock(io_pool_mutex);
+
+  auto io = free_list.try_pop();
+  if (!io)
+  {
+    auto batch_size = 16 * (1ULL << io_pool.size());
+    auto it = io_pool.emplace_back(new std::byte[batch_size * sizeof(io_t)]).get();
+    io_pool_size += batch_size;
+
+    while (batch_size--)
+    {
+      free_list.push(new(it) io_t(*this));
+      it += sizeof(io_t);
+    }
+
+    io = free_list.try_pop();
+  }
+
+  io->current_owner = nullptr;
+  return static_cast<io_t *>(io);
+}
 
 
 } // namespace net::async::__bits

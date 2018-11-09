@@ -353,7 +353,7 @@ public:
   void start_receive_from (async::io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    auto result = io->prepare<receive_from_t>(base_t::async_);
+    auto result = io->prepare<receive_from_t>();
     result->flags = flags;
     base_t::async_->start_receive_from(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
@@ -398,7 +398,7 @@ public:
   void start_receive (async::io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    auto result = io->prepare<receive_t>(base_t::async_);
+    auto result = io->prepare<receive_t>();
     result->flags = flags;
     base_t::async_->start_receive(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
@@ -439,7 +439,7 @@ public:
     const endpoint_t &remote_endpoint,
     socket_base_t::message_flags_t flags) noexcept
   {
-    auto result = io->prepare<send_to_t>(base_t::async_);
+    auto result = io->prepare<send_to_t>();
     base_t::async_->start_send_to(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       remote_endpoint.data(),
@@ -481,7 +481,7 @@ public:
   void start_send (async::io_ptr &&io, socket_base_t::message_flags_t flags)
     noexcept
   {
-    auto result = io->prepare<send_t>(base_t::async_);
+    auto result = io->prepare<send_t>();
     base_t::async_->start_send(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       &result->transferred,
