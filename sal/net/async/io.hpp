@@ -267,7 +267,7 @@ public:
   template <typename Result>
   const Result *get_if (std::error_code &error) const noexcept
   {
-    if (impl_.op == Result::op)
+    if (impl_.op == type_v<Result>)
     {
       error = impl_.status;
       return reinterpret_cast<const Result *>(impl_.result);
@@ -296,7 +296,7 @@ public:
   template <typename Result>
   Result *get_if (std::error_code &error) noexcept
   {
-    if (impl_.op == Result::op)
+    if (impl_.op == type_v<Result>)
     {
       error = impl_.status;
       return reinterpret_cast<Result *>(impl_.result);
@@ -320,15 +320,12 @@ private:
   __bits::io_t impl_;
 
 
-  using op_t = __bits::op_t;
-
-
   template <typename Result>
   Result *prepare () noexcept
   {
     static_assert(std::is_trivially_destructible_v<Result>);
     static_assert(sizeof(Result) <= sizeof(impl_.result));
-    impl_.op = Result::op;
+    impl_.op = type_v<Result>;
     return reinterpret_cast<Result *>(impl_.result);
   }
 

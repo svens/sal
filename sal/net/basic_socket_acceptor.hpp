@@ -522,10 +522,6 @@ public:
   {
   public:
 
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::accept;
-
     /**
      * Return accepted socket.
      * \note It returns valid socket only on first call. Following calls

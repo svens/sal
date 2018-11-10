@@ -21,19 +21,9 @@ namespace net::async::__bits {
 using net::__bits::socket_t;
 using net::__bits::message_flags_t;
 
+struct io_t;
 struct service_t;
 struct handler_t;
-
-
-enum class op_t
-{
-  receive_from,
-  receive,
-  send_to,
-  send,
-  accept,
-  connect,
-};
 
 
 struct io_base_t //{{{1
@@ -42,13 +32,14 @@ struct io_base_t //{{{1
   OVERLAPPED overlapped{};
   using transferred_size_t = DWORD;
   using endpoint_size_t = INT;
+  bool (*on_finish)(io_t *) noexcept = nullptr;
 #elif __sal_os_linux || __sal_os_macos
   using transferred_size_t = size_t;
   using endpoint_size_t = size_t;
+  bool (*on_finish)(io_t *, uint16_t, uint32_t) noexcept = nullptr;
 #endif
 
-  op_t op{};
-  bool (*on_finish)(io_base_t *) noexcept = nullptr;
+  uint64_t op{};
 
   union
   {
@@ -223,27 +214,6 @@ struct handler_t //{{{1
     std::mutex mutex{};
     io_t::pending_io_list_t list{};
   } pending_read{}, pending_write{};
-
-
-  void start (io_t *io, pending_t &pending) noexcept
-  {
-    std::lock_guard lock(pending.mutex);
-    if (pending.list.empty() && try_finish(io, 0, 0, lock))
-    {
-      service->enqueue(io);
-    }
-    else
-    {
-      pending.list.push(io);
-    }
-  }
-
-
-  bool try_finish (io_t *io,
-    uint16_t flags,
-    uint32_t fflags,
-    const std::lock_guard<std::mutex> &pending_list_lock
-  ) noexcept;
 
 #endif
 

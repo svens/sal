@@ -66,7 +66,7 @@ inline void io_result_handle (io_t *io, int result) noexcept
 }
 
 
-bool finish (io_base_t *io) noexcept
+bool finish (io_t *io) noexcept
 {
   DWORD transferred, flags;
   auto result = ::WSAGetOverlappedResult(
@@ -101,7 +101,7 @@ bool finish (io_base_t *io) noexcept
 }
 
 
-bool finish_receive (io_base_t *io) noexcept
+bool finish_receive (io_t *io) noexcept
 {
   if (finish(io))
   {
@@ -116,7 +116,7 @@ bool finish_receive (io_base_t *io) noexcept
 }
 
 
-bool finish_accept (io_base_t *io) noexcept
+bool finish_accept (io_t *io) noexcept
 {
   if (finish(io))
   {
@@ -138,7 +138,7 @@ bool finish_accept (io_base_t *io) noexcept
 }
 
 
-bool finish_connect (io_base_t *io) noexcept
+bool finish_connect (io_t *io) noexcept
 {
   if (finish(io))
   {
@@ -555,7 +555,7 @@ bool drain (handler_t &handler, handler_t::pending_t &pending, uint32_t events)
 
   while (auto io = static_cast<io_t *>(pending.list.head()))
   {
-    if (handler.try_finish(io, 0, events, lock))
+    if ((*io->on_finish)(io, 0, events))
     {
       (void)pending.list.try_pop();
       handler.service->enqueue(io);
@@ -732,7 +732,7 @@ void drain (const struct ::kevent &event) noexcept
 
   while (auto io = static_cast<io_t *>(pending_io->list.head()))
   {
-    if (handler.try_finish(io, event.flags, event.fflags, lock))
+    if ((*io->on_finish)(io, event.flags, event.fflags))
     {
       (void)pending_io->list.try_pop();
       handler.service->enqueue(io);
@@ -859,87 +859,108 @@ handler_t::~handler_t () noexcept
 }
 
 
-bool handler_t::try_finish (io_t *io,
-  uint16_t flags,
-  uint32_t fflags,
-  const std::lock_guard<std::mutex> & pending_list_lock) noexcept
+namespace {
+
+
+inline void start (io_t *io, handler_t::pending_t &pending) noexcept
 {
-  (void)pending_list_lock;
-
-  switch (io->op)
+  std::lock_guard lock(pending.mutex);
+  if (pending.list.empty() && (*io->on_finish)(io, 0, 0))
   {
-    case op_t::receive_from:
-      *io->transferred = socket.receive_from(
-        io->begin,
-        io->end - io->begin,
-        io->pending.receive_from.remote_endpoint,
-        &io->pending.receive_from.remote_endpoint_capacity,
-        *io->pending.receive_from.flags,
-        io->status
-      );
-      return await_read(io);
+    io->owner.enqueue(io);
+  }
+  else
+  {
+    pending.list.push(io);
+  }
+}
 
-    case op_t::receive:
-      *io->transferred = socket.receive(
-        io->begin,
-        io->end - io->begin,
-        *io->pending.receive_from.flags,
-        io->status
-      );
-      return await_read(io);
 
-    case op_t::accept:
-      *io->pending.accept.socket_handle = socket.accept(
-        nullptr,
-        nullptr,
-        false,
-        io->status
-      );
-      return await_read(io);
+bool finish_receive_from (io_t *io, uint16_t, uint32_t) noexcept
+{
+  *io->transferred = io->current_owner->socket.receive_from(
+    io->begin,
+    io->end - io->begin,
+    io->pending.receive_from.remote_endpoint,
+    &io->pending.receive_from.remote_endpoint_capacity,
+    *io->pending.receive_from.flags,
+    io->status
+  );
+  return await_read(io);
+}
 
-    case op_t::send_to:
-      *io->transferred = socket.send_to(
-        io->begin,
-        io->end - io->begin,
-        &io->pending.send_to.remote_endpoint,
-        io->pending.send_to.remote_endpoint_size,
-        io->pending.send_to.flags,
-        io->status
-      );
-      return await_write(io);
 
-    case op_t::send:
-      *io->transferred = socket.send(
-        io->begin,
-        io->end - io->begin,
-        io->pending.send_to.flags,
-        io->status
-      );
-      return await_write(io);
+bool finish_send_to (io_t *io, uint16_t, uint32_t) noexcept
+{
+  *io->transferred = io->current_owner->socket.send_to(
+    io->begin,
+    io->end - io->begin,
+    &io->pending.send_to.remote_endpoint,
+    io->pending.send_to.remote_endpoint_size,
+    io->pending.send_to.flags,
+    io->status
+  );
+  return await_write(io);
+}
 
-    case op_t::connect:
-      if (io->status == std::errc::operation_in_progress)
-      {
-        // just started socket.connect() in start_connect()
-        // wait socket to become writable
-        io->status = std::make_error_code(std::errc::operation_would_block);
-        return await_write(io);
-      }
-      else if (io->status != std::errc::operation_would_block)
-      {
-        // blocking socket, we know result immediately
-        return true;
-      }
-      else
-      {
-        // final state (connected, rejected, etc)
-        return complete_connection(io, flags, fflags);
-      }
+
+bool finish_receive (io_t *io, uint16_t, uint32_t) noexcept
+{
+  *io->transferred = io->current_owner->socket.receive(
+    io->begin,
+    io->end - io->begin,
+    *io->pending.receive_from.flags,
+    io->status
+  );
+  return await_read(io);
+}
+
+
+bool finish_send (io_t *io, uint16_t, uint32_t) noexcept
+{
+  *io->transferred = io->current_owner->socket.send(
+    io->begin,
+    io->end - io->begin,
+    io->pending.send_to.flags,
+    io->status
+  );
+  return await_write(io);
+}
+
+
+bool finish_accept (io_t *io, uint16_t, uint32_t) noexcept
+{
+  *io->pending.accept.socket_handle = io->current_owner->socket.accept(
+    nullptr,
+    nullptr,
+    false,
+    io->status
+  );
+  return await_read(io);
+}
+
+
+bool finish_connect (io_t *io, uint16_t flags, uint32_t fflags) noexcept
+{
+  if (io->status == std::errc::operation_in_progress)
+  {
+    // just started socket.connect() in start_connect()
+    // wait socket to become writable
+    io->status = std::make_error_code(std::errc::operation_would_block);
+    return await_write(io);
+  }
+  else if (io->status != std::errc::operation_would_block)
+  {
+    // blocking socket, we know result immediately
+    return true;
   }
 
-  io->status = std::make_error_code(std::errc::function_not_supported);
-  return true;
+  // final state (connected, rejected, etc)
+  return complete_connection(io, flags, fflags);
 }
+
+
+} // namespace
 
 
 void handler_t::start_receive_from (io_t *io,
@@ -956,6 +977,7 @@ void handler_t::start_receive_from (io_t *io,
   io->pending.receive_from.remote_endpoint = remote_endpoint;
   io->pending.receive_from.remote_endpoint_capacity = remote_endpoint_capacity;
 
+  io->on_finish = finish_receive_from;
   start(io, pending_read);
 }
 
@@ -970,6 +992,7 @@ void handler_t::start_receive (io_t *io,
   *flags |= MSG_DONTWAIT;
   io->pending.receive_from.flags = flags;
 
+  io->on_finish = finish_receive;
   start(io, pending_read);
 }
 
@@ -992,6 +1015,7 @@ void handler_t::start_send_to (io_t *io,
     remote_endpoint_size
   );
 
+  io->on_finish = finish_send_to;
   start(io, pending_write);
 }
 
@@ -1005,6 +1029,7 @@ void handler_t::start_send (io_t *io,
 
   io->pending.send.flags = flags | MSG_DONTWAIT;
 
+  io->on_finish = finish_send;
   start(io, pending_write);
 }
 
@@ -1015,6 +1040,8 @@ void handler_t::start_accept (io_t *io,
 {
   io->current_owner = this;
   io->pending.accept.socket_handle = socket_handle;
+
+  io->on_finish = finish_accept;
   start(io, pending_read);
 }
 
@@ -1025,6 +1052,8 @@ void handler_t::start_connect (io_t *io,
 {
   io->current_owner = this;
   socket.connect(remote_endpoint, remote_endpoint_size, io->status);
+
+  io->on_finish = finish_connect;
   start(io, pending_write);
 }
 

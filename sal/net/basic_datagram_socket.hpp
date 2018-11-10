@@ -332,10 +332,6 @@ public:
    */
   struct receive_from_t
   {
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::receive_from;
-
     /// Number of bytes transferred
     size_t transferred;
 
@@ -380,10 +376,6 @@ public:
    */
   struct receive_t
   {
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::receive;
-
     /// Number of bytes transferred
     size_t transferred;
 
@@ -422,10 +414,6 @@ public:
    */
   struct send_to_t
   {
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::send_to;
-
     /// Number of bytes transferred
     size_t transferred;
   };
@@ -466,10 +454,6 @@ public:
    */
   struct send_t
   {
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::send;
-
     /// Number of bytes transferred
     size_t transferred;
   };
