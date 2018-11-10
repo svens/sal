@@ -1,6 +1,7 @@
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/tcp.hpp>
 #include <sal/common.test.hpp>
+#include <thread>
 
 
 namespace {
@@ -34,6 +35,17 @@ struct net_async_socket_acceptor
     acceptor.non_blocking(true);
     acceptor.associate(service);
   }
+
+
+  sal::net::async::io_ptr wait ()
+  {
+    auto io = service.try_get();
+    if (!io && service.wait())
+    {
+      io = service.try_get();
+    }
+    return io;
+  }
 };
 
 using address_types = ::testing::Types<
@@ -51,8 +63,8 @@ TYPED_TEST(net_async_socket_acceptor, start_accept) //{{{1
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  auto io = TestFixture::service.wait();
-  ASSERT_FALSE(!io);
+  auto io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
 
   EXPECT_EQ(nullptr, io->template get_if<socket_t::connect_t>());
 
@@ -76,8 +88,8 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_with_context) //{{{1
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  auto io = TestFixture::service.wait();
-  ASSERT_FALSE(!io);
+  auto io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
 
   EXPECT_EQ(&io_ctx, io->template context<int>());
   EXPECT_EQ(nullptr, io->template context<socket_t>());
@@ -101,8 +113,8 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_immediate_completion) //{{{1
 
   TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
-  auto io = TestFixture::service.wait();
-  ASSERT_FALSE(!io);
+  auto io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
 
   auto result = io->template get_if<acceptor_t::accept_t>();
   ASSERT_NE(nullptr, result);
@@ -121,8 +133,8 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_result_multiple_times) //{{{1
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  auto io = TestFixture::service.wait();
-  ASSERT_FALSE(!io);
+  auto io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
 
   auto result = io->template get_if<acceptor_t::accept_t>();
   ASSERT_NE(nullptr, result);
@@ -144,8 +156,8 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_and_close) //{{{1
   TestFixture::acceptor.start_accept(TestFixture::service.make_io());
   TestFixture::acceptor.close();
 
-  auto io = TestFixture::service.wait();
-  ASSERT_FALSE(!io);
+  auto io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
 
   std::error_code error;
   auto result = io->template get_if<acceptor_t::accept_t>(error);
@@ -163,14 +175,14 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_close_before_accept) //{{{1
 
   TestFixture::acceptor.start_accept(TestFixture::service.make_io());
 
-  auto io = TestFixture::service.wait();
-  ASSERT_FALSE(!io);
+  auto io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
 
   // accept succeeds
   std::error_code error;
   auto result = io->template get_if<acceptor_t::accept_t>(error);
   ASSERT_NE(nullptr, result);
-  EXPECT_TRUE(!error);
+  EXPECT_FALSE(error);
 
   // but receive should fail
   auto b = result->accepted_socket();
@@ -189,14 +201,14 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_close_after_accept) //{{{1
   a.close();
   std::this_thread::yield();
 
-  auto io = TestFixture::service.wait();
-  ASSERT_FALSE(!io);
+  auto io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
 
   // accept succeeds
   std::error_code error;
   auto result = io->template get_if<acceptor_t::accept_t>(error);
   ASSERT_NE(nullptr, result);
-  EXPECT_TRUE(!error);
+  EXPECT_FALSE(error);
 
   // but receive should fail
   auto b = result->accepted_socket();

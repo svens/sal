@@ -4,9 +4,6 @@
 #include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/intrusive_queue.hpp>
 #include <sal/net/__bits/socket.hpp>
-#include <sal/spinlock.hpp>
-#include <algorithm>
-#include <array>
 #include <deque>
 #include <memory>
 #include <mutex>
@@ -36,8 +33,6 @@ struct io_base_t //{{{1
   using endpoint_size_t = size_t;
   bool (*on_finish)(io_t *, uint16_t, uint32_t) noexcept = nullptr;
 #endif
-
-  uint64_t op{};
 
   union
   {
@@ -77,10 +72,11 @@ struct io_base_t //{{{1
     } connect;
   } pending{};
 
-  handler_t *current_owner{};
+  handler_t *owner{};
   uintptr_t context_type{};
   void *context{};
 
+  uint64_t op{};
   std::byte result[160];
   size_t *transferred{};
   message_flags_t *flags{};
@@ -99,11 +95,11 @@ struct io_base_t //{{{1
   using completed_list_t = intrusive_mpsc_queue_t<&io_base_t::completed>;
   using pending_io_list_t = intrusive_queue_t<&io_base_t::pending_io>;
 
-  service_t &owner;
+  service_t &service;
 
 
-  io_base_t (service_t &owner) noexcept
-    : owner(owner)
+  io_base_t (service_t &service) noexcept
+    : service(service)
   { }
 
 
@@ -124,8 +120,8 @@ struct io_t //{{{1
 
   std::byte data[data_size];
 
-  io_t (service_t &owner) noexcept
-    : io_base_t(owner)
+  io_t (service_t &service) noexcept
+    : io_base_t(service)
   { }
 };
 
@@ -146,8 +142,6 @@ struct service_t //{{{1
   size_t io_pool_size{};
 
   io_t::free_list_t free_list{};
-
-  sal::spinlock_t completed_mutex{};
   io_t::completed_list_t completed_list{};
 
 
@@ -166,12 +160,11 @@ struct service_t //{{{1
 
   io_t *dequeue () noexcept
   {
-    std::lock_guard lock(completed_mutex);
     return static_cast<io_t *>(completed_list.try_pop());
   }
 
 
-  bool wait_for_more (const std::chrono::milliseconds &timeout,
+  bool wait (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
 };

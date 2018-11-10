@@ -44,7 +44,7 @@ inline void io_result_handle (io_t *io, int result) noexcept
   if (result == 0)
   {
     io->status.clear();
-    io->owner.enqueue(io);
+    io->service.enqueue(io);
     return;
   }
 
@@ -62,7 +62,7 @@ inline void io_result_handle (io_t *io, int result) noexcept
       break;
   }
 
-  io->owner.enqueue(io);
+  io->service.enqueue(io);
 }
 
 
@@ -70,7 +70,7 @@ bool finish (io_t *io) noexcept
 {
   DWORD transferred;
   auto result = ::WSAGetOverlappedResult(
-    io->current_owner->socket.handle,
+    io->owner->socket.handle,
     reinterpret_cast<WSAOVERLAPPED *>(io),
     &transferred,
     false,
@@ -124,8 +124,8 @@ bool finish_accept (io_t *io) noexcept
       *io->pending.accept.socket_handle,
       SOL_SOCKET,
       SO_UPDATE_ACCEPT_CONTEXT,
-      reinterpret_cast<char *>(&io->current_owner->socket.handle),
-      sizeof(io->current_owner->socket.handle)
+      reinterpret_cast<char *>(&io->owner->socket.handle),
+      sizeof(io->owner->socket.handle)
     );
     if (result != SOCKET_ERROR)
     {
@@ -143,7 +143,7 @@ bool finish_connect (io_t *io) noexcept
   if (finish(io))
   {
     auto result = ::setsockopt(
-      io->current_owner->socket.handle,
+      io->owner->socket.handle,
       SOL_SOCKET,
       SO_UPDATE_CONNECT_CONTEXT,
       nullptr,
@@ -184,7 +184,7 @@ service_t::~service_t () noexcept
 }
 
 
-bool service_t::wait_for_more (const std::chrono::milliseconds &timeout,
+bool service_t::wait (const std::chrono::milliseconds &timeout,
   std::error_code &error) noexcept
 {
   constexpr DWORD max_events = 256;
@@ -255,7 +255,7 @@ void handler_t::start_receive_from (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish;
   io->transferred = transferred;
   io->flags = flags;
@@ -290,7 +290,7 @@ void handler_t::start_receive (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_receive;
   io->transferred = transferred;
   io->flags = flags;
@@ -327,7 +327,7 @@ void handler_t::start_send_to (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish;
   io->transferred = transferred;
   io->flags = &io->pending.send_to.flags;
@@ -359,7 +359,7 @@ void handler_t::start_send (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish;
   io->transferred = transferred;
   io->flags = &io->pending.send.flags;
@@ -389,7 +389,7 @@ void handler_t::start_accept (io_t *io,
   int family,
   socket_t::handle_t *socket_handle) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_accept;
   io->transferred = &io->pending.accept.unused_transferred;
   io->flags = &io->pending.accept.unused_flags;
@@ -425,8 +425,8 @@ void handler_t::start_accept (io_t *io,
       *io->pending.accept.socket_handle,
       SOL_SOCKET,
       SO_UPDATE_ACCEPT_CONTEXT,
-      reinterpret_cast<char *>(&io->current_owner->socket.handle),
-      sizeof(io->current_owner->socket.handle)
+      reinterpret_cast<char *>(&io->owner->socket.handle),
+      sizeof(io->owner->socket.handle)
     );
   }
 
@@ -438,7 +438,7 @@ void handler_t::start_connect (io_t *io,
   const void *remote_endpoint,
   size_t remote_endpoint_size) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_connect;
   io->transferred = &io->pending.connect.unused_transferred;
   io->flags = &io->pending.connect.unused_flags;
@@ -457,7 +457,7 @@ void handler_t::start_connect (io_t *io,
   if (success)
   {
     result = ::setsockopt(
-      io->current_owner->socket.handle,
+      io->owner->socket.handle,
       SOL_SOCKET,
       SO_UPDATE_CONNECT_CONTEXT,
       nullptr,
@@ -537,7 +537,7 @@ inline bool await_read (io_t *io) noexcept
 {
   if (io->status == std::errc::operation_would_block)
   {
-    auto &handler = *io->current_owner;
+    auto &handler = *io->owner;
     return await_io(handler, handler.await_events | EPOLLIN, io->status);
   }
   return true;
@@ -548,7 +548,7 @@ inline bool await_write (io_t *io) noexcept
 {
   if (io->status == std::errc::operation_would_block)
   {
-    auto &handler = *io->current_owner;
+    auto &handler = *io->owner;
     return await_io(handler, handler.await_events | EPOLLOUT, io->status);
   }
   return true;
@@ -610,7 +610,7 @@ inline bool complete_connection (io_t *io, uint16_t /**/, uint32_t events)
     int data;
     socklen_t size = sizeof(data);
     auto result = ::getsockopt(
-      io->current_owner->socket.handle,
+      io->owner->socket.handle,
       SOL_SOCKET,
       SO_ERROR,
       &data,
@@ -678,7 +678,7 @@ bool await_io (io_t *io, int16_t filter, uint16_t flags) noexcept
     return true;
   }
 
-  auto &handler = *io->current_owner;
+  auto &handler = *io->owner;
 
   struct ::kevent change;
   EV_SET(&change,
@@ -794,7 +794,7 @@ service_t::~service_t () noexcept
 }
 
 
-bool service_t::wait_for_more (const std::chrono::milliseconds &timeout,
+bool service_t::wait (const std::chrono::milliseconds &timeout,
   std::error_code &error) noexcept
 {
   constexpr size_t max_events = 256;
@@ -857,7 +857,7 @@ handler_t::~handler_t () noexcept
     while (auto io = pending.list.try_pop())
     {
       io->status = std::make_error_code(std::errc::operation_canceled);
-      io->current_owner = nullptr;
+      io->owner = nullptr;
       service->enqueue(static_cast<io_t *>(io));
     }
   };
@@ -874,7 +874,7 @@ inline void start (io_t *io, handler_t::pending_t &pending) noexcept
   std::lock_guard lock(pending.mutex);
   if (pending.list.empty() && (*io->on_finish)(io, 0, 0))
   {
-    io->owner.enqueue(io);
+    io->service.enqueue(io);
   }
   else
   {
@@ -885,7 +885,7 @@ inline void start (io_t *io, handler_t::pending_t &pending) noexcept
 
 bool finish_receive_from (io_t *io, uint16_t, uint32_t) noexcept
 {
-  *io->transferred = io->current_owner->socket.receive_from(
+  *io->transferred = io->owner->socket.receive_from(
     io->begin,
     io->end - io->begin,
     io->pending.receive_from.remote_endpoint,
@@ -899,7 +899,7 @@ bool finish_receive_from (io_t *io, uint16_t, uint32_t) noexcept
 
 bool finish_receive (io_t *io, uint16_t, uint32_t) noexcept
 {
-  *io->transferred = io->current_owner->socket.receive(
+  *io->transferred = io->owner->socket.receive(
     io->begin,
     io->end - io->begin,
     *io->flags,
@@ -911,7 +911,7 @@ bool finish_receive (io_t *io, uint16_t, uint32_t) noexcept
 
 bool finish_send_to (io_t *io, uint16_t, uint32_t) noexcept
 {
-  *io->transferred = io->current_owner->socket.send_to(
+  *io->transferred = io->owner->socket.send_to(
     io->begin,
     io->end - io->begin,
     &io->pending.send_to.remote_endpoint,
@@ -925,7 +925,7 @@ bool finish_send_to (io_t *io, uint16_t, uint32_t) noexcept
 
 bool finish_send (io_t *io, uint16_t, uint32_t) noexcept
 {
-  *io->transferred = io->current_owner->socket.send(
+  *io->transferred = io->owner->socket.send(
     io->begin,
     io->end - io->begin,
     io->pending.send_to.flags,
@@ -937,7 +937,7 @@ bool finish_send (io_t *io, uint16_t, uint32_t) noexcept
 
 bool finish_accept (io_t *io, uint16_t, uint32_t) noexcept
 {
-  *io->pending.accept.socket_handle = io->current_owner->socket.accept(
+  *io->pending.accept.socket_handle = io->owner->socket.accept(
     nullptr,
     nullptr,
     false,
@@ -976,7 +976,7 @@ void handler_t::start_receive_from (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_receive_from;
   io->transferred = transferred;
   io->flags = flags;
@@ -993,7 +993,7 @@ void handler_t::start_receive (io_t *io,
   size_t *transferred,
   message_flags_t *flags) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_receive;
   io->transferred = transferred;
   io->flags = flags;
@@ -1010,7 +1010,7 @@ void handler_t::start_send_to (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_send_to;
   io->transferred = transferred;
 
@@ -1031,7 +1031,7 @@ void handler_t::start_send (io_t *io,
   size_t *transferred,
   message_flags_t flags) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_send;
   io->transferred = transferred;
 
@@ -1045,7 +1045,7 @@ void handler_t::start_accept (io_t *io,
   int /*family*/,
   socket_t::handle_t *socket_handle) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_accept;
 
   io->pending.accept.socket_handle = socket_handle;
@@ -1058,7 +1058,7 @@ void handler_t::start_connect (io_t *io,
   const void *remote_endpoint,
   size_t remote_endpoint_size) noexcept
 {
-  io->current_owner = this;
+  io->owner = this;
   io->on_finish = finish_connect;
 
   socket.connect(remote_endpoint, remote_endpoint_size, io->status);
@@ -1090,7 +1090,7 @@ io_t *service_t::make_io ()
     io = free_list.try_pop();
   }
 
-  io->current_owner = nullptr;
+  io->owner = nullptr;
   return static_cast<io_t *>(io);
 }
 

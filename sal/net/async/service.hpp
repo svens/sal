@@ -33,6 +33,25 @@ namespace net::async {
  * I/O operation must be allocated from initiator socket's associated
  * service_t pool. Starting I/O using another service_t pool's io_t is
  * undefined behavior.
+ *
+ * Typical completed I/O operations handling loop may look like:
+ * \code
+ * for (;;)
+ * {
+ *   if (auto io = service.try_get())
+ *   {
+ *     // handle completed io
+ *   }
+ *   else if (stop_requested)
+ *   {
+ *     break;
+ *   }
+ *   else
+ *   {
+ *     service.wait_for(1s);
+ *   }
+ * }
+ * \endcode
  */
 class service_t
 {
@@ -72,8 +91,7 @@ public:
 
   /**
    * Return next completed I/O operation without blocking calling thread. If
-   * there is no pending completion immediately available, do not poll
-   * underlying OS handle but return empty I/O instance.
+   * there is no pending completion immediately available, return nullptr.
    */
   io_ptr try_get () noexcept
   {
@@ -82,87 +100,77 @@ public:
 
 
   /**
-   * Return next completed I/O operation. If there is no pending completion
-   * immediately available, suspend calling thread up to \a timeout. If after
-   * \a timeout there is still no pending completion, returns empty I/O
-   * instance.
+   * Suspend calling thread up to \a timeout until there are more I/O
+   * operations completed. After successful wait, next try_get() is guaranteed
+   * to return completed I/O operation. On polling failure, set \a error.
    *
-   * On polling failure, set \a error
+   * \returns true if there were completed I/O operations, false otherwise.
    */
   template <typename Rep, typename Period>
-  io_ptr wait_for (const std::chrono::duration<Rep, Period> &timeout,
+  bool wait_for (const std::chrono::duration<Rep, Period> &timeout,
     std::error_code &error) noexcept
   {
-    do
-    {
-      if (auto io = try_get())
-      {
-        return io;
-      }
-    } while (impl_->wait_for_more(timeout, error));
-
-    return {nullptr};
+    return impl_->wait(timeout, error);
   }
 
 
   /**
-   * Return next completed I/O operation. If there is no pending completion
-   * immediately available, suspend calling thread up to \a timeout. If after
-   * \a timeout there is still no pending completion, returns empty I/O
-   * instance.
+   * Suspend calling thread up to \a timeout until there are more I/O
+   * operations completed. After successful wait, next try_get() is guaranteed
+   * to return completed I/O operation.
    *
+   * \returns true if there were completed I/O operations, false otherwise.
    * \throws std::system_error on polling failure.
    */
   template <typename Rep, typename Period>
-  io_ptr wait_for (const std::chrono::duration<Rep, Period> &timeout)
+  bool wait_for (const std::chrono::duration<Rep, Period> &timeout)
   {
     return wait_for(timeout, throw_on_error("service::wait_for"));
   }
 
 
   /**
-   * Return next completed I/O operation. If there is no pending completion
-   * immediately available, suspend calling thread until any completion.
+   * Suspend calling thread until there are more I/O operations completed.
+   * After successful wait, next try_get() is guaranteed to return completed
+   * I/O operation. On polling failure, set \a error.
    *
-   * On polling failure, set \a error
+   * \returns true if there were completed I/O operations, false otherwise.
    */
-  io_ptr wait (std::error_code &error) noexcept
+  bool wait (std::error_code &error) noexcept
   {
     return wait_for((std::chrono::milliseconds::max)(), error);
   }
 
 
   /**
-   * Return next completed I/O operation. If there is no pending completion
-   * immediately available, suspend calling thread until any completion.
+   * Suspend calling thread until there are more I/O operations completed.
+   * After successful wait, next try_get() is guaranteed to return completed
+   * I/O operation.
    *
+   * \returns true if there were completed I/O operations, false otherwise.
    * \throws std::system_error on polling failure.
    */
-  io_ptr wait ()
+  bool wait ()
   {
     return wait_for((std::chrono::milliseconds::max)());
   }
 
 
   /**
-   * Return next completed I/O operation. If there is no pending completion
-   * available, poll underlying OS handle with immediate timeout.
-   *
-   * On polling failure, set \a error
+   * Poll for new completed I/O operations. On polling failure, set \a error.
+   * \returns true if there were completed I/O operations, false otherwise.
    */
-  io_ptr poll (std::error_code &error) noexcept
+  bool poll (std::error_code &error) noexcept
   {
     return wait_for(std::chrono::milliseconds::zero(), error);
   }
 
 
   /**
-   * Return next completed I/O operation. If there is no pending completion
-   * available, poll underlying OS handle with immediate timeout.
-   *
+   * Poll for new completed I/O operations.
    * \throws std::system_error on polling failure.
    */
-  io_ptr poll ()
+  bool poll ()
   {
     return wait_for(std::chrono::milliseconds::zero());
   }

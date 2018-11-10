@@ -74,7 +74,7 @@ public:
      */
     void operator() (io_t *io) noexcept
     {
-      io->impl_.owner.free_list.push(&io->impl_);
+      io->impl_.service.free_list.push(&io->impl_);
     }
   };
 
@@ -129,10 +129,10 @@ public:
   template <typename Context>
   Context *socket_context () const
   {
-    auto &current_owner = *sal_check_ptr(impl_.current_owner);
-    if (current_owner.context_type == type_v<Context>)
+    auto &owner = *sal_check_ptr(impl_.owner);
+    if (owner.context_type == type_v<Context>)
     {
-      return static_cast<Context *>(current_owner.context);
+      return static_cast<Context *>(owner.context);
     }
     return nullptr;
   }
