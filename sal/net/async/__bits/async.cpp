@@ -68,13 +68,13 @@ inline void io_result_handle (io_t *io, int result) noexcept
 
 bool finish (io_t *io) noexcept
 {
-  DWORD transferred, flags;
+  DWORD transferred;
   auto result = ::WSAGetOverlappedResult(
     io->current_owner->socket.handle,
     reinterpret_cast<WSAOVERLAPPED *>(io),
     &transferred,
     false,
-    &flags
+    io->flags
   );
   *io->transferred = transferred;
 
@@ -256,20 +256,21 @@ void handler_t::start_receive_from (io_t *io,
   message_flags_t *flags) noexcept
 {
   io->current_owner = this;
-  io->transferred = transferred;
   io->on_finish = finish;
+  io->transferred = transferred;
+  io->flags = flags;
 
   io->pending.receive_from.remote_endpoint_capacity =
     static_cast<INT>(remote_endpoint_capacity);
-  io->pending.receive_from.flags = flags;
 
+  DWORD received;
   auto buf = make_buf(io);
   auto result = ::WSARecvFrom(
     socket.handle,
     &buf,
     1,
-    &io->pending.receive_from.transferred,
-    io->pending.receive_from.flags,
+    &received,
+    io->flags,
     static_cast<sockaddr *>(remote_endpoint),
     &io->pending.receive_from.remote_endpoint_capacity,
     &io->overlapped,
@@ -278,7 +279,7 @@ void handler_t::start_receive_from (io_t *io,
 
   if (result == 0)
   {
-    *io->transferred = io->pending.receive_from.transferred;
+    *io->transferred = received;
   }
 
   io_result_handle(io, result);
@@ -290,25 +291,25 @@ void handler_t::start_receive (io_t *io,
   message_flags_t *flags) noexcept
 {
   io->current_owner = this;
-  io->transferred = transferred;
   io->on_finish = finish_receive;
+  io->transferred = transferred;
+  io->flags = flags;
 
-  io->pending.receive.flags = flags;
-
+  DWORD received;
   auto buf = make_buf(io);
   auto result = ::WSARecv(
     socket.handle,
     &buf,
     1,
-    &io->pending.receive.transferred,
-    io->pending.receive.flags,
+    &received,
+    io->flags,
     &io->overlapped,
     nullptr
   );
 
   if (result == 0)
   {
-    *io->transferred = io->pending.receive.transferred;
+    *io->transferred = received;
     if (*io->transferred == 0)
     {
       ::WSASetLastError(WSAESHUTDOWN);
@@ -327,15 +328,17 @@ void handler_t::start_send_to (io_t *io,
   message_flags_t flags) noexcept
 {
   io->current_owner = this;
-  io->transferred = transferred;
   io->on_finish = finish;
+  io->transferred = transferred;
+  io->flags = &io->pending.send_to.flags;
 
+  DWORD sent;
   auto buf = make_buf(io);
   auto result = ::WSASendTo(
     socket.handle,
     &buf,
     1,
-    &io->pending.send_to.transferred,
+    &sent,
     flags,
     static_cast<const sockaddr *>(remote_endpoint),
     static_cast<int>(remote_endpoint_size),
@@ -345,7 +348,7 @@ void handler_t::start_send_to (io_t *io,
 
   if (result == 0)
   {
-    *io->transferred = io->pending.send_to.transferred;
+    *io->transferred = sent;
   }
 
   io_result_handle(io, result);
@@ -357,15 +360,17 @@ void handler_t::start_send (io_t *io,
   message_flags_t flags) noexcept
 {
   io->current_owner = this;
-  io->transferred = transferred;
   io->on_finish = finish;
+  io->transferred = transferred;
+  io->flags = &io->pending.send.flags;
 
+  DWORD sent;
   auto buf = make_buf(io);
   auto result = ::WSASend(
     socket.handle,
     &buf,
     1,
-    &io->pending.send.transferred,
+    &sent,
     flags,
     &io->overlapped,
     nullptr
@@ -373,7 +378,7 @@ void handler_t::start_send (io_t *io,
 
   if (result == 0)
   {
-    *io->transferred = io->pending.send.transferred;
+    *io->transferred = sent;
   }
 
   io_result_handle(io, result);
@@ -385,8 +390,9 @@ void handler_t::start_accept (io_t *io,
   socket_t::handle_t *socket_handle) noexcept
 {
   io->current_owner = this;
-  io->transferred = &io->pending.accept.unused;
   io->on_finish = finish_accept;
+  io->transferred = &io->pending.accept.unused_transferred;
+  io->flags = &io->pending.accept.unused_flags;
   io->pending.accept.socket_handle = socket_handle;
 
   socket_t new_socket;
@@ -433,8 +439,9 @@ void handler_t::start_connect (io_t *io,
   size_t remote_endpoint_size) noexcept
 {
   io->current_owner = this;
-  io->transferred = &io->pending.connect.unused;
   io->on_finish = finish_connect;
+  io->transferred = &io->pending.connect.unused_transferred;
+  io->flags = &io->pending.connect.unused_flags;
 
   auto success = winsock.ConnectEx(
     socket.handle,
@@ -883,7 +890,19 @@ bool finish_receive_from (io_t *io, uint16_t, uint32_t) noexcept
     io->end - io->begin,
     io->pending.receive_from.remote_endpoint,
     &io->pending.receive_from.remote_endpoint_capacity,
-    *io->pending.receive_from.flags,
+    *io->flags,
+    io->status
+  );
+  return await_read(io);
+}
+
+
+bool finish_receive (io_t *io, uint16_t, uint32_t) noexcept
+{
+  *io->transferred = io->current_owner->socket.receive(
+    io->begin,
+    io->end - io->begin,
+    *io->flags,
     io->status
   );
   return await_read(io);
@@ -901,18 +920,6 @@ bool finish_send_to (io_t *io, uint16_t, uint32_t) noexcept
     io->status
   );
   return await_write(io);
-}
-
-
-bool finish_receive (io_t *io, uint16_t, uint32_t) noexcept
-{
-  *io->transferred = io->current_owner->socket.receive(
-    io->begin,
-    io->end - io->begin,
-    *io->pending.receive_from.flags,
-    io->status
-  );
-  return await_read(io);
 }
 
 
@@ -970,14 +977,14 @@ void handler_t::start_receive_from (io_t *io,
   message_flags_t *flags) noexcept
 {
   io->current_owner = this;
+  io->on_finish = finish_receive_from;
   io->transferred = transferred;
+  io->flags = flags;
 
-  *flags |= MSG_DONTWAIT;
-  io->pending.receive_from.flags = flags;
+  *io->flags |= MSG_DONTWAIT;
   io->pending.receive_from.remote_endpoint = remote_endpoint;
   io->pending.receive_from.remote_endpoint_capacity = remote_endpoint_capacity;
 
-  io->on_finish = finish_receive_from;
   start(io, pending_read);
 }
 
@@ -987,12 +994,12 @@ void handler_t::start_receive (io_t *io,
   message_flags_t *flags) noexcept
 {
   io->current_owner = this;
-  io->transferred = transferred;
-
-  *flags |= MSG_DONTWAIT;
-  io->pending.receive_from.flags = flags;
-
   io->on_finish = finish_receive;
+  io->transferred = transferred;
+  io->flags = flags;
+
+  *io->flags |= MSG_DONTWAIT;
+
   start(io, pending_read);
 }
 
@@ -1004,6 +1011,7 @@ void handler_t::start_send_to (io_t *io,
   message_flags_t flags) noexcept
 {
   io->current_owner = this;
+  io->on_finish = finish_send_to;
   io->transferred = transferred;
 
   io->pending.send_to.flags = flags | MSG_DONTWAIT;
@@ -1015,7 +1023,6 @@ void handler_t::start_send_to (io_t *io,
     remote_endpoint_size
   );
 
-  io->on_finish = finish_send_to;
   start(io, pending_write);
 }
 
@@ -1025,11 +1032,11 @@ void handler_t::start_send (io_t *io,
   message_flags_t flags) noexcept
 {
   io->current_owner = this;
+  io->on_finish = finish_send;
   io->transferred = transferred;
 
   io->pending.send.flags = flags | MSG_DONTWAIT;
 
-  io->on_finish = finish_send;
   start(io, pending_write);
 }
 
@@ -1039,9 +1046,10 @@ void handler_t::start_accept (io_t *io,
   socket_t::handle_t *socket_handle) noexcept
 {
   io->current_owner = this;
+  io->on_finish = finish_accept;
+
   io->pending.accept.socket_handle = socket_handle;
 
-  io->on_finish = finish_accept;
   start(io, pending_read);
 }
 
@@ -1051,9 +1059,10 @@ void handler_t::start_connect (io_t *io,
   size_t remote_endpoint_size) noexcept
 {
   io->current_owner = this;
+  io->on_finish = finish_connect;
+
   socket.connect(remote_endpoint, remote_endpoint_size, io->status);
 
-  io->on_finish = finish_connect;
   start(io, pending_write);
 }
 

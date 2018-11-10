@@ -30,11 +30,9 @@ struct io_base_t //{{{1
 {
 #if __sal_os_windows
   OVERLAPPED overlapped{};
-  using transferred_size_t = DWORD;
   using endpoint_size_t = INT;
   bool (*on_finish)(io_t *) noexcept = nullptr;
 #elif __sal_os_linux || __sal_os_macos
-  using transferred_size_t = size_t;
   using endpoint_size_t = size_t;
   bool (*on_finish)(io_t *, uint16_t, uint32_t) noexcept = nullptr;
 #endif
@@ -45,45 +43,37 @@ struct io_base_t //{{{1
   {
     struct
     {
-      transferred_size_t transferred;
       void *remote_endpoint;
       endpoint_size_t remote_endpoint_capacity;
-      message_flags_t *flags;
     } receive_from;
 
     struct
     {
-      transferred_size_t transferred;
-      message_flags_t *flags;
     } receive;
 
     struct
     {
-      transferred_size_t transferred;
-#if __sal_os_linux || __sal_os_macos
       message_flags_t flags;
       sockaddr_storage remote_endpoint;
       size_t remote_endpoint_size;
-#endif
     } send_to;
 
     struct
     {
-#if __sal_os_linux || __sal_os_macos
       message_flags_t flags;
-#endif
-      transferred_size_t transferred;
     } send;
 
     struct
     {
       socket_t::handle_t *socket_handle;
-      size_t unused;
+      size_t unused_transferred;
+      message_flags_t unused_flags;
     } accept;
 
     struct
     {
-      size_t unused;
+      size_t unused_transferred;
+      message_flags_t unused_flags;
     } connect;
   } pending{};
 
@@ -93,6 +83,7 @@ struct io_base_t //{{{1
 
   std::byte result[160];
   size_t *transferred{};
+  message_flags_t *flags{};
   std::error_code status{};
 
   std::byte *begin{};
