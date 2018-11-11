@@ -15,7 +15,24 @@ using transform_types = testing::Types<
   sal::base64
 >;
 
-TYPED_TEST_CASE(encode, transform_types, );
+struct transform_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    if constexpr (std::is_same_v<T, sal::hex_string>)
+    {
+      return "hex";
+    }
+    else if constexpr (std::is_same_v<T, sal::base64>)
+    {
+      return "base64";
+    }
+    return std::to_string(i);
+  }
+};
+
+TYPED_TEST_CASE(encode, transform_types, transform_names);
 
 
 using encode_data = std::vector<std::pair<std::string, std::string>>;

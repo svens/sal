@@ -42,6 +42,7 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests_sources
+  sal/net/common.test.hpp
   sal/net/init.test.cpp
   sal/net/error.test.cpp
   sal/net/socket.test.cpp

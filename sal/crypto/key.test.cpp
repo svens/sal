@@ -65,7 +65,7 @@ using digest_types = ::testing::Types<
   sal::crypto::sha384,
   sal::crypto::sha512
 >;
-TYPED_TEST_CASE(crypto_key_with_digest, digest_types, );
+TYPED_TEST_CASE(crypto_key_with_digest, digest_types, sal_test::digest_names);
 
 
 TEST_F(crypto_key, public_key_ctor) //{{{1

@@ -152,7 +152,7 @@ public:
    */
   bool wait ()
   {
-    return wait_for((std::chrono::milliseconds::max)());
+    return wait(throw_on_error("service::wait"));
   }
 
 
@@ -172,7 +172,7 @@ public:
    */
   bool poll ()
   {
-    return wait_for(std::chrono::milliseconds::zero());
+    return poll(throw_on_error("service::poll"));
   }
 
 

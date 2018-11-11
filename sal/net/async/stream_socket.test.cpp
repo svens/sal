@@ -1,6 +1,6 @@
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/tcp.hpp>
-#include <sal/common.test.hpp>
+#include <sal/net/common.test.hpp>
 #include <thread>
 
 
@@ -106,12 +106,10 @@ struct net_async_stream_socket
   }
 };
 
-using address_types = ::testing::Types<
-  sal::net::ip::address_v4_t,
-  sal::net::ip::address_v6_t
->;
-
-TYPED_TEST_CASE(net_async_stream_socket, address_types, );
+TYPED_TEST_CASE(net_async_stream_socket,
+  sal_test::address_types,
+  sal_test::address_names
+);
 
 
 TYPED_TEST(net_async_stream_socket, start_connect) //{{{1

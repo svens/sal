@@ -1,5 +1,5 @@
 #include <sal/crypto/hash.hpp>
-#include <sal/common.test.hpp>
+#include <sal/crypto/common.test.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -11,15 +11,7 @@ namespace {
 template <typename Algorithm>
 using crypto_hash = sal_test::with_type<Algorithm>;
 
-using types = ::testing::Types<
-  sal::crypto::md5,
-  sal::crypto::sha1,
-  sal::crypto::sha256,
-  sal::crypto::sha384,
-  sal::crypto::sha512
->;
-
-TYPED_TEST_CASE(crypto_hash, types, );
+TYPED_TEST_CASE(crypto_hash, sal_test::digest_types, sal_test::digest_names);
 
 
 std::string empty = "",

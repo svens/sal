@@ -1,6 +1,6 @@
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/udp.hpp>
-#include <sal/common.test.hpp>
+#include <sal/net/common.test.hpp>
 #include <thread>
 
 
@@ -74,12 +74,10 @@ struct net_async_datagram_socket
   }
 };
 
-using address_types = ::testing::Types<
-  sal::net::ip::address_v4_t,
-  sal::net::ip::address_v6_t
->;
-
-TYPED_TEST_CASE(net_async_datagram_socket, address_types, );
+TYPED_TEST_CASE(net_async_datagram_socket,
+  sal_test::address_types,
+  sal_test::address_names
+);
 
 template <typename Result>
 inline std::string_view to_view (sal::net::async::io_ptr &io,

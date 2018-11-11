@@ -199,7 +199,25 @@ using channel_factory_types = ::testing::Types<
   datagram_t,
   stream_t
 >;
-TYPED_TEST_CASE(crypto_channel, channel_factory_types, );
+
+struct channel_factory_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    if constexpr (std::is_same_v<T, datagram_t>)
+    {
+      return "dtls";
+    }
+    else if constexpr (std::is_same_v<T, stream_t>)
+    {
+      return "tls";
+    }
+    return std::to_string(i);
+  }
+};
+
+TYPED_TEST_CASE(crypto_channel, channel_factory_types, channel_factory_names);
 
 
 TYPED_TEST(crypto_channel, handshake)

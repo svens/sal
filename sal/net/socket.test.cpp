@@ -1,7 +1,7 @@
 #include <sal/net/basic_socket.hpp>
 #include <sal/net/ip/tcp.hpp>
 #include <sal/net/ip/udp.hpp>
-#include <sal/common.test.hpp>
+#include <sal/net/common.test.hpp>
 
 
 namespace {
@@ -12,11 +12,7 @@ struct net_socket
   : public sal_test::with_type<Protocol>
 {};
 
-using protocol_types = testing::Types<
-  sal::net::ip::tcp_t,
-  sal::net::ip::udp_t
->;
-TYPED_TEST_CASE(net_socket, protocol_types, );
+TYPED_TEST_CASE(net_socket, sal_test::protocol_types, sal_test::protocol_names);
 
 
 template <typename Protocol,
