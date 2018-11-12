@@ -68,6 +68,7 @@ struct worker_names
   template <typename T>
   static std::string GetName (int i)
   {
+    (void)i;
     if constexpr (std::is_same_v<T, sal::logger::worker_t>)
     {
       return "worker";
@@ -76,7 +77,10 @@ struct worker_names
     {
       return "async_worker";
     }
-    return std::to_string(i);
+    else
+    {
+      return std::to_string(i);
+    }
   }
 };
 

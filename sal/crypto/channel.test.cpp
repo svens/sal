@@ -205,6 +205,7 @@ struct channel_factory_names
   template <typename T>
   static std::string GetName (int i)
   {
+    (void)i;
     if constexpr (std::is_same_v<T, datagram_t>)
     {
       return "dtls";
@@ -213,7 +214,10 @@ struct channel_factory_names
     {
       return "tls";
     }
-    return std::to_string(i);
+    else
+    {
+      return std::to_string(i);
+    }
   }
 };
 

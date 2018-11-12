@@ -20,6 +20,7 @@ struct transform_names
   template <typename T>
   static std::string GetName (int i)
   {
+    (void)i;
     if constexpr (std::is_same_v<T, sal::hex_string>)
     {
       return "hex";
@@ -28,7 +29,10 @@ struct transform_names
     {
       return "base64";
     }
-    return std::to_string(i);
+    else
+    {
+      return std::to_string(i);
+    }
   }
 };
 

@@ -18,6 +18,7 @@ struct address_names
   template <typename T>
   static std::string GetName (int i)
   {
+    (void)i;
     if constexpr (std::is_same_v<T, sal::net::ip::address_v4_t>)
     {
       return "ipv4";
@@ -42,6 +43,7 @@ struct protocol_names
   template <typename T>
   static std::string GetName (int i)
   {
+    (void)i;
     if constexpr (std::is_same_v<T, sal::net::ip::tcp_t>)
     {
       return "tcp";
@@ -50,7 +52,10 @@ struct protocol_names
     {
       return "udp";
     }
-    return std::to_string(i);
+    else
+    {
+      return std::to_string(i);
+    }
   }
 };
 
@@ -67,6 +72,7 @@ struct socket_names
   template <typename T>
   static std::string GetName (int i)
   {
+    (void)i;
     if constexpr (std::is_same_v<T, sal::net::ip::udp_t::socket_t>)
     {
       return "udp_socket";
@@ -79,7 +85,10 @@ struct socket_names
     {
       return "tcp_acceptor";
     }
-    return std::to_string(i);
+    else
+    {
+      return std::to_string(i);
+    }
   }
 };
 

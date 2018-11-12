@@ -148,6 +148,7 @@ struct number_names
   template <typename T>
   static std::string GetName (int i)
   {
+    (void)i;
     if constexpr (std::is_same_v<T, short>) return "short";
     else if constexpr (std::is_same_v<T, unsigned short>) return "unsigned_short";
     else if constexpr (std::is_same_v<T, int>) return "int";
@@ -159,7 +160,7 @@ struct number_names
     else if constexpr (std::is_same_v<T, float>) return "float";
     else if constexpr (std::is_same_v<T, double>) return "double";
     else if constexpr (std::is_same_v<T, long double>) return "long_double";
-    return std::to_string(i);
+    else return std::to_string(i);
   }
 };
 
