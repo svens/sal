@@ -27,7 +27,10 @@ struct address_names
     {
       return "ipv6";
     }
-    return std::to_string(i);
+    else
+    {
+      return std::to_string(i);
+    }
   }
 };
 
