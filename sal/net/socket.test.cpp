@@ -468,6 +468,57 @@ TYPED_TEST(net_socket, reuse_address_invalid)
 }
 
 
+#if SO_REUSEPORT
+
+
+TYPED_TEST(net_socket, reuse_port)
+{
+  typename TestFixture::socket_t socket(TestFixture::protocol);
+
+  bool original, value;
+  socket.get_option(sal::net::reuse_port(&original));
+  socket.set_option(sal::net::reuse_port(!original));
+  socket.get_option(sal::net::reuse_port(&value));
+  EXPECT_NE(original, value);
+}
+
+
+TYPED_TEST(net_socket, reuse_port_invalid)
+{
+  typename TestFixture::socket_t socket;
+  bool value{false};
+
+  {
+    std::error_code error;
+    socket.get_option(sal::net::reuse_port(&value), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.get_option(sal::net::reuse_port(&value)),
+      std::system_error
+    );
+  }
+
+  {
+    std::error_code error;
+    socket.set_option(sal::net::reuse_port(value), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.set_option(sal::net::reuse_port(value)),
+      std::system_error
+    );
+  }
+}
+
+
+#endif // SO_REUSEPORT
+
+
 TYPED_TEST(net_socket, receive_buffer_size)
 {
   typename TestFixture::socket_t socket(TestFixture::protocol);

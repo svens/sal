@@ -11,6 +11,18 @@ using namespace std::chrono_literals;
 using socket_t = sal::net::ip::udp_t::socket_t;
 
 
+void allow_bind_reuse (socket_t &socket)
+{
+  #if __sal_os_linux
+    socket.set_option(sal::net::reuse_address(true));
+  #elif __sal_os_macos
+    socket.set_option(sal::net::reuse_port(true));
+  #elif __sal_os_windows
+    socket.set_option(sal::net::reuse_address(true));
+  #endif
+}
+
+
 template <typename Address>
 struct net_async_datagram_socket
   : public sal_test::with_type<Address>
@@ -32,6 +44,7 @@ struct net_async_datagram_socket
 
   void SetUp ()
   {
+    allow_bind_reuse(socket);
     socket.bind(endpoint);
     socket.associate(service);
     test_socket.connect(endpoint);
@@ -894,6 +907,112 @@ TYPED_TEST(net_async_datagram_socket, start_send_empty_buf) //{{{1
   EXPECT_EQ(0U, result->transferred);
 }
 
+
+//}}}1
+
+
+TYPED_TEST(net_async_datagram_socket, send_and_receive_connected_socket) //{{{1
+{
+  //
+  // https://blog.grijjy.com/2018/08/29/creating-high-performance-udp-servers-on-windows-and-linux/
+  //
+
+  auto &server = TestFixture::socket;
+  auto &client = TestFixture::test_socket;
+
+  //
+  // server <- client
+  //
+
+  server.start_receive_from(TestFixture::service.make_io());
+  client.send("client_to_server");
+
+  auto io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
+
+  {
+    auto result = io->template get_if<socket_t::receive_from_t>();
+    ASSERT_NE(nullptr, result);
+    EXPECT_STREQ("client_to_server", to_view(io, result).data());
+    EXPECT_EQ(client.local_endpoint(), result->remote_endpoint);
+  }
+
+  //
+  // create session connected to client
+  //
+
+  socket_t session{TestFixture::protocol};
+  allow_bind_reuse(session);
+  session.bind(TestFixture::endpoint);
+  session.connect(client.local_endpoint());
+  session.associate(TestFixture::service);
+
+  //
+  // session -> client
+  //
+
+  TestFixture::service.make_io();
+  TestFixture::fill(io, "session_to_client");
+  session.start_send(std::move(io));
+  io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
+
+  ASSERT_NE(nullptr, io->template get_if<socket_t::send_t>());
+  EXPECT_EQ("session_to_client", TestFixture::receive());
+
+  //
+  // session <- client
+  //
+
+  client.send("client_to_session");
+
+#if __sal_os_linux || __sal_os_macos
+
+  server.start_receive_from(TestFixture::service.make_io(&server));
+  session.start_receive(TestFixture::service.make_io(&session));
+
+  io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
+
+  EXPECT_EQ(nullptr, io->template get_if<socket_t::receive_from_t>());
+
+  {
+    auto result = io->template get_if<socket_t::receive_t>();
+    ASSERT_NE(nullptr, result);
+    EXPECT_STREQ("client_to_session", to_view(io, result).data());
+    EXPECT_EQ(&session, io->template context<socket_t>());
+  }
+
+#elif __sal_os_windows
+
+  io = TestFixture::service.make_io(&server);
+  io->resize(0);
+  server.start_receive_from(std::move(io), server.peek);
+
+  io = TestFixture::service.make_io(&session);
+  io->resize(0);
+  session.start_receive(std::move(io));
+
+  io = TestFixture::wait();
+  ASSERT_NE(nullptr, io);
+
+  {
+    std::error_code error;
+    auto result = io->template get_if<socket_t::receive_from_t>(error);
+    ASSERT_NE(nullptr, result);
+    EXPECT_EQ(0U, result->transferred);
+    EXPECT_EQ(std::errc::message_size, error);
+
+    char buf[1024];
+    memset(buf, '\0', sizeof(buf));
+    server.receive(buf);
+    EXPECT_STREQ("client_to_session", buf);
+  }
+
+#endif
+
+  ASSERT_EQ(nullptr, TestFixture::poll());
+}
 
 //}}}1
 

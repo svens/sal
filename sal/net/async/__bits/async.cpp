@@ -484,9 +484,11 @@ inline int make_queue () noexcept
 void register_handler (handler_t &handler, std::error_code &error)
   noexcept
 {
+  handler.await_events = EPOLLET | EPOLLONESHOT;
+
   struct ::epoll_event change;
-  change.events = handler.await_events = EPOLLET;
   change.data.ptr = &handler;
+  change.events = handler.await_events;
 
   auto result = ::epoll_ctl(
     handler.service->queue,
