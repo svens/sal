@@ -76,6 +76,21 @@ TYPED_TEST(net_async_socket_acceptor, start_accept) //{{{1
 }
 
 
+TYPED_TEST(net_async_socket_acceptor, start_accept_without_associate) //{{{1
+{
+  if (sal::is_debug_build)
+  {
+    auto x = TestFixture::endpoint;
+    x.port(x.port() + 1);
+    acceptor_t a{x};
+    EXPECT_THROW(
+      a.start_accept(TestFixture::service.make_io()),
+      std::logic_error
+    );
+  }
+}
+
+
 TYPED_TEST(net_async_socket_acceptor, start_accept_with_context) //{{{1
 {
   int socket_ctx = 1, io_ctx = 2;

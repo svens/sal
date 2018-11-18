@@ -134,6 +134,19 @@ TYPED_TEST(net_async_stream_socket, start_connect) //{{{1
 }
 
 
+TYPED_TEST(net_async_stream_socket, start_connect_without_associate) //{{{1
+{
+  if (sal::is_debug_build)
+  {
+    socket_t s;
+    EXPECT_THROW(
+      s.start_connect(TestFixture::service.make_io(), TestFixture::endpoint),
+      std::logic_error
+    );
+  }
+}
+
+
 TYPED_TEST(net_async_stream_socket, start_connect_non_blocking) //{{{1
 {
   TestFixture::socket.non_blocking(true);
@@ -359,6 +372,21 @@ TYPED_TEST(net_async_stream_socket, start_receive) //{{{1
   auto result = io->template get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name, to_view(io, result));
+}
+
+
+TYPED_TEST(net_async_stream_socket, start_receive_without_associate) //{{{1
+{
+  if (sal::is_debug_build)
+  {
+    socket_t s;
+    s.connect(TestFixture::endpoint);
+    TestFixture::test_socket = TestFixture::acceptor.accept();
+    EXPECT_THROW(
+      s.start_receive(TestFixture::service.make_io()),
+      std::logic_error
+    );
+  }
 }
 
 
@@ -681,6 +709,21 @@ TYPED_TEST(net_async_stream_socket, start_send) //{{{1
   auto result = io->template get_if<socket_t::send_t>();
   ASSERT_NE(nullptr, result);
   EXPECT_EQ(TestFixture::case_name.size(), result->transferred);
+}
+
+
+TYPED_TEST(net_async_stream_socket, start_send_without_associate) //{{{1
+{
+  if (sal::is_debug_build)
+  {
+    socket_t s;
+    s.connect(TestFixture::endpoint);
+    TestFixture::test_socket = TestFixture::acceptor.accept();
+    EXPECT_THROW(
+      s.start_send(TestFixture::service.make_io()),
+      std::logic_error
+    );
+  }
 }
 
 

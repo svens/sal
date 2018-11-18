@@ -556,10 +556,10 @@ public:
   /**
    * Asynchronously start accept().
    */
-  void start_accept (async::io_ptr &&io) noexcept
+  void start_accept (async::io_ptr &&io) noexcept(!is_debug_build)
   {
     auto result = io->prepare<accept_t>();
-    async_->start_accept(
+    sal_check_ptr(async_)->start_accept(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       family_,
       &result->accepted_socket_handle_

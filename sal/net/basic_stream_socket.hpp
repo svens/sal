@@ -194,10 +194,11 @@ public:
   /**
    * Asynchronously start connect() to \a endpoint using \a io.
    */
-  void start_connect (async::io_ptr &&io, const endpoint_t &endpoint) noexcept
+  void start_connect (async::io_ptr &&io, const endpoint_t &endpoint)
+    noexcept(!is_debug_build)
   {
     (void)io->prepare<connect_t>();
-    base_t::async_->start_connect(
+    sal_check_ptr(base_t::async_)->start_connect(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       endpoint.data(),
       endpoint.size()
@@ -222,11 +223,11 @@ public:
    * Asynchronously start receive() operation using \a io with \a flags.
    */
   void start_receive (async::io_ptr &&io, socket_base_t::message_flags_t flags)
-    noexcept
+    noexcept(!is_debug_build)
   {
     auto result = io->prepare<receive_t>();
     result->flags = flags;
-    base_t::async_->start_receive(
+    sal_check_ptr(base_t::async_)->start_receive(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       &result->transferred,
       &result->flags
@@ -237,7 +238,7 @@ public:
   /**
    * Asynchronously start receive() operation using \a io with default flags.
    */
-  void start_receive (async::io_ptr &&io) noexcept
+  void start_receive (async::io_ptr &&io) noexcept(!is_debug_build)
   {
     start_receive(std::move(io), {});
   }
@@ -257,10 +258,10 @@ public:
    * Asynchronously start send() operation using \a io with \a flags.
    */
   void start_send (async::io_ptr &&io, socket_base_t::message_flags_t flags)
-    noexcept
+    noexcept(!is_debug_build)
   {
     auto result = io->prepare<send_t>();
-    base_t::async_->start_send(
+    sal_check_ptr(base_t::async_)->start_send(
       reinterpret_cast<async::__bits::io_t *>(io.release()),
       &result->transferred,
       flags
@@ -271,7 +272,7 @@ public:
   /**
    * Asynchronously start send() operation using \a io with default flags.
    */
-  void start_send (async::io_ptr &&io) noexcept
+  void start_send (async::io_ptr &&io) noexcept(!is_debug_build)
   {
     start_send(std::move(io), {});
   }
