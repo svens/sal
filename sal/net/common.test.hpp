@@ -16,20 +16,15 @@ using address_types = ::testing::Types<
 struct address_names
 {
   template <typename T>
-  static std::string GetName (int i)
+  static std::string GetName (int)
   {
-    (void)i;
     if constexpr (std::is_same_v<T, sal::net::ip::address_v4_t>)
     {
-      return "ipv4";
+      return "v4";
     }
     else if constexpr (std::is_same_v<T, sal::net::ip::address_v6_t>)
     {
-      return "ipv6";
-    }
-    else
-    {
-      return std::to_string(i);
+      return "v6";
     }
   }
 };
@@ -44,21 +39,40 @@ using protocol_types = testing::Types<
 struct protocol_names
 {
   template <typename T>
-  static std::string GetName (int i)
+  static std::string GetName (int)
   {
-    (void)i;
     if constexpr (std::is_same_v<T, sal::net::ip::tcp_t>)
     {
-      return "tcp";
+      return "TCP";
     }
     else if constexpr (std::is_same_v<T, sal::net::ip::udp_t>)
     {
-      return "udp";
+      return "UDP";
     }
-    else
-    {
-      return std::to_string(i);
-    }
+  }
+};
+
+
+using tcp_v4_t = std::pair<sal::net::ip::tcp_t, sal::net::ip::address_v4_t>;
+using tcp_v6_t = std::pair<sal::net::ip::tcp_t, sal::net::ip::address_v6_t>;
+using udp_v4_t = std::pair<sal::net::ip::udp_t, sal::net::ip::address_v4_t>;
+using udp_v6_t = std::pair<sal::net::ip::udp_t, sal::net::ip::address_v6_t>;
+
+
+using protocol_and_address_types = testing::Types<
+  tcp_v4_t, tcp_v6_t, udp_v4_t, udp_v6_t
+>;
+
+
+struct protocol_and_address_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    return
+      protocol_names::GetName<typename T::first_type>(i) +
+      address_names::GetName<typename T::second_type>(i)
+    ;
   }
 };
 
@@ -73,9 +87,8 @@ using socket_types = ::testing::Types<
 struct socket_names
 {
   template <typename T>
-  static std::string GetName (int i)
+  static std::string GetName (int)
   {
-    (void)i;
     if constexpr (std::is_same_v<T, sal::net::ip::udp_t::socket_t>)
     {
       return "udp_socket";
@@ -87,10 +100,6 @@ struct socket_names
     else if constexpr (std::is_same_v<T, sal::net::ip::tcp_t::acceptor_t>)
     {
       return "tcp_acceptor";
-    }
-    else
-    {
-      return std::to_string(i);
     }
   }
 };

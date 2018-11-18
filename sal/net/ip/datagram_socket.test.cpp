@@ -34,6 +34,7 @@ INSTANTIATE_TEST_CASE_P(net_ip, datagram_socket,
     sal::net::ip::udp_t::v4,
     sal::net::ip::udp_t::v6
   ),
+  ::testing::PrintToStringParamName()
 );
 
 
