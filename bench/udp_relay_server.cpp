@@ -1,5 +1,6 @@
 #include <bench/bench.hpp>
 #include <sal/lockable.hpp>
+#include <sal/net/async/completion_queue.hpp>
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/udp.hpp>
 #include <sal/time.hpp>
@@ -36,18 +37,19 @@ struct io_stats_t
 
   struct atomic_io_t
   {
-    std::atomic<size_t> bytes{}, packets{};
+    std::atomic<size_t> bytes{}, packets{}, errors{};
   } sent{}, received{};
 
   struct io_t
   {
-    size_t bytes{}, packets{};
+    size_t bytes{}, packets{}, errors{};
 
     io_t () = default;
 
     io_t (const atomic_io_t &io)
       : bytes(io.bytes)
       , packets(io.packets)
+      , errors(io.errors)
     { }
   } last_sent{}, last_received{};
 
@@ -84,9 +86,11 @@ struct io_stats_t
   void print (std::ostream &stream, const io_t &current, const io_t &last)
   {
     stream
-      << (current.packets - last.packets) / print_interval.count()
+      << (current.packets - last.packets) / print_interval.count() << "pps"
       << " / "
       << bits_per_sec((current.bytes - last.bytes) / print_interval.count())
+      << " / "
+      << (current.errors - last.errors) / print_interval.count() << " error(s)"
     ;
   }
 
@@ -223,12 +227,12 @@ void relay_t::on_client_receive (sal::net::async::io_ptr &&io,
     );
     ++io_stats_.sessions;
 
-    // restart completed receive_from
-    client_.start_receive_from(std::move(io));
-
     // start new receive_from for each new session
     peer_.start_receive_from(service_.make_io());
   }
+
+  // restart completed receive_from
+  client_.start_receive_from(std::move(io));
 }
 
 
@@ -260,38 +264,58 @@ void relay_t::on_peer_receive (sal::net::async::io_ptr &&io,
 void relay_t::handle_completions (relay_t &relay) noexcept
 {
   auto &service = relay.service_;
+  sal::net::async::completion_queue_t queue(service);
+  std::error_code error;
 
-  for (;;)
+  for (auto io = queue.try_get();  /**/;  io = queue.try_get())
   {
-    if (service.wait())
+    if (io)
     {
-      while (auto io = service.try_get())
+      if (auto receive_from = io->get_if<socket_t::receive_from_t>(error))
       {
-        if (auto receive_from = io->get_if<socket_t::receive_from_t>())
+        auto &io_stats = relay.io_stats_.received;
+
+        if (!error)
         {
-          auto &io_stats = relay.io_stats_.received;
           ++io_stats.packets;
           io_stats.bytes += receive_from->transferred + udp_header_size;
-
-          if (io->socket_context<socket_t>() == &relay.peer_)
-          {
-            relay.on_peer_receive(std::move(io), receive_from);
-          }
-          else
-          {
-            relay.on_client_receive(std::move(io), receive_from);
-          }
         }
-        else if (auto send = io->get_if<socket_t::send_t>())
+        else
         {
-          auto &io_stats = relay.io_stats_.sent;
-          ++io_stats.packets;
-          io_stats.bytes += send->transferred + udp_header_size;
+          ++io_stats.errors;
+          error.clear();
+        }
 
-          io->reset();
-          relay.peer_.start_receive_from(std::move(io));
+        if (io->socket_context<socket_t>() == &relay.peer_)
+        {
+          relay.on_peer_receive(std::move(io), receive_from);
+        }
+        else
+        {
+          relay.on_client_receive(std::move(io), receive_from);
         }
       }
+      else if (auto send = io->get_if<socket_t::send_t>(error))
+      {
+        auto &io_stats = relay.io_stats_.sent;
+        if (!error)
+        {
+          ++io_stats.packets;
+          io_stats.bytes += send->transferred + udp_header_size;
+        }
+        else
+        {
+          ++io_stats.errors;
+          error.clear();
+        }
+
+        io->reset();
+        relay.peer_.start_receive_from(std::move(io));
+      }
+    }
+    else
+    {
+      queue.wait();
     }
   }
 }

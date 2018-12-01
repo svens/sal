@@ -64,6 +64,16 @@ template <typename Protocol> class basic_resolver_t;
 } // namespace ip
 
 
+namespace async
+{
+
+class completion_queue_t;
+class io_t;
+class service_t;
+
+} // namespace async
+
+
 } // namespace net
 
 

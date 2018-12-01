@@ -1,3 +1,4 @@
+#include <sal/net/async/completion_queue.hpp>
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/tcp.hpp>
 #include <sal/net/common.test.hpp>
@@ -35,6 +36,7 @@ struct net_async_stream_socket
   };
 
   sal::net::async::service_t service{};
+  sal::net::async::completion_queue_t queue{service};
   acceptor_t acceptor{endpoint};
   socket_t socket{{Address::loopback, 0}}, test_socket{};
 
@@ -61,10 +63,10 @@ struct net_async_stream_socket
 
   sal::net::async::io_ptr wait ()
   {
-    auto io = service.try_get();
-    if (!io && service.wait())
+    auto io = queue.try_get();
+    if (!io && queue.wait())
     {
-      io = service.try_get();
+      io = queue.try_get();
     }
     return io;
   }
@@ -72,10 +74,10 @@ struct net_async_stream_socket
 
   sal::net::async::io_ptr poll ()
   {
-    auto io = service.try_get();
-    if (!io && service.poll())
+    auto io = queue.try_get();
+    if (!io && queue.poll())
     {
-      io = service.try_get();
+      io = queue.try_get();
     }
     return io;
   }
@@ -508,7 +510,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_no_sender) //{{{1
 
   TestFixture::socket.start_receive(TestFixture::service.make_io());
   EXPECT_FALSE(TestFixture::poll());
-  EXPECT_FALSE(TestFixture::service.try_get());
+  EXPECT_FALSE(TestFixture::queue.try_get());
   TestFixture::socket.close();
 
   auto io = TestFixture::poll();

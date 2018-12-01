@@ -1,3 +1,4 @@
+#include <sal/net/async/completion_queue.hpp>
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/tcp.hpp>
 #include <sal/net/common.test.hpp>
@@ -27,6 +28,7 @@ struct net_async_socket_acceptor
   };
 
   sal::net::async::service_t service{};
+  sal::net::async::completion_queue_t queue{service};
   acceptor_t acceptor{endpoint};
 
 
@@ -39,10 +41,10 @@ struct net_async_socket_acceptor
 
   sal::net::async::io_ptr wait ()
   {
-    auto io = service.try_get();
-    if (!io && service.wait())
+    auto io = queue.try_get();
+    if (!io && queue.wait())
     {
-      io = service.try_get();
+      io = queue.try_get();
     }
     return io;
   }

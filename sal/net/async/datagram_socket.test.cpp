@@ -1,3 +1,4 @@
+#include <sal/net/async/completion_queue.hpp>
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/udp.hpp>
 #include <sal/net/common.test.hpp>
@@ -39,6 +40,7 @@ struct net_async_datagram_socket
   };
 
   sal::net::async::service_t service{};
+  sal::net::async::completion_queue_t queue{service};
   socket_t socket{protocol}, test_socket{protocol};
 
 
@@ -53,10 +55,10 @@ struct net_async_datagram_socket
 
   sal::net::async::io_ptr wait ()
   {
-    auto io = service.try_get();
-    if (!io && service.wait())
+    auto io = queue.try_get();
+    if (!io && queue.wait())
     {
-      io = service.try_get();
+      io = queue.try_get();
     }
     return io;
   }
@@ -64,10 +66,10 @@ struct net_async_datagram_socket
 
   sal::net::async::io_ptr poll ()
   {
-    auto io = service.try_get();
-    if (!io && service.poll())
+    auto io = queue.try_get();
+    if (!io && queue.poll())
     {
-      io = service.try_get();
+      io = queue.try_get();
     }
     return io;
   }
@@ -198,8 +200,8 @@ TYPED_TEST(net_async_datagram_socket, start_receive_from_canceled_on_close) //{{
 TYPED_TEST(net_async_datagram_socket, start_receive_from_no_sender) //{{{1
 {
   TestFixture::socket.start_receive_from(TestFixture::service.make_io());
-  EXPECT_FALSE(TestFixture::service.poll());
-  EXPECT_FALSE(TestFixture::service.try_get());
+  EXPECT_FALSE(TestFixture::queue.poll());
+  EXPECT_FALSE(TestFixture::queue.try_get());
   TestFixture::socket.close();
 
   auto io = TestFixture::wait();
@@ -515,8 +517,8 @@ TYPED_TEST(net_async_datagram_socket, start_receive_canceled_on_close) //{{{1
 TYPED_TEST(net_async_datagram_socket, start_receive_no_sender) //{{{1
 {
   TestFixture::socket.start_receive(TestFixture::service.make_io());
-  EXPECT_FALSE(TestFixture::service.poll());
-  EXPECT_FALSE(TestFixture::service.try_get());
+  EXPECT_FALSE(TestFixture::queue.poll());
+  EXPECT_FALSE(TestFixture::queue.try_get());
   TestFixture::socket.close();
 
   auto io = TestFixture::wait();

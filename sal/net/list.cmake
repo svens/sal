@@ -16,6 +16,7 @@ list(APPEND sal_sources
 
   sal/net/async/__bits/async.hpp
   sal/net/async/__bits/async.cpp
+  sal/net/async/completion_queue.hpp
   sal/net/async/io.hpp
   sal/net/async/service.hpp
 

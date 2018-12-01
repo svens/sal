@@ -44,7 +44,7 @@ inline void io_result_handle (io_t *io, int result) noexcept
   if (result == 0)
   {
     io->status.clear();
-    io->service.enqueue(io);
+    io->enqueue_completed();
     return;
   }
 
@@ -62,7 +62,7 @@ inline void io_result_handle (io_t *io, int result) noexcept
       break;
   }
 
-  io->service.enqueue(io);
+  io->enqueue_completed();
 }
 
 
@@ -184,7 +184,7 @@ service_t::~service_t () noexcept
 }
 
 
-bool service_t::wait (const std::chrono::milliseconds &timeout,
+bool completion_queue_t::wait (const std::chrono::milliseconds &timeout,
   std::error_code &error) noexcept
 {
   constexpr DWORD max_events = 256;
@@ -192,7 +192,7 @@ bool service_t::wait (const std::chrono::milliseconds &timeout,
   ULONG events_count;
 
   auto succeeded = ::GetQueuedCompletionStatusEx(
-    iocp,
+    service->iocp,
     events,
     max_events,
     &events_count,
@@ -206,7 +206,7 @@ bool service_t::wait (const std::chrono::milliseconds &timeout,
     {
       auto io = reinterpret_cast<io_t *>(event->lpOverlapped);
       (*io->on_finish)(io);
-      enqueue(io);
+      io->enqueue_completed();
     }
     return true;
   }
@@ -401,7 +401,7 @@ void handler_t::start_accept (io_t *io,
 
   if (io->status)
   {
-    service->enqueue(io);
+    io->enqueue_completed();
     return;
   }
 
@@ -557,8 +557,7 @@ inline bool await_write (io_t *io) noexcept
 }
 
 
-bool drain (handler_t &handler, handler_t::pending_t &pending, uint32_t events)
-  noexcept
+bool drain (handler_t::pending_t &pending, uint32_t events) noexcept
 {
   std::lock_guard lock(pending.mutex);
 
@@ -567,7 +566,7 @@ bool drain (handler_t &handler, handler_t::pending_t &pending, uint32_t events)
     if ((*io->on_finish)(io, 0, events))
     {
       (void)pending.list.try_pop();
-      handler.service->enqueue(io);
+      io->enqueue_completed();
     }
     else
     {
@@ -585,13 +584,13 @@ void drain (struct ::epoll_event &event) noexcept
   auto await_events = handler.await_events;
 
   if ((event.events & EPOLLIN)
-    && drain(handler, handler.pending_read, event.events))
+    && drain(handler.pending_read, event.events))
   {
     await_events &= ~EPOLLIN;
   }
 
   if ((event.events & EPOLLOUT)
-    && drain(handler, handler.pending_write, event.events))
+    && drain(handler.pending_write, event.events))
   {
     await_events &= ~EPOLLOUT;
   }
@@ -675,7 +674,8 @@ inline void register_handler (handler_t &, std::error_code &error) noexcept
 
 bool await_io (io_t *io, int16_t filter, uint16_t flags) noexcept
 {
-  if (io->status != std::errc::operation_would_block)
+  if (io->status != std::errc::operation_would_block
+    && io->status != std::errc::no_buffer_space)
   {
     return true;
   }
@@ -726,15 +726,13 @@ inline bool await_write (io_t *io) noexcept
 void drain (const struct ::kevent &event) noexcept
 {
   handler_t::pending_t *pending_io{};
-
-  auto &handler = *static_cast<handler_t *>(event.udata);
   if (event.filter == EVFILT_READ)
   {
-    pending_io = &handler.pending_read;
+    pending_io = &static_cast<handler_t *>(event.udata)->pending_read;
   }
-  else if (event.filter == EVFILT_WRITE)
+  else
   {
-    pending_io = &handler.pending_write;
+    pending_io = &static_cast<handler_t *>(event.udata)->pending_write;
   }
 
   std::lock_guard lock(pending_io->mutex);
@@ -744,7 +742,7 @@ void drain (const struct ::kevent &event) noexcept
     if ((*io->on_finish)(io, event.flags, event.fflags))
     {
       (void)pending_io->list.try_pop();
-      handler.service->enqueue(io);
+      io->enqueue_completed();
     }
     else
     {
@@ -796,16 +794,16 @@ service_t::~service_t () noexcept
 }
 
 
-bool service_t::wait (const std::chrono::milliseconds &timeout,
+bool completion_queue_t::wait (const std::chrono::milliseconds &timeout,
   std::error_code &error) noexcept
 {
-  constexpr size_t max_events = 256;
+  constexpr size_t max_events = 128;
 
 #if __sal_os_linux
 
   struct ::epoll_event events[max_events];
   auto events_count = ::epoll_wait(
-    queue,
+    service->queue,
     &events[0],
     max_events,
     timeout == timeout.max() ? -1 : timeout.count()
@@ -816,7 +814,7 @@ bool service_t::wait (const std::chrono::milliseconds &timeout,
   ::timespec ts, *timeout_p = to_timespec(&ts, timeout);
   struct ::kevent events[max_events];
   auto events_count = ::kevent(
-    queue,
+    service->queue,
     nullptr,
     0,
     &events[0],
@@ -854,13 +852,13 @@ handler_t::~handler_t () noexcept
 {
   socket.handle = socket.invalid;
 
-  auto cancel = [&](auto &pending)
+  auto cancel = [](auto &pending)
   {
     while (auto io = pending.list.try_pop())
     {
       io->status = std::make_error_code(std::errc::operation_canceled);
       io->owner = nullptr;
-      service->enqueue(static_cast<io_t *>(io));
+      io->enqueue_completed();
     }
   };
   cancel(pending_read);
@@ -876,7 +874,7 @@ inline void start (io_t *io, handler_t::pending_t &pending) noexcept
   std::lock_guard lock(pending.mutex);
   if (pending.list.empty() && (*io->on_finish)(io, 0, 0))
   {
-    io->service.enqueue(io);
+    io->enqueue_completed();
   }
   else
   {
@@ -1072,7 +1070,7 @@ void handler_t::start_connect (io_t *io,
 #endif //}}}1
 
 
-io_t *service_t::make_io ()
+io_t *service_t::make_io (io_t::completed_list_t *completed)
 {
   std::lock_guard lock(io_pool_mutex);
 
@@ -1092,8 +1090,12 @@ io_t *service_t::make_io ()
     io = free_list.try_pop();
   }
 
-  io->owner = nullptr;
-  return static_cast<io_t *>(io);
+  auto result = static_cast<io_t *>(io);
+  result->begin = result->data;
+  result->end = result->data + sizeof(result->data);
+  result->completed_list = completed;
+  result->owner = nullptr;
+  return result;
 }
 
 

@@ -1,6 +1,8 @@
 #include <bench/bench.hpp>
 #include <sal/buf_ptr.hpp>
 #include <sal/crypto/random.hpp>
+#include <sal/net/async/completion_queue.hpp>
+#include <sal/net/async/service.hpp>
 #include <sal/net/ip/udp.hpp>
 #include <sal/time.hpp>
 #include <atomic>
@@ -81,7 +83,7 @@ struct io_stats_t
   void print (std::ostream &stream, const io_t &current, const io_t &last)
   {
     stream
-      << (current.packets - last.packets) / print_interval.count()
+      << (current.packets - last.packets) / print_interval.count() << "pps"
       << " / "
       << bits_per_sec((current.bytes - last.bytes) / print_interval.count())
     ;
@@ -185,20 +187,22 @@ session_t::list_t session_t::allocate_many (
 void session_t::handle_completions (service_t &service, io_stats_t &io_stats)
   noexcept
 {
-  for (;;)
+  sal::net::async::completion_queue_t queue(service);
+  for (auto io = queue.try_get();  /**/;  io = queue.try_get())
   {
-    if (service.wait())
+    if (io)
     {
-      while (auto io = service.try_get())
+      if (auto receive = io->get_if<socket_t::receive_t>())
       {
-        if (auto receive = io->get_if<socket_t::receive_t>())
-        {
-          ++io_stats.received.packets;
-          io_stats.received.bytes += receive->transferred + udp_header_size;
-          auto &session = *sal_check_ptr(io->socket_context<session_t>());
-          session.client_.start_receive(std::move(io));
-        }
+        ++io_stats.received.packets;
+        io_stats.received.bytes += receive->transferred + udp_header_size;
+        auto &session = *sal_check_ptr(io->socket_context<session_t>());
+        session.client_.start_receive(std::move(io));
       }
+    }
+    else
+    {
+      queue.wait();
     }
   }
 }
@@ -333,7 +337,7 @@ int run (const option_set_t &options, const argument_map_t &arguments)
 
     if (bytes_to_send <= io_stats.sent.bytes)
     {
-      std::this_thread::sleep_for(10ms);
+      std::this_thread::sleep_for(4ms);
       continue;
     }
 
