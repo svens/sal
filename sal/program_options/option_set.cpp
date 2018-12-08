@@ -19,7 +19,7 @@ namespace program_options {
 
 namespace {
 
-size_t terminal_width ()
+inline auto terminal_width () noexcept
 {
 #if __sal_os_windows
 

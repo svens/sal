@@ -35,9 +35,8 @@ using message_flags_t = DWORD;
 
 struct winsock_t
 {
-  LPFN_CONNECTEX ConnectEx;
-  LPFN_ACCEPTEX AcceptEx;
-  LPFN_GETACCEPTEXSOCKADDRS GetAcceptExSockaddrs;
+  LPFN_CONNECTEX ConnectEx{};
+  LPFN_ACCEPTEX AcceptEx{};
 
   winsock_t () noexcept;
   ~winsock_t () noexcept;

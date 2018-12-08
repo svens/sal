@@ -85,7 +85,7 @@ uint8_t *base64::decode (
     return out;
   }
 
-  size_t pad = (last[-1] == '=') + (last[-2] == '=');
+  auto pad = (last[-1] == '=') + (last[-2] == '=');
   last = first + ((last - first - pad) / 4) * 4;
 
   uint8_t b0{}, b1{}, b2{}, b3{};
