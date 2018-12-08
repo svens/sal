@@ -1,10 +1,20 @@
 #pragma once
 
+#include <sal/net/async/io.hpp>
 #include <sal/net/internet.hpp>
 #include <sal/common.test.hpp>
+#include <string_view>
 
 
 namespace sal_test {
+
+
+template <typename Result>
+inline std::string_view to_view (sal::net::async::io_ptr &io,
+  const Result *result) noexcept
+{
+  return {reinterpret_cast<const char *>(io->data()), result->transferred};
+}
 
 
 using address_types = ::testing::Types<

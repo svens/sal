@@ -58,7 +58,7 @@ TYPED_TEST_CASE(net_async_socket_acceptor,
 
 TYPED_TEST(net_async_socket_acceptor, start_accept) //{{{1
 {
-  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::queue.make_io());
 
   socket_t a;
   a.connect(TestFixture::endpoint);
@@ -86,7 +86,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_without_associate) //{{{1
     x.port(x.port() + 1);
     acceptor_t a{x};
     EXPECT_THROW(
-      a.start_accept(TestFixture::service.make_io()),
+      a.start_accept(TestFixture::queue.make_io()),
       std::logic_error
     );
   }
@@ -126,7 +126,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_immediate_completion) //{{{1
   socket_t a;
   a.connect(TestFixture::endpoint);
 
-  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::queue.make_io());
 
   auto io = TestFixture::wait();
   ASSERT_NE(nullptr, io);
@@ -143,7 +143,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_immediate_completion) //{{{1
 
 TYPED_TEST(net_async_socket_acceptor, start_accept_result_multiple_times) //{{{1
 {
-  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::queue.make_io());
 
   socket_t a;
   a.connect(TestFixture::endpoint);
@@ -168,7 +168,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_result_multiple_times) //{{{1
 
 TYPED_TEST(net_async_socket_acceptor, start_accept_and_close) //{{{1
 {
-  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::queue.make_io());
   TestFixture::acceptor.close();
 
   auto io = TestFixture::wait();
@@ -188,7 +188,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_close_before_accept) //{{{1
   a.close();
   std::this_thread::yield();
 
-  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::queue.make_io());
 
   auto io = TestFixture::wait();
   ASSERT_NE(nullptr, io);
@@ -209,7 +209,7 @@ TYPED_TEST(net_async_socket_acceptor, start_accept_close_before_accept) //{{{1
 
 TYPED_TEST(net_async_socket_acceptor, start_accept_close_after_accept) //{{{1
 {
-  TestFixture::acceptor.start_accept(TestFixture::service.make_io());
+  TestFixture::acceptor.start_accept(TestFixture::queue.make_io());
 
   socket_t a;
   a.connect(TestFixture::endpoint);

@@ -49,6 +49,7 @@ list(APPEND sal_unittests_sources
   sal/net/socket.test.cpp
 
   sal/net/async/io.test.cpp
+  sal/net/async/completion_queue.test.cpp
   sal/net/async/service.test.cpp
   sal/net/async/socket.test.cpp
   sal/net/async/datagram_socket.test.cpp

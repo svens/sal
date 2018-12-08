@@ -9,6 +9,8 @@ namespace {
 
 
 using namespace std::chrono_literals;
+using sal_test::to_view;
+
 using socket_t = sal::net::ip::tcp_t::socket_t;
 using acceptor_t = sal::net::ip::tcp_t::acceptor_t;
 
@@ -117,7 +119,7 @@ TYPED_TEST_CASE(net_async_stream_socket,
 TYPED_TEST(net_async_stream_socket, start_connect) //{{{1
 {
   TestFixture::socket.start_connect(
-    TestFixture::service.make_io(),
+    TestFixture::queue.make_io(),
     TestFixture::endpoint
   );
 
@@ -142,7 +144,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_without_associate) //{{{1
   {
     socket_t s;
     EXPECT_THROW(
-      s.start_connect(TestFixture::service.make_io(), TestFixture::endpoint),
+      s.start_connect(TestFixture::queue.make_io(), TestFixture::endpoint),
       std::logic_error
     );
   }
@@ -153,7 +155,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking) //{{{1
 {
   TestFixture::socket.non_blocking(true);
   TestFixture::socket.start_connect(
-    TestFixture::service.make_io(),
+    TestFixture::queue.make_io(),
     TestFixture::endpoint
   );
 
@@ -204,7 +206,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_refused) //{{{1
   echo_endpoint.port(7);
 
   TestFixture::socket.start_connect(
-    TestFixture::service.make_io(),
+    TestFixture::queue.make_io(),
     echo_endpoint
   );
 
@@ -225,7 +227,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking_refused) //{{{1
 
   TestFixture::socket.non_blocking(true);
   TestFixture::socket.start_connect(
-    TestFixture::service.make_io(),
+    TestFixture::queue.make_io(),
     echo_endpoint
   );
 
@@ -248,7 +250,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_already_connected) //{{{1
   echo_endpoint.port(7);
 
   TestFixture::socket.start_connect(
-    TestFixture::service.make_io(),
+    TestFixture::queue.make_io(),
     echo_endpoint
   );
 
@@ -272,7 +274,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking_already_connected
 
   TestFixture::socket.non_blocking(true);
   TestFixture::socket.start_connect(
-    TestFixture::service.make_io(),
+    TestFixture::queue.make_io(),
     echo_endpoint
   );
 
@@ -290,7 +292,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_address_family_not_supported) 
 {
   // connect from loopback to any
   TestFixture::socket.start_connect(
-    TestFixture::service.make_io(),
+    TestFixture::queue.make_io(),
     TestFixture::not_supported_family_endpoint
   );
 
@@ -322,7 +324,7 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking_address_family_no
 
   // connect from loopback to any
   TestFixture::socket.start_connect(
-    TestFixture::service.make_io(),
+    TestFixture::queue.make_io(),
     TestFixture::not_supported_family_endpoint
   );
 
@@ -351,19 +353,11 @@ TYPED_TEST(net_async_stream_socket, start_connect_non_blocking_address_family_no
 //}}}1
 
 
-template <typename Result>
-inline std::string_view to_view (sal::net::async::io_ptr &io,
-  const Result *result) noexcept
-{
-  return {reinterpret_cast<const char *>(io->data()), result->transferred};
-}
-
-
 TYPED_TEST(net_async_stream_socket, start_receive) //{{{1
 {
   TestFixture::connect();
 
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
   TestFixture::send(TestFixture::case_name);
 
   auto io = TestFixture::wait();
@@ -385,7 +379,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_without_associate) //{{{1
     s.connect(TestFixture::endpoint);
     TestFixture::test_socket = TestFixture::acceptor.accept();
     EXPECT_THROW(
-      s.start_receive(TestFixture::service.make_io()),
+      s.start_receive(TestFixture::queue.make_io()),
       std::logic_error
     );
   }
@@ -397,7 +391,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_send) //{{{1
   TestFixture::connect();
 
   TestFixture::send(TestFixture::case_name);
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
 
   auto io = TestFixture::wait();
   ASSERT_NE(nullptr, io);
@@ -436,8 +430,8 @@ TYPED_TEST(net_async_stream_socket, start_receive_two_sends) //{{{1
 {
   TestFixture::connect();
 
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
   TestFixture::send(TestFixture::case_name);
   TestFixture::send(TestFixture::case_name, true);
 
@@ -473,7 +467,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_two_sends) //{{{1
 
   TestFixture::send(TestFixture::case_name);
   TestFixture::send(TestFixture::case_name, true);
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
 
   auto io = TestFixture::wait();
   ASSERT_NE(nullptr, io);
@@ -491,7 +485,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_canceled_on_close) //{{{1
 {
   TestFixture::connect();
 
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
   TestFixture::socket.close();
 
   auto io = TestFixture::wait();
@@ -508,7 +502,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_no_sender) //{{{1
 {
   TestFixture::connect();
 
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
   EXPECT_FALSE(TestFixture::poll());
   EXPECT_FALSE(TestFixture::queue.try_get());
   TestFixture::socket.close();
@@ -527,7 +521,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_peek) //{{{1
 {
   TestFixture::connect();
 
-  TestFixture::socket.start_receive(TestFixture::service.make_io(), socket_t::peek);
+  TestFixture::socket.start_receive(TestFixture::queue.make_io(), socket_t::peek);
   TestFixture::send(TestFixture::case_name);
 
   // regardless of peek, completion should be removed from queue
@@ -535,7 +529,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_peek) //{{{1
   EXPECT_FALSE(TestFixture::poll());
 
   // but data must be still there
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
   auto io = TestFixture::wait();
   ASSERT_NE(nullptr, io);
   auto result = io->template get_if<socket_t::receive_t>();
@@ -549,14 +543,14 @@ TYPED_TEST(net_async_stream_socket, start_receive_peek_after_send) //{{{1
   TestFixture::connect();
 
   TestFixture::send(TestFixture::case_name);
-  TestFixture::socket.start_receive(TestFixture::service.make_io(), socket_t::peek);
+  TestFixture::socket.start_receive(TestFixture::queue.make_io(), socket_t::peek);
 
   // regardless of peek, completion should be removed from queue
   EXPECT_TRUE(TestFixture::wait());
   EXPECT_FALSE(TestFixture::poll());
 
   // but data must be still there
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
   auto io = TestFixture::wait();
   ASSERT_NE(nullptr, io);
   auto result = io->template get_if<socket_t::receive_t>();
@@ -569,11 +563,11 @@ TYPED_TEST(net_async_stream_socket, start_receive_less_than_send) //{{{1
 {
   TestFixture::connect();
 
-  auto io = TestFixture::service.make_io();
+  auto io = TestFixture::queue.make_io();
   io->resize(TestFixture::case_name.size() / 2);
   TestFixture::socket.start_receive(std::move(io));
 
-  io = TestFixture::service.make_io();
+  io = TestFixture::queue.make_io();
   io->resize(TestFixture::case_name.size() - TestFixture::case_name.size() / 2);
   TestFixture::socket.start_receive(std::move(io));
 
@@ -597,11 +591,11 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_send_less_than_send) //{
   TestFixture::connect();
   TestFixture::send(TestFixture::case_name);
 
-  auto io = TestFixture::service.make_io();
+  auto io = TestFixture::queue.make_io();
   io->resize(TestFixture::case_name.size() / 2);
   TestFixture::socket.start_receive(std::move(io));
 
-  io = TestFixture::service.make_io();
+  io = TestFixture::queue.make_io();
   io->resize(TestFixture::case_name.size() - TestFixture::case_name.size() / 2);
   TestFixture::socket.start_receive(std::move(io));
 
@@ -621,7 +615,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_send_less_than_send) //{
 TYPED_TEST(net_async_stream_socket, start_receive_from_disconnected) //{{{1
 {
   TestFixture::connect();
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
   TestFixture::disconnect();
 
   auto io = TestFixture::wait();
@@ -639,7 +633,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_from_disconnected) //{{{
 {
   TestFixture::connect();
   TestFixture::disconnect();
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
 
   auto io = TestFixture::wait();
   ASSERT_NE(nullptr, io);
@@ -656,7 +650,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_before_shutdown) //{{{1
 {
   TestFixture::connect();
 
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
   TestFixture::socket.shutdown(socket_t::shutdown_receive);
 
   TestFixture::send(TestFixture::case_name);
@@ -681,7 +675,7 @@ TYPED_TEST(net_async_stream_socket, start_receive_after_shutdown) //{{{1
   TestFixture::connect();
 
   TestFixture::socket.shutdown(socket_t::shutdown_receive);
-  TestFixture::socket.start_receive(TestFixture::service.make_io());
+  TestFixture::socket.start_receive(TestFixture::queue.make_io());
 
   auto io = TestFixture::wait();
   ASSERT_NE(nullptr, io);
@@ -700,7 +694,7 @@ TYPED_TEST(net_async_stream_socket, start_send) //{{{1
 {
   TestFixture::connect();
 
-  auto io = TestFixture::service.make_io();
+  auto io = TestFixture::queue.make_io();
   TestFixture::fill(io, TestFixture::case_name);
   TestFixture::socket.start_send(std::move(io));
   EXPECT_EQ(TestFixture::case_name, TestFixture::receive());
@@ -722,7 +716,7 @@ TYPED_TEST(net_async_stream_socket, start_send_without_associate) //{{{1
     s.connect(TestFixture::endpoint);
     TestFixture::test_socket = TestFixture::acceptor.accept();
     EXPECT_THROW(
-      s.start_send(TestFixture::service.make_io()),
+      s.start_send(TestFixture::queue.make_io()),
       std::logic_error
     );
   }
@@ -757,7 +751,7 @@ TYPED_TEST(net_async_stream_socket, start_send_with_context) //{{{1
 
 TYPED_TEST(net_async_stream_socket, start_send_not_connected) //{{{1
 {
-  auto io = TestFixture::service.make_io();
+  auto io = TestFixture::queue.make_io();
   TestFixture::fill(io, TestFixture::case_name);
   TestFixture::socket.start_send(std::move(io));
 
@@ -779,7 +773,7 @@ TYPED_TEST(net_async_stream_socket, start_send_before_shutdown) //{{{1
 {
   TestFixture::connect();
 
-  auto io = TestFixture::service.make_io();
+  auto io = TestFixture::queue.make_io();
   TestFixture::fill(io, TestFixture::case_name);
   TestFixture::socket.start_send(std::move(io));
   TestFixture::socket.shutdown(socket_t::shutdown_send);
@@ -798,7 +792,7 @@ TYPED_TEST(net_async_stream_socket, start_send_after_shutdown) //{{{1
   TestFixture::connect();
   TestFixture::socket.shutdown(socket_t::shutdown_send);
 
-  auto io = TestFixture::service.make_io();
+  auto io = TestFixture::queue.make_io();
   TestFixture::fill(io, TestFixture::case_name);
   TestFixture::socket.start_send(std::move(io));
 
