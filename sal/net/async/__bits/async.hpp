@@ -89,13 +89,11 @@ struct io_base_t //{{{1
 
   union
   {
-    intrusive_mpsc_queue_hook_t<io_base_t> free{};
-    intrusive_mpsc_queue_hook_t<io_base_t> completed;
+    intrusive_mpsc_queue_hook_t<io_base_t> completed_io{};
     intrusive_queue_hook_t<io_base_t> pending_io;
   };
-  using free_list_t = intrusive_mpsc_queue_t<&io_base_t::free>;
-  using completed_list_t = intrusive_mpsc_queue_t<&io_base_t::completed>;
-  using pending_io_list_t = intrusive_queue_t<&io_base_t::pending_io>;
+  using completed_list_t = intrusive_mpsc_queue_t<&io_base_t::completed_io>;
+  using pending_list_t = intrusive_queue_t<&io_base_t::pending_io>;
 
   service_t &service;
   completed_list_t *completed_list;
@@ -148,10 +146,8 @@ struct service_t //{{{1
   std::deque<std::unique_ptr<std::byte[]>> io_pool{};
   size_t io_pool_size{};
 
-  io_t::free_list_t free_list{};
-
   sal::spinlock_t completed_list_mutex{};
-  io_t::completed_list_t completed_list{};
+  io_t::completed_list_t completed_list{}, free_list{};
 
 
   service_t ();
@@ -254,7 +250,7 @@ struct handler_t //{{{1
   struct pending_t
   {
     std::mutex mutex{};
-    io_t::pending_io_list_t list{};
+    io_t::pending_list_t list{};
   } pending_read{}, pending_write{};
 
 #endif

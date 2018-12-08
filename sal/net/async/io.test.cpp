@@ -39,6 +39,19 @@ TEST_F(net_async_io, move_ctor)
 }
 
 
+TEST_F(net_async_io, skip_completion_notification)
+{
+  auto io = service.make_io();
+  EXPECT_FALSE(io->skip_completion_notification());
+
+  io->skip_completion_notification(true);
+  EXPECT_TRUE(io->skip_completion_notification());
+
+  io->skip_completion_notification(false);
+  EXPECT_FALSE(io->skip_completion_notification());
+}
+
+
 TEST_F(net_async_io, context)
 {
   auto io = service.make_io();

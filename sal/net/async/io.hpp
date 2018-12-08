@@ -79,6 +79,21 @@ public:
   };
 
 
+  void skip_completion_notification (bool skip) noexcept
+  {
+    impl_.completed_list = skip
+      ? &impl_.service.free_list
+      : &impl_.service.completed_list
+    ;
+  }
+
+
+  bool skip_completion_notification () const noexcept
+  {
+    return impl_.completed_list == &impl_.service.free_list;
+  }
+
+
   /**
    * Set begin() == head() and end() == tail()
    */

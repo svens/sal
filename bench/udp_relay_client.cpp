@@ -140,6 +140,7 @@ public:
   {
     auto io = service_.make_io(&peer_);
     io->resize(size_);
+    io->skip_completion_notification(true);
     *reinterpret_cast<uint64_t *>(io->data()) = id_;
     peer_.start_send(std::move(io));
     stats.sent.bytes += size_ + udp_header_size;
