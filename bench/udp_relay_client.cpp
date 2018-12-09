@@ -117,7 +117,7 @@ public:
   using list_t = std::vector<session_t>;
 
 
-  session_t (size_t size, service_t &service) noexcept
+  session_t (size_t size, service_t &service)
     : service_(service)
     , size_(size)
   { }

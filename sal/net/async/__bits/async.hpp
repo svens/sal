@@ -4,7 +4,6 @@
 #include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/intrusive_queue.hpp>
 #include <sal/net/__bits/socket.hpp>
-#include <sal/spinlock.hpp>
 #include <deque>
 #include <memory>
 #include <mutex>
@@ -99,13 +98,19 @@ struct io_base_t //{{{1
   completed_list_t *completed_list;
 
 
-  io_base_t (service_t &service) noexcept;
+  io_base_t (service_t &service, completed_list_t *completed_list) noexcept
+    : service(service)
+    , completed_list(completed_list)
+  { }
 
 
-  void enqueue_completed () noexcept
+  void completed () noexcept
   {
     completed_list->push(this);
   }
+
+
+  void completed (completed_list_t &list) noexcept;
 
 
   io_base_t () = delete;
@@ -125,8 +130,8 @@ struct io_t //{{{1
 
   std::byte data[data_size];
 
-  io_t (service_t &service) noexcept
-    : io_base_t(service)
+  io_t (service_t &service, completed_list_t *completed_list) noexcept
+    : io_base_t(service, completed_list)
   { }
 };
 
@@ -146,7 +151,7 @@ struct service_t //{{{1
   std::deque<std::unique_ptr<std::byte[]>> io_pool{};
   size_t io_pool_size{};
 
-  sal::spinlock_t completed_list_mutex{};
+  std::mutex completed_list_mutex{};
   io_t::completed_list_t completed_list{}, free_list{};
 
 
@@ -193,8 +198,7 @@ struct completion_queue_t //{{{1
   {
     while (auto io = completed_list.try_pop())
     {
-      io->completed_list = &service->completed_list;
-      io->enqueue_completed();
+      io->completed(service->completed_list);
     }
   }
 
@@ -324,13 +328,17 @@ inline handler_ptr make_handler (service_ptr service,
 }
 
 
+inline void io_base_t::completed (completed_list_t &list) noexcept
+{
+  if (completed_list != &service.free_list)
+  {
+    completed_list = &list;
+  }
+  completed();
+}
+
+
 //}}}1
-
-
-inline io_base_t::io_base_t (service_t &service) noexcept
-  : service(service)
-  , completed_list(&service.completed_list)
-{ }
 
 
 } // namespace net::async::__bits

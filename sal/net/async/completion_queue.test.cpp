@@ -2,6 +2,7 @@
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/udp.hpp>
 #include <sal/net/common.test.hpp>
+#include <thread>
 
 
 namespace {
@@ -160,7 +161,33 @@ TEST_F(net_async_completion_queue, dtor_moves_completed_io_to_service) //{{{1
 }
 
 
-TEST_F(net_async_completion_queue, skip_completion_queue) //{{{1
+TEST_F(net_async_completion_queue, send_skip_completion_queue_immediate) //{{{1
+{
+  a.start_receive(queue.make_io());
+  EXPECT_FALSE(queue.poll());
+  EXPECT_EQ(nullptr, queue.try_get());
+
+  auto io = queue.make_io();
+  io->skip_completion_notification(true);
+  EXPECT_TRUE(io->skip_completion_notification());
+
+  io->resize(case_name.size());
+  std::memcpy(io->data(), case_name.data(), case_name.size());
+  b.start_send(std::move(io));
+
+  EXPECT_TRUE(queue.wait());
+  io = queue.try_get();
+  ASSERT_NE(nullptr, io);
+
+  auto event = io->get_if<socket_t::receive_t>();
+  ASSERT_NE(nullptr, event);
+  EXPECT_EQ(case_name, to_view(io, event));
+
+  EXPECT_EQ(nullptr, queue.try_get());
+}
+
+
+TEST_F(net_async_completion_queue, send_skip_completion_queue_delayed) //{{{1
 {
   auto io = queue.make_io();
   io->skip_completion_notification(true);
@@ -182,6 +209,37 @@ TEST_F(net_async_completion_queue, skip_completion_queue) //{{{1
   auto event = io->get_if<socket_t::receive_t>();
   ASSERT_NE(nullptr, event);
   EXPECT_EQ(case_name, to_view(io, event));
+}
+
+
+TEST_F(net_async_completion_queue, receive_skip_completion_queue_immediate) //{{{1
+{
+  send(b, case_name);
+
+  auto io = queue.make_io();
+  io->skip_completion_notification(true);
+  EXPECT_TRUE(io->skip_completion_notification());
+  a.start_receive(std::move(io));
+
+  EXPECT_FALSE(queue.poll());
+
+  io = queue.try_get();
+  EXPECT_EQ(nullptr, io);
+}
+
+
+TEST_F(net_async_completion_queue, receive_skip_completion_queue_delayed) //{{{1
+{
+  auto io = queue.make_io();
+  io->skip_completion_notification(true);
+  EXPECT_TRUE(io->skip_completion_notification());
+  a.start_receive(std::move(io));
+  EXPECT_FALSE(queue.poll());
+
+  send(b, case_name);
+
+  EXPECT_TRUE(queue.poll());
+  EXPECT_EQ(nullptr, queue.try_get());
 }
 
 

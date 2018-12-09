@@ -44,7 +44,7 @@ inline void io_result_handle (io_t *io, int result) noexcept
   if (result == 0)
   {
     io->status.clear();
-    io->enqueue_completed();
+    io->completed();
     return;
   }
 
@@ -62,7 +62,7 @@ inline void io_result_handle (io_t *io, int result) noexcept
       break;
   }
 
-  io->enqueue_completed();
+  io->completed();
 }
 
 
@@ -206,7 +206,7 @@ bool completion_queue_t::wait (const std::chrono::milliseconds &timeout,
     {
       auto io = reinterpret_cast<io_t *>(event->lpOverlapped);
       (*io->on_finish)(io);
-      io->enqueue_completed();
+      io->completed(completed_list);
     }
     return true;
   }
@@ -401,7 +401,7 @@ void handler_t::start_accept (io_t *io,
 
   if (io->status)
   {
-    io->enqueue_completed();
+    io->completed();
     return;
   }
 
@@ -484,7 +484,7 @@ inline int make_queue () noexcept
 void register_handler (handler_t &handler, std::error_code &error)
   noexcept
 {
-  handler.await_events = EPOLLET | EPOLLONESHOT;
+  handler.await_events = EPOLLET;
 
   struct ::epoll_event change;
   change.data.ptr = &handler;
@@ -548,7 +548,8 @@ inline bool await_read (io_t *io) noexcept
 
 inline bool await_write (io_t *io) noexcept
 {
-  if (io->status == std::errc::operation_would_block)
+  if (io->status == std::errc::operation_would_block
+    || io->status == std::errc::no_buffer_space)
   {
     auto &handler = *io->owner;
     return await_io(handler, handler.await_events | EPOLLOUT, io->status);
@@ -557,7 +558,9 @@ inline bool await_write (io_t *io) noexcept
 }
 
 
-bool drain (handler_t::pending_t &pending, uint32_t events) noexcept
+bool drain (handler_t::pending_t &pending,
+  uint32_t events,
+  io_t::completed_list_t &queue) noexcept
 {
   std::lock_guard lock(pending.mutex);
 
@@ -566,7 +569,7 @@ bool drain (handler_t::pending_t &pending, uint32_t events) noexcept
     if ((*io->on_finish)(io, 0, events))
     {
       (void)pending.list.try_pop();
-      io->enqueue_completed();
+      io->completed(queue);
     }
     else
     {
@@ -578,19 +581,20 @@ bool drain (handler_t::pending_t &pending, uint32_t events) noexcept
 }
 
 
-void drain (struct ::epoll_event &event) noexcept
+void drain (struct ::epoll_event &event, io_t::completed_list_t &queue)
+  noexcept
 {
   auto &handler = *static_cast<handler_t *>(event.data.ptr);
   auto await_events = handler.await_events;
 
   if ((event.events & EPOLLIN)
-    && drain(handler.pending_read, event.events))
+    && drain(handler.pending_read, event.events, queue))
   {
     await_events &= ~EPOLLIN;
   }
 
   if ((event.events & EPOLLOUT)
-    && drain(handler.pending_write, event.events))
+    && drain(handler.pending_write, event.events, queue))
   {
     await_events &= ~EPOLLOUT;
   }
@@ -723,7 +727,8 @@ inline bool await_write (io_t *io) noexcept
 }
 
 
-void drain (const struct ::kevent &event) noexcept
+void drain (const struct ::kevent &event, io_t::completed_list_t &queue)
+  noexcept
 {
   handler_t::pending_t *pending_io{};
   if (event.filter == EVFILT_READ)
@@ -742,7 +747,7 @@ void drain (const struct ::kevent &event) noexcept
     if ((*io->on_finish)(io, event.flags, event.fflags))
     {
       (void)pending_io->list.try_pop();
-      io->enqueue_completed();
+      io->completed(queue);
     }
     else
     {
@@ -828,7 +833,7 @@ bool completion_queue_t::wait (const std::chrono::milliseconds &timeout,
   {
     for (auto event = &events[0];  event != &events[0] + events_count;  ++event)
     {
-      drain(*event);
+      drain(*event, completed_list);
     }
     return events_count > 0;
   }
@@ -858,7 +863,7 @@ handler_t::~handler_t () noexcept
     {
       io->status = std::make_error_code(std::errc::operation_canceled);
       io->owner = nullptr;
-      io->enqueue_completed();
+      io->completed();
     }
   };
   cancel(pending_read);
@@ -874,7 +879,7 @@ inline void start (io_t *io, handler_t::pending_t &pending) noexcept
   std::lock_guard lock(pending.mutex);
   if (pending.list.empty() && (*io->on_finish)(io, 0, 0))
   {
-    io->enqueue_completed();
+    io->completed();
   }
   else
   {
@@ -1083,7 +1088,7 @@ io_t *service_t::make_io (io_t::completed_list_t *completed)
 
     while (batch_size--)
     {
-      free_list.push(new(it) io_t(*this));
+      free_list.push(new(it) io_t(*this, &completed_list));
       it += sizeof(io_t);
     }
 

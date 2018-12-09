@@ -167,7 +167,8 @@ private:
 
   void on_client_receive (
     sal::net::async::io_ptr &&io,
-    const socket_t::receive_from_t *receive_from
+    const socket_t::receive_from_t *receive_from,
+    sal::net::async::completion_queue_t &queue
   );
 
   void on_peer_receive (
@@ -211,7 +212,8 @@ void relay_t::start ()
 
 
 void relay_t::on_client_receive (sal::net::async::io_ptr &&io,
-  const socket_t::receive_from_t *receive_from)
+  const socket_t::receive_from_t *receive_from,
+  sal::net::async::completion_queue_t &queue)
 {
   if (receive_from->transferred == sizeof(session_map::key_type))
   {
@@ -228,7 +230,7 @@ void relay_t::on_client_receive (sal::net::async::io_ptr &&io,
     ++io_stats_.sessions;
 
     // start new receive_from for each new session
-    peer_.start_receive_from(service_.make_io());
+    peer_.start_receive_from(queue.make_io());
   }
 
   // restart completed receive_from
@@ -292,7 +294,7 @@ void relay_t::handle_completions (relay_t &relay) noexcept
         }
         else
         {
-          relay.on_client_receive(std::move(io), receive_from);
+          relay.on_client_receive(std::move(io), receive_from, queue);
         }
       }
       else if (auto send = io->get_if<socket_t::send_t>(error))
