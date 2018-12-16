@@ -4,13 +4,9 @@
 #include <sal/intrusive_mpsc_queue.hpp>
 #include <sal/intrusive_queue.hpp>
 #include <sal/net/__bits/socket.hpp>
-#include <sal/spinlock.hpp>
-#include <algorithm>
-#include <array>
 #include <deque>
 #include <memory>
 #include <mutex>
-#include <vector>
 
 
 __sal_begin
@@ -22,151 +18,125 @@ namespace net::async::__bits {
 using net::__bits::socket_t;
 using net::__bits::message_flags_t;
 
+struct io_t;
+struct service_t;
+struct completion_queue_t;
 struct handler_t;
-
-
-enum class op_t
-{
-  receive_from,
-  receive,
-  send_to,
-  send,
-  accept,
-  connect,
-};
 
 
 struct io_base_t //{{{1
 {
 #if __sal_os_windows
   OVERLAPPED overlapped{};
-  using transferred_size_t = DWORD;
   using endpoint_size_t = INT;
+  bool (*on_finish)(io_t *) noexcept = nullptr;
 #elif __sal_os_linux || __sal_os_macos
-  using transferred_size_t = size_t;
   using endpoint_size_t = size_t;
+  bool (*on_finish)(io_t *, uint16_t, uint32_t) noexcept = nullptr;
 #endif
-
-  op_t op{};
 
   union
   {
     struct
     {
-      transferred_size_t transferred;
       void *remote_endpoint;
       endpoint_size_t remote_endpoint_capacity;
-      message_flags_t *flags;
     } receive_from;
 
     struct
     {
-      transferred_size_t transferred;
-      message_flags_t *flags;
     } receive;
 
     struct
     {
-      transferred_size_t transferred;
-#if __sal_os_linux || __sal_os_macos
       message_flags_t flags;
       sockaddr_storage remote_endpoint;
       size_t remote_endpoint_size;
-#endif
     } send_to;
 
     struct
     {
-#if __sal_os_linux || __sal_os_macos
       message_flags_t flags;
-#endif
-      transferred_size_t transferred;
     } send;
 
     struct
     {
       socket_t::handle_t *socket_handle;
-      size_t unused;
+      size_t unused_transferred;
+      message_flags_t unused_flags;
     } accept;
 
     struct
     {
-      size_t unused;
+      size_t unused_transferred;
+      message_flags_t unused_flags;
     } connect;
   } pending{};
 
-  handler_t *current_owner{};
+  handler_t *owner{};
   uintptr_t context_type{};
   void *context{};
 
-  uint8_t result[160];
+  uint64_t op{};
+  std::byte result[160];
   size_t *transferred{};
+  message_flags_t *flags{};
   std::error_code status{};
 
-  uint8_t *begin{}, *end{};
+  std::byte *begin{};
+  const std::byte *end{};
 
   union
   {
-    intrusive_mpsc_queue_hook_t<io_base_t> free{};
-    intrusive_mpsc_queue_hook_t<io_base_t> completed;
+    intrusive_mpsc_queue_hook_t<io_base_t> completed_io{};
     intrusive_queue_hook_t<io_base_t> pending_io;
   };
-  using free_list_t = intrusive_mpsc_queue_t<&io_base_t::free>;
-  using completed_list_t = intrusive_mpsc_queue_t<&io_base_t::completed>;
-  using pending_io_list_t = intrusive_queue_t<&io_base_t::pending_io>;
+  using completed_list_t = intrusive_mpsc_queue_t<&io_base_t::completed_io>;
+  using pending_list_t = intrusive_queue_t<&io_base_t::pending_io>;
 
-  free_list_t &free_list;
+  service_t &service;
+  completed_list_t *completed_list;
 
 
-  io_base_t (free_list_t &free_list) noexcept
-    : free_list(free_list)
+  io_base_t (service_t &service, completed_list_t *completed_list) noexcept
+    : service(service)
+    , completed_list(completed_list)
   { }
 
 
+  void completed () noexcept
+  {
+    completed_list->push(this);
+  }
+
+
+  void completed (completed_list_t &list) noexcept;
+
+
+  io_base_t () = delete;
   io_base_t (const io_base_t &) = delete;
+  io_base_t &operator= (const io_base_t &) = delete;
+  io_base_t (io_base_t &&) = delete;
+  io_base_t &operator= (io_base_t &&) = delete;
 };
 
 
 struct io_t //{{{1
   : public io_base_t
 {
+  static constexpr size_t mtu_size = 1500;
   static constexpr size_t data_size = 2048 - sizeof(io_base_t);
-  uint8_t data[data_size];
+  static_assert(data_size >= mtu_size);
 
+  std::byte data[data_size];
 
-  io_t (free_list_t &free_list) noexcept
-    : io_base_t(free_list)
+  io_t (service_t &service, completed_list_t *completed_list) noexcept
+    : io_base_t(service, completed_list)
   { }
-
-
-  // should be deleted but keeping here for easier service_t::alloc_io new
-  // batch allocation and free_list insertion
-  io_t (const io_t &io) noexcept
-    : io_base_t(io.free_list)
-  {
-    free_list.push(this);
-  }
-
-
-  void reset () noexcept
-  {
-    begin = data;
-    end = data + sizeof(data);
-  }
 };
+
 static_assert(sizeof(io_t) == 2048);
-static_assert(io_t::data_size > 1500, "io_t::data_size less than MTU size");
 static_assert(std::is_trivially_destructible_v<io_t>);
-
-
-struct io_deleter_t //{{{1
-{
-  void operator() (io_t *io) noexcept
-  {
-    io->free_list.push(io);
-  }
-};
-using io_ptr = std::unique_ptr<io_t, io_deleter_t>;
 
 
 struct service_t //{{{1
@@ -178,77 +148,88 @@ struct service_t //{{{1
 #endif
 
   std::mutex io_pool_mutex{};
-  std::deque<std::vector<io_t>> io_pool{};
-  io_t::free_list_t free_list{};
+  std::deque<std::unique_ptr<std::byte[]>> io_pool{};
   size_t io_pool_size{};
 
-  sal::spinlock_t completed_mutex{};
-  io_t::completed_list_t completed_list{};
+  std::mutex completed_list_mutex{};
+  io_t::completed_list_t completed_list{}, free_list{};
 
 
   service_t ();
   ~service_t () noexcept;
 
 
-  io_t *alloc_io ()
+  io_t *make_io (io_t::completed_list_t *completed_list);
+
+
+  io_t *make_io ()
   {
-    std::lock_guard lock(io_pool_mutex);
-    auto io = free_list.try_pop();
-    if (!io)
-    {
-      auto batch_size = 16 * (1ULL << io_pool.size());
-      io_pool.emplace_back(batch_size, free_list);
-      io_pool_size += batch_size;
-      io = free_list.try_pop();
-    }
-    return static_cast<io_t *>(io);
+    return make_io(&completed_list);
   }
 
 
-  io_t *make_io (void *context, uintptr_t context_type)
+  io_t *try_get () noexcept
   {
-    auto io = alloc_io();
-    io->current_owner = nullptr;
-    io->context_type = context_type;
-    io->context = context;
-    io->reset();
-    return io;
-  }
-
-
-  void enqueue (io_t *io) noexcept
-  {
-    completed_list.push(io);
-  }
-
-
-  io_t *dequeue () noexcept
-  {
-    std::lock_guard lock(completed_mutex);
+    std::lock_guard lock(completed_list_mutex);
     return static_cast<io_t *>(completed_list.try_pop());
   }
 
 
-  bool wait_for_more (const std::chrono::milliseconds &timeout,
+  service_t (const service_t &) = delete;
+  service_t &operator= (const service_t &) = delete;
+  service_t (service_t &&) = delete;
+  service_t &operator= (service_t &&) = delete;
+};
+using service_ptr = std::shared_ptr<service_t>;
+
+
+struct completion_queue_t //{{{1
+{
+  service_ptr service;
+  io_t::completed_list_t completed_list{};
+
+
+  completion_queue_t (service_ptr service) noexcept
+    : service(service)
+  { }
+
+
+  ~completion_queue_t () noexcept
+  {
+    while (auto io = completed_list.try_pop())
+    {
+      io->completed(service->completed_list);
+    }
+  }
+
+
+  io_t *make_io ()
+  {
+    return service->make_io(&completed_list);
+  }
+
+
+  io_t *try_get () noexcept
+  {
+    if (auto io = static_cast<io_t *>(completed_list.try_pop()))
+    {
+      return io;
+    }
+    return service->try_get();
+  }
+
+
+  bool wait (const std::chrono::milliseconds &timeout,
     std::error_code &error
   ) noexcept;
 
 
-  io_t *poll (const std::chrono::milliseconds &timeout, std::error_code &error)
-    noexcept
-  {
-    do
-    {
-      if (auto io = dequeue())
-      {
-        return io;
-      }
-    } while (wait_for_more(timeout, error));
-
-    return {};
-  }
+  completion_queue_t () = delete;
+  completion_queue_t (const completion_queue_t &) = delete;
+  completion_queue_t &operator= (const completion_queue_t &) = delete;
+  completion_queue_t (completion_queue_t &&) = delete;
+  completion_queue_t &operator= (completion_queue_t &&) = delete;
 };
-using service_ptr = std::shared_ptr<service_t>;
 
 
 struct handler_t //{{{1
@@ -263,9 +244,6 @@ struct handler_t //{{{1
   handler_t (service_ptr service, socket_t &socket, std::error_code &error) noexcept;
   ~handler_t () noexcept;
 
-  handler_t (const handler_t &) = delete;
-  handler_t &operator= (const handler_t &) = delete;
-
 
 #if __sal_os_linux || __sal_os_macos
 
@@ -276,29 +254,8 @@ struct handler_t //{{{1
   struct pending_t
   {
     std::mutex mutex{};
-    io_t::pending_io_list_t list{};
+    io_t::pending_list_t list{};
   } pending_read{}, pending_write{};
-
-
-  void start (io_t *io, pending_t &pending) noexcept
-  {
-    std::lock_guard lock(pending.mutex);
-    if (pending.list.empty() && try_finish(io, 0, 0, lock))
-    {
-      service->enqueue(io);
-    }
-    else
-    {
-      pending.list.push(io);
-    }
-  }
-
-
-  bool try_finish (io_t *io,
-    uint16_t flags,
-    uint32_t fflags,
-    const std::lock_guard<std::mutex> &pending_list_lock
-  ) noexcept;
 
 #endif
 
@@ -341,6 +298,13 @@ struct handler_t //{{{1
     const void *remote_endpoint,
     size_t remote_endpoint_size
   ) noexcept;
+
+
+  handler_t () = delete;
+  handler_t (const handler_t &) = delete;
+  handler_t &operator= (const handler_t &) = delete;
+  handler_t (handler_t &&) = delete;
+  handler_t &operator= (handler_t &&) = delete;
 };
 using handler_ptr = std::unique_ptr<handler_t>;
 
@@ -361,6 +325,16 @@ inline handler_ptr make_handler (service_ptr service,
     handler.reset();
   }
   return handler;
+}
+
+
+inline void io_base_t::completed (completed_list_t &list) noexcept
+{
+  if (completed_list != &service.free_list)
+  {
+    completed_list = &list;
+  }
+  completed();
 }
 
 

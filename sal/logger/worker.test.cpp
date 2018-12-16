@@ -13,12 +13,7 @@ using namespace sal::logger;
 template <typename Worker>
 using logger_worker = sal_test::with_type<Worker>;
 
-using worker_types = testing::Types<
-  sal::logger::worker_t,
-  sal::logger::async_worker_t
->;
-
-TYPED_TEST_CASE(logger_worker, worker_types, );
+TYPED_TEST_CASE(logger_worker, sal_test::worker_types, sal_test::worker_names);
 
 
 TYPED_TEST(logger_worker, default_channel_name)

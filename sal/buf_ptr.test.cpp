@@ -89,13 +89,33 @@ auto &string (const sal::const_buf_ptr &) //{{{1
 template <typename BufferType>
 using buf_ptr = sal_test::with_type<BufferType>;
 
-
 using buf_ptr_types = testing::Types<
   sal::buf_ptr,
   sal::const_buf_ptr
 >;
 
-TYPED_TEST_CASE(buf_ptr, buf_ptr_types, );
+struct buf_ptr_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    (void)i;
+    if constexpr (std::is_same_v<T, sal::buf_ptr>)
+    {
+      return "mutable";
+    }
+    else if constexpr (std::is_same_v<T, sal::const_buf_ptr>)
+    {
+      return "const";
+    }
+    else
+    {
+      return std::to_string(i);
+    }
+  }
+};
+
+TYPED_TEST_CASE(buf_ptr, buf_ptr_types, buf_ptr_names);
 
 
 TYPED_TEST(buf_ptr, ctor) //{{{1

@@ -389,8 +389,23 @@ TEST_F(memory_writer, inserter_c_str_overflow)
 
 template <typename T>
 using inserter = sal_test::with_type<T>;
+
 using char_types = testing::Types<char, signed char, unsigned char>;
-TYPED_TEST_CASE(inserter, char_types, );
+
+struct char_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    (void)i;
+    if constexpr (std::is_same_v<T, char>) return "char";
+    else if constexpr (std::is_same_v<T, signed char>) return "signed_char";
+    else if constexpr (std::is_same_v<T, unsigned char>) return "unsigned_char";
+    else return std::to_string(i);
+  }
+};
+
+TYPED_TEST_CASE(inserter, char_types, char_names);
 
 
 TYPED_TEST(inserter, character)

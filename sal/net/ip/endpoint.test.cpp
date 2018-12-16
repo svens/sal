@@ -1,6 +1,6 @@
 #include <sal/net/ip/tcp.hpp>
 #include <sal/net/ip/udp.hpp>
-#include <sal/common.test.hpp>
+#include <sal/net/common.test.hpp>
 
 
 namespace {
@@ -18,11 +18,10 @@ struct net_ip_endpoint
   using endpoint_t = typename Protocol::endpoint_t;
 };
 
-using protocol_types = testing::Types<
-  sal::net::ip::tcp_t,
-  sal::net::ip::udp_t
->;
-TYPED_TEST_CASE(net_ip_endpoint, protocol_types, );
+TYPED_TEST_CASE(net_ip_endpoint,
+  sal_test::protocol_types,
+  sal_test::protocol_names
+);
 
 
 TYPED_TEST(net_ip_endpoint, ctor)

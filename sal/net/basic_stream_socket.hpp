@@ -185,36 +185,32 @@ public:
   //
 
   /**
-   * connect_async() result type
+   * start_connect() result type
    */
   struct connect_t
-  {
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::connect;
-  };
+  { };
 
 
   /**
    * Asynchronously start connect() to \a endpoint using \a io.
    */
-  void connect_async (async::io_t &&io, const endpoint_t &endpoint) noexcept
+  void start_connect (async::io_ptr &&io, const endpoint_t &endpoint)
+    noexcept(!is_debug_build)
   {
-    connect_t *result;
-    auto op = io.to_async_op(&result);
-    base_t::async_->start_connect(op, endpoint.data(), endpoint.size());
+    (void)io->prepare<connect_t>();
+    sal_check_ptr(base_t::async_)->start_connect(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
+      endpoint.data(),
+      endpoint.size()
+    );
   }
 
 
   /**
-   * receive_async() result type
+   * start_receive() result type
    */
   struct receive_t
   {
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::receive;
-
     /// Number of bytes transferred
     size_t transferred;
 
@@ -226,34 +222,33 @@ public:
   /**
    * Asynchronously start receive() operation using \a io with \a flags.
    */
-  void receive_async (async::io_t &&io, socket_base_t::message_flags_t flags)
-    noexcept
+  void start_receive (async::io_ptr &&io, socket_base_t::message_flags_t flags)
+    noexcept(!is_debug_build)
   {
-    receive_t *result;
-    auto op = io.to_async_op(&result);
+    auto result = io->prepare<receive_t>();
     result->flags = flags;
-    base_t::async_->start_receive(op, &result->transferred, &result->flags);
+    sal_check_ptr(base_t::async_)->start_receive(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
+      &result->transferred,
+      &result->flags
+    );
   }
 
 
   /**
    * Asynchronously start receive() operation using \a io with default flags.
    */
-  void receive_async (async::io_t &&io) noexcept
+  void start_receive (async::io_ptr &&io) noexcept(!is_debug_build)
   {
-    receive_async(std::move(io), {});
+    start_receive(std::move(io), {});
   }
 
 
   /**
-   * send_async() result type
+   * start_send() result type
    */
   struct send_t
   {
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::send;
-
     /// Number of bytes transferred
     size_t transferred;
   };
@@ -262,21 +257,24 @@ public:
   /**
    * Asynchronously start send() operation using \a io with \a flags.
    */
-  void send_async (async::io_t &&io, socket_base_t::message_flags_t flags)
-    noexcept
+  void start_send (async::io_ptr &&io, socket_base_t::message_flags_t flags)
+    noexcept(!is_debug_build)
   {
-    send_t *result;
-    auto op = io.to_async_op(&result);
-    base_t::async_->start_send(op, &result->transferred, flags);
+    auto result = io->prepare<send_t>();
+    sal_check_ptr(base_t::async_)->start_send(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
+      &result->transferred,
+      flags
+    );
   }
 
 
   /**
    * Asynchronously start send() operation using \a io with default flags.
    */
-  void send_async (async::io_t &&io) noexcept
+  void start_send (async::io_ptr &&io) noexcept(!is_debug_build)
   {
-    send_async(std::move(io), {});
+    start_send(std::move(io), {});
   }
 };
 

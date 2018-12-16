@@ -57,4 +57,32 @@ struct sink_t final
 };
 
 
+using worker_types = testing::Types<
+  sal::logger::worker_t,
+  sal::logger::async_worker_t
+>;
+
+
+struct worker_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    (void)i;
+    if constexpr (std::is_same_v<T, sal::logger::worker_t>)
+    {
+      return "worker";
+    }
+    else if constexpr (std::is_same_v<T, sal::logger::async_worker_t>)
+    {
+      return "async_worker";
+    }
+    else
+    {
+      return std::to_string(i);
+    }
+  }
+};
+
+
 } // namespace sal_test

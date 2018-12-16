@@ -86,7 +86,32 @@ using int_types = testing::Types<
   uint64_t
 >;
 
-TYPED_TEST_CASE(byte_order, int_types, );
+struct int_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    (void)i;
+    if constexpr (std::is_same_v<T, uint16_t>)
+    {
+      return "uint16_t";
+    }
+    else if constexpr (std::is_same_v<T, uint32_t>)
+    {
+      return "uint32_t";
+    }
+    else if constexpr (std::is_same_v<T, uint64_t>)
+    {
+      return "uint64_t";
+    }
+    else
+    {
+      return std::to_string(i);
+    }
+  }
+};
+
+TYPED_TEST_CASE(byte_order, int_types, int_names);
 
 
 TYPED_TEST(byte_order, native_to_network)

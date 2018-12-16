@@ -1,6 +1,6 @@
 #include <sal/net/async/service.hpp>
 #include <sal/net/internet.hpp>
-#include <sal/common.test.hpp>
+#include <sal/net/common.test.hpp>
 
 
 namespace {
@@ -13,13 +13,10 @@ struct net_async_socket
   sal::net::async::service_t service{};
 };
 
-using socket_types = ::testing::Types<
-  sal::net::ip::udp_t::socket_t,
-  sal::net::ip::tcp_t::socket_t,
-  sal::net::ip::tcp_t::acceptor_t
->;
-
-TYPED_TEST_CASE(net_async_socket, socket_types, );
+TYPED_TEST_CASE(net_async_socket,
+  sal_test::socket_types,
+  sal_test::socket_names
+);
 
 
 TYPED_TEST(net_async_socket, associate)

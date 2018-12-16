@@ -21,7 +21,7 @@ struct async_worker_t::impl_t
   {
     union
     {
-      intrusive_mpsc_queue_hook_t<event_ctl_t> free_hook;
+      intrusive_mpsc_queue_hook_t<event_ctl_t> free_hook{};
       intrusive_mpsc_queue_hook_t<event_ctl_t> write_hook;
     };
 

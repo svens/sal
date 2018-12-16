@@ -1,12 +1,56 @@
 #pragma once
 
 #include <sal/common.test.hpp>
+#include <sal/crypto/hash.hpp>
 #include <sal/encode.hpp>
 #include <string>
 #include <vector>
 
 
 namespace sal_test {
+
+
+using digest_types = ::testing::Types<
+  sal::crypto::md5,
+  sal::crypto::sha1,
+  sal::crypto::sha256,
+  sal::crypto::sha384,
+  sal::crypto::sha512
+>;
+
+
+struct digest_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    (void)i;
+    if constexpr (std::is_same_v<T, sal::crypto::md5>)
+    {
+      return "md5";
+    }
+    else if constexpr (std::is_same_v<T, sal::crypto::sha1>)
+    {
+      return "sha1";
+    }
+    else if constexpr (std::is_same_v<T, sal::crypto::sha256>)
+    {
+      return "sha256";
+    }
+    else if constexpr (std::is_same_v<T, sal::crypto::sha384>)
+    {
+      return "sha384";
+    }
+    else if constexpr (std::is_same_v<T, sal::crypto::sha512>)
+    {
+      return "sha512";
+    }
+    else
+    {
+      return std::to_string(i);
+    }
+  }
+};
 
 
 namespace cert {

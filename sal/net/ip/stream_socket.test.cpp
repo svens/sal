@@ -39,6 +39,7 @@ INSTANTIATE_TEST_CASE_P(net_ip, stream_socket,
     sal::net::ip::tcp_t::v4,
     sal::net::ip::tcp_t::v6
   ),
+  ::testing::PrintToStringParamName()
 );
 
 

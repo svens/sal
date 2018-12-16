@@ -47,7 +47,7 @@ struct channel_factory_t
 
 #elif __sal_os_windows //{{{1
 
-  ::CredHandle credentials;
+  ::CredHandle credentials{};
 
 #endif //}}}1
 
@@ -89,7 +89,7 @@ struct channel_t
 
 #elif __sal_os_windows //{{{1
 
-  ::CtxtHandle handle, *handle_p{};
+  ::CtxtHandle handle{}, *handle_p{};
   ULONG context_request{}, context_flags{};
   size_t header_size{}, trailer_size{}, max_message_size = 8192;
 

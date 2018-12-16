@@ -159,12 +159,7 @@ struct logger_file_sink
 
 };
 
-using worker_types = testing::Types<
-  sal::logger::worker_t,
-  sal::logger::async_worker_t
->;
-
-TYPED_TEST_CASE(logger_file_sink, worker_types, );
+TYPED_TEST_CASE(logger_file_sink, sal_test::worker_types, sal_test::worker_names);
 
 
 TYPED_TEST(logger_file_sink, log)
@@ -303,7 +298,7 @@ TYPED_TEST(logger_file_sink, max_size)
   // (don't want to use public API with 1MB precision)
 
   auto channel = this->make_channel(
-    sal::logger::__bits::file_max_size(1024)
+    sal::logger::__bits::file_max_size(4096)
   );
   for (auto i = 0;  i < 100;  ++i)
   {

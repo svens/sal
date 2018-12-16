@@ -213,6 +213,33 @@ inline auto reuse_address (bool *value) noexcept
 }
 
 
+#if SO_REUSEPORT
+
+
+/**
+ * Set whether to allow duplicate bindings by multiple processes if they all
+ * set this options before bind(2).
+ */
+inline auto reuse_port (bool value) noexcept
+  -> __bits::socket_option_setter_t<SOL_SOCKET, SO_REUSEPORT, bool>
+{
+  return value;
+}
+
+
+/**
+ * Query whether duplicate bindings are allowed for socket.
+ */
+inline auto reuse_port (bool *value) noexcept
+  -> __bits::socket_option_getter_t<SOL_SOCKET, SO_REUSEPORT, bool>
+{
+  return value;
+}
+
+
+#endif // SO_REUSEPORT
+
+
 /**
  * Set the size of receive buffer associated with socket.
  */

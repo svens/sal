@@ -8,12 +8,10 @@
   #if !defined(__apple_build_version__)
     #define availability(...) /**/
   #endif
-  #include <CoreFoundation/CFNumber.h>
-  #include <CoreFoundation/CFURL.h>
-  #include <Security/SecCertificateOIDs.h>
-  #include <Security/SecIdentity.h>
-  #include <Security/SecImportExport.h>
-  #include <Security/SecItem.h>
+  #include <CoreFoundation/CoreFoundation.h>
+  #include <Security/Security.h>
+  #include <dlfcn.h>
+  #include <mutex>
 #elif __sal_os_linux //{{{1
   #include <openssl/asn1.h>
   #include <openssl/err.h>
@@ -630,6 +628,28 @@ std::vector<std::pair<certificate_t::alt_name, std::string>> to_alt_names (
 }
 
 
+//
+// With MacOS SDK 10.14, SecCertificateCopyPublicKey was deprecated in favor
+// of SecCertificateCopyKey. Use whichever is available
+//
+
+
+::SecKeyRef (*_SecCertificateCopyKey)(::SecCertificateRef) = nullptr;
+::OSStatus (*_SecCertificateCopyPublicKey)(::SecCertificateRef, SecKeyRef *) = nullptr;
+
+void init_cert_lib ()
+{
+  _SecCertificateCopyKey = (decltype(_SecCertificateCopyKey))dlsym(
+    RTLD_DEFAULT,
+    "SecCertificateCopyKey"
+  );
+  _SecCertificateCopyPublicKey = (decltype(_SecCertificateCopyPublicKey ))dlsym(
+    RTLD_DEFAULT,
+    "SecCertificateCopyPublicKey"
+  );
+}
+
+
 } // namespace
 
 
@@ -670,23 +690,28 @@ public_key_t certificate_t::public_key (std::error_code &error) const noexcept
 {
   if (impl_.ref)
   {
-    #if __MAC_OS_X_VERSION_MIN_REQUIRED < 101400
-      // TODO: remove once Travis-CI has SDK 10.14 as default
+    static std::once_flag once;
+    std::call_once(once, &init_cert_lib);
+
+    if (_SecCertificateCopyKey)
+    {
+      if (auto key = (*_SecCertificateCopyKey)(impl_.ref))
+      {
+        error.clear();
+        return {key};
+      }
+    }
+    else if (_SecCertificateCopyPublicKey)
+    {
       __bits::public_key_t key;
-      auto status = ::SecCertificateCopyPublicKey(impl_.ref, &key.ref);
+      auto status = (*_SecCertificateCopyPublicKey)(impl_.ref, &key.ref);
       if (status == errSecSuccess)
       {
         return std::move(key);
       }
       error.assign(status, category());
       return {};
-    #else
-      if (auto key = ::SecCertificateCopyKey(impl_.ref))
-      {
-        error.clear();
-        return {key};
-      }
-    #endif
+    }
   }
   error = std::make_error_code(std::errc::bad_address);
   return {};

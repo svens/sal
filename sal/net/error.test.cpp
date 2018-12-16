@@ -7,6 +7,14 @@ namespace {
 
 using resolver_error = sal_test::with_value<sal::net::ip::resolver_errc>;
 
+INSTANTIATE_TEST_CASE_P(net, resolver_error,
+  ::testing::Values(
+    sal::net::ip::resolver_errc::host_not_found,
+    sal::net::ip::resolver_errc::host_not_found_try_again,
+    sal::net::ip::resolver_errc::service_not_found
+  ),
+);
+
 
 TEST_P(resolver_error, make_error_code)
 {
@@ -34,16 +42,14 @@ TEST_F(resolver_error, make_error_code_invalid)
 }
 
 
-INSTANTIATE_TEST_CASE_P(net, resolver_error,
+using socket_error = sal_test::with_value<sal::net::socket_errc>;
+
+INSTANTIATE_TEST_CASE_P(net, socket_error,
   ::testing::Values(
-    sal::net::ip::resolver_errc::host_not_found,
-    sal::net::ip::resolver_errc::host_not_found_try_again,
-    sal::net::ip::resolver_errc::service_not_found
+    sal::net::socket_errc::already_open,
+    sal::net::socket_errc::already_associated
   ),
 );
-
-
-using socket_error = sal_test::with_value<sal::net::socket_errc>;
 
 
 TEST_P(socket_error, make_error_code)
@@ -70,14 +76,6 @@ TEST_F(socket_error, make_error_code_invalid)
   EXPECT_FALSE(error.message().empty());
   EXPECT_STREQ("socket", error.category().name());
 }
-
-
-INSTANTIATE_TEST_CASE_P(net, socket_error,
-  ::testing::Values(
-    sal::net::socket_errc::already_open,
-    sal::net::socket_errc::already_associated
-  ),
-);
 
 
 } // namespace

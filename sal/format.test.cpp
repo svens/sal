@@ -20,7 +20,6 @@ struct format
   format (const format &) = delete;
   format &operator= (const format &) = delete;
 };
-constexpr size_t format::size;
 
 
 TEST_F(format, bool_true)
@@ -144,7 +143,28 @@ using number_types = testing::Types<
   float, double, long double
 >;
 
-TYPED_TEST_CASE(format_number, number_types, );
+struct number_names
+{
+  template <typename T>
+  static std::string GetName (int i)
+  {
+    (void)i;
+    if constexpr (std::is_same_v<T, short>) return "short";
+    else if constexpr (std::is_same_v<T, unsigned short>) return "unsigned_short";
+    else if constexpr (std::is_same_v<T, int>) return "int";
+    else if constexpr (std::is_same_v<T, unsigned int>) return "unsigned_int";
+    else if constexpr (std::is_same_v<T, long>) return "long";
+    else if constexpr (std::is_same_v<T, unsigned long>) return "unsigned_long";
+    else if constexpr (std::is_same_v<T, long long>) return "long_long";
+    else if constexpr (std::is_same_v<T, unsigned long long>) return "unsigned_long_long";
+    else if constexpr (std::is_same_v<T, float>) return "float";
+    else if constexpr (std::is_same_v<T, double>) return "double";
+    else if constexpr (std::is_same_v<T, long double>) return "long_double";
+    else return std::to_string(i);
+  }
+};
+
+TYPED_TEST_CASE(format_number, number_types, number_names);
 
 
 TYPED_TEST(format_number, value_min)
@@ -270,7 +290,7 @@ using int_types = testing::Types<
   short, unsigned short
 >;
 
-TYPED_TEST_CASE(format_int_base, int_types, );
+TYPED_TEST_CASE(format_int_base, int_types, number_names);
 
 
 template <typename T, typename Manip>
@@ -686,7 +706,7 @@ struct format_float
 
 using float_types = testing::Types<float, double, long double>;
 
-TYPED_TEST_CASE(format_float, float_types, );
+TYPED_TEST_CASE(format_float, float_types, number_names);
 
 
 TYPED_TEST(format_float, nan_minus)

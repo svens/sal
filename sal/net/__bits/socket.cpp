@@ -79,7 +79,6 @@ void init_winsock (std::error_code &init_result, winsock_t &fn) noexcept
     auto s = ::socket(AF_INET, SOCK_STREAM, 0);
     load(&fn.ConnectEx, WSAID_CONNECTEX, s, init_result);
     load(&fn.AcceptEx, WSAID_ACCEPTEX, s, init_result);
-    load(&fn.GetAcceptExSockaddrs, WSAID_GETACCEPTEXSOCKADDRS, s, init_result);
     (void)::closesocket(s);
   }
 }

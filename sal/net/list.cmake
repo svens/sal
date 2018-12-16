@@ -16,6 +16,7 @@ list(APPEND sal_sources
 
   sal/net/async/__bits/async.hpp
   sal/net/async/__bits/async.cpp
+  sal/net/async/completion_queue.hpp
   sal/net/async/io.hpp
   sal/net/async/service.hpp
 
@@ -42,11 +43,13 @@ list(APPEND sal_sources
 
 # unittests
 list(APPEND sal_unittests_sources
+  sal/net/common.test.hpp
   sal/net/init.test.cpp
   sal/net/error.test.cpp
   sal/net/socket.test.cpp
 
   sal/net/async/io.test.cpp
+  sal/net/async/completion_queue.test.cpp
   sal/net/async/service.test.cpp
   sal/net/async/socket.test.cpp
   sal/net/async/datagram_socket.test.cpp

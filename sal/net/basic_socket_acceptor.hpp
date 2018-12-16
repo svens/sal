@@ -516,15 +516,11 @@ public:
 
 
   /**
-   * accept_async() result type
+   * start_accept() result type
    */
   struct accept_t
   {
   public:
-
-    /// I/O type
-    /// \internal
-    static constexpr async::io_t::op_t op = async::io_t::op_t::accept;
 
     /**
      * Return accepted socket.
@@ -560,11 +556,14 @@ public:
   /**
    * Asynchronously start accept().
    */
-  void accept_async (async::io_t &&io) noexcept
+  void start_accept (async::io_ptr &&io) noexcept(!is_debug_build)
   {
-    accept_t *result;
-    auto op = io.to_async_op(&result);
-    async_->start_accept(op, family_, &result->accepted_socket_handle_);
+    auto result = io->prepare<accept_t>();
+    sal_check_ptr(async_)->start_accept(
+      reinterpret_cast<async::__bits::io_t *>(io.release()),
+      family_,
+      &result->accepted_socket_handle_
+    );
   }
 
 

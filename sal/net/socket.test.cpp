@@ -1,57 +1,54 @@
 #include <sal/net/basic_socket.hpp>
 #include <sal/net/ip/tcp.hpp>
 #include <sal/net/ip/udp.hpp>
-#include <sal/common.test.hpp>
+#include <sal/net/common.test.hpp>
 
 
 namespace {
 
 
-template <typename Protocol>
+template <typename ProtocolAndAddress>
 struct net_socket
-  : public sal_test::with_type<Protocol>
-{};
-
-using protocol_types = testing::Types<
-  sal::net::ip::tcp_t,
-  sal::net::ip::udp_t
->;
-TYPED_TEST_CASE(net_socket, protocol_types, );
-
-
-template <typename Protocol,
-  typename Socket=sal::net::basic_socket_t<Protocol>
->
-struct socket_t
-  : public Socket
+  : public sal_test::with_type<ProtocolAndAddress>
 {
-  socket_t () = default;
+  using protocol_t = typename ProtocolAndAddress::first_type;
+  using address_t = typename ProtocolAndAddress::second_type;
+  using socket_t = typename protocol_t::socket_t;
+  using endpoint_t = typename protocol_t::endpoint_t;
 
-  socket_t (const Protocol &protocol)
-    : Socket(protocol)
-  {}
+  const protocol_t protocol =
+    std::is_same_v<address_t, sal::net::ip::address_v4_t>
+      ? protocol_t::v4
+      : protocol_t::v6
+  ;
 
-  socket_t (const typename Protocol::endpoint_t &endpoint)
-    : Socket(endpoint)
-  {}
-
-  socket_t (sal::net::socket_base_t::handle_t handle)
-    : Socket(handle)
-  {}
+  static constexpr sal::net::socket_base_t::handle_t handle =
+    sal::net::socket_base_t::invalid - 1;
 };
+
+TYPED_TEST_CASE(net_socket,
+  sal_test::protocol_and_address_types,
+  sal_test::protocol_and_address_names
+);
 
 
 TYPED_TEST(net_socket, ctor)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   EXPECT_FALSE(socket.is_open());
 }
 
 
-template <typename Protocol>
-void ctor_move (const Protocol &protocol)
+TYPED_TEST(net_socket, ctor_with_protocol)
 {
-  socket_t<Protocol> a(protocol);
+  typename TestFixture::socket_t a(TestFixture::protocol);
+  EXPECT_TRUE(a.is_open());
+}
+
+
+TYPED_TEST(net_socket, ctor_move)
+{
+  typename TestFixture::socket_t a(TestFixture::protocol);
   EXPECT_TRUE(a.is_open());
   auto b{std::move(a)};
   EXPECT_TRUE(b.is_open());
@@ -59,21 +56,9 @@ void ctor_move (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, ctor_move_v4)
-{
-  ctor_move(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, ctor_move_v6)
-{
-  ctor_move(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, ctor_move_no_handle)
 {
-  socket_t<TypeParam> a;
+  typename TestFixture::socket_t a;
   EXPECT_FALSE(a.is_open());
   auto b{std::move(a)};
   EXPECT_FALSE(b.is_open());
@@ -81,49 +66,17 @@ TYPED_TEST(net_socket, ctor_move_no_handle)
 }
 
 
-TYPED_TEST(net_socket, ctor_protocol_v4)
+TYPED_TEST(net_socket, ctor_with_handle)
 {
-  socket_t<TypeParam> socket(TypeParam::v4);
-  EXPECT_TRUE(socket.is_open());
+  typename TestFixture::socket_t socket(TestFixture::handle);
+  EXPECT_EQ(TestFixture::handle, socket.native_handle());
 }
 
 
-TYPED_TEST(net_socket, ctor_protocol_v6)
+TYPED_TEST(net_socket, ctor_with_endpoint)
 {
-  socket_t<TypeParam> socket(TypeParam::v6);
-  EXPECT_TRUE(socket.is_open());
-}
-
-
-template <typename Protocol>
-void ctor_protocol_and_handle (const Protocol &)
-{
-  auto handle = sal::net::socket_base_t::invalid - 1;
-  socket_t<Protocol> socket(handle);
-  EXPECT_EQ(handle, socket.native_handle());
-
-  std::error_code ignored;
-  socket.close(ignored);
-}
-
-
-TYPED_TEST(net_socket, ctor_protocol_and_handle_v4)
-{
-  ctor_protocol_and_handle(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, ctor_protocol_and_handle_v6)
-{
-  ctor_protocol_and_handle(TypeParam::v6);
-}
-
-
-template <typename Protocol>
-void ctor_endpoint (const Protocol &protocol)
-{
-  typename Protocol::endpoint_t endpoint(protocol, 0);
-  socket_t<Protocol> socket(endpoint);
+  typename TestFixture::endpoint_t endpoint(TestFixture::protocol, 0);
+  typename TestFixture::socket_t socket(endpoint);
 
   endpoint = socket.local_endpoint();
   EXPECT_TRUE(endpoint.address().is_unspecified());
@@ -131,185 +84,99 @@ void ctor_endpoint (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, ctor_endpoint_v4)
+TYPED_TEST(net_socket, assign_move)
 {
-  ctor_endpoint(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, ctor_endpoint_v6)
-{
-  ctor_endpoint(TypeParam::v6);
-}
-
-
-template <typename Protocol>
-void assign_move (const Protocol &protocol)
-{
-  socket_t<Protocol> a(protocol), b;
+  typename TestFixture::socket_t a(TestFixture::protocol), b;
   EXPECT_TRUE(a.is_open());
   EXPECT_FALSE(b.is_open());
 
-  auto handle = a.native_handle();
+  auto h = a.native_handle();
   b = std::move(a);
-  EXPECT_EQ(handle, b.native_handle());
+  EXPECT_EQ(h, b.native_handle());
   EXPECT_TRUE(b.is_open());
   EXPECT_FALSE(a.is_open());
 }
 
 
-TYPED_TEST(net_socket, assign_move_v4)
+TYPED_TEST(net_socket, open)
 {
-  assign_move(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, assign_move_v6)
-{
-  assign_move(TypeParam::v6);
-}
-
-
-TYPED_TEST(net_socket, open_v4)
-{
-  socket_t<TypeParam> socket;
-  socket.open(TypeParam::v4);
+  typename TestFixture::socket_t socket;
+  socket.open(TestFixture::protocol);
   EXPECT_TRUE(socket.is_open());
 }
 
 
-TYPED_TEST(net_socket, open_v6)
+TYPED_TEST(net_socket, open_already_open)
 {
-  socket_t<TypeParam> socket;
-  socket.open(TypeParam::v6);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
   EXPECT_TRUE(socket.is_open());
-}
-
-
-template <typename Protocol>
-void open_already_open (const Protocol &protocol)
-{
-  socket_t<Protocol> socket(protocol);
 
   {
     std::error_code error;
-    socket.open(protocol, error);
+    socket.open(TestFixture::protocol, error);
     EXPECT_EQ(sal::net::socket_errc::already_open, error);
     EXPECT_TRUE(socket.is_open());
   }
 
   {
-    EXPECT_THROW(socket.open(protocol), std::system_error);
+    EXPECT_THROW(socket.open(TestFixture::protocol), std::system_error);
     EXPECT_TRUE(socket.is_open());
   }
 }
 
 
-TYPED_TEST(net_socket, open_already_open_v4)
+TYPED_TEST(net_socket, assign)
 {
-  open_already_open(TypeParam::v4);
-}
+  typename TestFixture::socket_t socket;
 
-
-TYPED_TEST(net_socket, open_already_open_v6)
-{
-  open_already_open(TypeParam::v6);
-}
-
-
-template <typename Protocol>
-void assign (const Protocol &)
-{
-  socket_t<Protocol> socket;
-
-  auto h = sal::net::socket_base_t::invalid - 1;
-  socket.assign(h);
+  socket.assign(TestFixture::handle);
   EXPECT_TRUE(socket.is_open());
-  EXPECT_EQ(h, socket.native_handle());
+  EXPECT_EQ(TestFixture::handle, socket.native_handle());
 
   std::error_code ignored;
   socket.close(ignored);
 }
 
 
-TYPED_TEST(net_socket, assign_v4)
+TYPED_TEST(net_socket, assign_not_closed)
 {
-  assign(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, assign_v6)
-{
-  assign(TypeParam::v6);
-}
-
-
-template <typename Protocol>
-void assign_not_closed (const Protocol &protocol)
-{
-  socket_t<Protocol> socket(protocol);
-  auto h = sal::net::socket_base_t::invalid - 1;
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
   {
     std::error_code error;
-    socket.assign(h, error);
+    socket.assign(TestFixture::handle, error);
     EXPECT_EQ(sal::net::socket_errc::already_open, error);
   }
 
   {
-    EXPECT_THROW(socket.assign(h), std::system_error);
+    EXPECT_THROW(socket.assign(TestFixture::handle), std::system_error);
   }
 }
 
 
-TYPED_TEST(net_socket, assign_not_closed_v4)
+TYPED_TEST(net_socket, assign_invalid)
 {
-  assign_not_closed(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, assign_not_closed_v6)
-{
-  assign_not_closed(TypeParam::v6);
-}
-
-
-template <typename Protocol>
-void assign_no_handle (const Protocol &)
-{
-  socket_t<Protocol> socket;
-  auto h = sal::net::socket_base_t::invalid;
+  typename TestFixture::socket_t socket;
 
   {
     std::error_code error;
-    socket.assign(h, error);
+    socket.assign(sal::net::socket_base_t::invalid, error);
     EXPECT_EQ(std::errc::bad_file_descriptor, error);
   }
 
   {
-    EXPECT_THROW(socket.assign(h), std::system_error);
+    EXPECT_THROW(
+      socket.assign(sal::net::socket_base_t::invalid),
+      std::system_error
+    );
   }
 }
 
 
-TYPED_TEST(net_socket, assign_no_handle_v4)
+
+TYPED_TEST(net_socket, close)
 {
-  assign_no_handle(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, assign_no_handle_v6)
-{
-  assign_no_handle(TypeParam::v6);
-}
-
-
-template <typename Protocol>
-void close (const Protocol &protocol)
-{
-  socket_t<Protocol> socket;
-
-  socket.open(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
   EXPECT_TRUE(socket.is_open());
 
   socket.close();
@@ -317,21 +184,9 @@ void close (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, close_v4)
-{
-  close(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, close_v6)
-{
-  close(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, close_no_handle)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
 
   {
     std::error_code error;
@@ -345,10 +200,9 @@ TYPED_TEST(net_socket, close_no_handle)
 }
 
 
-template <typename Protocol>
-void close_bad_file_descriptor (const Protocol &)
+TYPED_TEST(net_socket, close_bad_file_descriptor)
 {
-  socket_t<Protocol> socket(sal::net::socket_base_t::invalid - 1);
+  typename TestFixture::socket_t socket(TestFixture::handle);
 
   {
     std::error_code error;
@@ -362,52 +216,24 @@ void close_bad_file_descriptor (const Protocol &)
 }
 
 
-TYPED_TEST(net_socket, close_bad_file_descriptor_v4)
+TYPED_TEST(net_socket, broadcast)
 {
-  close_bad_file_descriptor(TypeParam::v4);
-}
+  if constexpr (std::is_same_v<typename TestFixture::protocol_t, sal::net::ip::udp_t>)
+  {
+    typename TestFixture::socket_t socket(TestFixture::protocol);
 
-
-TYPED_TEST(net_socket, close_bad_file_descriptor_v6)
-{
-  close_bad_file_descriptor(TypeParam::v6);
-}
-
-
-template <typename Protocol>
-void broadcast (const Protocol &protocol)
-{
-  socket_t<Protocol> socket(protocol);
-
-  bool original, value;
-  socket.get_option(sal::net::broadcast(&original));
-  socket.set_option(sal::net::broadcast(!original));
-  socket.get_option(sal::net::broadcast(&value));
-  EXPECT_NE(original, value);
-}
-
-
-// broadcast is valid only for datagram sockets
-template <>
-void broadcast (const sal::net::ip::tcp_t &)
-{}
-
-
-TYPED_TEST(net_socket, broadcast_v4)
-{
-  broadcast(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, broadcast_v6)
-{
-  broadcast(TypeParam::v6);
+    bool original, value;
+    socket.get_option(sal::net::broadcast(&original));
+    socket.set_option(sal::net::broadcast(!original));
+    socket.get_option(sal::net::broadcast(&value));
+    EXPECT_NE(original, value);
+  }
 }
 
 
 TYPED_TEST(net_socket, broadcast_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   bool value{false};
 
   {
@@ -438,17 +264,15 @@ TYPED_TEST(net_socket, broadcast_invalid)
 }
 
 
-template <typename Protocol>
-void debug (const Protocol &protocol)
+TYPED_TEST(net_socket, debug)
 {
 #if __sal_os_linux
 
   // requires CAP_NET_ADMIN or root
-  (void)protocol;
 
 #else
 
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
   bool original, value;
   socket.get_option(sal::net::debug(&original));
@@ -460,21 +284,9 @@ void debug (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, debug_v4)
-{
-  debug(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, debug_v6)
-{
-  debug(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, debug_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   bool value{false};
 
   {
@@ -505,17 +317,15 @@ TYPED_TEST(net_socket, debug_invalid)
 }
 
 
-template <typename Protocol>
-void do_not_route (const Protocol &protocol)
+TYPED_TEST(net_socket, do_not_route)
 {
 #if __sal_os_windows
 
   // MS providers don't support this option
-  (void)protocol;
 
 #else
 
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
   bool original, value;
   socket.get_option(sal::net::do_not_route(&original));
@@ -527,21 +337,9 @@ void do_not_route (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, do_not_route_v4)
-{
-  do_not_route(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, do_not_route_v6)
-{
-  do_not_route(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, do_not_route_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   bool value{false};
 
   {
@@ -572,45 +370,29 @@ TYPED_TEST(net_socket, do_not_route_invalid)
 }
 
 
-template <typename Protocol>
-void keep_alive (const Protocol &protocol)
+TYPED_TEST(net_socket, keep_alive)
 {
-  socket_t<Protocol> socket(protocol);
+  if constexpr (std::is_same_v<typename TestFixture::protocol_t, sal::net::ip::tcp_t>)
+  {
+    typename TestFixture::socket_t socket(TestFixture::protocol);
 
-  bool original, value;
-  socket.get_option(sal::net::keep_alive(&original));
-  socket.set_option(sal::net::keep_alive(!original));
-  socket.get_option(sal::net::keep_alive(&value));
+    bool original, value;
+    socket.get_option(sal::net::keep_alive(&original));
+    socket.set_option(sal::net::keep_alive(!original));
+    socket.get_option(sal::net::keep_alive(&value));
 
-#if __sal_os_windows
-  // Windows Vista and later can't change it
-#else
-  EXPECT_NE(original, value);
-#endif
-}
-
-
-// keep_alive is valid only for connection-oriented protocols
-template <>
-void keep_alive (const sal::net::ip::udp_t &)
-{}
-
-
-TYPED_TEST(net_socket, keep_alive_v4)
-{
-  keep_alive(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, keep_alive_v6)
-{
-  keep_alive(TypeParam::v6);
+    #if __sal_os_windows
+      // Windows Vista and later can't change it
+    #else
+      EXPECT_NE(original, value);
+    #endif
+  }
 }
 
 
 TYPED_TEST(net_socket, keep_alive_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   bool value{false};
 
   {
@@ -641,10 +423,9 @@ TYPED_TEST(net_socket, keep_alive_invalid)
 }
 
 
-template <typename Protocol>
-void reuse_address (const Protocol &protocol)
+TYPED_TEST(net_socket, reuse_address)
 {
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
   bool original, value;
   socket.get_option(sal::net::reuse_address(&original));
@@ -654,21 +435,9 @@ void reuse_address (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, reuse_address_v4)
-{
-  reuse_address(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, reuse_address_v6)
-{
-  reuse_address(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, reuse_address_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   bool value{false};
 
   {
@@ -699,10 +468,60 @@ TYPED_TEST(net_socket, reuse_address_invalid)
 }
 
 
-template <typename Protocol>
-void receive_buffer_size (const Protocol &protocol)
+#if SO_REUSEPORT
+
+
+TYPED_TEST(net_socket, reuse_port)
 {
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
+
+  bool original, value;
+  socket.get_option(sal::net::reuse_port(&original));
+  socket.set_option(sal::net::reuse_port(!original));
+  socket.get_option(sal::net::reuse_port(&value));
+  EXPECT_NE(original, value);
+}
+
+
+TYPED_TEST(net_socket, reuse_port_invalid)
+{
+  typename TestFixture::socket_t socket;
+  bool value{false};
+
+  {
+    std::error_code error;
+    socket.get_option(sal::net::reuse_port(&value), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.get_option(sal::net::reuse_port(&value)),
+      std::system_error
+    );
+  }
+
+  {
+    std::error_code error;
+    socket.set_option(sal::net::reuse_port(value), error);
+    EXPECT_EQ(std::errc::bad_file_descriptor, error);
+  }
+
+  {
+    EXPECT_THROW(
+      socket.set_option(sal::net::reuse_port(value)),
+      std::system_error
+    );
+  }
+}
+
+
+#endif // SO_REUSEPORT
+
+
+TYPED_TEST(net_socket, receive_buffer_size)
+{
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
   int original, value;
   socket.get_option(sal::net::receive_buffer_size(&original));
@@ -712,21 +531,9 @@ void receive_buffer_size (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, receive_buffer_size_v4)
-{
-  receive_buffer_size(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, receive_buffer_size_v6)
-{
-  receive_buffer_size(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, receive_buffer_size_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   int value{0};
 
   {
@@ -757,8 +564,7 @@ TYPED_TEST(net_socket, receive_buffer_size_invalid)
 }
 
 
-template <typename Protocol>
-void receive_low_watermark (const Protocol &protocol)
+TYPED_TEST(net_socket, receive_low_watermark)
 {
 #if __sal_os_windows
 
@@ -766,7 +572,7 @@ void receive_low_watermark (const Protocol &protocol)
 
 #else
 
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
   int original, value;
   socket.get_option(sal::net::receive_low_watermark(&original));
@@ -778,21 +584,9 @@ void receive_low_watermark (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, receive_low_watermark_v4)
-{
-  receive_low_watermark(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, receive_low_watermark_v6)
-{
-  receive_low_watermark(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, receive_low_watermark_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   int value{0};
 
   {
@@ -823,10 +617,9 @@ TYPED_TEST(net_socket, receive_low_watermark_invalid)
 }
 
 
-template <typename Protocol>
-void send_buffer_size (const Protocol &protocol)
+TYPED_TEST(net_socket, send_buffer_size)
 {
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
   int original, value;
   socket.get_option(sal::net::send_buffer_size(&original));
@@ -836,21 +629,9 @@ void send_buffer_size (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, send_buffer_size_v4)
-{
-  send_buffer_size(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, send_buffer_size_v6)
-{
-  send_buffer_size(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, send_buffer_size_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   int value{0};
 
   {
@@ -881,17 +662,15 @@ TYPED_TEST(net_socket, send_buffer_size_invalid)
 }
 
 
-template <typename Protocol>
-void send_low_watermark (const Protocol &protocol)
+TYPED_TEST(net_socket, send_low_watermark)
 {
 #if __sal_os_windows || __sal_os_linux
 
   // not changeable on those platforms
-  (void)protocol;
 
 #else
 
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
   int original, value;
   socket.get_option(sal::net::send_low_watermark(&original));
@@ -903,21 +682,9 @@ void send_low_watermark (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, send_low_watermark_v4)
-{
-  send_low_watermark(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, send_low_watermark_v6)
-{
-  send_low_watermark(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, send_low_watermark_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   int value{0};
 
   {
@@ -948,42 +715,26 @@ TYPED_TEST(net_socket, send_low_watermark_invalid)
 }
 
 
-template <typename Protocol>
-void linger (const Protocol &protocol)
+TYPED_TEST(net_socket, linger)
 {
-  using namespace std::chrono_literals;
+  if constexpr (std::is_same_v<typename TestFixture::protocol_t, sal::net::ip::tcp_t>)
+  {
+    using namespace std::chrono_literals;
 
-  socket_t<Protocol> socket(protocol);
-  bool linger{};
-  std::chrono::seconds timeout{};
+    typename TestFixture::socket_t socket(TestFixture::protocol);
+    bool linger{};
+    std::chrono::seconds timeout{};
 
-  socket.get_option(sal::net::linger(&linger, &timeout));
-  EXPECT_FALSE(linger);
-  EXPECT_EQ(0s, timeout);
+    socket.get_option(sal::net::linger(&linger, &timeout));
+    EXPECT_FALSE(linger);
+    EXPECT_EQ(0s, timeout);
 
-  socket.set_option(sal::net::linger(true, 3s));
+    socket.set_option(sal::net::linger(true, 3s));
 
-  socket.get_option(sal::net::linger(&linger, &timeout));
-  EXPECT_TRUE(linger);
-  EXPECT_EQ(3s, timeout);
-}
-
-
-// linger is valid only for reliable, connection-oriented protocols
-template <>
-void linger (const sal::net::ip::udp_t &)
-{}
-
-
-TYPED_TEST(net_socket, linger_v4)
-{
-  linger(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, linger_v6)
-{
-  linger(TypeParam::v6);
+    socket.get_option(sal::net::linger(&linger, &timeout));
+    EXPECT_TRUE(linger);
+    EXPECT_EQ(3s, timeout);
+  }
 }
 
 
@@ -991,7 +742,7 @@ TYPED_TEST(net_socket, linger_invalid)
 {
   using namespace std::chrono_literals;
 
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   bool linger{};
   std::chrono::seconds timeout{};
 
@@ -1023,10 +774,9 @@ TYPED_TEST(net_socket, linger_invalid)
 }
 
 
-template <typename Protocol>
-void non_blocking (const Protocol &protocol)
+TYPED_TEST(net_socket, non_blocking)
 {
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
 
 #if __sal_os_windows
 
@@ -1046,21 +796,9 @@ void non_blocking (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, non_blocking_v4)
-{
-  non_blocking(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, non_blocking_v6)
-{
-  non_blocking(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, non_blocking_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
 
   {
     std::error_code error;
@@ -1094,29 +832,16 @@ TYPED_TEST(net_socket, non_blocking_invalid)
 }
 
 
-template <typename Protocol>
-void available (const Protocol &protocol)
+TYPED_TEST(net_socket, available)
 {
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
   EXPECT_EQ(0U, socket.available());
-}
-
-
-TYPED_TEST(net_socket, available_v4)
-{
-  available(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, available_v6)
-{
-  available(TypeParam::v6);
 }
 
 
 TYPED_TEST(net_socket, available_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
 
   {
     std::error_code error;
@@ -1133,11 +858,10 @@ TYPED_TEST(net_socket, available_invalid)
 }
 
 
-template <typename Protocol>
-void bind (const Protocol &protocol)
+TYPED_TEST(net_socket, bind)
 {
-  socket_t<Protocol> socket(protocol);
-  typename Protocol::endpoint_t endpoint(protocol, 0);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
+  typename TestFixture::endpoint_t endpoint(TestFixture::protocol, 0);
   socket.bind(endpoint);
 
   endpoint = socket.local_endpoint();
@@ -1146,22 +870,10 @@ void bind (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, bind_v4)
-{
-  bind(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, bind_v6)
-{
-  bind(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, bind_invalid)
 {
-  socket_t<TypeParam> socket;
-  typename TypeParam::endpoint_t endpoint;
+  typename TestFixture::socket_t socket;
+  typename TestFixture::endpoint_t endpoint;
 
   {
     std::error_code error;
@@ -1180,7 +892,7 @@ TYPED_TEST(net_socket, bind_invalid)
 
 TYPED_TEST(net_socket, local_endpoint_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
 
   {
     std::error_code error;
@@ -1197,10 +909,9 @@ TYPED_TEST(net_socket, local_endpoint_invalid)
 }
 
 
-template <typename Protocol>
-void local_endpoint_not_bound (const Protocol &protocol)
+TYPED_TEST(net_socket, local_endpoint_not_bound)
 {
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
   std::error_code error;
   auto endpoint = socket.local_endpoint(error);
 
@@ -1216,21 +927,9 @@ void local_endpoint_not_bound (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, local_endpoint_not_bound_v4)
-{
-  local_endpoint_not_bound(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, local_endpoint_not_bound_v6)
-{
-  local_endpoint_not_bound(TypeParam::v6);
-}
-
-
 TYPED_TEST(net_socket, remote_endpoint_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
 
   {
     std::error_code error;
@@ -1247,10 +946,9 @@ TYPED_TEST(net_socket, remote_endpoint_invalid)
 }
 
 
-template <typename Protocol>
-void remote_endpoint_not_connected (const Protocol &protocol)
+TYPED_TEST(net_socket, remote_endpoint_not_connected)
 {
-  socket_t<Protocol> socket(protocol);
+  typename TestFixture::socket_t socket(TestFixture::protocol);
   std::error_code error;
   auto endpoint = socket.remote_endpoint(error);
   EXPECT_EQ(std::errc::not_connected, error);
@@ -1259,172 +957,65 @@ void remote_endpoint_not_connected (const Protocol &protocol)
 }
 
 
-TYPED_TEST(net_socket, remote_endpoint_not_connected_v4)
+TYPED_TEST(net_socket, connect_no_listener)
 {
-  remote_endpoint_not_connected(TypeParam::v4);
-}
+  typename TestFixture::socket_t socket(TestFixture::protocol);
+  typename TestFixture::endpoint_t endpoint(TestFixture::address_t::loopback, 7);
 
-
-TYPED_TEST(net_socket, remote_endpoint_not_connected_v6)
-{
-  remote_endpoint_not_connected(TypeParam::v6);
-}
-
-
-template <typename Protocol>
-void connect_no_listener (const Protocol &protocol,
-  const sal::net::ip::address_t &address)
-{
-  socket_t<Protocol> socket(protocol);
-  typename Protocol::endpoint_t endpoint(address, 7);
-
+  if constexpr (std::is_same_v<typename TestFixture::protocol_t, sal::net::ip::tcp_t>)
   {
-    std::error_code error;
-    socket.connect(endpoint, error);
-    EXPECT_EQ(std::errc::connection_refused, error);
+    {
+      std::error_code error;
+      socket.connect(endpoint, error);
+      EXPECT_EQ(std::errc::connection_refused, error);
+    }
+
+    {
+      EXPECT_THROW(
+        socket.connect(endpoint),
+        std::system_error
+      );
+    }
   }
-
+  else if constexpr (std::is_same_v<typename TestFixture::protocol_t, sal::net::ip::udp_t>)
   {
-    EXPECT_THROW(
-      socket.connect(endpoint),
-      std::system_error
-    );
-  }
-}
+    {
+      std::error_code error;
+      socket.connect(endpoint, error);
+      EXPECT_FALSE(bool(error));
+      EXPECT_EQ(endpoint, socket.remote_endpoint());
+    }
 
-
-template <>
-void connect_no_listener (const sal::net::ip::udp_t &protocol,
-  const sal::net::ip::address_t &address)
-{
-  socket_t<sal::net::ip::udp_t> socket(protocol);
-  sal::net::ip::udp_t::endpoint_t endpoint(address, 7);
-
-  {
-    std::error_code error;
-    socket.connect(endpoint, error);
-    EXPECT_FALSE(bool(error));
-    EXPECT_EQ(endpoint, socket.remote_endpoint());
-  }
-
-  {
-    EXPECT_NO_THROW(socket.connect(endpoint));
+    {
+      EXPECT_NO_THROW(socket.connect(endpoint));
+    }
   }
 }
 
 
-TYPED_TEST(net_socket, connect_no_listener_v4)
+TYPED_TEST(net_socket, shutdown)
 {
-  connect_no_listener(TypeParam::v4,
-    sal::net::ip::address_v4_t::loopback
-  );
-}
-
-
-TYPED_TEST(net_socket, connect_no_listener_v6)
-{
-  connect_no_listener(TypeParam::v6,
-    sal::net::ip::address_v6_t::loopback
-  );
-}
-
-
-template <typename Protocol>
-void connect_with_no_pre_open (const Protocol &,
-  const sal::net::ip::address_t &address)
-{
-  socket_t<Protocol> socket;
-  typename Protocol::endpoint_t endpoint(address, 7);
-
+  if constexpr (std::is_same_v<typename TestFixture::protocol_t, sal::net::ip::tcp_t>)
   {
-    std::error_code error;
-    socket.connect(endpoint, error);
-    EXPECT_EQ(std::errc::connection_refused, error);
+    typename TestFixture::socket_t socket(TestFixture::protocol);
+    auto what = socket.shutdown_both;
+
+    {
+      std::error_code error;
+      socket.shutdown(what, error);
+      EXPECT_EQ(std::errc::not_connected, error);
+    }
+
+    {
+      EXPECT_THROW(socket.shutdown(what), std::system_error);
+    }
   }
-
-  {
-    EXPECT_THROW(
-      socket.connect(endpoint),
-      std::system_error
-    );
-  }
-}
-
-
-template <>
-void connect_with_no_pre_open (const sal::net::ip::udp_t &,
-  const sal::net::ip::address_t &address)
-{
-  socket_t<sal::net::ip::udp_t> socket;
-  sal::net::ip::udp_t::endpoint_t endpoint(address, 7);
-
-  {
-    std::error_code error;
-    socket.connect(endpoint, error);
-    EXPECT_FALSE(bool(error));
-    EXPECT_EQ(endpoint, socket.remote_endpoint());
-  }
-
-  {
-    EXPECT_NO_THROW(socket.connect(endpoint));
-  }
-}
-
-
-TYPED_TEST(net_socket, connect_with_no_pre_open_v4)
-{
-  connect_with_no_pre_open(TypeParam::v4,
-    sal::net::ip::address_v4_t::loopback
-  );
-}
-
-
-TYPED_TEST(net_socket, connect_with_no_pre_open_v6)
-{
-  connect_with_no_pre_open(TypeParam::v6,
-    sal::net::ip::address_v6_t::loopback
-  );
-}
-
-
-template <typename Protocol>
-void shutdown (const Protocol &protocol)
-{
-  socket_t<Protocol> socket(protocol);
-  auto what = socket.shutdown_both;
-
-  {
-    std::error_code error;
-    socket.shutdown(what, error);
-    EXPECT_EQ(std::errc::not_connected, error);
-  }
-
-  {
-    EXPECT_THROW(socket.shutdown(what), std::system_error);
-  }
-}
-
-
-template <>
-void shutdown (const sal::net::ip::udp_t &)
-{}
-
-
-TYPED_TEST(net_socket, shutdown_v4)
-{
-  shutdown(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, shutdown_v6)
-{
-  shutdown(TypeParam::v6);
 }
 
 
 TYPED_TEST(net_socket, shutdown_invalid)
 {
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   auto what = socket.shutdown_both;
 
   {
@@ -1439,58 +1030,42 @@ TYPED_TEST(net_socket, shutdown_invalid)
 }
 
 
-template <typename Protocol>
-void wait (const Protocol &protocol)
+TYPED_TEST(net_socket, wait)
 {
   using namespace std::chrono_literals;
-  socket_t<Protocol> socket(protocol);
+
+  typename TestFixture::socket_t socket(TestFixture::protocol);
   std::error_code error;
 
+  if constexpr (std::is_same_v<typename TestFixture::protocol_t, sal::net::ip::tcp_t>)
   {
-    EXPECT_FALSE(socket.wait(socket.wait_write, 0ms, error));
-    EXPECT_FALSE(bool(error));
-  }
+    {
+      EXPECT_FALSE(socket.wait(socket.wait_write, 0ms, error));
+      EXPECT_FALSE(bool(error));
+    }
 
+    {
+      EXPECT_FALSE(socket.wait(socket.wait_read, 0ms, error));
+      EXPECT_FALSE(bool(error));
+    }
+  }
+  else
   {
-    EXPECT_FALSE(socket.wait(socket.wait_read, 0ms, error));
-    EXPECT_FALSE(bool(error));
+    {
+      EXPECT_TRUE(socket.wait(socket.wait_write, 0ms, error));
+    }
+
+    {
+      EXPECT_FALSE(socket.wait(socket.wait_read, 0ms, error));
+    }
   }
-}
-
-
-template <>
-void wait (const sal::net::ip::udp_t &protocol)
-{
-  using namespace std::chrono_literals;
-  socket_t<sal::net::ip::udp_t> socket(protocol);
-  std::error_code error;
-
-  {
-    EXPECT_TRUE(socket.wait(socket.wait_write, 0ms, error));
-  }
-
-  {
-    EXPECT_FALSE(socket.wait(socket.wait_read, 0ms, error));
-  }
-}
-
-
-TYPED_TEST(net_socket, wait_v4)
-{
-  wait(TypeParam::v4);
-}
-
-
-TYPED_TEST(net_socket, wait_v6)
-{
-  wait(TypeParam::v6);
 }
 
 
 TYPED_TEST(net_socket, wait_invalid)
 {
   using namespace std::chrono_literals;
-  socket_t<TypeParam> socket;
+  typename TestFixture::socket_t socket;
   std::error_code error;
 
   {

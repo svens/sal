@@ -56,21 +56,59 @@ class io_t
 {
 public:
 
+  io_t () = delete;
+  io_t (const io_t &) = delete;
+  io_t &operator= (const io_t &) = delete;
+  io_t (io_t &&) = delete;
+  io_t &operator= (io_t &&) = delete;
+
+
+  /**
+   * io_ptr deleter
+   * \internal
+   */
+  struct deleter_t
+  {
+    /**
+     * Release io_t to owner (service_t) free list for later reuse.
+     */
+    void operator() (io_t *io) noexcept
+    {
+      io->impl_.service.free_list.push(&io->impl_);
+    }
+  };
+
+
+  /**
+   * Mark I/O operation handle to be automatically released after completion
+   * ie it is not returned by sal::net::async::completion_queue_t
+   */
+  void skip_completion_notification (bool skip) noexcept
+  {
+    impl_.completed_list = skip
+      ? &impl_.service.free_list
+      : &impl_.service.completed_list
+    ;
+  }
+
+
+  /**
+   * Return true if completed I/O operation will be released automatically and
+   * not returned by sal::net::async::completion_queue_t::try_get()
+   */
+  bool skip_completion_notification () const noexcept
+  {
+    return impl_.completed_list == &impl_.service.free_list;
+  }
+
+
   /**
    * Set begin() == head() and end() == tail()
    */
   void reset () noexcept
   {
-    impl_->reset();
-  }
-
-
-  /**
-   * Return true if object represents valid I/O operation.
-   */
-  explicit operator bool () const noexcept
-  {
-    return impl_.get() != nullptr;
+    impl_.begin = impl_.data;
+    impl_.end = impl_.data + max_size();
   }
 
 
@@ -82,8 +120,8 @@ public:
   template <typename Context>
   void context (Context *context) noexcept
   {
-    impl_->context = context;
-    impl_->context_type = type_v<Context>;
+    impl_.context = context;
+    impl_.context_type = type_v<Context>;
   }
 
 
@@ -94,9 +132,9 @@ public:
   template <typename Context>
   Context *context () const noexcept
   {
-    if (impl_->context_type == type_v<Context>)
+    if (impl_.context_type == type_v<Context>)
     {
-      return static_cast<Context *>(impl_->context);
+      return static_cast<Context *>(impl_.context);
     }
     return nullptr;
   }
@@ -114,10 +152,10 @@ public:
   template <typename Context>
   Context *socket_context () const
   {
-    auto &current_owner = *sal_check_ptr(impl_->current_owner);
-    if (current_owner.context_type == type_v<Context>)
+    auto &owner = *sal_check_ptr(impl_.owner);
+    if (owner.context_type == type_v<Context>)
     {
-      return static_cast<Context *>(current_owner.context);
+      return static_cast<Context *>(owner.context);
     }
     return nullptr;
   }
@@ -126,18 +164,18 @@ public:
   /**
    * Return pointer to beginning of allocated send/receive data area.
    */
-  const uint8_t *head () const noexcept
+  const std::byte *head () const noexcept
   {
-    return impl_->data;
+    return impl_.data;
   }
 
 
   /**
    * Return pointer to end of allocated send/receive data area.
    */
-  const uint8_t *tail () const noexcept
+  const std::byte *tail () const noexcept
   {
-    return impl_->data + sizeof(impl_->data);
+    return impl_.data + max_size();
   }
 
 
@@ -145,18 +183,18 @@ public:
    * Return pointer to beginning of application set send/receive data area.
    * Falls between [head(),tail())
    */
-  uint8_t *data () noexcept
+  std::byte *data () noexcept
   {
-    return impl_->begin;
+    return impl_.begin;
   }
 
 
   /**
    * \copydoc data()
    */
-  uint8_t *begin () noexcept
+  std::byte *begin () noexcept
   {
-    return impl_->begin;
+    return impl_.begin;
   }
 
 
@@ -164,9 +202,9 @@ public:
    * Return pointer to end of application set send/receive data area. Falls
    * between [begin(),tail()]
    */
-  const uint8_t *end () const noexcept
+  const std::byte *end () const noexcept
   {
-    return impl_->end;
+    return impl_.end;
   };
 
 
@@ -177,7 +215,7 @@ public:
   void head_gap (size_t offset_from_head)
   {
     sal_assert(offset_from_head <= max_size());
-    impl_->begin = impl_->data + offset_from_head;
+    impl_.begin = impl_.data + offset_from_head;
   }
 
 
@@ -186,7 +224,7 @@ public:
    */
   size_t head_gap () const noexcept
   {
-    return impl_->begin - impl_->data;
+    return impl_.begin - head();
   }
 
 
@@ -197,7 +235,7 @@ public:
   void tail_gap (size_t offset_from_tail)
   {
     sal_assert(offset_from_tail <= max_size());
-    impl_->end = impl_->data + sizeof(impl_->data) - offset_from_tail;
+    impl_.end = tail() - offset_from_tail;
   }
 
 
@@ -206,7 +244,7 @@ public:
    */
   size_t tail_gap () const noexcept
   {
-    return impl_->data + sizeof(impl_->data) - impl_->end;
+    return tail() - impl_.end;
   }
 
 
@@ -216,7 +254,7 @@ public:
    */
   size_t size () const noexcept
   {
-    return impl_->end - impl_->begin;
+    return impl_.end - impl_.begin;
   }
 
 
@@ -226,8 +264,8 @@ public:
    */
   void resize (size_t new_size)
   {
-    sal_assert(impl_->begin + new_size <= impl_->data + sizeof(impl_->data));
-    impl_->end = impl_->begin + new_size;
+    sal_assert(impl_.begin + new_size <= tail());
+    impl_.end = impl_.begin + new_size;
   }
 
 
@@ -236,7 +274,7 @@ public:
    */
   static constexpr size_t max_size () noexcept
   {
-    return sizeof(impl_->data);
+    return sizeof(impl_.data);
   }
 
 
@@ -252,10 +290,10 @@ public:
   template <typename Result>
   const Result *get_if (std::error_code &error) const noexcept
   {
-    if (impl_->op == Result::op)
+    if (impl_.op == type_v<Result>)
     {
-      error = impl_->status;
-      return reinterpret_cast<const Result *>(impl_->result);
+      error = impl_.status;
+      return reinterpret_cast<const Result *>(impl_.result);
     }
     return nullptr;
   }
@@ -271,7 +309,7 @@ public:
   template <typename Result>
   const Result *get_if () const
   {
-    return get_if<Result>(throw_on_error("async::io::get_if"));
+    return get_if<Result>(throw_on_error("io::get_if"));
   }
 
 
@@ -281,10 +319,10 @@ public:
   template <typename Result>
   Result *get_if (std::error_code &error) noexcept
   {
-    if (impl_->op == Result::op)
+    if (impl_.op == type_v<Result>)
     {
-      error = impl_->status;
-      return reinterpret_cast<Result *>(impl_->result);
+      error = impl_.status;
+      return reinterpret_cast<Result *>(impl_.result);
     }
     return nullptr;
   }
@@ -296,31 +334,22 @@ public:
   template <typename Result>
   Result *get_if ()
   {
-    return get_if<Result>(throw_on_error("async::io::get_if"));
+    return get_if<Result>(throw_on_error("io::get_if"));
   }
 
 
 private:
 
-  __bits::io_ptr impl_;
-
-  io_t (__bits::io_t *impl) noexcept
-    : impl_(impl)
-  { }
-
-
-  using op_t = __bits::op_t;
+  __bits::io_t impl_;
 
 
   template <typename Result>
-  __bits::io_t *to_async_op (Result **result) noexcept
+  Result *prepare () noexcept
   {
-    auto op = impl_.release();
     static_assert(std::is_trivially_destructible_v<Result>);
-    static_assert(sizeof(Result) <= sizeof(op->result));
-    op->op = Result::op;
-    *result = reinterpret_cast<Result *>(op->result);
-    return op;
+    static_assert(sizeof(Result) <= sizeof(impl_.result));
+    impl_.op = type_v<Result>;
+    return reinterpret_cast<Result *>(impl_.result);
   }
 
 
@@ -329,6 +358,13 @@ private:
   template <typename Protocol> friend class net::basic_stream_socket_t;
   template <typename Protocol> friend class net::basic_socket_acceptor_t;
 };
+
+
+/**
+ * Unique pointer to asynchronous I/O. On release, I/O block is returned to
+ * service's pool of I/O blocks for reuse.
+ */
+using io_ptr = std::unique_ptr<io_t, io_t::deleter_t>;
 
 
 } // namespace net::async
