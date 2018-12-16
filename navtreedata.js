@@ -92,10 +92,10 @@ var NAVTREEINDEX =
 [
 ".html",
 "classsal_1_1crypto_1_1certificate__t.html#a864cda28c34f0baa63ad9250ce12c26a",
-"classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17",
-"classsal_1_1net_1_1ip_1_1address__t.html#a5b7faa556c153cce894fa521ab11cf68",
-"encode_8hpp.html#a72d061f1a736b3a971b689d7611e5673",
-"option__set_8hpp.html#ac057132458b487d03dce66d068af93ce"
+"classsal_1_1net_1_1async_1_1io__t.html#a268bf5f1d1972812332bd4e0c41a1f64",
+"classsal_1_1net_1_1basic__stream__socket__t.html#aeef449f9b3486e4162a011c019d6fe66",
+"dir_1b828880babf02f792a871b29da8ac9e.html",
+"oid_8hpp.html#a5762954cbf39d456022d4d797c50a5da"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

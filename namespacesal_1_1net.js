@@ -1,6 +1,7 @@
 var namespacesal_1_1net =
 [
     [ "async", null, [
+      [ "completion_queue_t", "classsal_1_1net_1_1async_1_1completion__queue__t.html", "classsal_1_1net_1_1async_1_1completion__queue__t" ],
       [ "io_t", "classsal_1_1net_1_1async_1_1io__t.html", "classsal_1_1net_1_1async_1_1io__t" ],
       [ "service_t", "classsal_1_1net_1_1async_1_1service__t.html", "classsal_1_1net_1_1async_1_1service__t" ]
     ] ],

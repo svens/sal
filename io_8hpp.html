@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.31.0</span>
+   &#160;<span id="projectnumber">0.32.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -97,7 +97,8 @@ $(document).ready(function(){initNavTree('io_8hpp.html','');});
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a>  </div>
   <div class="headertitle">
 <div class="title">io.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -118,10 +119,37 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">sal::net::async::io_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronous socket I/O operation handle and associated data for I/O (2kB).  <a href="classsal_1_1net_1_1async_1_1io__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1async_1_1io__t_1_1deleter__t.html">sal::net::async::io_t::deleter_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">io_ptr deleter  <a href="structsal_1_1net_1_1async_1_1io__t_1_1deleter__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a870ee29f39d773cc084d8a4e782e9c25"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="io_8hpp.html#a870ee29f39d773cc084d8a4e782e9c25">sal::net::async::io_ptr</a> = std::unique_ptr&lt; io_t, io_t::deleter_t &gt;</td></tr>
+<tr class="memdesc:a870ee29f39d773cc084d8a4e782e9c25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unique pointer to asynchronous I/O.  <a href="io_8hpp.html#a870ee29f39d773cc084d8a4e782e9c25">More...</a><br /></td></tr>
+<tr class="separator:a870ee29f39d773cc084d8a4e782e9c25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Asynchronous network I/O operation. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="file_a870ee29f39d773cc084d8a4e782e9c25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#file_a870ee29f39d773cc084d8a4e782e9c25">&#9670;&nbsp;</a></span>io_ptr</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="io_8hpp.html#a870ee29f39d773cc084d8a4e782e9c25">sal::net::async::io_ptr</a> = typedef std::unique_ptr&lt;io_t, io_t::deleter_t&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Unique pointer to asynchronous I/O. </p>
+<p>On release, I/O block is returned to service's pool of I/O blocks for reuse. </p>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

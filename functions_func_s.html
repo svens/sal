@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.31.0</span>
+   &#160;<span id="projectnumber">0.32.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -110,15 +110,8 @@ $(document).ready(function(){initNavTree('functions_func_s.html','');});
 : <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#ad34cffcaefd34e0a641dab7c572b2d73">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
 , <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a2e5134cdc80b90b120927ad9218e0ad1">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
 </li>
-<li>send_async()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a13c362ef5a1d8f1f7b908b8d09329131">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-, <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#ad81d639d6ee326aac713c3aa3ced2477">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
-</li>
 <li>send_to()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#adc534d462d1409a674af9b1fd8ad3278">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
-</li>
-<li>send_to_async()
-: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af57516607df98b2744ea4c092bcd240d">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
+: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a5ccac2e4d996734fd8544a43a469856c">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
 </li>
 <li>serial_number()
 : <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2fcd48f7af19165244d17b3269e5609a">sal::crypto::certificate_t</a>
@@ -142,7 +135,7 @@ $(document).ready(function(){initNavTree('functions_func_s.html','');});
 : <a class="el" href="classsal_1_1net_1_1basic__socket__t.html#a859df3cb09f44f73be8464e26c801efd">sal::net::basic_socket_t&lt; Protocol &gt;</a>
 </li>
 <li>sign()
-: <a class="el" href="classsal_1_1crypto_1_1private__key__t.html#a4ff433bd50dbc536d765f44fc4769972">sal::crypto::private_key_t</a>
+: <a class="el" href="classsal_1_1crypto_1_1private__key__t.html#ad28d26064affd1775dac247928a966b2">sal::crypto::private_key_t</a>
 </li>
 <li>sink_event_init()
 : <a class="el" href="classsal_1_1logger_1_1sink__t.html#ac3e45d91a2ab44d82c2e95a0684a13e3">sal::logger::sink_t</a>
@@ -162,11 +155,34 @@ $(document).ready(function(){initNavTree('functions_func_s.html','');});
 <li>skip()
 : <a class="el" href="classsal_1_1memory__writer__t.html#a5bd861760533f8e8f919b7936dc5646d">sal::memory_writer_t</a>
 </li>
+<li>skip_completion_notification()
+: <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a3e0c562e43999e82df4ccb2eb1573340">sal::net::async::io_t</a>
+</li>
 <li>skip_until()
 : <a class="el" href="classsal_1_1memory__writer__t.html#a7d043e291505ccb4416a47cc8b09deb9">sal::memory_writer_t</a>
 </li>
 <li>socket_context()
 : <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a2db14c8f3e625f2d615393232e3c6397">sal::net::async::io_t</a>
+</li>
+<li>start_accept()
+: <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a97f4aa0a1b0540a04cc42b95098d4691">sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol &gt;</a>
+</li>
+<li>start_connect()
+: <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a6fdcd1a3d3431e6e357e03647b712fe2">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
+</li>
+<li>start_receive()
+: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a57375614ad838942ea7b0e8d72c1d7f3">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
+, <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a5d4311bfa041ea1319ca7be4d79d10a2">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
+</li>
+<li>start_receive_from()
+: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a2da0b7c2ba01b162a3b824298fa0a39a">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
+</li>
+<li>start_send()
+: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#af9f949ebd01f93933e27f7c300541832">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
+, <a class="el" href="classsal_1_1net_1_1basic__stream__socket__t.html#a7208ad23bd8d44d21f4a584e0c6ac747">sal::net::basic_stream_socket_t&lt; Protocol &gt;</a>
+</li>
+<li>start_send_to()
+: <a class="el" href="classsal_1_1net_1_1basic__datagram__socket__t.html#a267ae394cc803283b89d66cb84e3b897">sal::net::basic_datagram_socket_t&lt; Protocol &gt;</a>
 </li>
 <li>store()
 : <a class="el" href="classsal_1_1net_1_1ip_1_1address__t.html#a9bb1b9b09ba068dd1cc182497e08d96a">sal::net::ip::address_t</a>
@@ -175,13 +191,13 @@ $(document).ready(function(){initNavTree('functions_func_s.html','');});
 , <a class="el" href="classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#ab9008d242958e4017768357849c99d2d">sal::net::ip::basic_endpoint_t&lt; Protocol &gt;</a>
 </li>
 <li>subject()
-: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a44980ebc66bf90456e5520fa88bf9898">sal::crypto::certificate_t</a>
+: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a75534ffb6799b4bd2053762154c675e3">sal::crypto::certificate_t</a>
 </li>
 <li>subject_alt_names()
 : <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a2f37464db73af6687a04d809a2269730">sal::crypto::certificate_t</a>
 </li>
 <li>subject_key_identifier()
-: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#ab4f013d34fcd708aeb3b4206f9edc2e4">sal::crypto::certificate_t</a>
+: <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#af417b026d37b19e71a765784527d58e3">sal::crypto::certificate_t</a>
 </li>
 <li>swap()
 : <a class="el" href="classsal_1_1crypto_1_1certificate__t.html#a5ed69cdf9f7208db3d00a1d7455d70c3">sal::crypto::certificate_t</a>

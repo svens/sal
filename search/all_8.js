@@ -16,6 +16,7 @@ var searchData=
   ['invalid_5foption_5fname_5ferror',['invalid_option_name_error',['../structsal_1_1program__options_1_1invalid__option__name__error.html',1,'sal::program_options']]],
   ['io_2ehpp',['io.hpp',['../io_8hpp.html',1,'']]],
   ['io_5fpool_5fsize',['io_pool_size',['../classsal_1_1net_1_1async_1_1service__t.html#af523d0c27539b95129ee7bc41f374db5',1,'sal::net::async::service_t']]],
+  ['io_5fptr',['io_ptr',['../io_8hpp.html#a870ee29f39d773cc084d8a4e782e9c25',1,'sal::net::async']]],
   ['io_5ft',['io_t',['../classsal_1_1net_1_1async_1_1io__t.html',1,'sal::net::async']]],
   ['ip',['ip',['../classsal_1_1crypto_1_1certificate__t.html#a27bbc09d780d81b41e31cdbb331dfd22a957b527bcfbad2e80f58d20683931435',1,'sal::crypto::certificate_t']]],
   ['is_5fconnected',['is_connected',['../classsal_1_1crypto_1_1channel__t.html#a12a698ae176e1a15c5f203c20b60dda6',1,'sal::crypto::channel_t']]],

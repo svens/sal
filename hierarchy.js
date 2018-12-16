@@ -42,9 +42,11 @@ var hierarchy =
     [ "sal::char_array_t< Size >", "classsal_1_1char__array__t.html", null ],
     [ "sal::char_array_t< max_message_size >", "classsal_1_1char__array__t.html", null ],
     [ "sal::program_options::command_line_t", "classsal_1_1program__options_1_1command__line__t.html", null ],
+    [ "sal::net::async::completion_queue_t", "classsal_1_1net_1_1async_1_1completion__queue__t.html", null ],
     [ "sal::program_options::config_reader_t", "classsal_1_1program__options_1_1config__reader__t.html", null ],
     [ "sal::net::basic_stream_socket_t< Protocol >::connect_t", "structsal_1_1net_1_1basic__stream__socket__t_1_1connect__t.html", null ],
     [ "sal::const_buf_ptr", "classsal_1_1const__buf__ptr.html", null ],
+    [ "sal::net::async::io_t::deleter_t", "structsal_1_1net_1_1async_1_1io__t_1_1deleter__t.html", null ],
     [ "sal::crypto::certificate_t::distinguished_name_format_t", "structsal_1_1crypto_1_1certificate__t_1_1distinguished__name__format__t.html", null ],
     [ "sal::logger::event_t", "structsal_1_1logger_1_1event__t.html", null ],
     [ "std::exception", null, [

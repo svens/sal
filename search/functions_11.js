@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['tail',['tail',['../classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b',1,'sal::net::async::io_t']]],
+  ['tail',['tail',['../classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a',1,'sal::net::async::io_t']]],
   ['tail_5fgap',['tail_gap',['../classsal_1_1net_1_1async_1_1io__t.html#a182c011719d272ea22b0fb544e64a212',1,'sal::net::async::io_t::tail_gap(size_t offset_from_tail)'],['../classsal_1_1net_1_1async_1_1io__t.html#aa37d913de6da38700516cb58a5fb529f',1,'sal::net::async::io_t::tail_gap() const noexcept']]],
   ['throw_5ferror',['throw_error',['../error_8hpp.html#a9e060548f95c2ad4c7e4ad203caccb59',1,'sal']]],
   ['throw_5flogic_5ferror',['throw_logic_error',['../error_8hpp.html#ad49dac2e2b342bf180df2674f307b7cd',1,'sal']]],
@@ -16,10 +16,9 @@ var searchData=
   ['to_5fv4',['to_v4',['../classsal_1_1net_1_1ip_1_1address__t.html#ae20b6cad1d64ee5419e74d881963da44',1,'sal::net::ip::address_t']]],
   ['to_5fv6',['to_v6',['../classsal_1_1net_1_1ip_1_1address__t.html#a5b7faa556c153cce894fa521ab11cf68',1,'sal::net::ip::address_t']]],
   ['to_5fview',['to_view',['../classsal_1_1char__array__t.html#a4d021c1d73301be771b759d653a0cfae',1,'sal::char_array_t']]],
-  ['try_5fget',['try_get',['../classsal_1_1net_1_1async_1_1service__t.html#ae064164b30f68df25273031b820da69e',1,'sal::net::async::service_t']]],
+  ['try_5fget',['try_get',['../classsal_1_1net_1_1async_1_1completion__queue__t.html#a2f53bc4e3461363cd9dfcbd1b97cb815',1,'sal::net::async::completion_queue_t']]],
   ['try_5fload',['try_load',['../classsal_1_1net_1_1ip_1_1address__t.html#a56ec436f2a3981d5a3ed8b72d9b858a0',1,'sal::net::ip::address_t::try_load()'],['../classsal_1_1net_1_1ip_1_1basic__endpoint__t.html#a1f96a094fa415bd53778ef8e0ad3979b',1,'sal::net::ip::basic_endpoint_t::try_load()']]],
   ['try_5flock',['try_lock',['../classsal_1_1lockable__t.html#a201ec3f6981bb5a29af4fb1c0079c3ee',1,'sal::lockable_t::try_lock()'],['../classsal_1_1lockable__t.html#a4b56abb8996aad58d8e4f7a87791cfc9',1,'sal::lockable_t::try_lock() const'],['../classsal_1_1spinlock__t.html#a77e6c62136204f2e856f513dabd72f98',1,'sal::spinlock_t::try_lock()']]],
-  ['try_5fpoll',['try_poll',['../classsal_1_1net_1_1async_1_1service__t.html#a0430de9c8de683d566bd20bba3393ee6',1,'sal::net::async::service_t::try_poll(std::error_code &amp;error) noexcept'],['../classsal_1_1net_1_1async_1_1service__t.html#a63d8d544e966d64b435a6197fc6e2326',1,'sal::net::async::service_t::try_poll()']]],
   ['try_5fpop',['try_pop',['../classsal_1_1intrusive__mpsc__queue__t.html#aa41f6dd8b93913167e65c93023f06bd9',1,'sal::intrusive_mpsc_queue_t::try_pop()'],['../classsal_1_1intrusive__queue__t.html#a5dfb861b115c2982629e8894694bbff3',1,'sal::intrusive_queue_t::try_pop()'],['../classsal_1_1intrusive__stack__t.html#ae120c6bc6617a9c92e06ae780a73668c',1,'sal::intrusive_stack_t::try_pop()']]],
   ['type',['type',['../classsal_1_1net_1_1ip_1_1tcp__t.html#afbf239b5f0074fd8229c03349ac101fa',1,'sal::net::ip::tcp_t::type()'],['../classsal_1_1net_1_1ip_1_1udp__t.html#a664d522407e5283fb0ff2fdc4478ebbe',1,'sal::net::ip::udp_t::type()']]],
   ['type_5fid',['type_id',['../type__id_8hpp.html#a97e0b8fab79ed69a2ea7c6a1b6f5aa40',1,'sal::type_id() noexcept'],['../type__id_8hpp.html#a0b2d258eb0e18de3693c6bbd5bcccb62',1,'sal::type_id(T) noexcept']]]

@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.31.0</span>
+   &#160;<span id="projectnumber">0.32.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -124,7 +124,7 @@ Inheritance diagram for sal::net::basic_socket_acceptor_t&lt; AcceptableProtocol
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1accept__t.html">accept_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a1c120039ee53d72a098e75526cce4c9b" title="Asynchronously start accept(). ">accept_async()</a> result type  <a href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1accept__t.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a97f4aa0a1b0540a04cc42b95098d4691" title="Asynchronously start accept(). ">start_accept()</a> result type  <a href="structsal_1_1net_1_1basic__socket__acceptor__t_1_1accept__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
@@ -269,10 +269,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a633208fd3c368749d5cb223cc95220c4"><td class="memTemplItemLeft" align="right" valign="top">Context *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a633208fd3c368749d5cb223cc95220c4">context</a> () const</td></tr>
 <tr class="memdesc:a633208fd3c368749d5cb223cc95220c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current socket context.  <a href="#a633208fd3c368749d5cb223cc95220c4">More...</a><br /></td></tr>
 <tr class="separator:a633208fd3c368749d5cb223cc95220c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c120039ee53d72a098e75526cce4c9b"><td class="memItemLeft" align="right" valign="top"><a id="a1c120039ee53d72a098e75526cce4c9b"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a1c120039ee53d72a098e75526cce4c9b">accept_async</a> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">async::io_t</a> &amp;&amp;io) noexcept</td></tr>
-<tr class="memdesc:a1c120039ee53d72a098e75526cce4c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a>. <br /></td></tr>
-<tr class="separator:a1c120039ee53d72a098e75526cce4c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97f4aa0a1b0540a04cc42b95098d4691"><td class="memItemLeft" align="right" valign="top"><a id="a97f4aa0a1b0540a04cc42b95098d4691"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#a97f4aa0a1b0540a04cc42b95098d4691">start_accept</a> (<a class="el" href="io_8hpp.html#a870ee29f39d773cc084d8a4e782e9c25">async::io_ptr</a> &amp;&amp;io) noexcept(!is_debug_build)</td></tr>
+<tr class="memdesc:a97f4aa0a1b0540a04cc42b95098d4691"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asynchronously start <a class="el" href="classsal_1_1net_1_1basic__socket__acceptor__t.html#abf4cb577b5c68ea8cac74cd1abc1e2ca" title="Extracts a socket from the queue of pending connections. ">accept()</a>. <br /></td></tr>
+<tr class="separator:a97f4aa0a1b0540a04cc42b95098d4691"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>

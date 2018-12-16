@@ -35,7 +35,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">sal
-   &#160;<span id="projectnumber">0.31.0</span>
+   &#160;<span id="projectnumber">0.32.0</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -97,6 +97,7 @@ $(document).ready(function(){initNavTree('classsal_1_1net_1_1async_1_1io__t.html
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#friends">Friends</a> &#124;
@@ -111,16 +112,38 @@ $(document).ready(function(){initNavTree('classsal_1_1net_1_1async_1_1io__t.html
 
 <p><code>#include &lt;<a class="el" href="io_8hpp_source.html">io.hpp</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsal_1_1net_1_1async_1_1io__t_1_1deleter__t.html">deleter_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">io_ptr deleter  <a href="structsal_1_1net_1_1async_1_1io__t_1_1deleter__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:ace46cc2e74dc69a5d7ac70b4c01b9b0a"><td class="memItemLeft" align="right" valign="top"><a id="ace46cc2e74dc69a5d7ac70b4c01b9b0a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>io_t</b> (const <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">io_t</a> &amp;)=delete</td></tr>
+<tr class="separator:ace46cc2e74dc69a5d7ac70b4c01b9b0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad596e1575073d3710e72631ca6b516fc"><td class="memItemLeft" align="right" valign="top"><a id="ad596e1575073d3710e72631ca6b516fc"></a>
+<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">io_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">io_t</a> &amp;)=delete</td></tr>
+<tr class="separator:ad596e1575073d3710e72631ca6b516fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a710316a8da180946ce987afa8da7958a"><td class="memItemLeft" align="right" valign="top"><a id="a710316a8da180946ce987afa8da7958a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>io_t</b> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">io_t</a> &amp;&amp;)=delete</td></tr>
+<tr class="separator:a710316a8da180946ce987afa8da7958a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8ade07bf1dd829e59b4a7ab905d7e1b"><td class="memItemLeft" align="right" valign="top"><a id="ae8ade07bf1dd829e59b4a7ab905d7e1b"></a>
+<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">io_t</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html">io_t</a> &amp;&amp;)=delete</td></tr>
+<tr class="separator:ae8ade07bf1dd829e59b4a7ab905d7e1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e0c562e43999e82df4ccb2eb1573340"><td class="memItemLeft" align="right" valign="top"><a id="a3e0c562e43999e82df4ccb2eb1573340"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a3e0c562e43999e82df4ccb2eb1573340">skip_completion_notification</a> (bool skip) noexcept</td></tr>
+<tr class="memdesc:a3e0c562e43999e82df4ccb2eb1573340"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark I/O operation handle to be automatically released after completion ie it is not returned by <a class="el" href="classsal_1_1net_1_1async_1_1completion__queue__t.html" title="Asynchronous networking I/O completion queue. ">sal::net::async::completion_queue_t</a>. <br /></td></tr>
+<tr class="separator:a3e0c562e43999e82df4ccb2eb1573340"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ae1ccc8927f69c4eb67bf459888de3a"><td class="memItemLeft" align="right" valign="top"><a id="a8ae1ccc8927f69c4eb67bf459888de3a"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a8ae1ccc8927f69c4eb67bf459888de3a">skip_completion_notification</a> () const noexcept</td></tr>
+<tr class="memdesc:a8ae1ccc8927f69c4eb67bf459888de3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if completed I/O operation will be released automatically and not returned by <a class="el" href="classsal_1_1net_1_1async_1_1completion__queue__t.html#a2f53bc4e3461363cd9dfcbd1b97cb815" title="Return next completed I/O operation without blocking calling thread. ">sal::net::async::completion_queue_t::try_get()</a> <br /></td></tr>
+<tr class="separator:a8ae1ccc8927f69c4eb67bf459888de3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a268bf5f1d1972812332bd4e0c41a1f64"><td class="memItemLeft" align="right" valign="top"><a id="a268bf5f1d1972812332bd4e0c41a1f64"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a268bf5f1d1972812332bd4e0c41a1f64">reset</a> () noexcept</td></tr>
-<tr class="memdesc:a268bf5f1d1972812332bd4e0c41a1f64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0" title="Return pointer to beginning of application set send/receive data area. ">begin()</a> == <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a> and <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17" title="Return pointer to end of application set send/receive data area. ">end()</a> == <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a> <br /></td></tr>
+<tr class="memdesc:a268bf5f1d1972812332bd4e0c41a1f64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423" title="Return pointer to beginning of application set send/receive data area. ">begin()</a> == <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a> and <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27" title="Return pointer to end of application set send/receive data area. ">end()</a> == <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a> <br /></td></tr>
 <tr class="separator:a268bf5f1d1972812332bd4e0c41a1f64"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80e034861a5327c3b9e70cc754c2779b"><td class="memItemLeft" align="right" valign="top"><a id="a80e034861a5327c3b9e70cc754c2779b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a80e034861a5327c3b9e70cc754c2779b">operator bool</a> () const noexcept</td></tr>
-<tr class="memdesc:a80e034861a5327c3b9e70cc754c2779b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if object represents valid I/O operation. <br /></td></tr>
-<tr class="separator:a80e034861a5327c3b9e70cc754c2779b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bc2b7f2ad51bcbafffd1459e0c27384"><td class="memTemplParams" colspan="2">template&lt;typename Context &gt; </td></tr>
 <tr class="memitem:a6bc2b7f2ad51bcbafffd1459e0c27384"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a6bc2b7f2ad51bcbafffd1459e0c27384">context</a> (Context *context) noexcept</td></tr>
 <tr class="memdesc:a6bc2b7f2ad51bcbafffd1459e0c27384"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set application-specific I/O context.  <a href="#a6bc2b7f2ad51bcbafffd1459e0c27384">More...</a><br /></td></tr>
@@ -133,43 +156,43 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a2db14c8f3e625f2d615393232e3c6397"><td class="memTemplItemLeft" align="right" valign="top">Context *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a2db14c8f3e625f2d615393232e3c6397">socket_context</a> () const</td></tr>
 <tr class="memdesc:a2db14c8f3e625f2d615393232e3c6397"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return application-specific socket context.  <a href="#a2db14c8f3e625f2d615393232e3c6397">More...</a><br /></td></tr>
 <tr class="separator:a2db14c8f3e625f2d615393232e3c6397"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44b275a128e7c4a2cfa1f8c4db543b4f"><td class="memItemLeft" align="right" valign="top"><a id="a44b275a128e7c4a2cfa1f8c4db543b4f"></a>
-const uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f">head</a> () const noexcept</td></tr>
-<tr class="memdesc:a44b275a128e7c4a2cfa1f8c4db543b4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to beginning of allocated send/receive data area. <br /></td></tr>
-<tr class="separator:a44b275a128e7c4a2cfa1f8c4db543b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9563240c37f7d56892d73447a2e419b"><td class="memItemLeft" align="right" valign="top"><a id="aa9563240c37f7d56892d73447a2e419b"></a>
-const uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b">tail</a> () const noexcept</td></tr>
-<tr class="memdesc:aa9563240c37f7d56892d73447a2e419b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to end of allocated send/receive data area. <br /></td></tr>
-<tr class="separator:aa9563240c37f7d56892d73447a2e419b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a245b3f2a25fa5baa12347e5a2c642437"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a245b3f2a25fa5baa12347e5a2c642437">data</a> () noexcept</td></tr>
-<tr class="memdesc:a245b3f2a25fa5baa12347e5a2c642437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to beginning of application set send/receive data area.  <a href="#a245b3f2a25fa5baa12347e5a2c642437">More...</a><br /></td></tr>
-<tr class="separator:a245b3f2a25fa5baa12347e5a2c642437"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0cfecd6a1e2681adc64ac73aedfab7b0"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0">begin</a> () noexcept</td></tr>
-<tr class="memdesc:a0cfecd6a1e2681adc64ac73aedfab7b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to beginning of application set send/receive data area.  <a href="#a0cfecd6a1e2681adc64ac73aedfab7b0">More...</a><br /></td></tr>
-<tr class="separator:a0cfecd6a1e2681adc64ac73aedfab7b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5d3a953512f6ecc2b2864faf47bbe17"><td class="memItemLeft" align="right" valign="top">const uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17">end</a> () const noexcept</td></tr>
-<tr class="memdesc:af5d3a953512f6ecc2b2864faf47bbe17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to end of application set send/receive data area.  <a href="#af5d3a953512f6ecc2b2864faf47bbe17">More...</a><br /></td></tr>
-<tr class="separator:af5d3a953512f6ecc2b2864faf47bbe17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbd345b0cbb07fd4a38898cc2fabff30"><td class="memItemLeft" align="right" valign="top"><a id="afbd345b0cbb07fd4a38898cc2fabff30"></a>
+const std::byte *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30">head</a> () const noexcept</td></tr>
+<tr class="memdesc:afbd345b0cbb07fd4a38898cc2fabff30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to beginning of allocated send/receive data area. <br /></td></tr>
+<tr class="separator:afbd345b0cbb07fd4a38898cc2fabff30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ff490eeb494476a6bbff07ee85da36a"><td class="memItemLeft" align="right" valign="top"><a id="a9ff490eeb494476a6bbff07ee85da36a"></a>
+const std::byte *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a">tail</a> () const noexcept</td></tr>
+<tr class="memdesc:a9ff490eeb494476a6bbff07ee85da36a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to end of allocated send/receive data area. <br /></td></tr>
+<tr class="separator:a9ff490eeb494476a6bbff07ee85da36a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f3c55ec7788bf618bdc80e27814b5d7"><td class="memItemLeft" align="right" valign="top">std::byte *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0f3c55ec7788bf618bdc80e27814b5d7">data</a> () noexcept</td></tr>
+<tr class="memdesc:a0f3c55ec7788bf618bdc80e27814b5d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to beginning of application set send/receive data area.  <a href="#a0f3c55ec7788bf618bdc80e27814b5d7">More...</a><br /></td></tr>
+<tr class="separator:a0f3c55ec7788bf618bdc80e27814b5d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae96e74bc78b06cd5ce7c20fa4c78e423"><td class="memItemLeft" align="right" valign="top">std::byte *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423">begin</a> () noexcept</td></tr>
+<tr class="memdesc:ae96e74bc78b06cd5ce7c20fa4c78e423"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to beginning of application set send/receive data area.  <a href="#ae96e74bc78b06cd5ce7c20fa4c78e423">More...</a><br /></td></tr>
+<tr class="separator:ae96e74bc78b06cd5ce7c20fa4c78e423"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5434832ca55e7fb84bbcc378264ffb27"><td class="memItemLeft" align="right" valign="top">const std::byte *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27">end</a> () const noexcept</td></tr>
+<tr class="memdesc:a5434832ca55e7fb84bbcc378264ffb27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return pointer to end of application set send/receive data area.  <a href="#a5434832ca55e7fb84bbcc378264ffb27">More...</a><br /></td></tr>
+<tr class="separator:a5434832ca55e7fb84bbcc378264ffb27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6cc96c1477c9c5cc8f327b38e309f01"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ac6cc96c1477c9c5cc8f327b38e309f01">head_gap</a> (size_t offset_from_head)</td></tr>
-<tr class="memdesc:ac6cc96c1477c9c5cc8f327b38e309f01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set offset of send/receive data area from <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>.  <a href="#ac6cc96c1477c9c5cc8f327b38e309f01">More...</a><br /></td></tr>
+<tr class="memdesc:ac6cc96c1477c9c5cc8f327b38e309f01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set offset of send/receive data area from <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>.  <a href="#ac6cc96c1477c9c5cc8f327b38e309f01">More...</a><br /></td></tr>
 <tr class="separator:ac6cc96c1477c9c5cc8f327b38e309f01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9be0636596fb06f19d750575464d9dd"><td class="memItemLeft" align="right" valign="top"><a id="ae9be0636596fb06f19d750575464d9dd"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae9be0636596fb06f19d750575464d9dd">head_gap</a> () const noexcept</td></tr>
-<tr class="memdesc:ae9be0636596fb06f19d750575464d9dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>). <br /></td></tr>
+<tr class="memdesc:ae9be0636596fb06f19d750575464d9dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>). <br /></td></tr>
 <tr class="separator:ae9be0636596fb06f19d750575464d9dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a182c011719d272ea22b0fb544e64a212"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a182c011719d272ea22b0fb544e64a212">tail_gap</a> (size_t offset_from_tail)</td></tr>
-<tr class="memdesc:a182c011719d272ea22b0fb544e64a212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set offset for end of send/receive data area from <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>.  <a href="#a182c011719d272ea22b0fb544e64a212">More...</a><br /></td></tr>
+<tr class="memdesc:a182c011719d272ea22b0fb544e64a212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set offset for end of send/receive data area from <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>.  <a href="#a182c011719d272ea22b0fb544e64a212">More...</a><br /></td></tr>
 <tr class="separator:a182c011719d272ea22b0fb544e64a212"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa37d913de6da38700516cb58a5fb529f"><td class="memItemLeft" align="right" valign="top"><a id="aa37d913de6da38700516cb58a5fb529f"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa37d913de6da38700516cb58a5fb529f">tail_gap</a> () const noexcept</td></tr>
-<tr class="memdesc:aa37d913de6da38700516cb58a5fb529f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17" title="Return pointer to end of application set send/receive data area. ">end()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>) <br /></td></tr>
+<tr class="memdesc:aa37d913de6da38700516cb58a5fb529f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27" title="Return pointer to end of application set send/receive data area. ">end()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>) <br /></td></tr>
 <tr class="separator:aa37d913de6da38700516cb58a5fb529f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13b4c71cb1e79bb6054fa7780684f3f4"><td class="memItemLeft" align="right" valign="top"><a id="a13b4c71cb1e79bb6054fa7780684f3f4"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a13b4c71cb1e79bb6054fa7780684f3f4">size</a> () const noexcept</td></tr>
-<tr class="memdesc:a13b4c71cb1e79bb6054fa7780684f3f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17" title="Return pointer to end of application set send/receive data area. ">end()</a>) ie send/receive data size. <br /></td></tr>
+<tr class="memdesc:a13b4c71cb1e79bb6054fa7780684f3f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of bytes between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27" title="Return pointer to end of application set send/receive data area. ">end()</a>) ie send/receive data size. <br /></td></tr>
 <tr class="separator:a13b4c71cb1e79bb6054fa7780684f3f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1fd6ae27c4da49766f7883581aeeb8f6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a1fd6ae27c4da49766f7883581aeeb8f6">resize</a> (size_t new_size)</td></tr>
-<tr class="memdesc:a1fd6ae27c4da49766f7883581aeeb8f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set size for send/receive data size ie <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0" title="Return pointer to beginning of application set send/receive data area. ">begin()</a> + <em>s</em> = <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17" title="Return pointer to end of application set send/receive data area. ">end()</a>.  <a href="#a1fd6ae27c4da49766f7883581aeeb8f6">More...</a><br /></td></tr>
+<tr class="memdesc:a1fd6ae27c4da49766f7883581aeeb8f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set size for send/receive data size ie <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423" title="Return pointer to beginning of application set send/receive data area. ">begin()</a> + <em>s</em> = <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27" title="Return pointer to end of application set send/receive data area. ">end()</a>.  <a href="#a1fd6ae27c4da49766f7883581aeeb8f6">More...</a><br /></td></tr>
 <tr class="separator:a1fd6ae27c4da49766f7883581aeeb8f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30fe194f15fe6f023636ce35c31c31e8"><td class="memTemplParams" colspan="2">template&lt;typename Result &gt; </td></tr>
 <tr class="memitem:a30fe194f15fe6f023636ce35c31c31e8"><td class="memTemplItemLeft" align="right" valign="top">const Result *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a30fe194f15fe6f023636ce35c31c31e8">get_if</a> (std::error_code &amp;error) const noexcept</td></tr>
@@ -213,16 +236,16 @@ template&lt;typename Protocol &gt; </td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Asynchronous socket I/O operation handle and associated data for I/O (2kB). </p>
-<p>This class is not meant to be instantiated directly but through <a class="el" href="classsal_1_1net_1_1async_1_1service__t.html#a67a147732a8e0c0af0a908d805884401" title="Allocate new I/O operation. ">service_t::make_io()</a>. It's lifecycle follows strict ownership:</p><ul>
+<p>This class is not meant to be instantiated directly but through <a class="el" href="classsal_1_1net_1_1async_1_1service__t.html#a1e5caeedd2e206c3f22d318640db12d6" title="Allocate new I/O operation. ">service_t::make_io()</a>. It's lifecycle follows strict ownership:</p><ul>
 <li>initial owner is <a class="el" href="classsal_1_1net_1_1async_1_1service__t.html" title="Asynchronous networking I/O completion service. ">service_t</a> (internal free-list)</li>
 <li>after allocation and before asynchronous I/O starts, application is owner and can setup I/O data storage</li>
 <li>after asynchronous I/O starts, it is owned by OS or <a class="el" href="classsal_1_1net_1_1async_1_1service__t.html" title="Asynchronous networking I/O completion service. ">service_t</a> (which one is undefined from application perspective)</li>
 <li>on completion it belongs to application (completion handler), which can reuse this object or let it go out of scope (in which case it automatically returns to <a class="el" href="classsal_1_1net_1_1async_1_1service__t.html" title="Asynchronous networking I/O completion service. ">service_t</a> free-list).</li>
 </ul>
-<p>Data area for I/O is continuous but it doesn't necessarily start at head of allocated area. Each <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html" title="Asynchronous socket I/O operation handle and associated data for I/O (2kB). ">io_t</a> allocated data area resides between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>) but when launching asynchronous send/receive operations, actually used data is range [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17" title="Return pointer to end of application set send/receive data area. ">end()</a>): </p><div class="fragment"><div class="line">                  <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#a13b4c71cb1e79bb6054fa7780684f3f4">size</a></div><div class="line"><a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f">head</a>   _____________^_______________    <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b">tail</a></div><div class="line">v     /                             \      v</div><div class="line">......ooooooooooooooooooooooooooooooo......</div><div class="line">|     ^                              ^     |</div><div class="line">|     <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0">begin</a>/<a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#a245b3f2a25fa5baa12347e5a2c642437">data</a>                   <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17">end</a>     |</div><div class="line">|__ __|                              |__ __|</div><div class="line">   V                                    V</div><div class="line"><a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#ae9be0636596fb06f19d750575464d9dd">head_gap</a>                             <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#aa37d913de6da38700516cb58a5fb529f">tail_gap</a></div></div><!-- fragment --><p>This allows application to build packet header into [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>) and/or trailer into [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17" title="Return pointer to end of application set send/receive data area. ">end()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>). </p>
+<p>Data area for I/O is continuous but it doesn't necessarily start at head of allocated area. Each <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html" title="Asynchronous socket I/O operation handle and associated data for I/O (2kB). ">io_t</a> allocated data area resides between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>) but when launching asynchronous send/receive operations, actually used data is range [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27" title="Return pointer to end of application set send/receive data area. ">end()</a>): </p><div class="fragment"><div class="line">                  <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#a13b4c71cb1e79bb6054fa7780684f3f4">size</a></div><div class="line"><a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30">head</a>   _____________^_______________    <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a">tail</a></div><div class="line">v     /                             \      v</div><div class="line">......ooooooooooooooooooooooooooooooo......</div><div class="line">|     ^                              ^     |</div><div class="line">|     <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423">begin</a>/<a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#a0f3c55ec7788bf618bdc80e27814b5d7">data</a>                   <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27">end</a>     |</div><div class="line">|__ __|                              |__ __|</div><div class="line">   V                                    V</div><div class="line"><a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#ae9be0636596fb06f19d750575464d9dd">head_gap</a>                             <a class="code" href="classsal_1_1net_1_1async_1_1io__t.html#aa37d913de6da38700516cb58a5fb529f">tail_gap</a></div></div><!-- fragment --><p>This allows application to build packet header into [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>) and/or trailer into [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27" title="Return pointer to end of application set send/receive data area. ">end()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>). </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a0cfecd6a1e2681adc64ac73aedfab7b0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0cfecd6a1e2681adc64ac73aedfab7b0">&#9670;&nbsp;</a></span>begin()</h2>
+<a id="ae96e74bc78b06cd5ce7c20fa4c78e423"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae96e74bc78b06cd5ce7c20fa4c78e423">&#9670;&nbsp;</a></span>begin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -231,7 +254,7 @@ template&lt;typename Protocol &gt; </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t* sal::net::async::io_t::begin </td>
+          <td class="memname">std::byte* sal::net::async::io_t::begin </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -245,7 +268,7 @@ template&lt;typename Protocol &gt; </td></tr>
 </div><div class="memdoc">
 
 <p>Return pointer to beginning of application set send/receive data area. </p>
-<p>Falls between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>) </p>
+<p>Falls between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>) </p>
 
 </div>
 </div>
@@ -310,8 +333,8 @@ template&lt;typename Context &gt; </div>
 
 </div>
 </div>
-<a id="a245b3f2a25fa5baa12347e5a2c642437"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a245b3f2a25fa5baa12347e5a2c642437">&#9670;&nbsp;</a></span>data()</h2>
+<a id="a0f3c55ec7788bf618bdc80e27814b5d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f3c55ec7788bf618bdc80e27814b5d7">&#9670;&nbsp;</a></span>data()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -320,7 +343,7 @@ template&lt;typename Context &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t* sal::net::async::io_t::data </td>
+          <td class="memname">std::byte* sal::net::async::io_t::data </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -334,12 +357,12 @@ template&lt;typename Context &gt; </div>
 </div><div class="memdoc">
 
 <p>Return pointer to beginning of application set send/receive data area. </p>
-<p>Falls between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>) </p>
+<p>Falls between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>) </p>
 
 </div>
 </div>
-<a id="af5d3a953512f6ecc2b2864faf47bbe17"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5d3a953512f6ecc2b2864faf47bbe17">&#9670;&nbsp;</a></span>end()</h2>
+<a id="a5434832ca55e7fb84bbcc378264ffb27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5434832ca55e7fb84bbcc378264ffb27">&#9670;&nbsp;</a></span>end()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -348,7 +371,7 @@ template&lt;typename Context &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const uint8_t* sal::net::async::io_t::end </td>
+          <td class="memname">const std::byte* sal::net::async::io_t::end </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -362,7 +385,7 @@ template&lt;typename Context &gt; </div>
 </div><div class="memdoc">
 
 <p>Return pointer to end of application set send/receive data area. </p>
-<p>Falls between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>] </p>
+<p>Falls between [<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423" title="Return pointer to beginning of application set send/receive data area. ">begin()</a>,<a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>] </p>
 
 </div>
 </div>
@@ -515,10 +538,10 @@ template&lt;typename Result &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Set offset of send/receive data area from <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>. </p>
+<p>Set offset of send/receive data area from <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a>. </p>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if <em>offset_from_head</em> is past <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a> </td></tr>
+    <tr><td class="paramname">std::logic_error</td><td>if <em>offset_from_head</em> is past <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -549,10 +572,10 @@ template&lt;typename Result &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Set size for send/receive data size ie <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a0cfecd6a1e2681adc64ac73aedfab7b0" title="Return pointer to beginning of application set send/receive data area. ">begin()</a> + <em>s</em> = <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17" title="Return pointer to end of application set send/receive data area. ">end()</a>. </p>
+<p>Set size for send/receive data size ie <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#ae96e74bc78b06cd5ce7c20fa4c78e423" title="Return pointer to beginning of application set send/receive data area. ">begin()</a> + <em>s</em> = <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27" title="Return pointer to end of application set send/receive data area. ">end()</a>. </p>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if <em>new_size</em> sets <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#af5d3a953512f6ecc2b2864faf47bbe17" title="Return pointer to end of application set send/receive data area. ">end()</a> past <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>. </td></tr>
+    <tr><td class="paramname">std::logic_error</td><td>if <em>new_size</em> sets <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a5434832ca55e7fb84bbcc378264ffb27" title="Return pointer to end of application set send/receive data area. ">end()</a> past <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -614,10 +637,10 @@ template&lt;typename Context &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Set offset for end of send/receive data area from <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#aa9563240c37f7d56892d73447a2e419b" title="Return pointer to end of allocated send/receive data area. ">tail()</a>. </p>
+<p>Set offset for end of send/receive data area from <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a9ff490eeb494476a6bbff07ee85da36a" title="Return pointer to end of allocated send/receive data area. ">tail()</a>. </p>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if <em>offset_from_tail</em> is past <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#a44b275a128e7c4a2cfa1f8c4db543b4f" title="Return pointer to beginning of allocated send/receive data area. ">head()</a> </td></tr>
+    <tr><td class="paramname">std::logic_error</td><td>if <em>offset_from_tail</em> is past <a class="el" href="classsal_1_1net_1_1async_1_1io__t.html#afbd345b0cbb07fd4a38898cc2fabff30" title="Return pointer to beginning of allocated send/receive data area. ">head()</a> </td></tr>
   </table>
   </dd>
 </dl>
