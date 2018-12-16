@@ -25,9 +25,10 @@ namespace net::async {
  * This class holds OS-dependent completion handler (IOCP/epoll/kqueue). Each
  * socket that requests to start asynchronous operation, must first be
  * associated with service_t (see basic_socket_t::associate() and
- * basic_socket_acceptor_t::associate()). After socket launches any
- * asynchronous operation, it's completion is reported using this class
- * (wait_for(), wait(), try_get()).
+ * basic_socket_acceptor_t::associate()).
+ *
+ * After socket launches any asynchronous I/O operation, it's completions are
+ * reported using sal::net::async::completion_queue_t.
  *
  * service_t also maintains internally pool of free io_t objects. Any started
  * I/O operation must be allocated from initiator socket's associated
@@ -36,19 +37,16 @@ namespace net::async {
  *
  * Typical completed I/O operations handling loop may look like:
  * \code
- * for (;;)
+ * sal::net::async::completion_queue_t io_queue(io_svc);
+ * while (!stop_requested)
  * {
- *   if (auto io = service.try_get())
+ *   if (auto io = io_queue.try_get())
  *   {
  *     // handle completed io
  *   }
- *   else if (stop_requested)
- *   {
- *     break;
- *   }
  *   else
  *   {
- *     service.wait_for(1s);
+ *     io_queue.wait_for(1s);
  *   }
  * }
  * \endcode

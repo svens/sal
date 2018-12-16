@@ -79,6 +79,10 @@ public:
   };
 
 
+  /**
+   * Mark I/O operation handle to be automatically released after completion
+   * ie it is not returned by sal::net::async::completion_queue_t
+   */
   void skip_completion_notification (bool skip) noexcept
   {
     impl_.completed_list = skip
@@ -88,6 +92,10 @@ public:
   }
 
 
+  /**
+   * Return true if completed I/O operation will be released automatically and
+   * not returned by sal::net::async::completion_queue_t::try_get()
+   */
   bool skip_completion_notification () const noexcept
   {
     return impl_.completed_list == &impl_.service.free_list;

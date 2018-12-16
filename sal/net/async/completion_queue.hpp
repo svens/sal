@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * \file sal/net/async/completion_queue.hpp
+ * Asynchronous I/O operations completion queue.
+ */
+
+
 #include <sal/config.hpp>
 #include <sal/net/fwd.hpp>
 #include <sal/net/async/__bits/async.hpp>
@@ -14,10 +20,17 @@ __sal_begin
 namespace net::async {
 
 
+/**
+ * Asynchronous networking I/O completion queue.
+ * \see sal::net::async::service_t
+ */
 class completion_queue_t
 {
 public:
 
+  /**
+   * Instantiate new completion queue for \a service.
+   */
   completion_queue_t (const service_t &service) noexcept
     : impl_(service.impl_)
   { }
