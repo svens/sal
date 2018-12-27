@@ -301,10 +301,10 @@ inline std::string_view to_view (const char *first, const char *last) noexcept
 } // namespace
 
 
-uri_components_t uri_t::parse (const char *first, const char *last,
+uri_view_t::uri_view_t (const char *first, const char *last,
   std::error_code &error) noexcept
 {
-  uri_components_t result;
+  error = make_error_code(uri_errc::invalid_syntax);
 
   first = skip_forward(first, last, is_space);
   last = skip_backward(first, last, is_space_or_zero);
@@ -320,18 +320,16 @@ uri_components_t uri_t::parse (const char *first, const char *last,
 
       if (!is_alpha(*first))
       {
-        error = make_error_code(uri_errc::invalid_scheme);
-        return result;
+        return;
       }
 
       auto scheme_begin = first;
       first = skip_forward(first, it, is_scheme);
       if (first < it)
       {
-        error = make_error_code(uri_errc::invalid_scheme);
-        return result;
+        return;
       }
-      result.scheme = to_view(scheme_begin, first);
+      scheme = to_view(scheme_begin, first);
 
       ++first;
       break;
@@ -350,8 +348,7 @@ uri_components_t uri_t::parse (const char *first, const char *last,
     {
       if (!is_authority(*first))
       {
-        error = make_error_code(uri_errc::invalid_authority);
-        return result;
+        return;
       }
     }
     auto authority_end = first;
@@ -365,12 +362,12 @@ uri_components_t uri_t::parse (const char *first, const char *last,
       auto port_begin = skip_backward(authority_begin, authority_end, is_digit);
       if (port_begin > authority_begin && port_begin[-1] == ':')
       {
-        result.host = to_view(authority_begin, port_begin - 1);
-        result.port = to_view(port_begin, authority_end);
+        host = to_view(authority_begin, port_begin - 1);
+        port = to_view(port_begin, authority_end);
       }
       else
       {
-        result.host = to_view(authority_begin, authority_end);
+        host = to_view(authority_begin, authority_end);
       }
 
       //
@@ -378,14 +375,14 @@ uri_components_t uri_t::parse (const char *first, const char *last,
       //
 
       auto user_info_end = skip_forward(
-        result.host.data(),
-        result.host.data() + result.host.length(),
+        host.data(),
+        host.data() + host.length(),
         is_user_info
       );
       if (*user_info_end == '@')
       {
-        result.user_info = to_view(authority_begin, user_info_end);
-        result.host.remove_prefix(user_info_end - authority_begin + 1);
+        user_info = to_view(authority_begin, user_info_end);
+        host.remove_prefix(user_info_end - authority_begin + 1);
       }
     }
   }
@@ -400,10 +397,9 @@ uri_components_t uri_t::parse (const char *first, const char *last,
     first = skip_forward(path_begin, last, is_path);
     if (first < last && *first != '?' && *first != '#')
     {
-      error = make_error_code(uri_errc::invalid_path);
-      return result;
+      return;
     }
-    result.path = to_view(path_begin, first);
+    path = to_view(path_begin, first);
   }
 
   if (*first == '?')
@@ -416,10 +412,9 @@ uri_components_t uri_t::parse (const char *first, const char *last,
     first = skip_forward(first, last, is_query);
     if (first < last && *first != '#')
     {
-      error = make_error_code(uri_errc::invalid_query);
-      return result;
+      return;
     }
-    result.query = to_view(query_begin, first);
+    query = to_view(query_begin, first);
   }
 
   if (*first == '#')
@@ -432,14 +427,12 @@ uri_components_t uri_t::parse (const char *first, const char *last,
     first = skip_forward(first, last, is_fragment);
     if (first < last)
     {
-      error = make_error_code(uri_errc::invalid_fragment);
-      return result;
+      return;
     }
-    result.fragment = to_view(fragment_begin, first);
+    fragment = to_view(fragment_begin, first);
   }
 
   error.clear();
-  return result;
 }
 
 
@@ -450,16 +443,8 @@ inline std::string_view to_message (int value) noexcept
 {
   switch (static_cast<uri_errc>(value))
   {
-    case uri_errc::invalid_scheme:
-      return "invalid scheme";
-    case uri_errc::invalid_authority:
-      return "invalid authority";
-    case uri_errc::invalid_path:
-      return "invalid path";
-    case uri_errc::invalid_query:
-      return "invalid query";
-    case uri_errc::invalid_fragment:
-      return "invalid fragment";
+    case uri_errc::invalid_syntax:
+      return "invalid syntax";
   }
   return "Unknown error";
 }

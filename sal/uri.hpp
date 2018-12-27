@@ -16,8 +16,16 @@
 __sal_begin
 
 
-struct uri_components_t
+struct uri_view_t
 {
+  uri_view_t () = default;
+
+  uri_view_t (
+    const char *first,
+    const char *last,
+    std::error_code &error
+  ) noexcept;
+
   std::string_view scheme{};
   std::string_view user_info{};
   std::string_view host{};
@@ -28,60 +36,44 @@ struct uri_components_t
 };
 
 
-class uri_t
+template <typename It>
+inline uri_view_t uri_view (It first, It last, std::error_code &error) noexcept
 {
-public:
-
-  template <typename It>
-  static uri_components_t parse (It first, It last, std::error_code &error)
-    noexcept
+  if (first != last)
   {
-    if (first != last)
-    {
-      return parse(
-        reinterpret_cast<const char *>(to_ptr(first)),
-        reinterpret_cast<const char *>(to_end_ptr(first, last)),
-        error
-      );
-    }
-    return {};
+    return uri_view_t(
+      reinterpret_cast<const char *>(to_ptr(first)),
+      reinterpret_cast<const char *>(to_end_ptr(first, last)),
+      error
+    );
   }
+  return {};
+}
 
 
-  template <typename It>
-  static uri_components_t parse (It first, It last)
-  {
-    return parse(first, last, throw_on_error("uri::parse"));
-  }
+template <typename It>
+inline uri_view_t uri_view (It first, It last)
+{
+  return uri_view(first, last, throw_on_error("uri_view"));
+}
 
 
-  template <typename Data>
-  static uri_components_t parse (const Data &data, std::error_code &error)
-    noexcept
-  {
-    using std::cbegin;
-    using std::cend;
-    return parse(cbegin(data), cend(data), error);
-  }
+template <typename Data>
+inline uri_view_t uri_view (const Data &data, std::error_code &error) noexcept
+{
+  using std::cbegin;
+  using std::cend;
+  return uri_view(cbegin(data), cend(data), error);
+}
 
 
-  template <typename Data>
-  static uri_components_t parse (const Data &data)
-  {
-    using std::cbegin;
-    using std::cend;
-    return parse(cbegin(data), cend(data));
-  }
-
-
-private:
-
-  static uri_components_t parse (
-    const char *first,
-    const char *last,
-    std::error_code &error
-  ) noexcept;
-};
+template <typename Data>
+inline uri_view_t uri_view (const Data &data)
+{
+  using std::cbegin;
+  using std::cend;
+  return uri_view(cbegin(data), cend(data));
+}
 
 
 /**
@@ -89,11 +81,7 @@ private:
  */
 enum class uri_errc
 {
-  invalid_scheme = 1,
-  invalid_authority,
-  invalid_path,
-  invalid_query,
-  invalid_fragment,
+  invalid_syntax = 1,
 };
 
 
