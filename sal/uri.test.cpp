@@ -151,6 +151,147 @@ test_case_t test_cases[] =
     )
   ),
 
+  //
+  // Tests from https://rosettacode.org/wiki/URL_parser
+  //
+
+  ok("foo://example.com:8042/over/there?name=ferret#nose",
+    uri(
+      "foo",
+      {},
+      "example.com",
+      "8042",
+      "/over/there",
+      "name=ferret",
+      "nose"
+    )
+  ),
+
+  ok("urn:example:animal:ferret:nose",
+    uri(
+      "urn",
+      {},
+      {},
+      {},
+      "example:animal:ferret:nose",
+      {},
+      {}
+    )
+  ),
+
+  ok("jdbc:mysql://test_user:ouupppssss@localhost:3306/sakila?profileSQL=true",
+    uri(
+      "jdbc",
+      {},
+      {},
+      {},
+      "mysql://test_user:ouupppssss@localhost:3306/sakila",
+      "profileSQL=true",
+      {}
+    )
+  ),
+
+  ok("ftp://ftp.is.co.za/rfc/rfc1808.txt",
+    uri(
+      "ftp",
+      {},
+      "ftp.is.co.za",
+      {},
+      "/rfc/rfc1808.txt",
+      {},
+      {}
+    )
+  ),
+
+  ok("http://www.ietf.org/rfc/rfc2396.txt#header1",
+    uri(
+      "http",
+      {},
+      "www.ietf.org",
+      {},
+      "/rfc/rfc2396.txt",
+      {},
+      "header1"
+    )
+  ),
+
+  ok("ldap://[2001:db8::7]/c=GB?objectClass=one&objectClass=two",
+    uri(
+      "ldap",
+      {},
+      "[2001:db8::7]",
+      {},
+      "/c=GB",
+      "objectClass=one&objectClass=two",
+      {}
+    )
+  ),
+
+  ok("mailto:John.Doe@example.com",
+    uri(
+      "mailto",
+      {},
+      {},
+      {},
+      "John.Doe@example.com",
+      {},
+      {}
+    )
+  ),
+
+  ok("news:comp.infosystems.www.servers.unix",
+    uri(
+      "news",
+      {},
+      {},
+      {},
+      "comp.infosystems.www.servers.unix",
+      {},
+      {}
+    )
+  ),
+
+  ok("tel:+1-816-555-1212",
+    uri(
+      "tel",
+      {},
+      {},
+      {},
+      "+1-816-555-1212",
+      {},
+      {}
+    )
+  ),
+
+  ok("telnet://192.0.2.16:80/",
+    uri(
+      "telnet",
+      {},
+      "192.0.2.16",
+      "80",
+      "/",
+      {},
+      {}
+    )
+  ),
+
+  ok("urn:oasis:names:specification:docbook:dtd:xml:4.1.2",
+    uri(
+      "urn",
+      {},
+      {},
+      {},
+      "oasis:names:specification:docbook:dtd:xml:4.1.2",
+      {},
+      {}
+    )
+  ),
+
+  //
+  // Systematic tests
+  // For all combinations, it would be over 6k cases. Use only some
+  //
+
   // uri                            scheme	user		host		port		path		query		fragment
   ok({},			uri({},		{},		{},		{},		{},		{},		{}	)),
   ok("\t\r\n",			uri({},		{},		{},		{},		{},		{},		{}	)),
@@ -653,14 +794,16 @@ TEST_P(components, parse)
 {
   auto &test = GetParam();
 
+  std::error_code error;
+  auto view = sal::uri_view(test.uri, error);
+
   if (test.expect_success)
   {
-    EXPECT_EQ(test.expected_components, sal::uri_view(test.uri));
+    EXPECT_TRUE(!error);
+    EXPECT_EQ(test.expected_components, view);
   }
   else
   {
-    std::error_code error;
-    (void)sal::uri_view(test.uri, error);
     EXPECT_EQ(sal::uri_errc::invalid_syntax, error);
     EXPECT_FALSE(error.message().empty());
     EXPECT_STREQ("uri", error.category().name());
