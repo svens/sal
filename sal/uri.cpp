@@ -289,15 +289,6 @@ inline const char *skip_backward (const char *first, const char *last,
 }
 
 
-inline std::string_view to_view (const char *first, const char *last) noexcept
-{
-  return std::string_view{
-    first,
-    static_cast<std::string_view::size_type>(last - first)
-  };
-}
-
-
 } // namespace
 
 
@@ -310,7 +301,6 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     return;
   }
 
-  error = make_error_code(uri_errc::invalid_syntax);
   auto first = view.data();
   auto last = view.data() + view.length();
 
@@ -328,16 +318,18 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
 
       if (!is_alpha(*first))
       {
+        error = make_error_code(uri_errc::invalid_scheme);
         return;
       }
 
       auto scheme_begin = first;
-      first = skip_forward(first, it, is_scheme);
+      first = skip_forward(scheme_begin, it, is_scheme);
       if (first < it)
       {
+        error = make_error_code(uri_errc::invalid_scheme);
         return;
       }
-      scheme = to_view(scheme_begin, first);
+      scheme = as_view(scheme_begin, first);
 
       ++first;
       break;
@@ -350,14 +342,12 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     // authority
     //
 
-    first += 2;
-    auto authority_begin = first;
-    for (/**/;  first != last && !is_authority_separator(*first);  ++first)
+    auto authority_begin = first + 2;
+    first = skip_forward(authority_begin, last, is_authority);
+    if (first < last && !is_authority_separator(*first))
     {
-      if (!is_authority(*first))
-      {
-        return;
-      }
+      error = make_error_code(uri_errc::invalid_authority);
+      return;
     }
     auto authority_end = first;
 
@@ -370,12 +360,12 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
       auto port_begin = skip_backward(authority_begin, authority_end, is_digit);
       if (port_begin > authority_begin && port_begin[-1] == ':')
       {
-        host = to_view(authority_begin, port_begin - 1);
-        port = to_view(port_begin, authority_end);
+        host = as_view(authority_begin, port_begin - 1);
+        port = as_view(port_begin, authority_end);
       }
       else
       {
-        host = to_view(authority_begin, authority_end);
+        host = as_view(authority_begin, authority_end);
       }
 
       //
@@ -389,13 +379,13 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
       );
       if (*user_info_end == '@')
       {
-        user_info = to_view(authority_begin, user_info_end);
+        user_info = as_view(authority_begin, user_info_end);
         host.remove_prefix(user_info_end - authority_begin + 1);
       }
     }
   }
 
-  if (*first == '/' || is_path(*first))
+  if (is_path(*first))
   {
     //
     // path
@@ -405,9 +395,10 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     first = skip_forward(path_begin, last, is_path);
     if (first < last && *first != '?' && *first != '#')
     {
+      error = make_error_code(uri_errc::invalid_path);
       return;
     }
-    path = to_view(path_begin, first);
+    path = as_view(path_begin, first);
   }
 
   if (*first == '?')
@@ -416,13 +407,14 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     // query
     //
 
-    auto query_begin = ++first;
-    first = skip_forward(first, last, is_query);
+    auto query_begin = first + 1;
+    first = skip_forward(query_begin, last, is_query);
     if (first < last && *first != '#')
     {
+      error = make_error_code(uri_errc::invalid_query);
       return;
     }
-    query = to_view(query_begin, first);
+    query = as_view(query_begin, first);
   }
 
   if (*first == '#')
@@ -431,13 +423,14 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     // fragment
     //
 
-    auto fragment_begin = ++first;
-    first = skip_forward(first, last, is_fragment);
+    auto fragment_begin = first + 1;
+    first = skip_forward(fragment_begin, last, is_fragment);
     if (first < last)
     {
+      error = make_error_code(uri_errc::invalid_fragment);
       return;
     }
-    fragment = to_view(fragment_begin, first);
+    fragment = as_view(fragment_begin, first);
   }
 
   error.clear();
@@ -451,8 +444,16 @@ inline std::string_view to_message (int value) noexcept
 {
   switch (static_cast<uri_errc>(value))
   {
-    case uri_errc::invalid_syntax:
-      return "invalid syntax";
+    case uri_errc::invalid_scheme:
+      return "invalid scheme";
+    case uri_errc::invalid_authority:
+      return "invalid authority";
+    case uri_errc::invalid_path:
+      return "invalid path";
+    case uri_errc::invalid_query:
+      return "invalid query";
+    case uri_errc::invalid_fragment:
+      return "invalid fragment";
   }
   return "Unknown error";
 }

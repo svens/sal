@@ -69,7 +69,11 @@ inline uri_view_t uri_view (const Data &data)
  */
 enum class uri_errc
 {
-  invalid_syntax = 1,
+  invalid_scheme = 1,
+  invalid_authority,
+  invalid_path,
+  invalid_query,
+  invalid_fragment,
 };
 
 

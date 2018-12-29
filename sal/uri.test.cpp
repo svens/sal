@@ -69,7 +69,12 @@ namespace {
 struct test_case_t
 {
   std::string uri{};
-  sal::uri_view_t expected_components{};
+
+  union
+  {
+    sal::uri_view_t expected_components{};
+    std::error_code expected_error;
+  };
   bool expect_success;
 
   test_case_t (const sal::uri_view_t &expected)
@@ -77,8 +82,9 @@ struct test_case_t
     , expect_success(true)
   {}
 
-  test_case_t ()
-    : expect_success(false)
+  test_case_t (sal::uri_errc expected)
+    : expected_error(sal::make_error_code(expected))
+    , expect_success(false)
   {}
 
   friend std::ostream &operator<< (std::ostream &os, const test_case_t &test_case)
@@ -96,9 +102,9 @@ test_case_t ok (std::string uri, const sal::uri_view_t &components)
 }
 
 
-test_case_t fail (std::string uri)
+test_case_t fail (std::string uri, sal::uri_errc error_code)
 {
-  test_case_t result;
+  test_case_t result{error_code};
   result.uri = uri;
   return result;
 }
@@ -287,6 +293,18 @@ test_case_t test_cases[] =
     )
   ),
 
+  ok("ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm",
+    uri(
+      "ftp",
+      "cnn.example.com&story=breaking_news",
+      "10.0.0.1",
+      {},
+      "/top_story.htm",
+      {},
+      {}
+    )
+  ),
+
   //
   // Systematic tests
   // For all combinations, it would be over 6k cases. Use only some
@@ -365,30 +383,30 @@ test_case_t test_cases[] =
   ok("s:///./p",		uri("s",	{},		{},		{},		"/./p",		{},		{}	)),
   ok("s:///../p",		uri("s",	{},		{},		{},		"/../p",	{},		{}	)),
 
-  fail("1s:"),
-  fail(":"),
-  fail(":/"),
-  fail("://"),
-  fail(":///"),
-  fail(":///p"),
-  fail("://h"),
-  fail("://h:123"),
-  fail(":123"),
-  fail(":123/"),
-  fail(":123//"),
-  fail(":123//path"),
-  fail("s~e:"),
-  fail("s://h|t"),
-  fail("s://h/|p"),
-  fail("s://h/p?<q"),
-  fail("s://h/p#<p"),
+  fail("1s:", sal::uri_errc::invalid_scheme),
+  fail(":", sal::uri_errc::invalid_scheme),
+  fail(":/", sal::uri_errc::invalid_scheme),
+  fail("://", sal::uri_errc::invalid_scheme),
+  fail(":///", sal::uri_errc::invalid_scheme),
+  fail(":///p", sal::uri_errc::invalid_scheme),
+  fail("://h", sal::uri_errc::invalid_scheme),
+  fail("://h:123", sal::uri_errc::invalid_scheme),
+  fail(":123", sal::uri_errc::invalid_scheme),
+  fail(":123/", sal::uri_errc::invalid_scheme),
+  fail(":123//", sal::uri_errc::invalid_scheme),
+  fail(":123//path", sal::uri_errc::invalid_scheme),
+  fail("s~e:", sal::uri_errc::invalid_scheme),
+  fail("s://h|t", sal::uri_errc::invalid_authority),
+  fail("s://h/|p", sal::uri_errc::invalid_path),
+  fail("s://h/p?<q", sal::uri_errc::invalid_query),
+  fail("s://h/p#<p", sal::uri_errc::invalid_fragment),
 };
 
-using components = ::testing::TestWithParam<test_case_t>;
-INSTANTIATE_TEST_CASE_P(uri, components, ::testing::ValuesIn(test_cases),);
+using uri_view = ::testing::TestWithParam<test_case_t>;
+INSTANTIATE_TEST_CASE_P(uri, uri_view, ::testing::ValuesIn(test_cases),);
 
 
-TEST_P(components, parse)
+TEST_P(uri_view, split)
 {
   auto &test = GetParam();
 
@@ -402,7 +420,7 @@ TEST_P(components, parse)
   }
   else
   {
-    EXPECT_EQ(sal::uri_errc::invalid_syntax, error);
+    EXPECT_EQ(test.expected_error, error) << error.message();
     EXPECT_FALSE(error.message().empty());
     EXPECT_STREQ("uri", error.category().name());
 
