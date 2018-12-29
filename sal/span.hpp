@@ -8,6 +8,7 @@
  */
 
 #include <sal/config.hpp>
+#include <array>
 #include <iterator>
 #include <type_traits>
 
@@ -21,57 +22,44 @@ __sal_begin
 template <typename T>
 class span_t
 {
+private:
+
+  template <typename Container>
+  using enable_if_convertible_from = std::enable_if_t<
+    std::is_convertible_v<
+      std::remove_pointer_t<
+        decltype(std::data(std::declval<Container &>()))
+      >(*)[],
+      T(*)[]
+    >
+    &&
+    std::is_integral_v<
+      std::decay_t<
+        decltype(std::size(std::declval<Container &>()))
+      >
+    >
+  >;
+
+  template <typename U>
+  using enable_if_mutable = std::enable_if_t<!std::is_const_v<T>, U>;
+
+  template <typename U>
+  using enable_if_const = std::enable_if_t<std::is_const_v<T>, U>;
+
 public:
 
-  /**
-   * Span element type
-   */
   using element_type = T;
-
-  /**
-   * Span value type
-   */
   using value_type = std::remove_cv_t<T>;
-
-  /**
-   * Span index type
-   */
-  using index_type = std::ptrdiff_t;
-
-  /**
-   * Difference type between two span's pointer's
-   */
-  using difference_type = std::ptrdiff_t;
-
-  /**
-   * Span element pointer type
-   */
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
   using pointer = T *;
-
-  /**
-   * Span element reference type
-   */
   using reference = T &;
-
-  /**
-   * Span element const pointer type
-   */
   using const_pointer = const T *;
-
-  /**
-   * Span element const reference type
-   */
   using const_reference = const T &;
-
-  /**
-   * Span iterator type
-   */
   using iterator = pointer;
-
-  /**
-   * Span const iterator type
-   */
   using const_iterator = const_pointer;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 
   constexpr span_t () noexcept = default;
@@ -86,7 +74,7 @@ public:
   /**
    * Construct span over range [\a ptr, \a ptr + \a count)
    */
-  constexpr span_t (pointer ptr, index_type count) noexcept
+  constexpr span_t (pointer ptr, size_type count) noexcept
     : ptr_(ptr)
     , count_(count)
   { }
@@ -101,18 +89,21 @@ public:
 
 
   /**
-   * Construct span over \a arr
+   * Construct span over \a array
    */
   template <size_t N>
-  constexpr span_t (element_type (&arr)[N]) noexcept
-    : span_t(std::addressof(arr[0]), N)
+  constexpr span_t (element_type (&array)[N]) noexcept
+    : span_t(std::addressof(array[0]), N)
   { }
 
 
   /**
    * Construct span over \a container
    */
-  template <typename Container>
+  template <typename Container,
+    typename = enable_if_convertible_from<Container>,
+    typename = enable_if_mutable<Container>
+  >
   constexpr span_t (Container &container)
     : span_t(std::data(container), std::size(container))
   { }
@@ -121,7 +112,10 @@ public:
   /**
    * Construct const span over \a container
    */
-  template <typename Container>
+  template <typename Container,
+    typename = enable_if_convertible_from<Container>,
+    typename = enable_if_const<Container>
+  >
   constexpr span_t (const Container &container)
     : span_t(std::data(container), std::size(container))
   { }
@@ -148,7 +142,7 @@ public:
   /**
    * Return span element on \a index
    */
-  constexpr reference operator[] (index_type index) const
+  constexpr reference operator[] (size_type index) const
   {
     return ptr_[index];
   }
@@ -157,7 +151,7 @@ public:
   /**
    * Return number of elements in span
    */
-  constexpr index_type size () const noexcept
+  constexpr size_type size () const noexcept
   {
     return count_;
   }
@@ -166,7 +160,7 @@ public:
   /**
    * Return size of span in bytes
    */
-  constexpr index_type size_bytes () const noexcept
+  constexpr size_type size_bytes () const noexcept
   {
     return size() * sizeof(element_type);
   }
@@ -177,7 +171,7 @@ public:
    */
   constexpr iterator begin () const noexcept
   {
-    return ptr_;
+    return data();
   }
 
 
@@ -186,7 +180,7 @@ public:
    */
   constexpr const_iterator cbegin () const noexcept
   {
-    return ptr_;
+    return begin();
   }
 
 
@@ -195,7 +189,7 @@ public:
    */
   constexpr iterator end () const noexcept
   {
-    return ptr_ + count_;
+    return data() + size();
   }
 
 
@@ -204,15 +198,133 @@ public:
    */
   constexpr const_iterator cend () const noexcept
   {
-    return ptr_ + count_;
+    return end();
+  }
+
+
+  /**
+   * Return iterator to beginning of span
+   */
+  constexpr reverse_iterator rbegin () const noexcept
+  {
+    return reverse_iterator(end());
+  }
+
+
+  /**
+   * Return const iterator to beginning of span
+   */
+  constexpr const_reverse_iterator crbegin () const noexcept
+  {
+    return rbegin();
+  }
+
+
+  /**
+   * Return iterator to past end of span
+   */
+  constexpr reverse_iterator rend () const noexcept
+  {
+    return reverse_iterator(begin());
+  }
+
+
+  /**
+   * Return const iterator to past end of span
+   */
+  constexpr const_reverse_iterator crend () const noexcept
+  {
+    return rend();
   }
 
 
 private:
 
   pointer ptr_{};
-  size_t count_{};
+  size_type count_{};
 };
+
+
+/**
+ * Return span over range [\a ptr, \a ptr + \a count)
+ */
+template <typename T>
+constexpr span_t<T> span (T *ptr, size_t count) noexcept
+{
+  return span_t<T>(ptr, count);
+}
+
+
+/**
+ * Return span over range [\a first, \a last)
+ */
+template <typename T>
+constexpr span_t<T> span (T *first, T *last) noexcept
+{
+  return span_t<T>(first, last);
+}
+
+
+/**
+ * Return span over \a array
+ */
+template <typename T, size_t N>
+constexpr span_t<T> span (T (&array)[N]) noexcept
+{
+  return span_t<T>(array, N);
+}
+
+
+/**
+ * Return span over \a container
+ */
+template <typename Container>
+constexpr auto span (Container &container) noexcept
+  -> decltype(span(std::data(container), std::size(container)))
+{
+  return span(std::data(container), std::size(container));
+}
+
+
+/**
+ * Return span over range [\a ptr, \a ptr + \a count)
+ */
+template <typename T>
+constexpr span_t<const T> const_span (T *ptr, size_t count) noexcept
+{
+  return span_t<const T>(ptr, count);
+}
+
+
+/**
+ * Return span over range [\a first, \a last)
+ */
+template <typename T>
+constexpr span_t<const T> const_span (T *first, T *last) noexcept
+{
+  return span_t<const T>(first, last);
+}
+
+
+/**
+ * Return span over \a array
+ */
+template <typename T, size_t N>
+constexpr span_t<const T> const_span (const T (&array)[N]) noexcept
+{
+  return span_t<const T>(array, N);
+}
+
+
+/**
+ * Return span over \a container
+ */
+template <typename Container>
+constexpr auto const_span (const Container &container) noexcept
+  -> decltype(span(container))
+{
+  return span(container);
+}
 
 
 /**
@@ -228,7 +340,7 @@ inline span_t<const std::byte> as_bytes (span_t<T> span) noexcept
 /**
  * Return new span with std::byte value type over existing \a span 
  */
-template <typename T, std::enable_if_t<std::is_const_v<T> == false, int> = 0>
+template <typename T, typename = std::enable_if_t<!std::is_const_v<T>>>
 inline span_t<std::byte> as_writable_bytes (span_t<T> span) noexcept
 {
   return {reinterpret_cast<std::byte *>(span.data()), span.size_bytes()};

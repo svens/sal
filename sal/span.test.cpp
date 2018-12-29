@@ -10,17 +10,22 @@ template <typename T>
 struct span
   : public sal_test::with_type<T>
 {
-  static T arr[3];
-  static constexpr std::ptrdiff_t count = sizeof(arr) / sizeof(arr[0]);
-  static constexpr std::ptrdiff_t bytes = count * sizeof(T);
-  static std::vector<T> vector;
+  static T array[3];
+  static constexpr size_t count = sizeof(array) / sizeof(array[0]);
+  static constexpr size_t bytes = count * sizeof(T);
+
+  static std::vector<T> std_vector;
+  static std::array<T, count> std_array;
 };
 
 template <typename T>
-T span<T>::arr[] = { 1, 2, 3 };
+T span<T>::array[] = {1, 2, 3};
 
 template <typename T>
-std::vector<T> span<T>::vector{arr, arr + count};
+std::vector<T> span<T>::std_vector{array, array + count};
+
+template <typename T>
+std::array<T, span<T>::count> span<T>::std_array{1, 2, 3};
 
 using pod_types = ::testing::Types<
   uint8_t,
@@ -73,9 +78,9 @@ TYPED_TEST(span, ctor)
 
 TYPED_TEST(span, ctor_with_ptr_and_count)
 {
-  sal::span_t<TypeParam> span(this->arr, this->count);
+  auto span = sal::span(this->array, this->count);
   EXPECT_FALSE(span.empty());
-  EXPECT_EQ(this->arr, span.data());
+  EXPECT_EQ(this->array, span.data());
   EXPECT_EQ(this->count, span.size());
   EXPECT_EQ(this->bytes, span.size_bytes());
 }
@@ -83,9 +88,9 @@ TYPED_TEST(span, ctor_with_ptr_and_count)
 
 TYPED_TEST(span, ctor_with_range)
 {
-  sal::span_t<TypeParam> span(this->arr, this->arr + this->count);
+  auto span = sal::span(this->array, this->array + this->count);
   EXPECT_FALSE(span.empty());
-  EXPECT_EQ(this->arr, span.data());
+  EXPECT_EQ(this->array, span.data());
   EXPECT_EQ(this->count, span.size());
   EXPECT_EQ(this->bytes, span.size_bytes());
 }
@@ -93,30 +98,49 @@ TYPED_TEST(span, ctor_with_range)
 
 TYPED_TEST(span, ctor_with_array)
 {
-  sal::span_t<TypeParam> span(this->arr);
+  auto span = sal::span(this->array);
   EXPECT_FALSE(span.empty());
-  EXPECT_EQ(this->arr, span.data());
+  EXPECT_EQ(this->array, span.data());
   EXPECT_EQ(this->count, span.size());
   EXPECT_EQ(this->bytes, span.size_bytes());
 }
 
 
-TYPED_TEST(span, ctor_with_vector)
+TYPED_TEST(span, ctor_with_std_vector)
 {
-  sal::span_t<TypeParam> span(this->vector);
+  auto span = sal::span(this->std_vector);
   EXPECT_FALSE(span.empty());
-  EXPECT_EQ(this->vector.data(), span.data());
+  EXPECT_EQ(this->std_vector.data(), span.data());
   EXPECT_EQ(this->count, span.size());
   EXPECT_EQ(this->bytes, span.size_bytes());
 }
 
 
-TYPED_TEST(span, ctor_with_const_vector)
+TYPED_TEST(span, ctor_with_const_std_vector)
 {
-  const auto &data = this->vector;
-  sal::span_t<const TypeParam> span(data);
+  auto span = sal::const_span(this->std_vector);
   EXPECT_FALSE(span.empty());
-  EXPECT_EQ(this->vector.data(), span.data());
+  EXPECT_EQ(this->std_vector.data(), span.data());
+  EXPECT_EQ(this->count, span.size());
+  EXPECT_EQ(this->bytes, span.size_bytes());
+}
+
+
+TYPED_TEST(span, ctor_with_std_array)
+{
+  auto span = sal::span(this->std_array);
+  EXPECT_FALSE(span.empty());
+  EXPECT_EQ(this->std_array.data(), span.data());
+  EXPECT_EQ(this->count, span.size());
+  EXPECT_EQ(this->bytes, span.size_bytes());
+}
+
+
+TYPED_TEST(span, ctor_with_const_std_array)
+{
+  auto span = sal::const_span(this->std_array);
+  EXPECT_FALSE(span.empty());
+  EXPECT_EQ(this->std_array.data(), span.data());
   EXPECT_EQ(this->count, span.size());
   EXPECT_EQ(this->bytes, span.size_bytes());
 }
@@ -125,64 +149,86 @@ TYPED_TEST(span, ctor_with_const_vector)
 TYPED_TEST(span, index)
 {
   std::vector<TypeParam> data;
-
-  sal::span_t<const TypeParam> span(this->vector);
-  for (auto index = 0;  index < span.size();  ++index)
+  auto span = sal::const_span(this->std_vector);
+  for (auto index = 0U;  index < span.size();  ++index)
   {
     data.emplace_back(span[index]);
   }
-
-  EXPECT_EQ(this->vector, data);
+  EXPECT_EQ(this->std_vector, data);
 }
 
 
 TYPED_TEST(span, iterator)
 {
   std::vector<TypeParam> data;
-
-  sal::span_t<const TypeParam> span(this->vector);
+  auto span = sal::span(this->std_vector);
   for (auto it = span.begin();  it != span.end();  ++it)
   {
     data.emplace_back(*it);
   }
-
-  EXPECT_EQ(this->vector, data);
+  EXPECT_EQ(this->std_vector, data);
 }
 
 
 TYPED_TEST(span, const_iterator)
 {
   std::vector<TypeParam> data;
-
-  sal::span_t<const TypeParam> span(this->vector);
+  auto span = sal::const_span(this->std_vector);
   for (auto it = span.cbegin();  it != span.cend();  ++it)
   {
     data.emplace_back(*it);
   }
+  EXPECT_EQ(this->std_vector, data);
+}
 
-  EXPECT_EQ(this->vector, data);
+
+TYPED_TEST(span, reverse_iterator)
+{
+  std::vector<TypeParam> data;
+  auto span = sal::span(this->std_vector);
+  for (auto it = span.rbegin();  it != span.rend();  ++it)
+  {
+    data.emplace_back(*it);
+  }
+
+  auto reverse_data = this->std_vector;
+  std::reverse(reverse_data.begin(), reverse_data.end());
+  EXPECT_EQ(reverse_data, data);
+}
+
+
+TYPED_TEST(span, const_reverse_iterator)
+{
+  std::vector<TypeParam> data;
+  auto span = sal::const_span(this->std_vector);
+  for (auto it = span.crbegin();  it != span.crend();  ++it)
+  {
+    data.emplace_back(*it);
+  }
+
+  auto reverse_data = this->std_vector;
+  std::reverse(reverse_data.begin(), reverse_data.end());
+  EXPECT_EQ(reverse_data, data);
 }
 
 
 TYPED_TEST(span, as_bytes)
 {
-  sal::span_t<TypeParam> span(this->arr);
-  auto data = sal::as_bytes(span);
-  EXPECT_TRUE(std::is_const_v<typename decltype(data)::element_type>);
+  auto span = sal::as_bytes(sal::const_span(this->array));
+  EXPECT_TRUE(std::is_const_v<typename decltype(span)::element_type>);
   EXPECT_EQ(
-    reinterpret_cast<const std::byte *>(this->arr),
-    data.data()
+    reinterpret_cast<const std::byte *>(this->array),
+    span.data()
   );
 }
 
 
 TYPED_TEST(span, as_writable_bytes)
 {
-  sal::span_t<TypeParam> span(this->arr);
-  auto data = sal::as_writable_bytes(span);
+  auto span = sal::as_writable_bytes(sal::span(this->array));
   EXPECT_EQ(
-    reinterpret_cast<std::byte *>(this->arr),
-    data.data()
+    reinterpret_cast<std::byte *>(this->array),
+    span.data()
   );
 }
 
