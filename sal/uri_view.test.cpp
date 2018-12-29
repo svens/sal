@@ -1,10 +1,13 @@
-#include <sal/uri.hpp>
+#include <sal/uri_error.hpp>
+#include <sal/uri_view.hpp>
 #include <sal/common.test.hpp>
 #include <ostream>
 
 
 namespace sal {
 
+// sal URI library does not provide inserter or comparison operators,
+// implement here for testing
 
 std::ostream &print (std::ostream &os, const std::string_view &piece)
 {
@@ -19,7 +22,6 @@ std::ostream &print (std::ostream &os, const std::string_view &piece)
   return (os << piece);
 }
 
-
 std::ostream &operator<< (std::ostream &os, const sal::uri_view_t &uri)
 {
   print(os, uri.scheme) << '|';
@@ -31,7 +33,6 @@ std::ostream &operator<< (std::ostream &os, const sal::uri_view_t &uri)
   print(os, uri.fragment);
   return os;
 }
-
 
 bool cmp (const std::string_view &left, const std::string_view &right) noexcept
 {
@@ -46,7 +47,6 @@ bool cmp (const std::string_view &left, const std::string_view &right) noexcept
   return false;
 }
 
-
 bool operator== (const uri_view_t &left, const uri_view_t &right) noexcept
 {
   return cmp(left.scheme, right.scheme)
@@ -58,7 +58,6 @@ bool operator== (const uri_view_t &left, const uri_view_t &right) noexcept
     && cmp(left.fragment, right.fragment)
   ;
 }
-
 
 } // namespace sal
 
@@ -406,7 +405,7 @@ using uri_view = ::testing::TestWithParam<test_case_t>;
 INSTANTIATE_TEST_CASE_P(uri, uri_view, ::testing::ValuesIn(test_cases),);
 
 
-TEST_P(uri_view, split)
+TEST_P(uri_view, uri_view)
 {
   auto &test = GetParam();
 

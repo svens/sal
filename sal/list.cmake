@@ -30,8 +30,10 @@ list(APPEND sal_sources
   sal/thread.cpp
   sal/time.hpp
   sal/type_id.hpp
-  sal/uri.hpp
-  sal/uri.cpp
+  sal/uri_error.hpp
+  sal/uri_error.cpp
+  sal/uri_view.hpp
+  sal/uri_view.cpp
 )
 
 
@@ -60,7 +62,7 @@ list(APPEND sal_unittests_sources
   sal/type_id.test.cpp
   sal/type_id.unit_a.test.cpp
   sal/type_id.unit_b.test.cpp
-  sal/uri.test.cpp
+  sal/uri_view.test.cpp
 )
 
 

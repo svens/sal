@@ -1,4 +1,5 @@
-#include <sal/uri.hpp>
+#include <sal/uri_view.hpp>
+#include <sal/uri_error.hpp>
 
 
 __sal_begin
@@ -434,53 +435,6 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
   }
 
   error.clear();
-}
-
-
-namespace {
-
-
-inline std::string_view to_message (int value) noexcept
-{
-  switch (static_cast<uri_errc>(value))
-  {
-    case uri_errc::invalid_scheme:
-      return "invalid scheme";
-    case uri_errc::invalid_authority:
-      return "invalid authority";
-    case uri_errc::invalid_path:
-      return "invalid path";
-    case uri_errc::invalid_query:
-      return "invalid query";
-    case uri_errc::invalid_fragment:
-      return "invalid fragment";
-  }
-  return "Unknown error";
-}
-
-
-class uri_category_impl_t
-  : public std::error_category
-{
-  const char *name () const noexcept final override
-  {
-    return "uri";
-  }
-
-  std::string message (int value) const final override
-  {
-    return std::string{to_message(value)};
-  }
-};
-
-
-} // namespace
-
-
-const std::error_category &uri_category () noexcept
-{
-  static const uri_category_impl_t cat_{};
-  return cat_;
 }
 
 
