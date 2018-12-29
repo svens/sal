@@ -306,4 +306,41 @@ TEST_F(memory, range_size_empty_vector)
 }
 
 
+TEST_F(memory, as_view_from_ptr_and_size)
+{
+  auto data = case_name;
+  auto view = sal::as_view(&case_name[0], case_name.size());
+  EXPECT_EQ(&case_name[0], view.data());
+  EXPECT_EQ(case_name.size(), view.size());
+  EXPECT_EQ(case_name, view);
+}
+
+
+TEST_F(memory, as_view_from_range)
+{
+  auto view = sal::as_view(&case_name[0], &case_name[case_name.size()]);
+  EXPECT_EQ(&case_name[0], view.data());
+  EXPECT_EQ(case_name.size(), view.size());
+  EXPECT_EQ(case_name, view);
+}
+
+
+TEST_F(memory, as_view_from_c_str)
+{
+  auto view = sal::as_view(case_name.c_str());
+  EXPECT_EQ(&case_name[0], view.data());
+  EXPECT_EQ(case_name.size(), view.size());
+  EXPECT_EQ(case_name, view);
+}
+
+
+TEST_F(memory, as_view_from_string)
+{
+  auto view = sal::as_view(case_name);
+  EXPECT_EQ(&case_name[0], view.data());
+  EXPECT_EQ(case_name.size(), view.size());
+  EXPECT_EQ(case_name, view);
+}
+
+
 } // namespace

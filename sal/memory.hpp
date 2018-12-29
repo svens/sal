@@ -8,6 +8,7 @@
 #include <sal/config.hpp>
 #include <iterator>
 #include <memory>
+#include <string_view>
 
 
 __sal_begin
@@ -119,6 +120,49 @@ inline auto to_end_ptr (It first, It last) noexcept
 constexpr std::nullptr_t to_end_ptr (std::nullptr_t, std::nullptr_t) noexcept
 {
   return nullptr;
+}
+
+
+/**
+ * Return range [\a ptr, \a ptr + length) as std::basic_string_view<T>.
+ */
+template <typename T>
+constexpr std::basic_string_view<T> as_view (const T *ptr, size_t length)
+  noexcept
+{
+  return {ptr, length};
+}
+
+
+/**
+ * Return range [\a first, \a last) as std::basic_string_view<T>.
+ */
+template <typename T>
+constexpr std::basic_string_view<T> as_view (const T *first, const T *last)
+  noexcept
+{
+  return as_view(first, range_size(first, last));
+}
+
+
+/**
+ * Return \a str as std::basic_string_view<T>.
+ */
+template <typename T>
+constexpr std::basic_string_view<T> as_view (const T *str) noexcept
+{
+  return {str};
+}
+
+
+/**
+ * Return \a container as std::basic_string_view<T>
+ */
+template <typename Container>
+constexpr auto as_view (const Container &container) noexcept
+  -> decltype(as_view(std::data(container), std::size(container)))
+{
+  return as_view(std::data(container), std::size(container));
 }
 
 
