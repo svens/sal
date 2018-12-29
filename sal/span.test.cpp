@@ -25,7 +25,7 @@ template <typename T>
 std::vector<T> span<T>::std_vector{array, array + count};
 
 template <typename T>
-std::array<T, span<T>::count> span<T>::std_array{1, 2, 3};
+std::array<T, span<T>::count> span<T>::std_array{{1, 2, 3}};
 
 using pod_types = ::testing::Types<
   uint8_t,
