@@ -66,7 +66,7 @@ struct pod_type_names
 TYPED_TEST_CASE(span, pod_types, pod_type_names);
 
 
-TYPED_TEST(span, ctor)
+TYPED_TEST(span, empty)
 {
   sal::span_t<TypeParam> span;
   EXPECT_TRUE(span.empty());
@@ -76,7 +76,7 @@ TYPED_TEST(span, ctor)
 }
 
 
-TYPED_TEST(span, ctor_with_ptr_and_count)
+TYPED_TEST(span, with_ptr_and_count)
 {
   auto span = sal::span(this->array, this->count);
   EXPECT_FALSE(span.empty());
@@ -86,7 +86,17 @@ TYPED_TEST(span, ctor_with_ptr_and_count)
 }
 
 
-TYPED_TEST(span, ctor_with_range)
+TYPED_TEST(span, with_const_ptr_and_count)
+{
+  auto span = sal::const_span(this->array, this->count);
+  EXPECT_FALSE(span.empty());
+  EXPECT_EQ(this->array, span.data());
+  EXPECT_EQ(this->count, span.size());
+  EXPECT_EQ(this->bytes, span.size_bytes());
+}
+
+
+TYPED_TEST(span, with_range)
 {
   auto span = sal::span(this->array, this->array + this->count);
   EXPECT_FALSE(span.empty());
@@ -96,7 +106,17 @@ TYPED_TEST(span, ctor_with_range)
 }
 
 
-TYPED_TEST(span, ctor_with_array)
+TYPED_TEST(span, with_const_range)
+{
+  auto span = sal::const_span(this->array, this->array + this->count);
+  EXPECT_FALSE(span.empty());
+  EXPECT_EQ(this->array, span.data());
+  EXPECT_EQ(this->count, span.size());
+  EXPECT_EQ(this->bytes, span.size_bytes());
+}
+
+
+TYPED_TEST(span, with_array)
 {
   auto span = sal::span(this->array);
   EXPECT_FALSE(span.empty());
@@ -106,7 +126,17 @@ TYPED_TEST(span, ctor_with_array)
 }
 
 
-TYPED_TEST(span, ctor_with_std_vector)
+TYPED_TEST(span, with_const_array)
+{
+  auto span = sal::const_span(this->array);
+  EXPECT_FALSE(span.empty());
+  EXPECT_EQ(this->array, span.data());
+  EXPECT_EQ(this->count, span.size());
+  EXPECT_EQ(this->bytes, span.size_bytes());
+}
+
+
+TYPED_TEST(span, with_std_vector)
 {
   auto span = sal::span(this->std_vector);
   EXPECT_FALSE(span.empty());
@@ -116,7 +146,7 @@ TYPED_TEST(span, ctor_with_std_vector)
 }
 
 
-TYPED_TEST(span, ctor_with_const_std_vector)
+TYPED_TEST(span, with_const_std_vector)
 {
   auto span = sal::const_span(this->std_vector);
   EXPECT_FALSE(span.empty());
@@ -126,7 +156,7 @@ TYPED_TEST(span, ctor_with_const_std_vector)
 }
 
 
-TYPED_TEST(span, ctor_with_std_array)
+TYPED_TEST(span, with_std_array)
 {
   auto span = sal::span(this->std_array);
   EXPECT_FALSE(span.empty());
@@ -136,7 +166,7 @@ TYPED_TEST(span, ctor_with_std_array)
 }
 
 
-TYPED_TEST(span, ctor_with_const_std_array)
+TYPED_TEST(span, with_const_std_array)
 {
   auto span = sal::const_span(this->std_array);
   EXPECT_FALSE(span.empty());
