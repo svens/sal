@@ -245,6 +245,13 @@ private:
 };
 
 
+template <typename T>
+constexpr span_t<T> empty_span{};
+
+template <typename T>
+constexpr span_t<const T> empty_const_span{};
+
+
 /**
  * Return span over range [\a ptr, \a ptr + \a count)
  */

@@ -1,6 +1,5 @@
 #include <sal/encode.hpp>
 #include <sal/common.test.hpp>
-#include <sal/buf_ptr.hpp>
 #include <tuple>
 
 

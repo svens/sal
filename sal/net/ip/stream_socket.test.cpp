@@ -1,6 +1,6 @@
 #include <sal/net/ip/tcp.hpp>
 #include <sal/common.test.hpp>
-#include <sal/buf_ptr.hpp>
+#include <sal/span.hpp>
 #include <thread>
 
 
@@ -204,7 +204,7 @@ TEST_P(stream_socket, receive_less_than_send)
   std::memset(buf, '\0', sizeof(buf));
   EXPECT_EQ(
     case_name.size() / 2,
-    b.receive(sal::make_buf(buf, case_name.size() / 2))
+    b.receive(sal::span(buf, case_name.size() / 2))
   );
   EXPECT_EQ(std::string(case_name, 0, case_name.size() / 2), buf);
 
