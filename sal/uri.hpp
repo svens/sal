@@ -20,11 +20,11 @@ struct uri_view_t
 {
   uri_view_t () = default;
 
-  uri_view_t (
-    const char *first,
-    const char *last,
-    std::error_code &error
-  ) noexcept;
+  uri_view_t (const std::string_view &view, std::error_code &error) noexcept;
+
+  uri_view_t (const std::string_view &view)
+    : uri_view_t(view, throw_on_error("uri_view"))
+  { }
 
   std::string_view scheme{};
   std::string_view user_info{};
@@ -39,40 +39,28 @@ struct uri_view_t
 template <typename It>
 inline uri_view_t uri_view (It first, It last, std::error_code &error) noexcept
 {
-  if (first != last)
-  {
-    return uri_view_t(
-      reinterpret_cast<const char *>(to_ptr(first)),
-      reinterpret_cast<const char *>(to_end_ptr(first, last)),
-      error
-    );
-  }
-  return {};
+  return uri_view_t(as_view(first, last), error);
 }
 
 
 template <typename It>
 inline uri_view_t uri_view (It first, It last)
 {
-  return uri_view(first, last, throw_on_error("uri_view"));
+  return uri_view_t(as_view(first, last));
 }
 
 
 template <typename Data>
 inline uri_view_t uri_view (const Data &data, std::error_code &error) noexcept
 {
-  using std::cbegin;
-  using std::cend;
-  return uri_view(cbegin(data), cend(data), error);
+  return uri_view_t(as_view(data), error);
 }
 
 
 template <typename Data>
 inline uri_view_t uri_view (const Data &data)
 {
-  using std::cbegin;
-  using std::cend;
-  return uri_view(cbegin(data), cend(data));
+  return uri_view_t(as_view(data));
 }
 
 

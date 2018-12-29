@@ -301,10 +301,18 @@ inline std::string_view to_view (const char *first, const char *last) noexcept
 } // namespace
 
 
-uri_view_t::uri_view_t (const char *first, const char *last,
-  std::error_code &error) noexcept
+uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
+  noexcept
 {
+  if (view.empty())
+  {
+    error.clear();
+    return;
+  }
+
   error = make_error_code(uri_errc::invalid_syntax);
+  auto first = view.data();
+  auto last = view.data() + view.length();
 
   first = skip_forward(first, last, is_space);
   last = skip_backward(first, last, is_space_or_zero);
