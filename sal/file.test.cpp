@@ -1,6 +1,6 @@
 #include <sal/file.hpp>
 #include <sal/common.test.hpp>
-#include <sal/buf_ptr.hpp>
+#include <sal/span.hpp>
 #include <fstream>
 
 
@@ -466,15 +466,15 @@ TEST_F(file, seek_success)
   int64_t file_pos;
   EXPECT_NO_THROW(file_pos = file.seek(-3, std::ios::end));
   EXPECT_EQ(2, file_pos);
-  EXPECT_EQ(2U, file.write(sal::make_buf("st", 2)));
+  EXPECT_EQ(2U, file.write(sal::span("st", 2)));
 
   EXPECT_NO_THROW(file_pos = file.seek(1, std::ios::beg));
   EXPECT_EQ(1, file_pos);
-  EXPECT_EQ(1U, file.write(sal::make_buf("e", 1)));
+  EXPECT_EQ(1U, file.write(sal::span("e", 1)));
 
   EXPECT_NO_THROW(file_pos = file.seek(-2, std::ios::cur));
   EXPECT_EQ(0, file_pos);
-  EXPECT_EQ(1U, file.write(sal::make_buf("t", 1)));
+  EXPECT_EQ(1U, file.write(sal::span("t", 1)));
 
   file.close();
 
@@ -503,7 +503,7 @@ TEST_F(file, seek_past_end_success)
 
   EXPECT_NO_THROW(file_pos = file.seek(2, std::ios::cur));
   EXPECT_EQ(4, file_pos);
-  EXPECT_NO_THROW(file.write(sal::make_buf("\n", 1)));
+  EXPECT_NO_THROW(file.write(sal::span("\n", 1)));
 
   EXPECT_NO_THROW(file_pos = file.seek(0, std::ios::beg));
   EXPECT_EQ(0, file_pos);

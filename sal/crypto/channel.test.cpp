@@ -1,6 +1,6 @@
 #include <sal/crypto/channel.hpp>
 #include <sal/crypto/common.test.hpp>
-#include <sal/buf_ptr.hpp>
+#include <sal/span.hpp>
 
 #if __sal_os_linux
   #include <openssl/opensslv.h>
@@ -16,6 +16,9 @@ namespace {
   // to simplify test exclusions below
   constexpr int openssl_version = 0;
 #endif
+
+
+constexpr sal::span_t<std::byte> no_buf{};
 
 
 std::pair<std::vector<sal::crypto::certificate_t> *, sal::crypto::private_key_t *>
@@ -177,7 +180,7 @@ void handshake (sal::crypto::channel_t &client,
 
   buffer_t<4096> client_buf{"client"}, server_buf{"server"};
 
-  client.handshake(sal::const_null_buf, client_buf);
+  client.handshake(no_buf, client_buf);
   while (!client_buf.data.empty())
   {
     server.handshake(client_buf.data, server_buf);
@@ -240,11 +243,11 @@ TYPED_TEST(crypto_channel, handshake_already_connected)
   std::error_code error;
 
   error.clear();
-  client.handshake(sal::const_null_buf, out, error);
+  client.handshake(no_buf, out, error);
   EXPECT_EQ(std::errc::already_connected, error);
 
   error.clear();
-  server.handshake(sal::const_null_buf, out, error);
+  server.handshake(no_buf, out, error);
   EXPECT_EQ(std::errc::already_connected, error);
 }
 
@@ -269,7 +272,7 @@ void chunked_feed (sal::crypto::channel_t &channel,
         {
           chunk_size = end - p;
         }
-        channel.handshake(sal::make_buf(p, chunk_size), out);
+        channel.handshake(sal::span(p, chunk_size), out);
         p += chunk_size;
       }
       return;
@@ -282,7 +285,7 @@ void chunked_feed (sal::crypto::channel_t &channel,
   // TLS
   for (auto b: in.data)
   {
-    channel.handshake(sal::make_buf(&b, 1), out);
+    channel.handshake(sal::span(&b, 1), out);
   }
 }
 
@@ -295,7 +298,7 @@ TYPED_TEST(crypto_channel, handshake_chunked_receive)
 
   buffer_t<4096> client_buf{"client"}, server_buf{"server"};
 
-  client.handshake(sal::const_null_buf, client_buf);
+  client.handshake(no_buf, client_buf);
   while (!client_buf.data.empty())
   {
     chunked_feed(server, client_buf, server_buf, TestFixture::datagram);
@@ -341,7 +344,7 @@ TYPED_TEST(crypto_channel, handshake_client_alloc_null_ptr)
 
   failing_buffer_t failing_buffer(true, false);
   std::error_code error;
-  client.handshake(sal::const_null_buf, failing_buffer, error);
+  client.handshake(no_buf, failing_buffer, error);
   EXPECT_EQ(std::errc::no_buffer_space, error);
   EXPECT_FALSE(client.is_connected());
 }
@@ -353,7 +356,7 @@ TYPED_TEST(crypto_channel, handshake_server_alloc_null_ptr)
   std::error_code error;
 
   buffer_t<4096> client_hello{"client"};
-  client.handshake(sal::const_null_buf, client_hello);
+  client.handshake(no_buf, client_hello);
 
   failing_buffer_t failing_buffer(true, false);
   server.handshake(client_hello.data, failing_buffer, error);
@@ -368,7 +371,7 @@ TYPED_TEST(crypto_channel, handshake_client_alloc_null_size)
 
   failing_buffer_t failing_buffer(false, true);
   std::error_code error;
-  client.handshake(sal::const_null_buf, failing_buffer, error);
+  client.handshake(no_buf, failing_buffer, error);
   EXPECT_EQ(std::errc::no_buffer_space, error);
   EXPECT_FALSE(client.is_connected());
 }
@@ -380,7 +383,7 @@ TYPED_TEST(crypto_channel, handshake_server_alloc_null_size)
   std::error_code error;
 
   buffer_t<4096> client_hello{"client"};
-  client.handshake(sal::const_null_buf, client_hello);
+  client.handshake(no_buf, client_hello);
 
   failing_buffer_t failing_buffer(false, true);
   server.handshake(client_hello.data, failing_buffer, error);
@@ -393,7 +396,7 @@ TYPED_TEST(crypto_channel, handshake_alloc_not_sufficient)
   auto [client, server] = this->make_channel_pair();
   buffer_t<1> client_buf{"client"}, server_buf{"server"};
 
-  client.handshake(sal::const_null_buf, client_buf);
+  client.handshake(no_buf, client_buf);
   while (!client_buf.data.empty())
   {
     server.handshake(client_buf.data, server_buf);
@@ -437,7 +440,7 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_client_hello)
   auto [client, server] = this->make_channel_pair();
 
   buffer_t<4096> client_buf{"client"}, server_buf{"server"};
-  client.handshake(sal::const_null_buf, client_buf);
+  client.handshake(no_buf, client_buf);
 
   std::error_code error;
   client_buf.trash();
@@ -456,7 +459,7 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_server_hello)
   auto [client, server] = this->make_channel_pair();
 
   buffer_t<4096> client_buf{"client"}, server_buf{"server"};
-  client.handshake(sal::const_null_buf, client_buf);
+  client.handshake(no_buf, client_buf);
   server.handshake(client_buf.data, server_buf);
 
   std::error_code error;
@@ -477,7 +480,7 @@ TYPED_TEST(crypto_channel, handshake_fail_on_invalid_key_exchange)
 
   // generate client_hello
   buffer_t<4096> client_buf{"client"}, server_buf{"server"};
-  client.handshake(sal::const_null_buf, client_buf);
+  client.handshake(no_buf, client_buf);
 
   // server <- client_hello, generate server_hello
   server.handshake(client_buf.data, server_buf);
@@ -710,7 +713,7 @@ TYPED_TEST(crypto_channel, decrypt_chunked)
 
   for (auto b: secret.data)
   {
-    auto used = server.decrypt(sal::make_buf(&b, 1), plain);
+    auto used = server.decrypt(sal::span(&b, 1), plain);
     EXPECT_EQ(1U, used);
   }
 
@@ -759,7 +762,7 @@ TYPED_TEST(crypto_channel, coalesced_server_finished_and_message)
 
   // usual handshake except break on server_finished
   // i.e. server is connected but client is not
-  client.handshake(sal::const_null_buf, client_buf);
+  client.handshake(no_buf, client_buf);
   while (!client_buf.data.empty())
   {
     server.handshake(client_buf.data, server_buf);
@@ -792,7 +795,7 @@ TYPED_TEST(crypto_channel, coalesced_server_finished_and_message)
 
     // Here comes ugly part: at our wrapper, we can't detect there is still
     // data in SSL engine (bug in SSL_pending?)
-    used = client.decrypt(sal::const_null_buf, client_buf);
+    used = client.decrypt(no_buf, client_buf);
     EXPECT_EQ(0U, used);
     EXPECT_FALSE(client_buf.data.empty());
     std::string message(client_buf.data.begin(), client_buf.data.end());

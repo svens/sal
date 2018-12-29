@@ -1,6 +1,6 @@
 #include <sal/net/ip/udp.hpp>
 #include <sal/common.test.hpp>
-#include <sal/buf_ptr.hpp>
+#include <sal/span.hpp>
 #include <thread>
 
 
@@ -188,7 +188,7 @@ TEST_P(datagram_socket, receive_from_less_than_send_to)
   EXPECT_EQ(
     case_name.size() / 2,
     receiver.receive_from(
-      sal::make_buf(buf, case_name.size() / 2),
+      sal::span(buf, case_name.size() / 2),
       remote_endpoint,
       error
     )
@@ -342,7 +342,7 @@ TEST_P(datagram_socket, receive_less_than_send)
   std::memset(buf, '\0', sizeof(buf));
   EXPECT_EQ(
     case_name.size() / 2,
-    receiver.receive(sal::make_buf(buf, case_name.size() / 2), error)
+    receiver.receive(sal::span(buf, case_name.size() / 2), error)
   );
   EXPECT_EQ(std::errc::message_size, error);
   EXPECT_FALSE(receiver.wait(receiver.wait_read, 0s));

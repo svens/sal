@@ -1,9 +1,9 @@
 #include <bench/bench.hpp>
-#include <sal/buf_ptr.hpp>
 #include <sal/crypto/random.hpp>
 #include <sal/net/async/completion_queue.hpp>
 #include <sal/net/async/service.hpp>
 #include <sal/net/ip/udp.hpp>
+#include <sal/span.hpp>
 #include <sal/time.hpp>
 #include <atomic>
 #include <iomanip>
@@ -128,7 +128,7 @@ public:
     client_.associate(service_);
     client_.context(this);
     client_.connect(alloc_endpoint);
-    client_.send(sal::make_buf(&id_, sizeof(id_)));
+    client_.send(sal::span(&id_, sizeof(id_)));
     client_.start_receive(service_.make_io(&client_));
 
     peer_.associate(service_);

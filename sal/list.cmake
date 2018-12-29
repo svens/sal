@@ -4,7 +4,6 @@ list(APPEND sal_sources
   sal/__bits/platform_sdk.hpp
   sal/__bits/ref.hpp
   sal/assert.hpp
-  sal/buf_ptr.hpp
   sal/builtins.hpp
   sal/byte_order.hpp
   sal/char_array.hpp
@@ -25,6 +24,7 @@ list(APPEND sal_sources
   sal/lockable.hpp
   sal/memory.hpp
   sal/memory_writer.hpp
+  sal/span.hpp
   sal/spinlock.hpp
   sal/thread.hpp
   sal/thread.cpp
@@ -36,7 +36,6 @@ list(APPEND sal_sources
 # unittests
 list(APPEND sal_unittests_sources
   sal/assert.test.cpp
-  sal/buf_ptr.test.cpp
   sal/builtins.test.cpp
   sal/byte_order.test.cpp
   sal/char_array.test.cpp
@@ -52,6 +51,7 @@ list(APPEND sal_unittests_sources
   sal/lockable.test.cpp
   sal/memory.test.cpp
   sal/memory_writer.test.cpp
+  sal/span.test.cpp
   sal/spinlock.test.cpp
   sal/thread.test.cpp
   sal/time.test.cpp
