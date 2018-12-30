@@ -410,12 +410,12 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
         port = as_view(port_begin, authority_end);
         if (!port.empty())
         {
-          auto [p, e] = from_chars(
+          auto e = from_chars(
             port.data(),
             port.data() + port.length(),
             port_value,
             10
-          );
+          ).ec;
           if (e != std::errc{})
           {
             error = make_error_code(uri_errc::invalid_port);
