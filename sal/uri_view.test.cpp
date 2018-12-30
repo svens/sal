@@ -40,21 +40,30 @@ bool cmp (const std::string_view &left, const std::string_view &right) noexcept
   {
     return left == right;
   }
-  else if (!left.data() && !right.data())
-  {
-    return true;
-  }
-  return false;
+  return !left.data() && !right.data();
 }
 
 bool operator== (const uri_view_t &left, const uri_view_t &right) noexcept
 {
-  return cmp(left.scheme, right.scheme)
+  return left.has_scheme() == right.has_scheme()
+    && cmp(left.scheme, right.scheme)
+
+    && left.has_user_info() == right.has_user_info()
     && cmp(left.user_info, right.user_info)
+
+    && left.has_host() == right.has_host()
     && cmp(left.host, right.host)
+
+    && left.has_port() == right.has_port()
     && cmp(left.port, right.port)
+
+    && left.has_path() == right.has_path()
     && cmp(left.path, right.path)
+
+    && left.has_query() == right.has_query()
     && cmp(left.query, right.query)
+
+    && left.has_fragment() == right.has_fragment()
     && cmp(left.fragment, right.fragment)
   ;
 }
@@ -342,6 +351,7 @@ test_case_t test_cases[] =
 
   ok("//h:123",			uri({},		{},		"h",		"123",		{},		{},		{}	)),
   ok("//:123",			uri({},		{},		"",		"123",		{},		{},		{}	)),
+  ok("//h:-123",		uri({},		{},		"h:-123",	{},		{},		{},		{}	)),
   ok("//h:",			uri({},		{},		"h",		"",		{},		{},		{}	)),
   ok("//10.0.0.1:123",		uri({},		{},		"10.0.0.1",	"123",		{},		{},		{}	)),
   ok("//10.0.0.1:",		uri({},		{},		"10.0.0.1",	"",		{},		{},		{}	)),
@@ -395,6 +405,7 @@ test_case_t test_cases[] =
   fail(":123//", sal::uri_errc::invalid_scheme),
   fail(":123//path", sal::uri_errc::invalid_scheme),
   fail("s~e:", sal::uri_errc::invalid_scheme),
+  fail("s://h:65536", sal::uri_errc::invalid_port),
   fail("s://h|t", sal::uri_errc::invalid_authority),
   fail("s://h/|p", sal::uri_errc::invalid_path),
   fail("s://h/p?<q", sal::uri_errc::invalid_query),
@@ -416,6 +427,10 @@ TEST_P(uri_view, uri_view)
   {
     EXPECT_TRUE(!error);
     EXPECT_EQ(test.expected_components, view);
+    if (view.has_port())
+    {
+      EXPECT_NE(0U, view.port_value);
+    }
   }
   else
   {

@@ -1,11 +1,56 @@
 #include <sal/uri_view.hpp>
 #include <sal/uri_error.hpp>
 
+#if __has_include(<charconv>)
+  #include <charconv>
+#else
+  // TODO drop once charconv is provided
+  #include <cstdlib>
+  #include <limits>
+#endif
+
 
 __sal_begin
 
 
 namespace {
+
+
+#if __has_include(<charconv>)
+
+  using std::from_chars;
+
+#else
+
+  struct from_chars_result {
+    char *ptr{};
+    std::errc ec{};
+  };
+
+  from_chars_result from_chars (
+    const char *first,
+    const char *last,
+    net::ip::port_t &value,
+    int base = 10) noexcept
+  {
+    from_chars_result result;
+    auto v = std::strtoul(first, &result.ptr, base);
+    if (result.ptr != last)
+    {
+      result.ec = std::errc::invalid_argument;
+    }
+    else if (v > std::numeric_limits<net::ip::port_t>::max())
+    {
+      result.ec = std::errc::result_out_of_range;
+    }
+    else
+    {
+      value = v;
+    }
+    return result;
+  }
+
+#endif
 
 
 enum
@@ -363,6 +408,20 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
       {
         host = as_view(authority_begin, port_begin - 1);
         port = as_view(port_begin, authority_end);
+        if (!port.empty())
+        {
+          auto [p, e] = from_chars(
+            port.data(),
+            port.data() + port.length(),
+            port_value,
+            10
+          );
+          if (e != std::errc{})
+          {
+            error = make_error_code(uri_errc::invalid_port);
+            return;
+          }
+        }
       }
       else
       {

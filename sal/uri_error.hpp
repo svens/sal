@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * \file sal/uri.hpp
+ * \file sal/uri_error.hpp
  * URI library errors
  */
 
@@ -19,6 +19,7 @@ enum class uri_errc
 {
   invalid_scheme = 1,
   invalid_authority,
+  invalid_port,
   invalid_path,
   invalid_query,
   invalid_fragment,

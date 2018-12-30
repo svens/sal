@@ -16,6 +16,8 @@ constexpr std::string_view as_view (uri_errc value) noexcept
       return "invalid scheme";
     case uri_errc::invalid_authority:
       return "invalid authority";
+    case uri_errc::invalid_port:
+      return "invalid port";
     case uri_errc::invalid_path:
       return "invalid path";
     case uri_errc::invalid_query:
