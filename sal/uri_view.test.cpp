@@ -425,7 +425,7 @@ TEST_P(uri_view, uri_view)
 
   if (test.expect_success)
   {
-    EXPECT_TRUE(!error);
+    ASSERT_TRUE(!error) << error.message();
     EXPECT_EQ(test.expected_components, view);
     if (view.has_port())
     {

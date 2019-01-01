@@ -34,6 +34,7 @@ list(APPEND sal_sources
   sal/uri_error.cpp
   sal/uri_view.hpp
   sal/uri_view.cpp
+  sal/__bits/uri_char_class.hpp
 )
 
 
