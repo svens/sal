@@ -26,6 +26,11 @@ enum
   uri_cc_fragment               = 1 << 10,
 };
 
+constexpr bool allow_non_us_ascii (uint8_t v) noexcept
+{
+  return v >= 128;
+}
+
 constexpr bool in_list (uint8_t v, std::initializer_list<uint8_t> set) noexcept
 {
   for (auto it: set)
@@ -55,24 +60,30 @@ constexpr bool uri_char_class_digit (uint8_t ch) noexcept //{{{1
 
 constexpr bool uri_char_class_alpha (uint8_t ch) noexcept //{{{1
 {
-  return in_range(ch, 'a', 'z') || in_range(ch, 'A', 'Z');
+  return in_range(ch, 'a', 'z')
+    || in_range(ch, 'A', 'Z')
+  ;
 }
 
 constexpr bool uri_char_class_alnum (uint8_t ch) noexcept //{{{1
 {
-  return uri_char_class_alpha(ch) || uri_char_class_digit(ch);
+  return uri_char_class_alpha(ch)
+    || uri_char_class_digit(ch)
+  ;
 }
 
 constexpr bool uri_char_class_unreserved (uint8_t ch) noexcept //{{{1
 {
-  return uri_char_class_alnum(ch) || in_list(ch, {'-', '.', '_', '~'});
+  return uri_char_class_alnum(ch)
+    || in_list(ch, {'-', '.', '_', '~'});
 }
 
 constexpr bool uri_char_class_pct_encoded (uint8_t ch) noexcept //{{{1
 {
   return uri_char_class_digit(ch)
     || in_range(ch, 'a', 'f')
-    || in_range(ch, 'A', 'F');
+    || in_range(ch, 'A', 'F')
+  ;
 }
 
 constexpr bool uri_char_class_sub_delim (uint8_t ch) noexcept //{{{1
@@ -87,12 +98,14 @@ constexpr bool uri_char_class_gen_delim (uint8_t ch) noexcept //{{{1
 
 constexpr bool uri_char_class_reserved (uint8_t ch) noexcept //{{{1
 {
-  return uri_char_class_gen_delim(ch) || uri_char_class_sub_delim(ch);
+  return uri_char_class_gen_delim(ch)
+    || uri_char_class_sub_delim(ch);
 }
 
 constexpr bool uri_char_class_scheme (uint8_t ch) noexcept //{{{1
 {
-  return uri_char_class_alnum(ch) || in_list(ch, {'+', '-', '.'});
+  return uri_char_class_alnum(ch)
+    || in_list(ch, {'+', '-', '.'});
 }
 
 constexpr bool uri_char_class_user_info (uint8_t ch) noexcept //{{{1
@@ -101,6 +114,7 @@ constexpr bool uri_char_class_user_info (uint8_t ch) noexcept //{{{1
     || uri_char_class_pct_encoded(ch)
     || uri_char_class_sub_delim(ch)
     || ch == ':'
+    || allow_non_us_ascii(ch)
   ;
 }
 
@@ -110,6 +124,7 @@ constexpr bool uri_char_class_host (uint8_t ch) noexcept //{{{1
     || uri_char_class_pct_encoded(ch)
     || uri_char_class_sub_delim(ch)
     || in_list(ch, {'%', '[', ']'})
+    || allow_non_us_ascii(ch)
   ;
 }
 
@@ -138,17 +153,24 @@ constexpr bool uri_char_class_path (uint8_t ch) noexcept //{{{1
   return uri_char_class_unreserved(ch)
     || uri_char_class_sub_delim(ch)
     || in_list(ch, {'%', '/', ':', '@'})
+    || allow_non_us_ascii(ch)
   ;
 }
 
 constexpr bool uri_char_class_query (uint8_t ch) noexcept //{{{1
 {
-  return uri_char_class_path(ch) || in_list(ch, {'/', '?'});
+  return uri_char_class_path(ch)
+    || in_list(ch, {'/', '?'})
+    || allow_non_us_ascii(ch)
+  ;
 }
 
 constexpr bool uri_char_class_fragment (uint8_t ch) noexcept //{{{1
 {
-  return uri_char_class_path(ch) || in_list(ch, {'/', '?'});
+  return uri_char_class_path(ch)
+    || in_list(ch, {'/', '?'})
+    || allow_non_us_ascii(ch)
+  ;
 }
 
 // }}}1

@@ -392,6 +392,13 @@ test_case_t test_cases[] =
   ok("s:///./p",		uri("s",	{},		{},		{},		"/./p",		{},		{}	)),
   ok("s:///../p",		uri("s",	{},		{},		{},		"/../p",	{},		{}	)),
 
+  ok("s://\x80@h/p?q#f",	uri("s",	"\x80",		"h",		{},		"/p",		"q",		"f"	)),
+  ok("s://u@\x80/p?q#f",	uri("s",	"u",		"\x80",		{},		"/p",		"q",		"f"	)),
+  ok("s://u@h/\x80?q#f",	uri("s",	"u",		"h",		{},		"/\x80",	"q",		"f"	)),
+  ok("s://u@h/p?\x80#f",	uri("s",	"u",		"h",		{},		"/p",		"\x80",		"f"	)),
+  ok("s://u@h/p?q#\x80",	uri("s",	"u",		"h",		{},		"/p",		"q",		"\x80"	)),
+
+  fail("s\x80://u@h/p?q#f", sal::uri_errc::invalid_scheme),
   fail("1s:", sal::uri_errc::invalid_scheme),
   fail(":", sal::uri_errc::invalid_scheme),
   fail(":/", sal::uri_errc::invalid_scheme),
