@@ -174,7 +174,7 @@ constexpr std::array<uint16_t, 256> generate_uri_char_class (
 {
   return
   {
-    uri_char_class(Charset)...
+    {uri_char_class(Charset)...},
   };
 }
 
