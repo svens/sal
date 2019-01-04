@@ -27,6 +27,10 @@ constexpr std::string_view to_view (errc value) noexcept
       return "invalid query";
     case errc::invalid_fragment:
       return "invalid fragment";
+    case errc::invalid_hex_input:
+      return "invalid hex input";
+    case errc::not_enough_input:
+      return "not enough input";
   }
   return "Unknown error";
 }

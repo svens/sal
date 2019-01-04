@@ -10,7 +10,6 @@ __sal_begin
 
 namespace uri::__bits {
 
-namespace {
 
 enum
 {
@@ -26,10 +25,12 @@ enum
   cc_fragment               = 1 << 10,
 };
 
+
 constexpr bool allow_non_us_ascii (uint8_t v) noexcept
 {
   return v >= 128;
 }
+
 
 constexpr bool in_list (uint8_t v, std::initializer_list<uint8_t> set) noexcept
 {
@@ -43,20 +44,33 @@ constexpr bool in_list (uint8_t v, std::initializer_list<uint8_t> set) noexcept
   return false;
 }
 
+
 constexpr bool in_range (uint8_t v, uint8_t l, uint8_t h) noexcept
 {
   return l <= v && v <= h;
 }
+
 
 constexpr bool is_space (uint8_t ch) noexcept //{{{1
 {
   return in_list(ch, {'\t', '\n', '\v', '\f', '\r', ' '});
 }
 
+
 constexpr bool is_digit (uint8_t ch) noexcept //{{{1
 {
   return in_range(ch, '0', '9');
 }
+
+
+constexpr bool is_xdigit (uint8_t ch) noexcept //{{{1
+{
+  return is_digit(ch)
+      || in_range(ch, 'a', 'f')
+      || in_range(ch, 'A', 'F')
+  ;
+}
+
 
 constexpr bool is_alpha (uint8_t ch) noexcept //{{{1
 {
@@ -65,12 +79,14 @@ constexpr bool is_alpha (uint8_t ch) noexcept //{{{1
   ;
 }
 
+
 constexpr bool is_alnum (uint8_t ch) noexcept //{{{1
 {
   return is_alpha(ch)
       || is_digit(ch)
   ;
 }
+
 
 constexpr bool is_unreserved (uint8_t ch) noexcept //{{{1
 {
@@ -79,23 +95,26 @@ constexpr bool is_unreserved (uint8_t ch) noexcept //{{{1
   ;
 }
 
+
 constexpr bool is_pct_encoded (uint8_t ch) noexcept //{{{1
 {
-  return is_digit(ch)
-      || in_range(ch, 'a', 'f')
-      || in_range(ch, 'A', 'F')
+  return ch == '%'
+      || is_xdigit(ch)
   ;
 }
+
 
 constexpr bool is_sub_delim (uint8_t ch) noexcept //{{{1
 {
   return in_list(ch, {'!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='});
 }
 
+
 constexpr bool is_gen_delim (uint8_t ch) noexcept //{{{1
 {
   return in_list(ch, {':', '/', '?', '#', '[', ']', '@'});
 }
+
 
 constexpr bool is_reserved (uint8_t ch) noexcept //{{{1
 {
@@ -104,12 +123,14 @@ constexpr bool is_reserved (uint8_t ch) noexcept //{{{1
   ;
 }
 
+
 constexpr bool is_scheme (uint8_t ch) noexcept //{{{1
 {
   return is_alnum(ch)
       || in_list(ch, {'+', '-', '.'})
     ;
 }
+
 
 constexpr bool is_user_info (uint8_t ch) noexcept //{{{1
 {
@@ -121,6 +142,7 @@ constexpr bool is_user_info (uint8_t ch) noexcept //{{{1
   ;
 }
 
+
 constexpr bool is_host (uint8_t ch) noexcept //{{{1
 {
   return is_unreserved(ch)
@@ -131,10 +153,12 @@ constexpr bool is_host (uint8_t ch) noexcept //{{{1
   ;
 }
 
+
 constexpr bool is_port (uint8_t ch) noexcept //{{{1
 {
   return is_digit(ch);
 }
+
 
 constexpr bool is_authority (uint8_t ch) noexcept //{{{1
 {
@@ -146,10 +170,12 @@ constexpr bool is_authority (uint8_t ch) noexcept //{{{1
   ;
 }
 
+
 constexpr bool is_authority_separator (uint8_t ch) noexcept //{{{1
 {
   return in_list(ch, {'/', '?', '#'});
 }
+
 
 constexpr bool is_path (uint8_t ch) noexcept //{{{1
 {
@@ -160,6 +186,7 @@ constexpr bool is_path (uint8_t ch) noexcept //{{{1
   ;
 }
 
+
 constexpr bool is_query (uint8_t ch) noexcept //{{{1
 {
   return is_path(ch)
@@ -167,6 +194,7 @@ constexpr bool is_query (uint8_t ch) noexcept //{{{1
       || allow_non_us_ascii(ch)
   ;
 }
+
 
 constexpr bool is_fragment (uint8_t ch) noexcept //{{{1
 {
@@ -177,6 +205,7 @@ constexpr bool is_fragment (uint8_t ch) noexcept //{{{1
 }
 
 // }}}1
+
 
 constexpr uint16_t classify (uint8_t ch) noexcept
 {
@@ -193,6 +222,7 @@ constexpr uint16_t classify (uint8_t ch) noexcept
   ;
 }
 
+
 template <size_t... Range>
 constexpr auto generate_uri_cc (std::index_sequence<Range...>) noexcept
 {
@@ -201,8 +231,6 @@ constexpr auto generate_uri_cc (std::index_sequence<Range...>) noexcept
     {classify(Range)...},
   };
 }
-
-} // namespace
 
 
 class uri_cc

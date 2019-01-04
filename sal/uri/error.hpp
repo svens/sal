@@ -26,6 +26,8 @@ enum class errc
   invalid_path,
   invalid_query,
   invalid_fragment,
+  invalid_hex_input,
+  not_enough_input,
 };
 
 
