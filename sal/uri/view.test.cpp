@@ -432,7 +432,7 @@ TEST_P(view, view)
   auto &test = GetParam();
 
   std::error_code error;
-  auto view = sal::uri::view(test.uri, error);
+  auto view = sal::uri::make_view(test.uri, error);
 
   if (test.expect_success)
   {
@@ -449,7 +449,7 @@ TEST_P(view, view)
     EXPECT_FALSE(error.message().empty());
     EXPECT_STREQ("uri", error.category().name());
 
-    EXPECT_THROW(sal::uri::view(test.uri), std::system_error);
+    EXPECT_THROW(sal::uri::make_view(test.uri), std::system_error);
   }
 }
 

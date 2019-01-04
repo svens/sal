@@ -121,7 +121,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
         error = make_error_code(errc::invalid_scheme);
         return;
       }
-      scheme = as_view(scheme_begin, first);
+      scheme = to_view(scheme_begin, first);
 
       ++first;
       break;
@@ -156,8 +156,8 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       );
       if (port_begin > authority_begin && port_begin[-1] == ':')
       {
-        host = as_view(authority_begin, port_begin - 1);
-        port = as_view(port_begin, authority_end);
+        host = to_view(authority_begin, port_begin - 1);
+        port = to_view(port_begin, authority_end);
         if (!port.empty())
         {
           auto e = from_chars(
@@ -175,7 +175,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       }
       else
       {
-        host = as_view(authority_begin, authority_end);
+        host = to_view(authority_begin, authority_end);
       }
 
       //
@@ -189,7 +189,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       );
       if (*user_info_end == '@')
       {
-        user_info = as_view(authority_begin, user_info_end);
+        user_info = to_view(authority_begin, user_info_end);
         host.remove_prefix(user_info_end - authority_begin + 1);
       }
     }
@@ -208,7 +208,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       error = make_error_code(errc::invalid_path);
       return;
     }
-    path = as_view(path_begin, first);
+    path = to_view(path_begin, first);
   }
 
   if (*first == '?')
@@ -224,7 +224,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       error = make_error_code(errc::invalid_query);
       return;
     }
-    query = as_view(query_begin, first);
+    query = to_view(query_begin, first);
   }
 
   if (*first == '#')
@@ -240,7 +240,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       error = make_error_code(errc::invalid_fragment);
       return;
     }
-    fragment = as_view(fragment_begin, first);
+    fragment = to_view(fragment_begin, first);
   }
 
   error.clear();

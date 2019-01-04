@@ -91,30 +91,30 @@ struct view_t
 
 
 template <typename It>
-inline view_t view (It first, It last, std::error_code &error) noexcept
+inline view_t make_view (It first, It last, std::error_code &error) noexcept
 {
-  return view_t(as_view(first, last), error);
+  return view_t(to_view(first, last), error);
 }
 
 
 template <typename It>
-inline view_t view (It first, It last)
+inline view_t make_view (It first, It last)
 {
-  return view_t(as_view(first, last));
+  return view_t(to_view(first, last));
 }
 
 
 template <typename Data>
-inline view_t view (const Data &data, std::error_code &error) noexcept
+inline view_t make_view (const Data &data, std::error_code &error) noexcept
 {
-  return view_t(as_view(data), error);
+  return view_t(to_view(data), error);
 }
 
 
 template <typename Data>
-inline view_t view (const Data &data)
+inline view_t make_view (const Data &data)
 {
-  return view_t(as_view(data));
+  return view_t(to_view(data));
 }
 
 
