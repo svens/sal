@@ -1,6 +1,6 @@
-#include <sal/uri_view.hpp>
-#include <sal/uri_error.hpp>
-#include <sal/__bits/uri_char_class.hpp>
+#include <sal/uri/view.hpp>
+#include <sal/uri/error.hpp>
+#include <sal/uri/__bits/char_class.hpp>
 
 #if __has_include(<charconv>)
   #include <charconv>
@@ -12,6 +12,9 @@
 
 
 __sal_begin
+
+
+namespace uri {
 
 
 namespace {
@@ -79,8 +82,7 @@ inline const char *skip_backward (const char *first, const char *last,
 } // namespace
 
 
-uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
-  noexcept
+view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
 {
   if (view.empty())
   {
@@ -108,7 +110,7 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
 
       if (!uri_cc::is_alpha(*first))
       {
-        error = make_error_code(uri_errc::invalid_scheme);
+        error = make_error_code(errc::invalid_scheme);
         return;
       }
 
@@ -116,7 +118,7 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
       first = skip_forward(scheme_begin, it, uri_cc::is_scheme);
       if (first < it)
       {
-        error = make_error_code(uri_errc::invalid_scheme);
+        error = make_error_code(errc::invalid_scheme);
         return;
       }
       scheme = as_view(scheme_begin, first);
@@ -136,7 +138,7 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     first = skip_forward(authority_begin, last, uri_cc::is_authority);
     if (first < last && !uri_cc::is_authority_separator(*first))
     {
-      error = make_error_code(uri_errc::invalid_authority);
+      error = make_error_code(errc::invalid_authority);
       return;
     }
     auto authority_end = first;
@@ -166,7 +168,7 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
           ).ec;
           if (e != std::errc{})
           {
-            error = make_error_code(uri_errc::invalid_port);
+            error = make_error_code(errc::invalid_port);
             return;
           }
         }
@@ -203,7 +205,7 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     first = skip_forward(path_begin, last, uri_cc::is_path);
     if (first < last && *first != '?' && *first != '#')
     {
-      error = make_error_code(uri_errc::invalid_path);
+      error = make_error_code(errc::invalid_path);
       return;
     }
     path = as_view(path_begin, first);
@@ -219,7 +221,7 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     first = skip_forward(query_begin, last, uri_cc::is_query);
     if (first < last && *first != '#')
     {
-      error = make_error_code(uri_errc::invalid_query);
+      error = make_error_code(errc::invalid_query);
       return;
     }
     query = as_view(query_begin, first);
@@ -235,7 +237,7 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
     first = skip_forward(fragment_begin, last, uri_cc::is_fragment);
     if (first < last)
     {
-      error = make_error_code(uri_errc::invalid_fragment);
+      error = make_error_code(errc::invalid_fragment);
       return;
     }
     fragment = as_view(fragment_begin, first);
@@ -243,6 +245,9 @@ uri_view_t::uri_view_t (const std::string_view &view, std::error_code &error)
 
   error.clear();
 }
+
+
+} // namespace uri
 
 
 __sal_end

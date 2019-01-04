@@ -1,12 +1,12 @@
 #pragma once
 
 /**
- * \file sal/uri_view.hpp
+ * \file sal/uri/view.hpp
  * Immutable URI view
  */
 
 #include <sal/config.hpp>
-#include <sal/error.hpp>
+#include <sal/uri/error.hpp>
 #include <sal/memory.hpp>
 #include <sal/net/fwd.hpp>
 #include <string_view>
@@ -15,7 +15,10 @@
 __sal_begin
 
 
-struct uri_view_t
+namespace uri {
+
+
+struct view_t
 {
   std::string_view scheme{};
   std::string_view user_info{};
@@ -27,14 +30,14 @@ struct uri_view_t
   std::string_view fragment{};
 
 
-  uri_view_t () = default;
+  view_t () = default;
 
 
-  uri_view_t (const std::string_view &view, std::error_code &error) noexcept;
+  view_t (const std::string_view &view, std::error_code &error) noexcept;
 
 
-  uri_view_t (const std::string_view &view)
-    : uri_view_t(view, throw_on_error("uri_view"))
+  view_t (const std::string_view &view)
+    : view_t(view, throw_on_error("uri::view"))
   { }
 
 
@@ -88,31 +91,34 @@ struct uri_view_t
 
 
 template <typename It>
-inline uri_view_t uri_view (It first, It last, std::error_code &error) noexcept
+inline view_t view (It first, It last, std::error_code &error) noexcept
 {
-  return uri_view_t(as_view(first, last), error);
+  return view_t(as_view(first, last), error);
 }
 
 
 template <typename It>
-inline uri_view_t uri_view (It first, It last)
+inline view_t view (It first, It last)
 {
-  return uri_view_t(as_view(first, last));
+  return view_t(as_view(first, last));
 }
 
 
 template <typename Data>
-inline uri_view_t uri_view (const Data &data, std::error_code &error) noexcept
+inline view_t view (const Data &data, std::error_code &error) noexcept
 {
-  return uri_view_t(as_view(data), error);
+  return view_t(as_view(data), error);
 }
 
 
 template <typename Data>
-inline uri_view_t uri_view (const Data &data)
+inline view_t view (const Data &data)
 {
-  return uri_view_t(as_view(data));
+  return view_t(as_view(data));
 }
+
+
+} // namespace uri
 
 
 __sal_end

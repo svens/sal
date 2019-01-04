@@ -30,11 +30,6 @@ list(APPEND sal_sources
   sal/thread.cpp
   sal/time.hpp
   sal/type_id.hpp
-  sal/uri_error.hpp
-  sal/uri_error.cpp
-  sal/uri_view.hpp
-  sal/uri_view.cpp
-  sal/__bits/uri_char_class.hpp
 )
 
 
@@ -63,7 +58,6 @@ list(APPEND sal_unittests_sources
   sal/type_id.test.cpp
   sal/type_id.unit_a.test.cpp
   sal/type_id.unit_b.test.cpp
-  sal/uri_view.test.cpp
 )
 
 
@@ -72,3 +66,4 @@ include(sal/crypto/list.cmake)
 include(sal/logger/list.cmake)
 include(sal/net/list.cmake)
 include(sal/program_options/list.cmake)
+include(sal/uri/list.cmake)

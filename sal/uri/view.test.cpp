@@ -1,12 +1,14 @@
-#include <sal/uri_error.hpp>
-#include <sal/uri_view.hpp>
+#include <sal/uri/error.hpp>
+#include <sal/uri/view.hpp>
 #include <sal/common.test.hpp>
 #include <ostream>
 
 
-namespace sal {
+__sal_begin
 
-// sal URI library does not provide inserter or comparison operators,
+namespace uri {
+
+// sal::uri library does not provide inserter or comparison operators,
 // implement here for testing
 
 std::ostream &print (std::ostream &os, const std::string_view &piece)
@@ -22,7 +24,7 @@ std::ostream &print (std::ostream &os, const std::string_view &piece)
   return (os << piece);
 }
 
-std::ostream &operator<< (std::ostream &os, const sal::uri_view_t &uri)
+std::ostream &operator<< (std::ostream &os, const view_t &uri)
 {
   print(os, uri.scheme) << '|';
   print(os, uri.user_info) << '|';
@@ -43,7 +45,7 @@ bool cmp (const std::string_view &left, const std::string_view &right) noexcept
   return !left.data() && !right.data();
 }
 
-bool operator== (const uri_view_t &left, const uri_view_t &right) noexcept
+bool operator== (const view_t &left, const view_t &right) noexcept
 {
   return left.has_scheme() == right.has_scheme()
     && cmp(left.scheme, right.scheme)
@@ -68,7 +70,9 @@ bool operator== (const uri_view_t &left, const uri_view_t &right) noexcept
   ;
 }
 
-} // namespace sal
+} // namespace uri
+
+__sal_end
 
 
 namespace {
@@ -80,18 +84,18 @@ struct test_case_t
 
   union
   {
-    sal::uri_view_t expected_components{};
+    sal::uri::view_t expected_components{};
     std::error_code expected_error;
   };
   bool expect_success;
 
-  test_case_t (const sal::uri_view_t &expected)
+  test_case_t (const sal::uri::view_t &expected)
     : expected_components(expected)
     , expect_success(true)
   {}
 
-  test_case_t (sal::uri_errc expected)
-    : expected_error(sal::make_error_code(expected))
+  test_case_t (sal::uri::errc expected)
+    : expected_error(sal::uri::make_error_code(expected))
     , expect_success(false)
   {}
 
@@ -102,7 +106,7 @@ struct test_case_t
 };
 
 
-test_case_t ok (std::string uri, const sal::uri_view_t &components)
+test_case_t ok (std::string uri, const sal::uri::view_t &components)
 {
   test_case_t result{components};
   result.uri = uri;
@@ -110,7 +114,7 @@ test_case_t ok (std::string uri, const sal::uri_view_t &components)
 }
 
 
-test_case_t fail (std::string uri, sal::uri_errc error_code)
+test_case_t fail (std::string uri, sal::uri::errc error_code)
 {
   test_case_t result{error_code};
   result.uri = uri;
@@ -118,7 +122,7 @@ test_case_t fail (std::string uri, sal::uri_errc error_code)
 }
 
 
-sal::uri_view_t uri (
+sal::uri::view_t uri (
   const std::string_view &scheme,
   const std::string_view &user_info,
   const std::string_view &host,
@@ -127,7 +131,7 @@ sal::uri_view_t uri (
   const std::string_view &query,
   const std::string_view &fragment) noexcept
 {
-  sal::uri_view_t uri;
+  sal::uri::view_t uri;
   uri.scheme = scheme;
   uri.user_info = user_info;
   uri.host = host;
@@ -398,37 +402,37 @@ test_case_t test_cases[] =
   ok("s://u@h/p?\x80#f",	uri("s",	"u",		"h",		{},		"/p",		"\x80",		"f"	)),
   ok("s://u@h/p?q#\x80",	uri("s",	"u",		"h",		{},		"/p",		"q",		"\x80"	)),
 
-  fail("s\x80://u@h/p?q#f", sal::uri_errc::invalid_scheme),
-  fail("1s:", sal::uri_errc::invalid_scheme),
-  fail(":", sal::uri_errc::invalid_scheme),
-  fail(":/", sal::uri_errc::invalid_scheme),
-  fail("://", sal::uri_errc::invalid_scheme),
-  fail(":///", sal::uri_errc::invalid_scheme),
-  fail(":///p", sal::uri_errc::invalid_scheme),
-  fail("://h", sal::uri_errc::invalid_scheme),
-  fail("://h:123", sal::uri_errc::invalid_scheme),
-  fail(":123", sal::uri_errc::invalid_scheme),
-  fail(":123/", sal::uri_errc::invalid_scheme),
-  fail(":123//", sal::uri_errc::invalid_scheme),
-  fail(":123//path", sal::uri_errc::invalid_scheme),
-  fail("s~e:", sal::uri_errc::invalid_scheme),
-  fail("s://h:65536", sal::uri_errc::invalid_port),
-  fail("s://h|t", sal::uri_errc::invalid_authority),
-  fail("s://h/|p", sal::uri_errc::invalid_path),
-  fail("s://h/p?<q", sal::uri_errc::invalid_query),
-  fail("s://h/p#<p", sal::uri_errc::invalid_fragment),
+  fail("s\x80://u@h/p?q#f", sal::uri::errc::invalid_scheme),
+  fail("1s:", sal::uri::errc::invalid_scheme),
+  fail(":", sal::uri::errc::invalid_scheme),
+  fail(":/", sal::uri::errc::invalid_scheme),
+  fail("://", sal::uri::errc::invalid_scheme),
+  fail(":///", sal::uri::errc::invalid_scheme),
+  fail(":///p", sal::uri::errc::invalid_scheme),
+  fail("://h", sal::uri::errc::invalid_scheme),
+  fail("://h:123", sal::uri::errc::invalid_scheme),
+  fail(":123", sal::uri::errc::invalid_scheme),
+  fail(":123/", sal::uri::errc::invalid_scheme),
+  fail(":123//", sal::uri::errc::invalid_scheme),
+  fail(":123//path", sal::uri::errc::invalid_scheme),
+  fail("s~e:", sal::uri::errc::invalid_scheme),
+  fail("s://h:65536", sal::uri::errc::invalid_port),
+  fail("s://h|t", sal::uri::errc::invalid_authority),
+  fail("s://h/|p", sal::uri::errc::invalid_path),
+  fail("s://h/p?<q", sal::uri::errc::invalid_query),
+  fail("s://h/p#<p", sal::uri::errc::invalid_fragment),
 };
 
-using uri_view = ::testing::TestWithParam<test_case_t>;
-INSTANTIATE_TEST_CASE_P(uri, uri_view, ::testing::ValuesIn(test_cases),);
+using view = ::testing::TestWithParam<test_case_t>;
+INSTANTIATE_TEST_CASE_P(uri, view, ::testing::ValuesIn(test_cases),);
 
 
-TEST_P(uri_view, uri_view)
+TEST_P(view, view)
 {
   auto &test = GetParam();
 
   std::error_code error;
-  auto view = sal::uri_view(test.uri, error);
+  auto view = sal::uri::view(test.uri, error);
 
   if (test.expect_success)
   {
@@ -445,7 +449,7 @@ TEST_P(uri_view, uri_view)
     EXPECT_FALSE(error.message().empty());
     EXPECT_STREQ("uri", error.category().name());
 
-    EXPECT_THROW(sal::uri_view(test.uri), std::system_error);
+    EXPECT_THROW(sal::uri::view(test.uri), std::system_error);
   }
 }
 
