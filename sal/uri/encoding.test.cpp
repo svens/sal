@@ -1,12 +1,14 @@
 #include <sal/uri/encoding.hpp>
 #include <sal/common.test.hpp>
+#include <map>
+#include <unordered_map>
 
 
 namespace {
 
 
 using uri = sal_test::fixture;
-using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 
 // decode {{{1
@@ -21,29 +23,29 @@ TEST_F(uri, decode_none)
 TEST_F(uri, decode_partial)
 {
   EXPECT_EQ("before_\x74\x65\x73\x74_after",
-    sal::uri::decode("before_%74%65%73%74_after"s)
+    sal::uri::decode("before_%74%65%73%74_after"sv)
   );
 }
 
 
 TEST_F(uri, decode_all)
 {
-  EXPECT_EQ("\x74\x65\x73\x74", sal::uri::decode("%74%65%73%74"s));
-  EXPECT_EQ("\xaf\xaf\xaf\xaf", sal::uri::decode("%af%Af%aF%AF"s));
+  EXPECT_EQ("\x74\x65\x73\x74", sal::uri::decode("%74%65%73%74"sv));
+  EXPECT_EQ("\xaf\xaf\xaf\xaf", sal::uri::decode("%af%Af%aF%AF"sv));
 }
 
 
 TEST_F(uri, decode_empty)
 {
-  EXPECT_EQ("", sal::uri::decode(""s));
+  EXPECT_EQ("", sal::uri::decode(""sv));
 }
 
 
-std::error_code decode_failure (const std::string &in)
+std::error_code decode_failure (std::string_view data)
 {
   try
   {
-    sal::uri::decode(in);
+    sal::uri::decode(data);
     return {};
   }
   catch (const std::system_error &ex)
@@ -76,7 +78,7 @@ TEST_F(uri, decode_not_enough_data)
 TEST_F(uri, encode_user_info_none)
 {
   EXPECT_EQ("u-s.e_r:i~n1f9%20o",
-    sal::uri::encode_user_info("u-s.e_r:i~n1f9%20o"s)
+    sal::uri::encode_user_info("u-s.e_r:i~n1f9%20o"sv)
   );
 }
 
@@ -84,7 +86,7 @@ TEST_F(uri, encode_user_info_none)
 TEST_F(uri, encode_user_info_partial)
 {
   EXPECT_EQ("%7B%80user%AAinfo%FF%7D",
-    sal::uri::encode_user_info("{\x80user\xaainfo\xff}"s)
+    sal::uri::encode_user_info("{\x80user\xaainfo\xff}"sv)
   );
 }
 
@@ -105,7 +107,7 @@ TEST_F(uri, encode_user_info_all)
 
 TEST_F(uri, encode_user_info_empty)
 {
-  EXPECT_EQ("", sal::uri::encode_user_info(""s));
+  EXPECT_EQ("", sal::uri::encode_user_info(""sv));
 }
 
 
@@ -115,7 +117,7 @@ TEST_F(uri, encode_user_info_empty)
 TEST_F(uri, encode_path_none)
 {
   EXPECT_EQ("/test/../%20:%20@path;p=v",
-    sal::uri::encode_path("/test/../ :%20@path;p=v"s)
+    sal::uri::encode_path("/test/../ :%20@path;p=v"sv)
   );
 }
 
@@ -123,7 +125,7 @@ TEST_F(uri, encode_path_none)
 TEST_F(uri, encode_path_partial)
 {
   EXPECT_EQ("/%80test/../%20:%AApath@%FF%7B;p=v%7D",
-    sal::uri::encode_path("/\x80test/../ :\xaapath@\xff{;p=v}"s)
+    sal::uri::encode_path("/\x80test/../ :\xaapath@\xff{;p=v}"sv)
   );
 }
 
@@ -144,7 +146,7 @@ TEST_F(uri, encode_path_all)
 
 TEST_F(uri, encode_path_empty)
 {
-  EXPECT_EQ("", sal::uri::encode_path(""s));
+  EXPECT_EQ("", sal::uri::encode_path(""sv));
 }
 
 
@@ -154,7 +156,7 @@ TEST_F(uri, encode_path_empty)
 TEST_F(uri, encode_query_none)
 {
   EXPECT_EQ("?k1=v1&k2=v2/k3=v3",
-    sal::uri::encode_query("?k1=v1&k2=v2/k3=v3"s)
+    sal::uri::encode_query("?k1=v1&k2=v2/k3=v3"sv)
   );
 }
 
@@ -162,7 +164,7 @@ TEST_F(uri, encode_query_none)
 TEST_F(uri, encode_query_partial)
 {
   EXPECT_EQ("?%81k1=v1&%AAk2=v2%FF%20/%7Bk3=v3%7D",
-    sal::uri::encode_query("?\x81k1=v1&\xaak2=v2\xff /{k3=v3}"s)
+    sal::uri::encode_query("?\x81k1=v1&\xaak2=v2\xff /{k3=v3}"sv)
   );
 }
 
@@ -183,7 +185,53 @@ TEST_F(uri, encode_query_all)
 
 TEST_F(uri, encode_query_empty)
 {
-  EXPECT_EQ("", sal::uri::encode_query(""s));
+  EXPECT_EQ("", sal::uri::encode_query(""sv));
+}
+
+
+TEST_F(uri, encode_query_map)
+{
+  std::map<std::string, std::string> map =
+  {
+    { "one", "1" },
+    { "two", "2" },
+    { "t=t", "3" },
+  };
+  auto result = sal::uri::encode_query(map);
+  EXPECT_NE(std::string::npos, result.find("one=1"));
+  EXPECT_NE(std::string::npos, result.find("two=2"));
+  EXPECT_NE(std::string::npos, result.find("t%3Dt=3"));
+}
+
+
+TEST_F(uri, encode_query_empty_map)
+{
+  std::map<std::string, std::string> map =
+  { };
+  EXPECT_EQ("", sal::uri::encode_query(map));
+}
+
+
+TEST_F(uri, encode_query_unordered_map)
+{
+  std::unordered_map<std::string, std::string> map =
+  {
+    { "one", "1" },
+    { "two", "2" },
+    { "t=t", "3" },
+  };
+  auto result = sal::uri::encode_query(map);
+  EXPECT_NE(std::string::npos, result.find("one=1"));
+  EXPECT_NE(std::string::npos, result.find("two=2"));
+  EXPECT_NE(std::string::npos, result.find("t%3Dt=3"));
+}
+
+
+TEST_F(uri, encode_query_empty_unordered_map)
+{
+  std::unordered_map<std::string, std::string> map =
+  { };
+  EXPECT_EQ("", sal::uri::encode_query(map));
 }
 
 
@@ -193,7 +241,7 @@ TEST_F(uri, encode_query_empty)
 TEST_F(uri, encode_fragment_none)
 {
   EXPECT_EQ("/f%20/%20ragment@?",
-    sal::uri::encode_fragment("/f%20/ ragment@?"s)
+    sal::uri::encode_fragment("/f%20/ ragment@?"sv)
   );
 }
 
@@ -201,7 +249,7 @@ TEST_F(uri, encode_fragment_none)
 TEST_F(uri, encode_fragment_partial)
 {
   EXPECT_EQ("%81/f%20%AA/%20ragment%FF@?",
-    sal::uri::encode_fragment("\x81/f%20\xaa/ ragment\xff@?"s)
+    sal::uri::encode_fragment("\x81/f%20\xaa/ ragment\xff@?"sv)
   );
 }
 
@@ -222,7 +270,7 @@ TEST_F(uri, encode_fragment_all)
 
 TEST_F(uri, encode_fragment_empty)
 {
-  EXPECT_EQ("", sal::uri::encode_fragment(""s));
+  EXPECT_EQ("", sal::uri::encode_fragment(""sv));
 }
 
 

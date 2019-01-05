@@ -34,20 +34,19 @@ constexpr OutputIt decode (InputIt first, InputIt last, OutputIt out)
 
 
 template <typename Data>
-constexpr Data decode (const Data &input)
+inline std::string decode (const Data &data)
 {
-  Data result;
+  std::string result;
   using std::cbegin, std::cend;
-  decode(cbegin(input), cend(input), std::back_inserter(result));
+  decode(cbegin(data), cend(data), std::back_inserter(result));
   return result;
 }
 
 
 template <typename InputIt, typename OutputIt, typename Filter>
-constexpr OutputIt encode (InputIt first, InputIt last, OutputIt out,
-  Filter filter)
+constexpr OutputIt encode (InputIt first, InputIt last, OutputIt out, Filter safe)
 {
-  return __bits::encode(first, last, out, filter);
+  return __bits::encode(first, last, out, safe);
 }
 
 
@@ -59,9 +58,9 @@ constexpr OutputIt encode_user_info (InputIt first, InputIt last, OutputIt out)
 
 
 template <typename Data>
-constexpr Data encode_user_info (const Data &input)
+inline std::string encode_user_info (const Data &input)
 {
-  Data result;
+  std::string result;
   using std::cbegin, std::cend;
   encode_user_info(cbegin(input), cend(input), std::back_inserter(result));
   return result;
@@ -76,9 +75,9 @@ constexpr OutputIt encode_path (InputIt first, InputIt last, OutputIt out)
 
 
 template <typename Data>
-constexpr Data encode_path (const Data &input)
+inline std::string encode_path (const Data &input)
 {
-  Data result;
+  std::string result;
   using std::cbegin, std::cend;
   encode_path(cbegin(input), cend(input), std::back_inserter(result));
   return result;
@@ -93,12 +92,11 @@ constexpr OutputIt encode_query (InputIt first, InputIt last, OutputIt out)
 
 
 template <typename Data>
-constexpr Data encode_query (const Data &input)
+inline std::string encode_query (const Data &input)
 {
-  Data result;
-  using std::cbegin, std::cend;
-  encode_query(cbegin(input), cend(input), std::back_inserter(result));
-  return result;
+  return __bits::encode_query_impl(input,
+    __bits::is_associative_container(&input)
+  );
 }
 
 
@@ -110,9 +108,9 @@ constexpr OutputIt encode_fragment (InputIt first, InputIt last, OutputIt out)
 
 
 template <typename Data>
-constexpr Data encode_fragment (const Data &input)
+inline std::string encode_fragment (const Data &input)
 {
-  Data result;
+  std::string result;
   using std::cbegin, std::cend;
   encode_fragment(cbegin(input), cend(input), std::back_inserter(result));
   return result;

@@ -45,7 +45,9 @@ constexpr OutputIt decode (InputIt first, InputIt last, OutputIt out,
     }
     else if (std::distance(first, last) > 2)
     {
-      *out = decode_nibble(*++first, error) << 4 | decode_nibble(*++first, error);
+      auto h = *++first;
+      auto l = *++first;
+      *out = decode_nibble(h, error) << 4 | decode_nibble(l, error);
     }
     else
     {
@@ -83,6 +85,73 @@ constexpr OutputIt encode (InputIt first, InputIt last, OutputIt out, Filter saf
     ++first;
   }
   return out;
+}
+
+
+//
+// special case for encoding query: any range is encoded as usual except
+// associative containers that are encoded as list of key=value pairs
+// separated by &
+//
+
+
+constexpr std::false_type is_associative_container (...) noexcept
+{
+  return {};
+}
+
+
+template <
+  typename Data,
+  typename = typename Data::key_type,
+  typename = typename Data::mapped_type
+>
+constexpr std::true_type is_associative_container (const Data *) noexcept
+{
+  return {};
+}
+
+
+template <typename Data>
+inline std::string encode_query_impl (const Data &input, std::false_type)
+{
+  std::string result;
+  using std::cbegin, std::cend;
+  encode(cbegin(input), cend(input),
+    std::back_inserter(result),
+    uri_cc::is_query
+  );
+  return result;
+}
+
+
+constexpr bool limited_query_charset (uint8_t ch) noexcept
+{
+  return ch != '=' && ch != '&' && is_query(ch);
+}
+
+
+template <typename Data>
+inline std::string encode_query_impl (const Data &input, std::true_type)
+{
+  std::string result;
+  auto out = std::back_inserter(result);
+  bool prepend_separator = false;
+  for (const auto &[key, value]: input)
+  {
+    if (prepend_separator)
+    {
+      *out++ = '&';
+    }
+    else
+    {
+      prepend_separator = true;
+    }
+    encode(key.begin(), key.end(), out, limited_query_charset);
+    *out++ = '=';
+    encode(value.begin(), value.end(), out, limited_query_charset);
+  }
+  return result;
 }
 
 
