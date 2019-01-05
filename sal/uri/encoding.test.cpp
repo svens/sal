@@ -7,13 +7,8 @@ namespace {
 
 using uri = sal_test::fixture;
 
-
-std::string decode (const std::string &in)
-{
-  std::string result;
-  sal::uri::decode(in.begin(), in.end(), std::back_inserter(result));
-  return result;
-}
+using sal::uri::decode;
+using namespace std::string_literals;
 
 
 TEST_F(uri, decode_none)
@@ -24,19 +19,20 @@ TEST_F(uri, decode_none)
 
 TEST_F(uri, decode_partial)
 {
-  EXPECT_EQ("before_\x74\x65\x73\x74_after", decode("before_%74%65%73%74_after"));
+  EXPECT_EQ("before_\x74\x65\x73\x74_after", decode("before_%74%65%73%74_after"s));
 }
 
 
 TEST_F(uri, decode_all)
 {
-  EXPECT_EQ("\x74\x65\x73\x74", decode("%74%65%73%74"));
+  EXPECT_EQ("\x74\x65\x73\x74", decode("%74%65%73%74"s));
+  EXPECT_EQ("\xaf\xaf\xaf\xaf", decode("%af%Af%aF%AF"s));
 }
 
 
 TEST_F(uri, decode_empty)
 {
-  EXPECT_EQ("", decode(""));
+  EXPECT_EQ("", decode(""s));
 }
 
 

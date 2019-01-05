@@ -32,6 +32,16 @@ constexpr OutputIt decode (InputIt first, InputIt last, OutputIt out)
 }
 
 
+template <typename Data>
+constexpr Data decode (const Data &input)
+{
+  Data result;
+  using std::cbegin, std::cend;
+  decode(cbegin(input), cend(input), std::back_inserter(result));
+  return result;
+}
+
+
 } // namespace uri
 
 
