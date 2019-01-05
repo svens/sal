@@ -20,6 +20,7 @@ namespace uri {
 namespace {
 
 using __bits::uri_cc;
+using __bits::is_extended_ascii;
 
 #if __has_include(<charconv>)
 
@@ -79,6 +80,31 @@ inline const char *skip_backward (const char *first, const char *last,
   return last;
 }
 
+constexpr bool is_authority (uint8_t ch) noexcept
+{
+  return uri_cc::is_authority(ch) || is_extended_ascii(ch);
+}
+
+constexpr bool is_user_info (uint8_t ch) noexcept
+{
+  return uri_cc::is_user_info(ch) || is_extended_ascii(ch);
+}
+
+constexpr bool is_path (uint8_t ch) noexcept
+{
+  return uri_cc::is_path(ch) || is_extended_ascii(ch);
+}
+
+constexpr bool is_query (uint8_t ch) noexcept
+{
+  return uri_cc::is_query(ch) || is_extended_ascii(ch);
+}
+
+constexpr bool is_fragment (uint8_t ch) noexcept
+{
+  return uri_cc::is_fragment(ch) || is_extended_ascii(ch);
+}
+
 } // namespace
 
 
@@ -135,7 +161,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
     //
 
     auto authority_begin = first + 2;
-    first = skip_forward(authority_begin, last, uri_cc::is_authority);
+    first = skip_forward(authority_begin, last, is_authority);
     if (first < last && !uri_cc::is_authority_separator(*first))
     {
       error = make_error_code(errc::invalid_authority);
@@ -185,7 +211,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       auto user_info_end = skip_forward(
         host.data(),
         host.data() + host.length(),
-        uri_cc::is_user_info
+        is_user_info
       );
       if (*user_info_end == '@')
       {
@@ -195,14 +221,14 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
     }
   }
 
-  if (uri_cc::is_path(*first))
+  if (is_path(*first))
   {
     //
     // path
     //
 
     auto path_begin = first;
-    first = skip_forward(path_begin, last, uri_cc::is_path);
+    first = skip_forward(path_begin, last, is_path);
     if (first < last && *first != '?' && *first != '#')
     {
       error = make_error_code(errc::invalid_path);
@@ -218,7 +244,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
     //
 
     auto query_begin = first + 1;
-    first = skip_forward(query_begin, last, uri_cc::is_query);
+    first = skip_forward(query_begin, last, is_query);
     if (first < last && *first != '#')
     {
       error = make_error_code(errc::invalid_query);
@@ -234,7 +260,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
     //
 
     auto fragment_begin = first + 1;
-    first = skip_forward(fragment_begin, last, uri_cc::is_fragment);
+    first = skip_forward(fragment_begin, last, is_fragment);
     if (first < last)
     {
       error = make_error_code(errc::invalid_fragment);

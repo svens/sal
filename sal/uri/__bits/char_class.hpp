@@ -26,12 +26,6 @@ enum
 };
 
 
-constexpr bool allow_non_us_ascii (uint8_t v) noexcept
-{
-  return v >= 128;
-}
-
-
 constexpr bool in_list (uint8_t v, std::initializer_list<uint8_t> set) noexcept
 {
   for (auto it: set)
@@ -77,6 +71,12 @@ constexpr bool is_alpha (uint8_t ch) noexcept //{{{1
   return in_range(ch, 'a', 'z')
       || in_range(ch, 'A', 'Z')
   ;
+}
+
+
+constexpr bool is_extended_ascii (uint8_t ch) noexcept //{{{1
+{
+  return ch >= 128;
 }
 
 
@@ -138,7 +138,6 @@ constexpr bool is_user_info (uint8_t ch) noexcept //{{{1
       || is_pct_encoded(ch)
       || is_sub_delim(ch)
       || ch == ':'
-      || allow_non_us_ascii(ch)
   ;
 }
 
@@ -149,7 +148,6 @@ constexpr bool is_host (uint8_t ch) noexcept //{{{1
       || is_pct_encoded(ch)
       || is_sub_delim(ch)
       || in_list(ch, {'%', '[', ']'})
-      || allow_non_us_ascii(ch)
   ;
 }
 
@@ -182,7 +180,6 @@ constexpr bool is_path (uint8_t ch) noexcept //{{{1
   return is_unreserved(ch)
       || is_sub_delim(ch)
       || in_list(ch, {'%', '/', ':', '@'})
-      || allow_non_us_ascii(ch)
   ;
 }
 
@@ -191,7 +188,6 @@ constexpr bool is_query (uint8_t ch) noexcept //{{{1
 {
   return is_path(ch)
       || in_list(ch, {'/', '?'})
-      || allow_non_us_ascii(ch)
   ;
 }
 
@@ -200,7 +196,6 @@ constexpr bool is_fragment (uint8_t ch) noexcept //{{{1
 {
   return is_path(ch)
       || in_list(ch, {'/', '?'})
-      || allow_non_us_ascii(ch)
   ;
 }
 
