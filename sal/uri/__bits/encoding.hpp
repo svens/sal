@@ -13,7 +13,7 @@ namespace uri::__bits {
 
 
 template <typename Char>
-constexpr Char to_nibble (Char ch, std::error_code &error) noexcept
+constexpr Char decode_nibble (Char ch, std::error_code &error) noexcept
 {
   if (is_digit(ch))
   {
@@ -45,12 +45,42 @@ constexpr OutputIt decode (InputIt first, InputIt last, OutputIt out,
     }
     else if (std::distance(first, last) > 2)
     {
-      *out = to_nibble(*++first, error) << 4 | to_nibble(*++first, error);
+      *out = decode_nibble(*++first, error) << 4 | decode_nibble(*++first, error);
     }
     else
     {
       error = make_error_code(errc::not_enough_input);
     }
+  }
+  return out;
+}
+
+
+template <typename Char>
+constexpr Char encode_nibble (Char ch) noexcept
+{
+  return ch < 10 ? ch + '0' : ch + 'A' - 10;
+}
+
+
+template <typename InputIt, typename OutputIt, typename Filter>
+constexpr OutputIt encode (InputIt first, InputIt last, OutputIt out, Filter safe)
+{
+  using char_type = std::decay_t<decltype(*first)>;
+
+  while (first != last)
+  {
+    if (safe(*first))
+    {
+      *out++ = *first;
+    }
+    else
+    {
+      *out++ = '%';
+      *out++ = static_cast<char_type>(encode_nibble((*first >> 4) & 0x0f));
+      *out++ = static_cast<char_type>(encode_nibble(*first & 0x0f));
+    }
+    ++first;
   }
   return out;
 }
