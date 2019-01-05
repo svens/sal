@@ -1,5 +1,6 @@
 language: cpp
 
+dist: xenial
 group: travis_latest
 
 git:
