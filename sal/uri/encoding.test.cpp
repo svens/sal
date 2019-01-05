@@ -193,14 +193,18 @@ TEST_F(uri, encode_query_map)
 {
   std::map<std::string, std::string> map =
   {
-    { "one", "1" },
-    { "two", "2" },
-    { "t=t", "3" },
+    { "none", "n" },
+    { "\x80pa=rt&ial\xff", "p" },
+    { "\x80\xff", "a" },
+    { "", "vempty" },
+    { "kempty", "" },
   };
   auto result = sal::uri::encode_query(map);
-  EXPECT_NE(std::string::npos, result.find("one=1"));
-  EXPECT_NE(std::string::npos, result.find("two=2"));
-  EXPECT_NE(std::string::npos, result.find("t%3Dt=3"));
+  EXPECT_NE(std::string::npos, result.find("none=n"));
+  EXPECT_NE(std::string::npos, result.find("%80pa%3Drt%26ial%FF=p"));
+  EXPECT_NE(std::string::npos, result.find("%80%FF=a"));
+  EXPECT_NE(std::string::npos, result.find("=vempty"));
+  EXPECT_NE(std::string::npos, result.find("kempty="));
 }
 
 
@@ -214,16 +218,20 @@ TEST_F(uri, encode_query_empty_map)
 
 TEST_F(uri, encode_query_unordered_map)
 {
-  std::unordered_map<std::string, std::string> map =
+  std::map<std::string, std::string> map =
   {
-    { "one", "1" },
-    { "two", "2" },
-    { "t=t", "3" },
+    { "none", "n" },
+    { "\x80pa=rt&ial\xff", "p" },
+    { "\x80\xff", "a" },
+    { "", "vempty" },
+    { "kempty", "" },
   };
   auto result = sal::uri::encode_query(map);
-  EXPECT_NE(std::string::npos, result.find("one=1"));
-  EXPECT_NE(std::string::npos, result.find("two=2"));
-  EXPECT_NE(std::string::npos, result.find("t%3Dt=3"));
+  EXPECT_NE(std::string::npos, result.find("none=n"));
+  EXPECT_NE(std::string::npos, result.find("%80pa%3Drt%26ial%FF=p"));
+  EXPECT_NE(std::string::npos, result.find("%80%FF=a"));
+  EXPECT_NE(std::string::npos, result.find("=vempty"));
+  EXPECT_NE(std::string::npos, result.find("kempty="));
 }
 
 

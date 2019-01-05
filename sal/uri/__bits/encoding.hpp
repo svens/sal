@@ -37,7 +37,7 @@ constexpr OutputIt decode (InputIt first, InputIt last, OutputIt out,
   std::error_code &error)
 {
   error.clear();
-  for (/**/;  first != last && !error;  ++first, ++out)
+  for (/**/;  first != last;  ++first, ++out)
   {
     if (*first != '%')
     {
@@ -45,13 +45,20 @@ constexpr OutputIt decode (InputIt first, InputIt last, OutputIt out,
     }
     else if (std::distance(first, last) > 2)
     {
-      auto h = *++first;
-      auto l = *++first;
-      *out = decode_nibble(h, error) << 4 | decode_nibble(l, error);
+      *out = decode_nibble(first[1], error) << 4 | decode_nibble(first[2], error);
+      if (!error)
+      {
+        first += 2;
+      }
+      else
+      {
+        break;
+      }
     }
     else
     {
       error = make_error_code(errc::not_enough_input);
+      break;
     }
   }
   return out;
@@ -70,7 +77,7 @@ constexpr OutputIt encode (InputIt first, InputIt last, OutputIt out, Filter saf
 {
   using char_type = std::decay_t<decltype(*first)>;
 
-  while (first != last)
+  for (/**/;  first != last;  ++first)
   {
     if (safe(*first))
     {
@@ -82,7 +89,6 @@ constexpr OutputIt encode (InputIt first, InputIt last, OutputIt out, Filter saf
       *out++ = static_cast<char_type>(encode_nibble((*first >> 4) & 0x0f));
       *out++ = static_cast<char_type>(encode_nibble(*first & 0x0f));
     }
-    ++first;
   }
   return out;
 }
@@ -127,7 +133,7 @@ inline std::string encode_query_impl (const Data &input, std::false_type)
 
 constexpr bool limited_query_charset (uint8_t ch) noexcept
 {
-  return ch != '=' && ch != '&' && is_query(ch);
+  return ch != '=' && ch != '&' && uri_cc::is_query(ch);
 }
 
 
@@ -137,7 +143,7 @@ inline std::string encode_query_impl (const Data &input, std::true_type)
   std::string result;
   auto out = std::back_inserter(result);
   bool prepend_separator = false;
-  for (const auto &[key, value]: input)
+  for (auto &[key, value]: input)
   {
     if (prepend_separator)
     {
