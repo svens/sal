@@ -83,8 +83,8 @@ TEST_F(uri, encode_user_info_none)
 
 TEST_F(uri, encode_user_info_partial)
 {
-  EXPECT_EQ("%80user%AAinfo%FF",
-    sal::uri::encode_user_info("\x80user\xaainfo\xff"s)
+  EXPECT_EQ("%7B%80user%AAinfo%FF%7D",
+    sal::uri::encode_user_info("{\x80user\xaainfo\xff}"s)
   );
 }
 
@@ -106,6 +106,123 @@ TEST_F(uri, encode_user_info_all)
 TEST_F(uri, encode_user_info_empty)
 {
   EXPECT_EQ("", sal::uri::encode_user_info(""s));
+}
+
+
+// encode_path {{{1
+
+
+TEST_F(uri, encode_path_none)
+{
+  EXPECT_EQ("/test/../%20:%20@path;p=v",
+    sal::uri::encode_path("/test/../ :%20@path;p=v"s)
+  );
+}
+
+
+TEST_F(uri, encode_path_partial)
+{
+  EXPECT_EQ("/%80test/../%20:%AApath@%FF%7B;p=v%7D",
+    sal::uri::encode_path("/\x80test/../ :\xaapath@\xff{;p=v}"s)
+  );
+}
+
+
+TEST_F(uri, encode_path_all)
+{
+  std::ostringstream expected;
+  expected << std::uppercase;
+  std::string input;
+  for (uint16_t ch = 0x80;  ch < 0x100;  ++ch)
+  {
+    input.push_back(static_cast<uint8_t>(ch));
+    expected << '%' << std::hex << ch;
+  }
+  EXPECT_EQ(expected.str(), sal::uri::encode_path(input));
+}
+
+
+TEST_F(uri, encode_path_empty)
+{
+  EXPECT_EQ("", sal::uri::encode_path(""s));
+}
+
+
+// encode_query {{{1
+
+
+TEST_F(uri, encode_query_none)
+{
+  EXPECT_EQ("?k1=v1&k2=v2/k3=v3",
+    sal::uri::encode_query("?k1=v1&k2=v2/k3=v3"s)
+  );
+}
+
+
+TEST_F(uri, encode_query_partial)
+{
+  EXPECT_EQ("?%81k1=v1&%AAk2=v2%FF%20/%7Bk3=v3%7D",
+    sal::uri::encode_query("?\x81k1=v1&\xaak2=v2\xff /{k3=v3}"s)
+  );
+}
+
+
+TEST_F(uri, encode_query_all)
+{
+  std::ostringstream expected;
+  expected << std::uppercase;
+  std::string input;
+  for (uint16_t ch = 0x80;  ch < 0x100;  ++ch)
+  {
+    input.push_back(static_cast<uint8_t>(ch));
+    expected << '%' << std::hex << ch;
+  }
+  EXPECT_EQ(expected.str(), sal::uri::encode_query(input));
+}
+
+
+TEST_F(uri, encode_query_empty)
+{
+  EXPECT_EQ("", sal::uri::encode_query(""s));
+}
+
+
+// encode_fragment {{{1
+
+
+TEST_F(uri, encode_fragment_none)
+{
+  EXPECT_EQ("/f%20/%20ragment@?",
+    sal::uri::encode_fragment("/f%20/ ragment@?"s)
+  );
+}
+
+
+TEST_F(uri, encode_fragment_partial)
+{
+  EXPECT_EQ("%81/f%20%AA/%20ragment%FF@?",
+    sal::uri::encode_fragment("\x81/f%20\xaa/ ragment\xff@?"s)
+  );
+}
+
+
+TEST_F(uri, encode_fragment_all)
+{
+  std::ostringstream expected;
+  expected << std::uppercase;
+  std::string input;
+  for (uint16_t ch = 0x80;  ch < 0x100;  ++ch)
+  {
+    input.push_back(static_cast<uint8_t>(ch));
+    expected << '%' << std::hex << ch;
+  }
+  EXPECT_EQ(expected.str(), sal::uri::encode_fragment(input));
+}
+
+
+TEST_F(uri, encode_fragment_empty)
+{
+  EXPECT_EQ("", sal::uri::encode_fragment(""s));
 }
 
 

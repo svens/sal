@@ -68,6 +68,57 @@ constexpr Data encode_user_info (const Data &input)
 }
 
 
+template <typename InputIt, typename OutputIt>
+constexpr OutputIt encode_path (InputIt first, InputIt last, OutputIt out)
+{
+  return encode(first, last, out, __bits::uri_cc::is_path);
+}
+
+
+template <typename Data>
+constexpr Data encode_path (const Data &input)
+{
+  Data result;
+  using std::cbegin, std::cend;
+  encode_path(cbegin(input), cend(input), std::back_inserter(result));
+  return result;
+}
+
+
+template <typename InputIt, typename OutputIt>
+constexpr OutputIt encode_query (InputIt first, InputIt last, OutputIt out)
+{
+  return encode(first, last, out, __bits::uri_cc::is_query);
+}
+
+
+template <typename Data>
+constexpr Data encode_query (const Data &input)
+{
+  Data result;
+  using std::cbegin, std::cend;
+  encode_query(cbegin(input), cend(input), std::back_inserter(result));
+  return result;
+}
+
+
+template <typename InputIt, typename OutputIt>
+constexpr OutputIt encode_fragment (InputIt first, InputIt last, OutputIt out)
+{
+  return encode(first, last, out, __bits::uri_cc::is_fragment);
+}
+
+
+template <typename Data>
+constexpr Data encode_fragment (const Data &input)
+{
+  Data result;
+  using std::cbegin, std::cend;
+  encode_fragment(cbegin(input), cend(input), std::back_inserter(result));
+  return result;
+}
+
+
 } // namespace uri
 
 

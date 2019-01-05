@@ -147,7 +147,7 @@ constexpr bool is_host (uint8_t ch) noexcept //{{{1
   return is_unreserved(ch)
       || is_pct_encoded(ch)
       || is_sub_delim(ch)
-      || in_list(ch, {'%', '[', ']'})
+      || in_list(ch, {'[', ']'})
   ;
 }
 
@@ -178,8 +178,9 @@ constexpr bool is_authority_separator (uint8_t ch) noexcept //{{{1
 constexpr bool is_path (uint8_t ch) noexcept //{{{1
 {
   return is_unreserved(ch)
+      || is_pct_encoded(ch)
       || is_sub_delim(ch)
-      || in_list(ch, {'%', '/', ':', '@'})
+      || in_list(ch, {'/', ':', '@'})
   ;
 }
 
