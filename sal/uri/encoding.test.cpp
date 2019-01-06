@@ -1,5 +1,6 @@
 #include <sal/uri/encoding.hpp>
 #include <sal/common.test.hpp>
+#include <functional>
 #include <map>
 #include <unordered_map>
 
@@ -7,191 +8,204 @@
 namespace {
 
 
-using uri = sal_test::fixture;
-using namespace std::string_view_literals;
+using namespace std::string_literals;
 
 
-// decode {{{1
+// decode_success {{{1
 
 
-TEST_F(uri, decode_none)
+struct decode_success_t
 {
-  EXPECT_EQ(case_name, sal::uri::decode(case_name));
+  std::string data, expected;
+
+  friend std::ostream &operator<< (std::ostream &os, const decode_success_t &test)
+  {
+    return (os << '\'' << test.data << '\'');
+  }
+};
+
+
+decode_success_t decode_success_data[] =
+{
+  { "", "" },
+  { "a_%74%65%73%74_z", "a_test_z" },
+  { "%74%65%73%74_data_%74%65%73%74", "test_data_test" },
+  { "%74%65%73%74%af%Af%aF%AF", "\x74\x65\x73\x74\xaf\xaf\xaf\xaf" },
+};
+
+
+using encoding_decode_success = ::testing::TestWithParam<decode_success_t>;
+INSTANTIATE_TEST_CASE_P(uri,
+  encoding_decode_success,
+  ::testing::ValuesIn(decode_success_data),
+);
+
+
+TEST_P(encoding_decode_success, test)
+{
+  auto &test = GetParam();
+  EXPECT_EQ(test.expected, sal::uri::decode(test.data));
 }
 
 
-TEST_F(uri, decode_partial)
+// decode_fail {{{1
+
+
+struct decode_fail_t
 {
-  EXPECT_EQ("before_\x74\x65\x73\x74_after",
-    sal::uri::decode("before_%74%65%73%74_after"sv)
-  );
-}
+  std::string data;
+  sal::uri::errc expected;
+
+  friend std::ostream &operator<< (std::ostream &os, const decode_fail_t &test)
+  {
+    return (os << '\'' << test.data << '\'');
+  }
+};
 
 
-TEST_F(uri, decode_all)
+decode_fail_t decode_fail_data[] =
 {
-  EXPECT_EQ("\x74\x65\x73\x74", sal::uri::decode("%74%65%73%74"sv));
-  EXPECT_EQ("\xaf\xaf\xaf\xaf", sal::uri::decode("%af%Af%aF%AF"sv));
-}
+  { "%0x", sal::uri::errc::invalid_hex_input },
+  { "%x0", sal::uri::errc::invalid_hex_input },
+  { "%xx", sal::uri::errc::invalid_hex_input },
+  { "test%xx", sal::uri::errc::invalid_hex_input },
+  { "%a", sal::uri::errc::not_enough_input },
+  { "a%a", sal::uri::errc::not_enough_input },
+  { "%ab%a", sal::uri::errc::not_enough_input },
+};
 
 
-TEST_F(uri, decode_empty)
+using encoding_decode_fail = ::testing::TestWithParam<decode_fail_t>;
+INSTANTIATE_TEST_CASE_P(uri,
+  encoding_decode_fail,
+  ::testing::ValuesIn(decode_fail_data),
+);
+
+
+TEST_P(encoding_decode_fail, test)
 {
-  EXPECT_EQ("", sal::uri::decode(""sv));
-}
-
-
-std::error_code decode_failure (std::string_view data)
-{
+  auto &test = GetParam();
+  auto expected_error = sal::uri::make_error_code(test.expected);
   try
   {
-    sal::uri::decode(data);
-    return {};
+    sal::uri::decode(test.data);
+    FAIL() << "expected decoding failure (" << expected_error << ")";
   }
   catch (const std::system_error &ex)
   {
-    return ex.code();
+    EXPECT_EQ(expected_error, ex.code());
   }
 }
 
 
-TEST_F(uri, decode_invalid_input)
+// encode {{{1
+
+
+struct encode_success_t
 {
-  EXPECT_EQ(sal::uri::errc::invalid_hex_input, decode_failure("%0x"));
-  EXPECT_EQ(sal::uri::errc::invalid_hex_input, decode_failure("%x0"));
-  EXPECT_EQ(sal::uri::errc::invalid_hex_input, decode_failure("%xx"));
-  EXPECT_EQ(sal::uri::errc::invalid_hex_input, decode_failure("test%xx"));
-}
+  std::function<std::string(std::string)> encoder;
+  std::string data, expected;
 
-
-TEST_F(uri, decode_not_enough_data)
-{
-  EXPECT_EQ(sal::uri::errc::not_enough_input, decode_failure("%a"));
-  EXPECT_EQ(sal::uri::errc::not_enough_input, decode_failure("a%a"));
-  EXPECT_EQ(sal::uri::errc::not_enough_input, decode_failure("%ab%a"));
-}
-
-
-// encode_user_info {{{1
-
-
-TEST_F(uri, encode_user_info_none)
-{
-  EXPECT_EQ("u-s.e_r:i~n1f9%20o",
-    sal::uri::encode_user_info("u-s.e_r:i~n1f9%20o"sv)
-  );
-}
-
-
-TEST_F(uri, encode_user_info_partial)
-{
-  EXPECT_EQ("%7B%80user%AAinfo%FF%7D",
-    sal::uri::encode_user_info("{\x80user\xaainfo\xff}"sv)
-  );
-}
-
-
-TEST_F(uri, encode_user_info_all)
-{
-  std::ostringstream expected;
-  expected << std::uppercase;
-  std::string input;
-  for (uint16_t ch = 0x80;  ch < 0x100;  ++ch)
+  friend std::ostream &operator<< (std::ostream &os, const encode_success_t &test)
   {
-    input.push_back(static_cast<uint8_t>(ch));
-    expected << '%' << std::hex << ch;
+    return (os << '\'' << test.data << '\'');
   }
-  EXPECT_EQ(expected.str(), sal::uri::encode_user_info(input));
-}
+};
 
 
-TEST_F(uri, encode_user_info_empty)
+encode_success_t encode_success_data[] =
 {
-  EXPECT_EQ("", sal::uri::encode_user_info(""sv));
-}
-
-
-// encode_path {{{1
-
-
-TEST_F(uri, encode_path_none)
-{
-  EXPECT_EQ("/test/../%20:%20@path;p=v",
-    sal::uri::encode_path("/test/../ :%20@path;p=v"sv)
-  );
-}
-
-
-TEST_F(uri, encode_path_partial)
-{
-  EXPECT_EQ("/%80test/../%20:%AApath@%FF%7B;p=v%7D",
-    sal::uri::encode_path("/\x80test/../ :\xaapath@\xff{;p=v}"sv)
-  );
-}
-
-
-TEST_F(uri, encode_path_all)
-{
-  std::ostringstream expected;
-  expected << std::uppercase;
-  std::string input;
-  for (uint16_t ch = 0x80;  ch < 0x100;  ++ch)
+  // user_info
   {
-    input.push_back(static_cast<uint8_t>(ch));
-    expected << '%' << std::hex << ch;
-  }
-  EXPECT_EQ(expected.str(), sal::uri::encode_path(input));
-}
-
-
-TEST_F(uri, encode_path_empty)
-{
-  EXPECT_EQ("", sal::uri::encode_path(""sv));
-}
-
-
-// encode_query {{{1
-
-
-TEST_F(uri, encode_query_none)
-{
-  EXPECT_EQ("?k1=v1&k2=v2/k3=v3",
-    sal::uri::encode_query("?k1=v1&k2=v2/k3=v3"sv)
-  );
-}
-
-
-TEST_F(uri, encode_query_partial)
-{
-  EXPECT_EQ("?%81k1=v1&%AAk2=v2%FF%20/%7Bk3=v3%7D",
-    sal::uri::encode_query("?\x81k1=v1&\xaak2=v2\xff /{k3=v3}"sv)
-  );
-}
-
-
-TEST_F(uri, encode_query_all)
-{
-  std::ostringstream expected;
-  expected << std::uppercase;
-  std::string input;
-  for (uint16_t ch = 0x80;  ch < 0x100;  ++ch)
+    sal::uri::encode_user_info<std::string>,
+    "",
+    ""
+  },
   {
-    input.push_back(static_cast<uint8_t>(ch));
-    expected << '%' << std::hex << ch;
-  }
-  EXPECT_EQ(expected.str(), sal::uri::encode_query(input));
+    sal::uri::encode_user_info<std::string>,
+    "u-._:~%20o",
+    "u-._:~%20o"
+  },
+  {
+    sal::uri::encode_user_info<std::string>,
+    "{\x00\x01}"s,
+    "%7B%00%01%7D"
+  },
+
+  // path
+  {
+    sal::uri::encode_path<std::string>,
+    "",
+    ""
+  },
+  {
+    sal::uri::encode_path<std::string>,
+    "/test/../:%20@path;p=v",
+    "/test/../:%20@path;p=v"
+  },
+  { sal::uri::encode_path<std::string>,
+    "/{\x00\x01}\\/\xff"s,
+    "/%7B%00%01%7D%5C/%FF"s,
+  },
+
+  // query
+  {
+    sal::uri::encode_query<std::string>,
+    "",
+    ""
+  },
+  {
+    sal::uri::encode_query<std::string>,
+    "?test=&k1=v1/:%20;p=v",
+    "?test=&k1=v1/:%20;p=v"
+  },
+  { sal::uri::encode_query<std::string>,
+    "{\x00\x01}?k1=v1 @\xaa "s,
+    "%7B%00%01%7D?k1=v1%20@%AA%20",
+  },
+
+  // fragment
+  {
+    sal::uri::encode_fragment<std::string>,
+    "",
+    ""
+  },
+  {
+    sal::uri::encode_fragment<std::string>,
+    "?test=&k1=v1?/:%20;p=v",
+    "?test=&k1=v1?/:%20;p=v"
+  },
+  { sal::uri::encode_fragment<std::string>,
+    "{\x00\x01}#?k1=v1 @\xaa "s,
+    "%7B%00%01%7D%23?k1=v1%20@%AA%20",
+  },
+};
+
+
+using encoding_encode_success = ::testing::TestWithParam<encode_success_t>;
+INSTANTIATE_TEST_CASE_P(uri,
+  encoding_encode_success,
+  ::testing::ValuesIn(encode_success_data),
+);
+
+
+TEST_P(encoding_encode_success, test)
+{
+  auto &test = GetParam();
+  EXPECT_EQ(test.expected, test.encoder(test.data));
 }
 
 
-TEST_F(uri, encode_query_empty)
-{
-  EXPECT_EQ("", sal::uri::encode_query(""sv));
-}
+// encode_map {{{1
 
 
-TEST_F(uri, encode_query_map)
+using uri = sal_test::fixture;
+
+
+template <template <typename, typename> typename Map>
+Map<std::string, std::string> test_map ()
 {
-  std::map<std::string, std::string> map =
+  return
   {
     { "none", "n" },
     { "\x80pa=rt&ial\xff", "p" },
@@ -199,7 +213,11 @@ TEST_F(uri, encode_query_map)
     { "", "vempty" },
     { "kempty", "" },
   };
-  auto result = sal::uri::encode_query(map);
+}
+
+
+void check_expected_result (const std::string &result)
+{
   EXPECT_NE(std::string::npos, result.find("none=n"));
   EXPECT_NE(std::string::npos, result.find("%80pa%3Drt%26ial%FF=p"));
   EXPECT_NE(std::string::npos, result.find("%80%FF=a"));
@@ -208,7 +226,14 @@ TEST_F(uri, encode_query_map)
 }
 
 
-TEST_F(uri, encode_query_empty_map)
+TEST_F(uri, encoding_encode_query_map)
+{
+  auto result = sal::uri::encode_query(test_map<std::map>());
+  check_expected_result(result);
+}
+
+
+TEST_F(uri, encoding_encode_query_map_empty)
 {
   std::map<std::string, std::string> map =
   { };
@@ -216,69 +241,18 @@ TEST_F(uri, encode_query_empty_map)
 }
 
 
-TEST_F(uri, encode_query_unordered_map)
+TEST_F(uri, encoding_encode_query_unordered_map)
 {
-  std::map<std::string, std::string> map =
-  {
-    { "none", "n" },
-    { "\x80pa=rt&ial\xff", "p" },
-    { "\x80\xff", "a" },
-    { "", "vempty" },
-    { "kempty", "" },
-  };
-  auto result = sal::uri::encode_query(map);
-  EXPECT_NE(std::string::npos, result.find("none=n"));
-  EXPECT_NE(std::string::npos, result.find("%80pa%3Drt%26ial%FF=p"));
-  EXPECT_NE(std::string::npos, result.find("%80%FF=a"));
-  EXPECT_NE(std::string::npos, result.find("=vempty"));
-  EXPECT_NE(std::string::npos, result.find("kempty="));
+  auto result = sal::uri::encode_query(test_map<std::unordered_map>());
+  check_expected_result(result);
 }
 
 
-TEST_F(uri, encode_query_empty_unordered_map)
+TEST_F(uri, encoding_encode_query_unordered_map_empty)
 {
   std::unordered_map<std::string, std::string> map =
   { };
   EXPECT_EQ("", sal::uri::encode_query(map));
-}
-
-
-// encode_fragment {{{1
-
-
-TEST_F(uri, encode_fragment_none)
-{
-  EXPECT_EQ("/f%20/%20ragment@?",
-    sal::uri::encode_fragment("/f%20/ ragment@?"sv)
-  );
-}
-
-
-TEST_F(uri, encode_fragment_partial)
-{
-  EXPECT_EQ("%81/f%20%AA/%20ragment%FF@?",
-    sal::uri::encode_fragment("\x81/f%20\xaa/ ragment\xff@?"sv)
-  );
-}
-
-
-TEST_F(uri, encode_fragment_all)
-{
-  std::ostringstream expected;
-  expected << std::uppercase;
-  std::string input;
-  for (uint16_t ch = 0x80;  ch < 0x100;  ++ch)
-  {
-    input.push_back(static_cast<uint8_t>(ch));
-    expected << '%' << std::hex << ch;
-  }
-  EXPECT_EQ(expected.str(), sal::uri::encode_fragment(input));
-}
-
-
-TEST_F(uri, encode_fragment_empty)
-{
-  EXPECT_EQ("", sal::uri::encode_fragment(""sv));
 }
 
 
