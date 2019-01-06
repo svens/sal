@@ -202,8 +202,8 @@ TEST_P(encoding_encode_success, test)
 using uri = sal_test::fixture;
 
 
-template <template <typename, typename> typename Map>
-Map<std::string, std::string> test_map ()
+template <typename Map>
+Map test_data ()
 {
   return
   {
@@ -228,7 +228,8 @@ void check_expected_result (const std::string &result)
 
 TEST_F(uri, encoding_encode_query_map)
 {
-  auto result = sal::uri::encode_query(test_map<std::map>());
+  auto map = test_data<std::map<std::string, std::string>>();
+  auto result = sal::uri::encode_query(map);
   check_expected_result(result);
 }
 
@@ -243,7 +244,8 @@ TEST_F(uri, encoding_encode_query_map_empty)
 
 TEST_F(uri, encoding_encode_query_unordered_map)
 {
-  auto result = sal::uri::encode_query(test_map<std::unordered_map>());
+  auto map = test_data<std::unordered_map<std::string, std::string>>();
+  auto result = sal::uri::encode_query(map);
   check_expected_result(result);
 }
 
