@@ -24,10 +24,6 @@ case "${TRAVIS_OS_NAME}-${CC}" in
   osx-gcc)
     export CC=gcc-8
     export CXX=g++-8
-
-    # oclint conflicts with gcc (include/c++ symlink)
-    brew cask uninstall oclint || true
-
     brew update
     brew install gcc || true
     ;;
