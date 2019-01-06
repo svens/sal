@@ -6,6 +6,10 @@ list(APPEND sal_sources
   sal/uri/encoding.hpp
   sal/uri/error.hpp
   sal/uri/error.cpp
+  sal/uri/scheme.hpp
+  sal/uri/scheme.cpp
+  sal/uri/uri.hpp
+  sal/uri/uri.cpp
   sal/uri/view.hpp
   sal/uri/view.cpp
 )
@@ -14,5 +18,6 @@ list(APPEND sal_sources
 # unittests
 list(APPEND sal_unittests_sources
   sal/uri/encoding.test.cpp
+  sal/uri/uri.test.cpp
   sal/uri/view.test.cpp
 )
