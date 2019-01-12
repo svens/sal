@@ -55,13 +55,13 @@ struct view_t
 
   bool has_host () const noexcept
   {
-    return !host.empty();
+    return host.data() != nullptr;
   }
 
 
   bool has_port () const noexcept
   {
-    return !port.empty();
+    return port.data() != nullptr;
   }
 
 

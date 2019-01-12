@@ -388,13 +388,13 @@ test_case_t test_cases[] =
   ok("s:p",			uri("s",	{},		{},		{},		"p",		{},		{}	)),
   ok("s:/",			uri("s",	{},		{},		{},		"/",		{},		{}	)),
   ok("s:/p",			uri("s",	{},		{},		{},		"/p",		{},		{}	)),
-  ok("s://",			uri("s",	{},		{},		{},		{},		{},		{}	)),
-  ok("s:///",			uri("s",	{},		{},		{},		"/",		{},		{}	)),
-  ok("s:///p",			uri("s",	{},		{},		{},		"/p",		{},		{}	)),
+  ok("s://",			uri("s",	{},		"",		{},		{},		{},		{}	)),
+  ok("s:///",			uri("s",	{},		"",		{},		"/",		{},		{}	)),
+  ok("s:///p",			uri("s",	{},		"",		{},		"/p",		{},		{}	)),
   ok("s://./p",			uri("s",	{},		".",		{},		"/p",		{},		{}	)),
   ok("s://../p",		uri("s",	{},		"..",		{},		"/p",		{},		{}	)),
-  ok("s:///./p",		uri("s",	{},		{},		{},		"/./p",		{},		{}	)),
-  ok("s:///../p",		uri("s",	{},		{},		{},		"/../p",	{},		{}	)),
+  ok("s:///./p",		uri("s",	{},		"",		{},		"/./p",		{},		{}	)),
+  ok("s:///../p",		uri("s",	{},		"",		{},		"/../p",	{},		{}	)),
 
   ok("s://\x80@h/p?q#f",	uri("s",	"\x80",		"h",		{},		"/p",		"q",		"f"	)),
   ok("s://u@\x80/p?q#f",	uri("s",	"u",		"\x80",		{},		"/p",		"q",		"f"	)),
@@ -438,7 +438,7 @@ TEST_P(view, view)
   {
     ASSERT_TRUE(!error) << error.message();
     EXPECT_EQ(test.expected_components, view);
-    if (view.has_port())
+    if (view.has_port() && !view.port.empty())
     {
       EXPECT_NE(0U, view.port_value);
     }
