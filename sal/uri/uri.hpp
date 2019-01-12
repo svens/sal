@@ -44,18 +44,18 @@ public:
   { }
 
 
-  const view_t &to_view () const noexcept
+  const view_t &view () const noexcept
   {
     return view_;
   }
 
 
-  std::string to_encoded_string (std::error_code &error) const noexcept;
+  std::string encoded_string (std::error_code &error) const noexcept;
 
 
-  std::string to_encoded_string () const
+  std::string encoded_string () const
   {
-    return to_encoded_string(throw_on_error("uri::to_encoded_string"));
+    return encoded_string(throw_on_error("uri::encoded_string"));
   }
 
 

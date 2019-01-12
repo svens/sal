@@ -119,10 +119,22 @@ ctor_ok_t success_test[] =
     {},
     {},
     {},
-    "John.Doe@example.com",
+    "john.doe@example.com",
     {},
     {},
-    "mailto:John.Doe@example.com",
+    "mailto:john.doe@example.com",
+  },
+
+  {
+    "mailto:John.Doe@example.com?subject=Test",
+    "mailto",
+    {},
+    {},
+    {},
+    "john.doe@example.com",
+    "subject=Test",
+    {},
+    "mailto:john.doe@example.com?subject=Test",
   },
 
   {
@@ -185,7 +197,6 @@ ctor_ok_t success_test[] =
     "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm",
   },
 
-#if 0
   {
     "eXAMPLE://a/./b/../b/%63/%7bfoo%7d",
     "example",
@@ -197,7 +208,6 @@ ctor_ok_t success_test[] =
     {},
     "example://a/b/c/%7Bfoo%7D",
   },
-#endif
 
   {
     "HTTP://www.EXAMPLE.com/",
@@ -282,6 +292,259 @@ ctor_ok_t success_test[] =
     {},
     "https://example.com:80/",
   },
+
+  {
+    "/a/b/c/./../../g",
+    {},
+    {},
+    {},
+    {},
+    "/a/g",
+    {},
+    {},
+    "/a/g"
+  },
+
+  {
+    "mid/content=5/../6",
+    {},
+    {},
+    {},
+    {},
+    "mid/6",
+    {},
+    {},
+    "mid/6",
+  },
+
+  {
+    "http://www%2Eexample%2Ecom/%7E%66%6F%6F%62%61%72%5F%36%39/",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/~foobar_69/",
+    {},
+    {},
+    "http://www.example.com/~foobar_69/",
+  },
+
+  {
+    "http://www%2eexample%2ecom/%7e%66%6f%6f%62%61%72%5f%36%39/",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/~foobar_69/",
+    {},
+    {},
+    "http://www.example.com/~foobar_69/",
+  },
+
+  {
+    "http://www.example.com/a/./b/",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/a/b/",
+    {},
+    {},
+    "http://www.example.com/a/b/",
+  },
+
+  {
+    "http://www.example.com/a/../b/",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/b/",
+    {},
+    {},
+    "http://www.example.com/b/",
+  },
+
+  {
+    "http://www.example.com/%61/b/",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/a/b/",
+    {},
+    {},
+    "http://www.example.com/a/b/",
+  },
+
+  {
+    "http://www.example.com/a/%2e%2E/b/",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/b/",
+    {},
+    {},
+    "http://www.example.com/b/",
+  },
+
+  {
+    "http://www.example.com/a/../b/?key=value",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/b/",
+    "key=value",
+    {},
+    "http://www.example.com/b/?key=value",
+  },
+
+  {
+    "http://www.example.com/a/../b/#fragment",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/b/",
+    {},
+    "fragment",
+    "http://www.example.com/b/#fragment",
+  },
+
+  {
+    "http://www.example.com/..",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/",
+    {},
+    {},
+    "http://www.example.com/",
+  },
+
+  {
+    "http://www.example.com/../..",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/",
+    {},
+    {},
+    "http://www.example.com/",
+  },
+
+  {
+    "http://www.example.com/a/../..",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/",
+    {},
+    {},
+    "http://www.example.com/",
+  },
+
+  {
+    "http://www.example.com/.",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/",
+    {},
+    {},
+    "http://www.example.com/",
+  },
+
+  {
+    "http://www.example.com/./.",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/",
+    {},
+    {},
+    "http://www.example.com/",
+  },
+
+  {
+    "http://www.example.com/a/./.",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/a/",
+    {},
+    {},
+    "http://www.example.com/a/",
+  },
+
+  // TODO: this is not valid as per https://tools.ietf.org/html/rfc3986#section-3.3
+  {
+    "http://www.example.com/%3a%2f%3f%23%5b%5d%40%21%24%26%27%28%29%2a%2b%2c%3b%3d",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/:/?#[]@!$&'()*+,;=",
+    {},
+    {},
+    "http://www.example.com/:/%3F%23%5B%5D@!$&'()*+,;=",
+  },
+
+  {
+    "http://www.example.com/a%2d%2e%5f%7e",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/a-._~",
+    {},
+    {},
+    "http://www.example.com/a-._~",
+  },
+
+  {
+    "http://www.example.com?query=%2d%2e%5f%7e",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/",
+    "query=-._~",
+    {},
+    "http://www.example.com/?query=-._~",
+  },
+
+  {
+    "http://www.example.com/a//b/",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/a//b/",
+    {},
+    {},
+    "http://www.example.com/a//b/",
+  },
+
+  {
+    "http://www.example.com/a//..//b/",
+    "http",
+    {},
+    "www.example.com",
+    {},
+    "/a//b/",
+    {},
+    {},
+    "http://www.example.com/a//b/",
+  },
 };
 
 
@@ -295,35 +558,35 @@ TEST_P(uri_ctor, test)
   auto uri = sal::uri::make_uri(test.input);
   EXPECT_EQ(
     std::string{test.expected_scheme},
-    std::string{uri.to_view().scheme}
+    std::string{uri.view().scheme}
   );
   EXPECT_EQ(
     std::string{test.expected_user_info},
-    std::string{uri.to_view().user_info}
+    std::string{uri.view().user_info}
   );
   EXPECT_EQ(
     std::string{test.expected_host},
-    std::string{uri.to_view().host}
+    std::string{uri.view().host}
   );
   EXPECT_EQ(
     std::string{test.expected_port},
-    std::string{uri.to_view().port}
+    std::string{uri.view().port}
   );
   EXPECT_EQ(
     std::string{test.expected_path},
-    std::string{uri.to_view().path}
+    std::string{uri.view().path}
   );
   EXPECT_EQ(
     std::string{test.expected_query},
-    std::string{uri.to_view().query}
+    std::string{uri.view().query}
   );
   EXPECT_EQ(
     std::string{test.expected_fragment},
-    std::string{uri.to_view().fragment}
+    std::string{uri.view().fragment}
   );
   EXPECT_EQ(
     test.expected_encoded_string,
-    uri.to_encoded_string()
+    uri.encoded_string()
   );
 }
 

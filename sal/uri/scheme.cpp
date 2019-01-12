@@ -15,6 +15,23 @@ const scheme_t &generic_scheme () noexcept
     0,
     // .default_path =
     {},
+    // .case_insensitive_path =
+    {},
+  };
+  return impl;
+}
+
+
+const scheme_t &mailto_scheme () noexcept
+{
+  static const scheme_t impl
+  {
+    // .default_port =
+    0,
+    // .default_path =
+    {},
+    // .case_insensitive_path =
+    true,
   };
   return impl;
 }
@@ -28,6 +45,8 @@ const scheme_t &ftp_scheme () noexcept
     21,
     // .default_path =
     "/",
+    // .case_insensitive_path =
+    {},
   };
   return impl;
 }
@@ -41,6 +60,8 @@ const scheme_t &http_scheme () noexcept
     80,
     // .default_path =
     "/",
+    // .case_insensitive_path =
+    {},
   };
   return impl;
 }
@@ -54,6 +75,8 @@ const scheme_t &https_scheme () noexcept
     443,
     // .default_path =
     "/",
+    // .case_insensitive_path =
+    {},
   };
   return impl;
 }

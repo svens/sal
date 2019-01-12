@@ -18,6 +18,7 @@ std::unordered_map<std::string_view, const scheme_t *> schemes_ =
   { "ftp", &ftp_scheme() },
   { "http", &http_scheme() },
   { "https", &https_scheme() },
+  { "mailto", &mailto_scheme() },
 };
 
 
@@ -32,17 +33,12 @@ inline const scheme_t &get_scheme (const view_t &uri) noexcept
 }
 
 
-template <typename Transform>
-inline std::string_view append (const std::string_view &piece,
-  std::string &out,
-  Transform transform) noexcept
+inline std::string_view append (const std::string_view &piece, std::string &out)
+  noexcept
 {
   auto original_length = out.length();
-  for (auto ch: piece)
-  {
-    out += transform(ch);
-  }
-  return {&out[0] + original_length, piece.length()};
+  out += piece;
+  return {&out[0] + original_length, out.length() - original_length};
 }
 
 
@@ -56,11 +52,121 @@ inline std::string_view append_decoded (
 }
 
 
+inline std::string_view to_lower (std::string_view view) noexcept
+{
+  // ugly stuff but we know we own it
+  auto first = const_cast<char *>(view.data());
+  auto last = first + view.length();
+  std::transform(first, last, first,
+    [](char ch)
+    {
+      return static_cast<char>(std::tolower(ch));
+    }
+  );
+  return view;
+}
+
+
+constexpr bool starts_with (std::string_view data, std::string_view prefix)
+  noexcept
+{
+  return data.size() >= prefix.size()
+      && data.compare(0, prefix.size(), prefix) == 0;
+}
+
+
+inline void pop_last_segment (std::string &path, size_t original_length) noexcept
+{
+  auto last_segment_start = path.rfind('/');
+  if (last_segment_start != std::string::npos
+    && last_segment_start >= original_length)
+  {
+    path.erase(last_segment_start);
+  }
+  else
+  {
+    path.erase(original_length);
+  }
+}
+
+
+inline void copy_first_segment (std::string &output, std::string_view &input)
+  noexcept
+{
+  while (!input.empty())
+  {
+    output.push_back(input.front());
+    input.remove_prefix(1);
+    if (!input.empty() && input.front() == '/')
+    {
+      return;
+    }
+  }
+}
+
+
 inline std::string_view append_decoded_and_normalized (
   std::string_view &piece,
-  std::string &out)
+  std::string &output)
 {
-  return append_decoded(piece, out);
+  // https://tools.ietf.org/html/rfc3986#section-5.2.4
+
+  // 1
+  std::string tmp;
+  tmp.reserve(piece.length());
+  auto input = append_decoded(piece, tmp);
+
+  // 2
+  auto original_length = output.length();
+  while (!input.empty())
+  {
+    // A
+    if (starts_with(input, "../"))
+    {
+      input.remove_prefix(3);
+    }
+    else if (starts_with(input, "./"))
+    {
+      input.remove_prefix(2);
+    }
+
+    // B
+    else if (starts_with(input, "/./"))
+    {
+      input.remove_prefix(2);
+    }
+    else if (input == "/.")
+    {
+      input = "/";
+    }
+
+    // C
+    else if (starts_with(input, "/../"))
+    {
+      input.remove_prefix(3);
+      pop_last_segment(output, original_length);
+    }
+    else if (input == "/..")
+    {
+      input = "/";
+      pop_last_segment(output, original_length);
+    }
+
+    // D
+    else if (input == "." || input == "..")
+    {
+      input = {};
+    }
+
+    // E
+    else
+    {
+      copy_first_segment(output, input);
+    }
+  }
+
+  // 3
+  return {&output[0] + original_length, output.length() - original_length};
 }
 
 
@@ -75,12 +181,6 @@ inline size_t estimated_length (const view_t &uri) noexcept
     + uri.fragment.length()
     + sizeof("://@:/?#")
   ;
-}
-
-
-inline char to_lower (char ch) noexcept
-{
-  return static_cast<char>(std::tolower(ch));
 }
 
 
@@ -106,7 +206,7 @@ void uri_t::init (std::error_code &error) noexcept
 
     if (view_.has_scheme())
     {
-      view_.scheme = append(view_.scheme, uri_, to_lower);
+      view_.scheme = to_lower(append(view_.scheme, uri_));
       uri_ += ':';
     }
     const auto &scheme = get_scheme(view_);
@@ -123,15 +223,15 @@ void uri_t::init (std::error_code &error) noexcept
 
       if (view_.has_host())
       {
-        view_.host = append(view_.host, uri_, to_lower);
+        view_.host = to_lower(append_decoded(view_.host, uri_));
       }
 
       if (view_.has_port())
       {
-        if (view_.port_value != scheme.default_port)
+        if (!view_.port.empty() && view_.port_value != scheme.default_port)
         {
           uri_ += ':';
-          view_.port = append_decoded(view_.port, uri_);
+          view_.port = append(view_.port, uri_);
         }
         else
         {
@@ -144,13 +244,17 @@ void uri_t::init (std::error_code &error) noexcept
       }
     }
 
-    if (view_.has_path())
+    view_.path = append_decoded_and_normalized(view_.path, uri_);
+    if (!view_.path.empty())
     {
-      view_.path = append_decoded_and_normalized(view_.path, uri_);
+      if (scheme.case_insensitive_path)
+      {
+        to_lower(view_.path);
+      }
     }
     else
     {
-      view_.path = append_decoded(scheme.default_path, uri_);
+      view_.path = append(scheme.default_path, uri_);
     }
 
     if (view_.has_query())
@@ -176,7 +280,7 @@ void uri_t::init (std::error_code &error) noexcept
 }
 
 
-std::string uri_t::to_encoded_string (std::error_code &error) const noexcept
+std::string uri_t::encoded_string (std::error_code &error) const noexcept
 {
   std::string result;
 
