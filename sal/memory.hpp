@@ -38,7 +38,7 @@ constexpr void ensure_iterator_constraints () noexcept
 
 // internal helper: silence MSVC silly-warning C4996 (Checked Iterators)
 template <typename It>
-inline auto make_output_iterator (It first, It) noexcept
+constexpr auto make_output_iterator (It first, It) noexcept
 {
 #if defined(_MSC_VER)
   return stdext::make_unchecked_array_iterator(first);
@@ -51,11 +51,11 @@ inline auto make_output_iterator (It first, It) noexcept
 
 
 /**
- * Return \a it as pointer casted to uint8_t pointer. \a it can be iterator or
- * unrelated type of pointer.
+ * Return \a it as pointer casted to uint8_t pointer. \a it can be iterator
+ * or unrelated type of pointer.
  */
 template <typename It>
-inline auto to_ptr (It it) noexcept
+constexpr auto to_ptr (It it) noexcept
 {
   __bits::ensure_iterator_constraints<It>();
   if constexpr (__bits::is_const_ref_v<decltype(*it)>)
@@ -70,8 +70,8 @@ inline auto to_ptr (It it) noexcept
 
 
 /**
- * Return \a it as pointer casted to uint8_t pointer. \a it can be iterator or
- * unrelated type of pointer.
+ * Return \a it as pointer casted to uint8_t pointer. \a it can be iterator
+ * or unrelated type of pointer.
  */
 constexpr std::nullptr_t to_ptr (std::nullptr_t) noexcept
 {
@@ -107,7 +107,7 @@ constexpr size_t range_size (std::nullptr_t, std::nullptr_t) noexcept
  * [\a first, \a last).
  */
 template <typename It>
-inline auto to_end_ptr (It first, It last) noexcept
+constexpr auto to_end_ptr (It first, It last) noexcept
 {
   return to_ptr(first) + range_size(first, last);
 }
@@ -137,11 +137,24 @@ constexpr std::basic_string_view<T> to_view (const T *ptr, size_t length)
 /**
  * Return range [\a first, \a last) as std::basic_string_view<T>.
  */
-template <typename T>
-constexpr std::basic_string_view<T> to_view (const T *first, const T *last)
-  noexcept
+template <typename It>
+constexpr auto to_view (It first, It last) noexcept
+  -> std::basic_string_view<typename std::iterator_traits<It>::value_type>
 {
-  return to_view(first, range_size(first, last));
+#if _MSC_VER && _DEBUG
+  if (first == last)
+  {
+    if constexpr (std::is_pointer_v<It>)
+    {
+      return {first, 0U};
+    }
+    else
+    {
+      return {};
+    }
+  }
+#endif
+  return to_view(std::addressof(*first), std::distance(first, last));
 }
 
 

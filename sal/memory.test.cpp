@@ -306,7 +306,7 @@ TEST_F(memory, range_size_empty_vector)
 }
 
 
-TEST_F(memory, as_view_from_ptr_and_size)
+TEST_F(memory, to_view_from_ptr_and_size)
 {
   auto data = case_name;
   auto view = sal::to_view(&case_name[0], case_name.size());
@@ -316,16 +316,24 @@ TEST_F(memory, as_view_from_ptr_and_size)
 }
 
 
-TEST_F(memory, as_view_from_range)
+TEST_F(memory, to_view_from_range)
 {
-  auto view = sal::to_view(&case_name[0], &case_name[case_name.size()]);
+  auto view = sal::to_view(case_name.begin(), case_name.end());
   EXPECT_EQ(&case_name[0], view.data());
   EXPECT_EQ(case_name.size(), view.size());
   EXPECT_EQ(case_name, view);
 }
 
 
-TEST_F(memory, as_view_from_c_str)
+TEST_F(memory, to_view_from_empty_range)
+{
+  std::string empty;
+  auto view = sal::to_view(empty.begin(), empty.end());
+  EXPECT_TRUE(view.empty());
+}
+
+
+TEST_F(memory, to_view_from_c_str)
 {
   auto view = sal::to_view(case_name.c_str());
   EXPECT_EQ(&case_name[0], view.data());
@@ -334,7 +342,7 @@ TEST_F(memory, as_view_from_c_str)
 }
 
 
-TEST_F(memory, as_view_from_string)
+TEST_F(memory, to_view_from_string)
 {
   auto view = sal::to_view(case_name);
   EXPECT_EQ(&case_name[0], view.data());

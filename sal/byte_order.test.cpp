@@ -7,6 +7,7 @@
   #include <arpa/inet.h>
 #elif __sal_os_windows
   #include <winsock2.h>
+  #pragma comment(lib, "ws2_32")
 #else
   #error Unsupported platform
 #endif
