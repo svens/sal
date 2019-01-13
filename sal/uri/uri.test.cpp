@@ -174,6 +174,18 @@ ctor_ok_t success_test[] =
   },
 
   {
+    "tcp://:80",
+    "tcp",
+    {},
+    {},
+    "80",
+    {},
+    {},
+    {},
+    "tcp://:80",
+  },
+
+  {
     "urn:oasis:names:specification:docbook:dtd:xml:4.1.2",
     "urn",
     {},

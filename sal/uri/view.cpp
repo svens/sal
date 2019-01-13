@@ -168,6 +168,7 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       return;
     }
     auto authority_end = first;
+    authority = to_view(authority_begin, authority_end);
 
     if (authority_begin != authority_end)
     {
@@ -218,10 +219,6 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
         user_info = to_view(authority_begin, user_info_end);
         host.remove_prefix(user_info_end - authority_begin + 1);
       }
-    }
-    else
-    {
-      host = to_view(authority_begin, authority_end);
     }
   }
 

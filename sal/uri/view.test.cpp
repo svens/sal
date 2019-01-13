@@ -388,13 +388,13 @@ test_case_t test_cases[] =
   ok("s:p",			uri("s",	{},		{},		{},		"p",		{},		{}	)),
   ok("s:/",			uri("s",	{},		{},		{},		"/",		{},		{}	)),
   ok("s:/p",			uri("s",	{},		{},		{},		"/p",		{},		{}	)),
-  ok("s://",			uri("s",	{},		"",		{},		{},		{},		{}	)),
-  ok("s:///",			uri("s",	{},		"",		{},		"/",		{},		{}	)),
-  ok("s:///p",			uri("s",	{},		"",		{},		"/p",		{},		{}	)),
+  ok("s://",			uri("s",	{},		{},		{},		{},		{},		{}	)),
+  ok("s:///",			uri("s",	{},		{},		{},		"/",		{},		{}	)),
+  ok("s:///p",			uri("s",	{},		{},		{},		"/p",		{},		{}	)),
   ok("s://./p",			uri("s",	{},		".",		{},		"/p",		{},		{}	)),
   ok("s://../p",		uri("s",	{},		"..",		{},		"/p",		{},		{}	)),
-  ok("s:///./p",		uri("s",	{},		"",		{},		"/./p",		{},		{}	)),
-  ok("s:///../p",		uri("s",	{},		"",		{},		"/../p",	{},		{}	)),
+  ok("s:///./p",		uri("s",	{},		{},		{},		"/./p",		{},		{}	)),
+  ok("s:///../p",		uri("s",	{},		{},		{},		"/../p",	{},		{}	)),
 
   ok("s://\x80@h/p?q#f",	uri("s",	"\x80",		"h",		{},		"/p",		"q",		"f"	)),
   ok("s://u@\x80/p?q#f",	uri("s",	"u",		"\x80",		{},		"/p",		"q",		"f"	)),
@@ -430,7 +430,6 @@ INSTANTIATE_TEST_CASE_P(uri, view, ::testing::ValuesIn(test_cases),);
 TEST_P(view, view)
 {
   auto &test = GetParam();
-
   std::error_code error;
   auto view = sal::uri::make_view(test.uri, error);
 
@@ -438,10 +437,18 @@ TEST_P(view, view)
   {
     ASSERT_TRUE(!error) << error.message();
     EXPECT_EQ(test.expected_components, view);
-    if (view.has_port() && !view.port.empty())
-    {
-      EXPECT_NE(0U, view.port_value);
-    }
+
+    // test specializations
+    EXPECT_EQ(test.expected_components,
+      sal::uri::make_view(test.uri)
+    );
+    EXPECT_EQ(test.expected_components,
+      sal::uri::make_view(test.uri.begin(), test.uri.end())
+    );
+    EXPECT_EQ(test.expected_components,
+      sal::uri::make_view(test.uri.begin(), test.uri.end(), error)
+    );
+    EXPECT_TRUE(!error);
   }
   else
   {
@@ -449,7 +456,17 @@ TEST_P(view, view)
     EXPECT_FALSE(error.message().empty());
     EXPECT_STREQ("uri", error.category().name());
 
-    EXPECT_THROW(sal::uri::make_view(test.uri), std::system_error);
+    // test specializations
+    EXPECT_THROW(
+      sal::uri::make_view(test.uri),
+      std::system_error
+    );
+    EXPECT_THROW(
+      sal::uri::make_view(test.uri.begin(), test.uri.end()),
+      std::system_error
+    );
+    (void)sal::uri::make_view(test.uri.begin(), test.uri.end(), error);
+    EXPECT_EQ(test.expected_error, error);
   }
 }
 

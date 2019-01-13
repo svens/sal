@@ -11,6 +11,9 @@ namespace {
 using namespace std::string_literals;
 
 
+using uri = sal_test::fixture;
+
+
 // decode_success {{{1
 
 
@@ -28,6 +31,10 @@ struct decode_success_t
 decode_success_t decode_success_data[] =
 {
   { "", "" },
+  { "%aA", "\xaa" },
+  { "%Aa", "\xaa" },
+  { "%aa", "\xaa" },
+  { "%AA", "\xaa" },
   { "a_%74%65%73%74_z", "a_test_z" },
   { "%74%65%73%74_data_%74%65%73%74", "test_data_test" },
   { "%74%65%73%74%af%Af%aF%AF", "\x74\x65\x73\x74\xaf\xaf\xaf\xaf" },
@@ -65,9 +72,12 @@ struct decode_fail_t
 
 decode_fail_t decode_fail_data[] =
 {
-  { "%0x", sal::uri::errc::invalid_hex_input },
-  { "%x0", sal::uri::errc::invalid_hex_input },
-  { "%xx", sal::uri::errc::invalid_hex_input },
+  { "%0g", sal::uri::errc::invalid_hex_input },
+  { "%g0", sal::uri::errc::invalid_hex_input },
+  { "%gg", sal::uri::errc::invalid_hex_input },
+  { "%0G", sal::uri::errc::invalid_hex_input },
+  { "%G0", sal::uri::errc::invalid_hex_input },
+  { "%GG", sal::uri::errc::invalid_hex_input },
   { "test%xx", sal::uri::errc::invalid_hex_input },
   { "%a", sal::uri::errc::not_enough_input },
   { "a%a", sal::uri::errc::not_enough_input },
@@ -98,7 +108,26 @@ TEST_P(encoding_decode_fail, test)
 }
 
 
-// encode {{{1
+#if !(_MSC_VER && _DEBUG)
+
+
+TEST_F(uri, encoding_decode_bad_alloc)
+{
+  std::string input(64, 'a');
+  sal_test::failing_string output;
+  auto enforce_error = std::back_inserter(output);
+
+  EXPECT_THROW(
+    sal::uri::decode(input.begin(), input.end(), enforce_error),
+    std::bad_alloc
+  );
+}
+
+
+#endif
+
+
+// encode_success {{{1
 
 
 struct encode_success_t
@@ -196,10 +225,47 @@ TEST_P(encoding_encode_success, test)
 }
 
 
+// encode_bad_alloc {{{1
+
+
+#if !(_MSC_VER && _DEBUG)
+
+
+using input_iterator = std::string::const_iterator;
+using output_iterator = std::back_insert_iterator<sal_test::failing_string>;
+
+using encoding_encode_bad_alloc = ::testing::TestWithParam<
+  std::function<output_iterator(input_iterator,input_iterator,output_iterator)>
+>;
+
+INSTANTIATE_TEST_CASE_P(uri,
+  encoding_encode_bad_alloc,
+  ::testing::Values(
+    sal::uri::encode_user_info<input_iterator, output_iterator>,
+    sal::uri::encode_path<input_iterator, output_iterator>,
+    sal::uri::encode_query<input_iterator, output_iterator>,
+    sal::uri::encode_fragment<input_iterator, output_iterator>
+  ),
+);
+
+
+TEST_P(encoding_encode_bad_alloc, test)
+{
+  std::string input(64, 'a');
+  sal_test::failing_string output;
+  auto enforce_error = std::back_inserter(output);
+
+  EXPECT_THROW(
+    GetParam()(input.begin(), input.end(), enforce_error),
+    std::bad_alloc
+  );
+}
+
+
+#endif
+
+
 // encode_map {{{1
-
-
-using uri = sal_test::fixture;
 
 
 template <typename Map>

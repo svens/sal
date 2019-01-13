@@ -21,6 +21,7 @@ namespace uri {
 struct view_t
 {
   std::string_view scheme{};
+  std::string_view authority{};
   std::string_view user_info{};
   std::string_view host{};
   std::string_view port{};
@@ -47,6 +48,12 @@ struct view_t
   }
 
 
+  bool has_authority () const noexcept
+  {
+    return authority.data() != nullptr;
+  }
+
+
   bool has_user_info () const noexcept
   {
     return user_info.data() != nullptr;
@@ -62,12 +69,6 @@ struct view_t
   bool has_port () const noexcept
   {
     return port.data() != nullptr;
-  }
-
-
-  bool has_authority () const noexcept
-  {
-    return has_user_info() || has_host() || has_port();
   }
 
 
@@ -93,28 +94,28 @@ struct view_t
 template <typename It>
 inline view_t make_view (It first, It last, std::error_code &error) noexcept
 {
-  return view_t(to_view(first, last), error);
+  return {to_view(first, last), error};
 }
 
 
 template <typename It>
 inline view_t make_view (It first, It last)
 {
-  return view_t(to_view(first, last));
+  return {to_view(first, last)};
 }
 
 
 template <typename Data>
 inline view_t make_view (const Data &data, std::error_code &error) noexcept
 {
-  return view_t(to_view(data), error);
+  return {to_view(data), error};
 }
 
 
 template <typename Data>
 inline view_t make_view (const Data &data)
 {
-  return view_t(to_view(data));
+  return {to_view(data)};
 }
 
 

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <sal/config.hpp>
+#include <memory>
+#include <string>
 
 #define GTEST_HAS_TR1_TUPLE 0
 #include <gtest/gtest.h>
@@ -71,6 +73,45 @@ class with_value
   , public testing::WithParamInterface<T>
 {
 };
+
+
+#if !(_MSC_VER && _DEBUG)
+// TODO: bug in MSVC for failing_string
+
+//
+// https://howardhinnant.github.io/allocator_boilerplate.html
+//
+
+template <typename T>
+class failing_allocator
+{
+public:
+
+  using value_type = T;
+  using pointer = value_type *;
+
+  failing_allocator () noexcept = default;
+
+  template <typename U>
+  failing_allocator (const failing_allocator<U> &) noexcept
+  { }
+
+  pointer allocate (size_t)
+  {
+    throw std::bad_alloc();
+  }
+
+  void deallocate (pointer, size_t) noexcept
+  { }
+};
+
+
+using failing_string = std::basic_string<char,
+  std::char_traits<char>,
+  failing_allocator<char>
+>;
+
+#endif
 
 
 } // namespace sal_test
