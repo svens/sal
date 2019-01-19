@@ -27,6 +27,7 @@ std::ostream &print (std::ostream &os, const std::string_view &piece)
 std::ostream &operator<< (std::ostream &os, const view_t &uri)
 {
   print(os, uri.scheme) << '|';
+  print(os, uri.authority) << '|';
   print(os, uri.user_info) << '|';
   print(os, uri.host) << '|';
   print(os, uri.port) << '|';
@@ -49,6 +50,9 @@ bool operator== (const view_t &left, const view_t &right) noexcept
 {
   return left.has_scheme() == right.has_scheme()
     && cmp(left.scheme, right.scheme)
+
+    && left.has_authority() == right.has_authority()
+    && cmp(left.authority, right.authority)
 
     && left.has_user_info() == right.has_user_info()
     && cmp(left.user_info, right.user_info)
@@ -78,396 +82,396 @@ __sal_end
 namespace {
 
 
-struct test_case_t
+struct view_ok_t //{{{1
 {
-  std::string uri{};
+  std::string input;
+  sal::uri::view_t expected_result{};
 
-  union
+  view_ok_t (std::string input,
+      const std::string_view &scheme,
+      const std::string_view &authority,
+      const std::string_view &user_info,
+      const std::string_view &host,
+      const std::string_view &port,
+      const std::string_view &path,
+      const std::string_view &query,
+      const std::string_view &fragment)
+    : input(input)
   {
-    sal::uri::view_t expected_components{};
-    std::error_code expected_error;
-  };
-  bool expect_success;
+    expected_result.scheme = scheme;
+    expected_result.authority = authority;
+    expected_result.user_info = user_info;
+    expected_result.host = host;
+    expected_result.port = port;
+    expected_result.path = path;
+    expected_result.query = query;
+    expected_result.fragment = fragment;
+  }
 
-  test_case_t (const sal::uri::view_t &expected)
-    : expected_components(expected)
-    , expect_success(true)
-  {}
-
-  test_case_t (sal::uri::errc expected)
-    : expected_error(sal::uri::make_error_code(expected))
-    , expect_success(false)
-  {}
-
-  friend std::ostream &operator<< (std::ostream &os, const test_case_t &test_case)
+  friend inline std::ostream &operator<< (std::ostream &os, const view_ok_t &test)
   {
-    return (os << '\'' << test_case.uri << '\'');
+    return (os << '\'' << test.input << '\'');
   }
 };
 
 
-test_case_t ok (std::string uri, const sal::uri::view_t &components)
+view_ok_t view_ok_data[] =
 {
-  test_case_t result{components};
-  result.uri = uri;
-  return result;
-}
+  {
+    "scheme://user:pass@host:12345/path?query#fragment",
+    "scheme",
+    "user:pass@host:12345",
+    "user:pass",
+    "host",
+    "12345",
+    "/path",
+    "query",
+    "fragment",
+  },
 
-
-test_case_t fail (std::string uri, sal::uri::errc error_code)
-{
-  test_case_t result{error_code};
-  result.uri = uri;
-  return result;
-}
-
-
-sal::uri::view_t uri (
-  const std::string_view &scheme,
-  const std::string_view &user_info,
-  const std::string_view &host,
-  const std::string_view &port,
-  const std::string_view &path,
-  const std::string_view &query,
-  const std::string_view &fragment) noexcept
-{
-  sal::uri::view_t uri;
-  uri.scheme = scheme;
-  uri.user_info = user_info;
-  uri.host = host;
-  uri.port = port;
-  uri.path = path;
-  uri.query = query;
-  uri.fragment = fragment;
-  return uri;
-}
-
-
-test_case_t test_cases[] =
-{
-  ok("scheme://user:pass@host:12345/path?query#fragment",
-    uri(
-      "scheme",
-      "user:pass",
-      "host",
-      "12345",
-      "/path",
-      "query",
-      "fragment"
-    )
-  ),
-
-  ok(" \t\r\nscheme://user:pass@host:12345/path?query#fragment\t\r\n ",
-    uri(
-      "scheme",
-      "user:pass",
-      "host",
-      "12345",
-      "/path",
-      "query",
-      "fragment"
-    )
-  ),
+  {
+    " \t\r\nscheme://user:pass@host:12345/path?query#fragment\t\r\n ",
+    "scheme",
+    "user:pass@host:12345",
+    "user:pass",
+    "host",
+    "12345",
+    "/path",
+    "query",
+    "fragment",
+  },
 
   //
   // Tests from https://rosettacode.org/wiki/URL_parser
   //
 
-  ok("foo://example.com:8042/over/there?name=ferret#nose",
-    uri(
-      "foo",
-      {},
-      "example.com",
-      "8042",
-      "/over/there",
-      "name=ferret",
-      "nose"
-    )
-  ),
+  {
+    "foo://example.com:8042/over/there?name=ferret#nose",
+    "foo",
+    "example.com:8042",
+    {},
+    "example.com",
+    "8042",
+    "/over/there",
+    "name=ferret",
+    "nose",
+  },
 
-  ok("urn:example:animal:ferret:nose",
-    uri(
-      "urn",
-      {},
-      {},
-      {},
-      "example:animal:ferret:nose",
-      {},
-      {}
-    )
-  ),
+  {
+    "urn:example:animal:ferret:nose",
+    "urn",
+    {},
+    {},
+    {},
+    {},
+    "example:animal:ferret:nose",
+    {},
+    {},
+  },
 
-  ok("jdbc:mysql://test_user:ouupppssss@localhost:3306/sakila?profileSQL=true",
-    uri(
-      "jdbc",
-      {},
-      {},
-      {},
-      "mysql://test_user:ouupppssss@localhost:3306/sakila",
-      "profileSQL=true",
-      {}
-    )
-  ),
+  {
+    "jdbc:mysql://test_user:ouupppssss@localhost:3306/sakila?profileSQL=true",
+    "jdbc",
+    {},
+    {},
+    {},
+    {},
+    "mysql://test_user:ouupppssss@localhost:3306/sakila",
+    "profileSQL=true",
+    {},
+  },
 
-  ok("ftp://ftp.is.co.za/rfc/rfc1808.txt",
-    uri(
-      "ftp",
-      {},
-      "ftp.is.co.za",
-      {},
-      "/rfc/rfc1808.txt",
-      {},
-      {}
-    )
-  ),
+  {
+    "ftp://ftp.is.co.za/rfc/rfc1808.txt",
+    "ftp",
+    "ftp.is.co.za",
+    {},
+    "ftp.is.co.za",
+    {},
+    "/rfc/rfc1808.txt",
+    {},
+    {},
+  },
 
-  ok("http://www.ietf.org/rfc/rfc2396.txt#header1",
-    uri(
-      "http",
-      {},
-      "www.ietf.org",
-      {},
-      "/rfc/rfc2396.txt",
-      {},
-      "header1"
-    )
-  ),
+  {
+    "http://www.ietf.org/rfc/rfc2396.txt#header1",
+    "http",
+    "www.ietf.org",
+    {},
+    "www.ietf.org",
+    {},
+    "/rfc/rfc2396.txt",
+    {},
+    "header1",
+  },
 
-  ok("ldap://[2001:db8::7]/c=GB?objectClass=one&objectClass=two",
-    uri(
-      "ldap",
-      {},
-      "[2001:db8::7]",
-      {},
-      "/c=GB",
-      "objectClass=one&objectClass=two",
-      {}
-    )
-  ),
+  {
+    "ldap://[2001:db8::7]/c=GB?objectClass=one&objectClass=two",
+    "ldap",
+    "[2001:db8::7]",
+    {},
+    "[2001:db8::7]",
+    {},
+    "/c=GB",
+    "objectClass=one&objectClass=two",
+    {},
+  },
 
-  ok("mailto:John.Doe@example.com",
-    uri(
-      "mailto",
-      {},
-      {},
-      {},
-      "John.Doe@example.com",
-      {},
-      {}
-    )
-  ),
+  {
+    "mailto:John.Doe@example.com",
+    "mailto",
+    {},
+    {},
+    {},
+    {},
+    "John.Doe@example.com",
+    {},
+    {},
+  },
 
-  ok("news:comp.infosystems.www.servers.unix",
-    uri(
-      "news",
-      {},
-      {},
-      {},
-      "comp.infosystems.www.servers.unix",
-      {},
-      {}
-    )
-  ),
+  {
+    "news:comp.infosystems.www.servers.unix",
+    "news",
+    {},
+    {},
+    {},
+    {},
+    "comp.infosystems.www.servers.unix",
+    {},
+    {},
+  },
 
-  ok("tel:+1-816-555-1212",
-    uri(
-      "tel",
-      {},
-      {},
-      {},
-      "+1-816-555-1212",
-      {},
-      {}
-    )
-  ),
+  {
+    "tel:+1-816-555-1212",
+    "tel",
+    {},
+    {},
+    {},
+    {},
+    "+1-816-555-1212",
+    {},
+    {},
+  },
 
-  ok("telnet://192.0.2.16:80/",
-    uri(
-      "telnet",
-      {},
-      "192.0.2.16",
-      "80",
-      "/",
-      {},
-      {}
-    )
-  ),
+  {
+    "telnet://192.0.2.16:80/",
+    "telnet",
+    "192.0.2.16:80",
+    {},
+    "192.0.2.16",
+    "80",
+    "/",
+    {},
+    {},
+  },
 
-  ok("urn:oasis:names:specification:docbook:dtd:xml:4.1.2",
-    uri(
-      "urn",
-      {},
-      {},
-      {},
-      "oasis:names:specification:docbook:dtd:xml:4.1.2",
-      {},
-      {}
-    )
-  ),
+  {
+    "urn:oasis:names:specification:docbook:dtd:xml:4.1.2",
+    "urn",
+    {},
+    {},
+    {},
+    {},
+    "oasis:names:specification:docbook:dtd:xml:4.1.2",
+    {},
+    {},
+  },
 
-  ok("ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm",
-    uri(
-      "ftp",
-      "cnn.example.com&story=breaking_news",
-      "10.0.0.1",
-      {},
-      "/top_story.htm",
-      {},
-      {}
-    )
-  ),
+  {
+    "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm",
+    "ftp",
+    "cnn.example.com&story=breaking_news@10.0.0.1",
+    "cnn.example.com&story=breaking_news",
+    "10.0.0.1",
+    {},
+    "/top_story.htm",
+    {},
+    {},
+  },
 
   //
   // Systematic tests
   // For all combinations, it would be over 6k cases. Use only some
   //
 
-  // uri                            scheme	user		host		port		path		query		fragment
-  ok({},			uri({},		{},		{},		{},		{},		{},		{}	)),
-  ok("\t\r\n",			uri({},		{},		{},		{},		{},		{},		{}	)),
-  ok("\t\r\n\0\t",		uri({},		{},		{},		{},		{},		{},		{}	)),
+  // input		scheme	auth	user	host	port	path	query	fragment
+  {{},			{},	{},	{},	{},	{},	{},	{},	{}	},
+  {"\t\r\n",		{},	{},	{},	{},	{},	{},	{},	{}	},
+  {"\t\r\n\0\t",	{},	{},	{},	{},	{},	{},	{},	{}	},
 
-  ok("#f",			uri({},		{},		{},		{},		{},		{},		"f"	)),
-  ok("?q",			uri({},		{},		{},		{},		{},		"q",		{}	)),
-  ok("?#",			uri({},		{},		{},		{},		{},		"",		""	)),
-  ok("?#f",			uri({},		{},		{},		{},		{},		"",		"f"	)),
-  ok("?q#",			uri({},		{},		{},		{},		{},		"q",		""	)),
-  ok("?q#f",			uri({},		{},		{},		{},		{},		"q",		"f"	)),
+  {"#f",		{},	{},	{},	{},	{},	{},	{},	"f"	},
+  {"?q",		{},	{},	{},	{},	{},	{},	"q",	{}	},
+  {"?#",		{},	{},	{},	{},	{},	{},	"",	""	},
+  {"?#f",		{},	{},	{},	{},	{},	{},	"",	"f"	},
+  {"?q#",		{},	{},	{},	{},	{},	{},	"q",	""	},
+  {"?q#f",		{},	{},	{},	{},	{},	{},	"q",	"f"	},
 
-  ok("/",			uri({},		{},		{},		{},		"/",		{},		{}	)),
-  ok("/p",			uri({},		{},		{},		{},		"/p",		{},		{}	)),
-  ok("./p",			uri({},		{},		{},		{},		"./p",		{},		{}	)),
-  ok("../p",			uri({},		{},		{},		{},		"../p",		{},		{}	)),
+  {"/",			{},	{},	{},	{},	{},	"/",	{},	{}	},
+  {"/p",		{},	{},	{},	{},	{},	"/p",	{},	{}	},
+  {"./p",		{},	{},	{},	{},	{},	"./p",	{},	{}	},
+  {"../p",		{},	{},	{},	{},	{},	"../p",	{},	{}	},
 
-  ok("//h",			uri({},		{},		"h",		{},		{},		{},		{}	)),
-  ok("//h/",			uri({},		{},		"h",		{},		"/",		{},		{}	)),
-  ok("//h/p",			uri({},		{},		"h",		{},		"/p",		{},		{}	)),
-  ok("//h./p",			uri({},		{},		"h.",		{},		"/p",		{},		{}	)),
-  ok("//h../p",			uri({},		{},		"h..",		{},		"/p",		{},		{}	)),
+  {"//h",		{},	"h",	{},	"h",	{},	{},	{},	{}	},
+  {"//h/",		{},	"h",	{},	"h",	{},	"/",	{},	{}	},
+  {"//h/p",		{},	"h",	{},	"h",	{},	"/p",	{},	{}	},
+  {"//h./p",		{},	"h.",	{},	"h.",	{},	"/p",	{},	{}	},
+  {"//h../p",		{},	"h..",	{},	"h..",	{},	"/p",	{},	{}	},
 
-  ok("//u:p@h",			uri({},		"u:p",		"h",		{},		{},		{},		{}	)),
-  ok("//u:@h",			uri({},		"u:",		"h",		{},		{},		{},		{}	)),
-  ok("//:p@h",			uri({},		":p",		"h",		{},		{},		{},		{}	)),
-  ok("//:@h",			uri({},		":",		"h",		{},		{},		{},		{}	)),
-  ok("//@h",			uri({},		"",		"h",		{},		{},		{},		{}	)),
-  ok("//@",			uri({},		"",		"",		{},		{},		{},		{}	)),
-  ok("//@/",			uri({},		"",		"",		{},		"/",		{},		{}	)),
+  {"//u:p@h",		{},	"u:p@h",	"u:p",	"h",	{},	{},	{},	{}	},
+  {"//u:@h",		{},	"u:@h",	"u:",	"h",	{},	{},	{},	{}	},
+  {"//:p@h",		{},	":p@h",	":p",	"h",	{},	{},	{},	{}	},
+  {"//:@h",		{},	":@h",	":",	"h",	{},	{},	{},	{}	},
+  {"//@h",		{},	"@h",	"",	"h",	{},	{},	{},	{}	},
+  {"//@",		{},	"@",	"",	"",	{},	{},	{},	{}	},
+  {"//@/",		{},	"@",	"",	"",	{},	"/",	{},	{}	},
 
-  ok("//h:123",			uri({},		{},		"h",		"123",		{},		{},		{}	)),
-  ok("//:123",			uri({},		{},		"",		"123",		{},		{},		{}	)),
-  ok("//h:-123",		uri({},		{},		"h:-123",	{},		{},		{},		{}	)),
-  ok("//h:",			uri({},		{},		"h",		"",		{},		{},		{}	)),
-  ok("//10.0.0.1:123",		uri({},		{},		"10.0.0.1",	"123",		{},		{},		{}	)),
-  ok("//10.0.0.1:",		uri({},		{},		"10.0.0.1",	"",		{},		{},		{}	)),
-  ok("//[::1]:123",		uri({},		{},		"[::1]",	"123",		{},		{},		{}	)),
-  ok("//[::1]:",		uri({},		{},		"[::1]",	"",		{},		{},		{}	)),
+  {"//h:123",		{},	"h:123",	{},	"h",	"123",	{},	{},	{}	},
+  {"//:123",		{},	":123",	{},	"",	"123",	{},	{},	{}	},
+  {"//h:-123",		{},	"h:-123",	{},	"h:-123",	{},	{},	{},	{}	},
+  {"//h:",		{},	"h:",	{},	"h",	"",	{},	{},	{}	},
+  {"//10.0.0.1:123",	{},	"10.0.0.1:123",	{},	"10.0.0.1",	"123",{},	{},	{}	},
+  {"//10.0.0.1:",	{},	"10.0.0.1:",	{},	"10.0.0.1",	"",	{},	{},	{}	},
+  {"//[::1]:123",	{},	"[::1]:123",	{},	"[::1]",	"123",	{},	{},	{}	},
+  {"//[::1]:",		{},	"[::1]:",	{},	"[::1]",	"",	{},	{},	{}	},
+  {"//123",		{},	"123",	{},	"123",	{},	{},	{},	{}	},
 
-  ok("s://h",			uri("s",	{},		"h",		{},		{},		{},		{}	)),
-  ok("s://h/",			uri("s",	{},		"h",		{},		"/",		{},		{}	)),
-  ok("s://h/p",			uri("s",	{},		"h",		{},		"/p",		{},		{}	)),
-  ok("s://h./p",		uri("s",	{},		"h.",		{},		"/p",		{},		{}	)),
-  ok("s://h../p",		uri("s",	{},		"h..",		{},		"/p",		{},		{}	)),
+  {"s://h",		"s",	"h",	{},	"h",	{},	{},	{},	{}	},
+  {"s://h/",		"s",	"h",	{},	"h",	{},	"/",	{},	{}	},
+  {"s://h/p",		"s",	"h",	{},	"h",	{},	"/p",	{},	{}	},
+  {"s://h./p",		"s",	"h.",	{},	"h.",	{},	"/p",	{},	{}	},
+  {"s://h../p",		"s",	"h..",	{},	"h..",	{},	"/p",	{},	{}	},
 
-  ok("s://u:p@h",		uri("s",	"u:p",		"h",		{},		{},		{},		{}	)),
-  ok("s://u:@h",		uri("s",	"u:",		"h",		{},		{},		{},		{}	)),
-  ok("s://:p@h",		uri("s",	":p",		"h",		{},		{},		{},		{}	)),
-  ok("s://:@h",			uri("s",	":",		"h",		{},		{},		{},		{}	)),
-  ok("s://@h",			uri("s",	"",		"h",		{},		{},		{},		{}	)),
-  ok("s://@",			uri("s",	"",		"",		{},		{},		{},		{}	)),
-  ok("s://@/",			uri("s",	"",		"",		{},		"/",		{},		{}	)),
+  {"s://u:p@h",		"s",	"u:p@h",	"u:p",	"h",	{},	{},	{},	{}	},
+  {"s://u:@h",		"s",	"u:@h",	"u:",	"h",	{},	{},	{},	{}	},
+  {"s://:p@h",		"s",	":p@h",	":p",	"h",	{},	{},	{},	{}	},
+  {"s://:@h",		"s",	":@h",	":",	"h",	{},	{},	{},	{}	},
+  {"s://@h",		"s",	"@h",	"",	"h",	{},	{},	{},	{}	},
+  {"s://@",		"s",	"@",	"",	"",	{},	{},	{},	{}	},
+  {"s://@/",		"s",	"@",	"",	"",	{},	"/",	{},	{}	},
 
-  ok("s://h:123",		uri("s",	{},		"h",		"123",		{},		{},		{}	)),
-  ok("s://:123",		uri("s",	{},		"",		"123",		{},		{},		{}	)),
-  ok("s://h:",			uri("s",	{},		"h",		"",		{},		{},		{}	)),
-  ok("s://10.0.0.1:123",	uri("s",	{},		"10.0.0.1",	"123",		{},		{},		{}	)),
-  ok("s://10.0.0.1:",		uri("s",	{},		"10.0.0.1",	"",		{},		{},		{}	)),
-  ok("s://[::1]:123",		uri("s",	{},		"[::1]",	"123",		{},		{},		{}	)),
-  ok("s://[::1]:",		uri("s",	{},		"[::1]",	"",		{},		{},		{}	)),
+  {"s://h:123",		"s",	"h:123",	{},	"h",		"123",	{},	{},	{}	},
+  {"s://:123",		"s",	":123",	{},	"",		"123",	{},	{},	{}	},
+  {"s://h:",		"s",	"h:",	{},	"h",		"",	{},	{},	{}	},
+  {"s://10.0.0.1:123",	"s",	"10.0.0.1:123",	{},	"10.0.0.1",	"123",	{},	{},	{}	},
+  {"s://10.0.0.1:",	"s",	"10.0.0.1:",	{},	"10.0.0.1",	"",	{},	{},	{}	},
+  {"s://[::1]:123",	"s",	"[::1]:123",	{},	"[::1]",	"123",	{},	{},	{}	},
+  {"s://[::1]:",	"s",	"[::1]:",	{},	"[::1]",	"",	{},	{},	{}	},
 
-  ok("s:",			uri("s",	{},		{},		{},		{},		{},		{}	)),
-  ok("s:p",			uri("s",	{},		{},		{},		"p",		{},		{}	)),
-  ok("s:/",			uri("s",	{},		{},		{},		"/",		{},		{}	)),
-  ok("s:/p",			uri("s",	{},		{},		{},		"/p",		{},		{}	)),
-  ok("s://",			uri("s",	{},		{},		{},		{},		{},		{}	)),
-  ok("s:///",			uri("s",	{},		{},		{},		"/",		{},		{}	)),
-  ok("s:///p",			uri("s",	{},		{},		{},		"/p",		{},		{}	)),
-  ok("s://./p",			uri("s",	{},		".",		{},		"/p",		{},		{}	)),
-  ok("s://../p",		uri("s",	{},		"..",		{},		"/p",		{},		{}	)),
-  ok("s:///./p",		uri("s",	{},		{},		{},		"/./p",		{},		{}	)),
-  ok("s:///../p",		uri("s",	{},		{},		{},		"/../p",	{},		{}	)),
+  {"s:",		"s",	{},	{},	{},	{},	{},	{},	{}	},
+  {"s:p",		"s",	{},	{},	{},	{},	"p",	{},	{}	},
+  {"s:/",		"s",	{},	{},	{},	{},	"/",	{},	{}	},
+  {"s:/p",		"s",	{},	{},	{},	{},	"/p",	{},	{}	},
+  {"s://",		"s",	"",	{},	{},	{},	{},	{},	{}	},
+  {"s:///",		"s",	"",	{},	{},	{},	"/",	{},	{}	},
+  {"s:///p",		"s",	"",	{},	{},	{},	"/p",	{},	{}	},
+  {"s://./p",		"s",	".",	{},	".",	{},	"/p",	{},	{}	},
+  {"s://../p",		"s",	"..",	{},	"..",	{},	"/p",	{},	{}	},
+  {"s:///./p",		"s",	"",	{},	{},	{},	"/./p",	{},	{}	},
+  {"s:///../p",		"s",	"",	{},	{},	{},	"/../p",	{},	{}	},
 
-  ok("s://\x80@h/p?q#f",	uri("s",	"\x80",		"h",		{},		"/p",		"q",		"f"	)),
-  ok("s://u@\x80/p?q#f",	uri("s",	"u",		"\x80",		{},		"/p",		"q",		"f"	)),
-  ok("s://u@h/\x80?q#f",	uri("s",	"u",		"h",		{},		"/\x80",	"q",		"f"	)),
-  ok("s://u@h/p?\x80#f",	uri("s",	"u",		"h",		{},		"/p",		"\x80",		"f"	)),
-  ok("s://u@h/p?q#\x80",	uri("s",	"u",		"h",		{},		"/p",		"q",		"\x80"	)),
-
-  fail("s\x80://u@h/p?q#f", sal::uri::errc::invalid_scheme),
-  fail("1s:", sal::uri::errc::invalid_scheme),
-  fail(":", sal::uri::errc::invalid_scheme),
-  fail(":/", sal::uri::errc::invalid_scheme),
-  fail("://", sal::uri::errc::invalid_scheme),
-  fail(":///", sal::uri::errc::invalid_scheme),
-  fail(":///p", sal::uri::errc::invalid_scheme),
-  fail("://h", sal::uri::errc::invalid_scheme),
-  fail("://h:123", sal::uri::errc::invalid_scheme),
-  fail(":123", sal::uri::errc::invalid_scheme),
-  fail(":123/", sal::uri::errc::invalid_scheme),
-  fail(":123//", sal::uri::errc::invalid_scheme),
-  fail(":123//path", sal::uri::errc::invalid_scheme),
-  fail("s~e:", sal::uri::errc::invalid_scheme),
-  fail("s://h|t", sal::uri::errc::invalid_authority),
-  fail("s://h/|p", sal::uri::errc::invalid_path),
-  fail("s://h/p?<q", sal::uri::errc::invalid_query),
-  fail("s://h/p#<p", sal::uri::errc::invalid_fragment),
+  {"s://\x80@h/p?q#f",	"s",	"\x80@h",	"\x80",	"h",	{},	"/p",	"q",	"f"	},
+  {"s://u@\x80/p?q#f",	"s",	"u@\x80",	"u",	"\x80",	{},	"/p",	"q",	"f"	},
+  {"s://u@h/\x80?q#f",	"s",	"u@h",	"u",	"h",	{},	"/\x80",	"q",	"f"	},
+  {"s://u@h/p?\x80#f",	"s",	"u@h",	"u",	"h",	{},	"/p",	"\x80",	"f"	},
+  {"s://u@h/p?q#\x80",	"s",	"u@h",	"u",	"h",	{},	"/p",	"q",	"\x80"	},
 };
 
-using view = ::testing::TestWithParam<test_case_t>;
-INSTANTIATE_TEST_CASE_P(uri, view, ::testing::ValuesIn(test_cases),);
+
+using view_ok = ::testing::TestWithParam<view_ok_t>;
+INSTANTIATE_TEST_CASE_P(uri, view_ok, ::testing::ValuesIn(view_ok_data),);
 
 
-TEST_P(view, view)
+TEST_P(view_ok, test)
 {
   auto &test = GetParam();
+  EXPECT_EQ(test.expected_result, sal::uri::make_view(test.input));
+
   std::error_code error;
-  auto view = sal::uri::make_view(test.uri, error);
+  EXPECT_EQ(test.expected_result,
+    sal::uri::make_view(test.input.begin(), test.input.end())
+  );
+  EXPECT_FALSE(error);
 
-  if (test.expect_success)
-  {
-    ASSERT_TRUE(!error) << error.message();
-    EXPECT_EQ(test.expected_components, view);
+  EXPECT_EQ(test.expected_result,
+    sal::uri::make_view(test.input.begin(), test.input.end(), error)
+  );
+  EXPECT_FALSE(error);
 
-    // test specializations
-    EXPECT_EQ(test.expected_components,
-      sal::uri::make_view(test.uri)
-    );
-    EXPECT_EQ(test.expected_components,
-      sal::uri::make_view(test.uri.begin(), test.uri.end())
-    );
-    EXPECT_EQ(test.expected_components,
-      sal::uri::make_view(test.uri.begin(), test.uri.end(), error)
-    );
-    EXPECT_TRUE(!error);
-  }
-  else
-  {
-    EXPECT_EQ(test.expected_error, error) << error.message();
-    EXPECT_FALSE(error.message().empty());
-    EXPECT_STREQ("uri", error.category().name());
-
-    // test specializations
-    EXPECT_THROW(
-      sal::uri::make_view(test.uri),
-      std::system_error
-    );
-    EXPECT_THROW(
-      sal::uri::make_view(test.uri.begin(), test.uri.end()),
-      std::system_error
-    );
-    (void)sal::uri::make_view(test.uri.begin(), test.uri.end(), error);
-    EXPECT_EQ(test.expected_error, error);
-  }
+  EXPECT_NO_THROW(
+    EXPECT_EQ(test.expected_result,
+      sal::uri::make_view(test.input.begin(), test.input.end())
+    )
+  );
 }
+
+
+struct view_fail_t //{{{1
+{
+  std::string input;
+  sal::uri::errc expected_errc;
+
+  friend std::ostream &operator<< (std::ostream &os, const view_fail_t &test)
+  {
+    return (os << '\'' << test.input << '\'');
+  }
+};
+
+
+view_fail_t view_fail_data[] =
+{
+  { "s\x80://u@h/p?q#f", sal::uri::errc::invalid_scheme },
+  { "1s:", sal::uri::errc::invalid_scheme },
+  { ":", sal::uri::errc::invalid_scheme },
+  { ":/", sal::uri::errc::invalid_scheme },
+  { "://", sal::uri::errc::invalid_scheme },
+  { ":///", sal::uri::errc::invalid_scheme },
+  { ":///p", sal::uri::errc::invalid_scheme },
+  { "://h", sal::uri::errc::invalid_scheme },
+  { "://h:123", sal::uri::errc::invalid_scheme },
+  { ":123", sal::uri::errc::invalid_scheme },
+  { ":123/", sal::uri::errc::invalid_scheme },
+  { ":123//", sal::uri::errc::invalid_scheme },
+  { ":123//path", sal::uri::errc::invalid_scheme },
+  { "s~e:", sal::uri::errc::invalid_scheme },
+  { "s://h|t", sal::uri::errc::invalid_authority },
+  { "s://h/|p", sal::uri::errc::invalid_path },
+  { "s://h/p?<q", sal::uri::errc::invalid_query },
+  { "s://h/p#<p", sal::uri::errc::invalid_fragment },
+};
+
+
+using view_fail = ::testing::TestWithParam<view_fail_t>;
+INSTANTIATE_TEST_CASE_P(uri, view_fail, ::testing::ValuesIn(view_fail_data),);
+
+
+TEST_P(view_fail, test)
+{
+  auto &test = GetParam();
+
+  std::error_code error;
+  (void)sal::uri::make_view(test.input, error);
+  auto expected_error = sal::uri::make_error_code(test.expected_errc);
+  EXPECT_EQ(expected_error, error) << error.message();
+  EXPECT_FALSE(error.message().empty());
+  EXPECT_EQ(sal::uri::category(), error.category());
+  EXPECT_STREQ("uri", error.category().name());
+
+  EXPECT_THROW(
+    sal::uri::make_view(test.input),
+    std::system_error
+  );
+
+  EXPECT_THROW(
+    sal::uri::make_view(test.input.begin(), test.input.end()),
+    std::system_error
+  );
+
+  (void)sal::uri::make_view(test.input.begin(), test.input.end(), error);
+  EXPECT_EQ(expected_error, error);
+}
+
+
+//}}}1
 
 
 } // namespace

@@ -708,6 +708,17 @@ TEST_P(uri_ctor_ok, test)
     test.expected_encoded_string,
     uri.encoded_string()
   );
+
+  EXPECT_NO_THROW(
+    sal::uri::make_uri(test.input.begin(), test.input.end())
+  );
+
+  std::error_code error;
+  (void)sal::uri::make_uri(test.input.begin(), test.input.end(), error);
+  EXPECT_FALSE(error);
+
+  (void)sal::uri::make_uri(test.input, error);
+  EXPECT_FALSE(error);
 }
 
 
@@ -725,10 +736,25 @@ struct ctor_fail_t //{{{1
 
 ctor_fail_t ctor_fail[] =
 {
-  {
-    "http://example.com:65536/path",
-    std::make_error_code(std::errc::result_out_of_range),
-  },
+  { "http://example.com:65536/path", std::make_error_code(std::errc::result_out_of_range) },
+  { "s\x80://u@h/p?q#f", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { "1s:", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { ":", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { ":/", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { "://", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { ":///", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { ":///p", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { "://h", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { "://h:123", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { ":123", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { ":123/", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { ":123//", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { ":123//path", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { "s~e:", sal::uri::make_error_code(sal::uri::errc::invalid_scheme) },
+  { "s://h|t", sal::uri::make_error_code(sal::uri::errc::invalid_authority) },
+  { "s://h/|p", sal::uri::make_error_code(sal::uri::errc::invalid_path) },
+  { "s://h/p?<q", sal::uri::make_error_code(sal::uri::errc::invalid_query) },
+  { "s://h/p#<p", sal::uri::make_error_code(sal::uri::errc::invalid_fragment) },
 };
 
 
