@@ -22,17 +22,6 @@ std::unordered_map<std::string_view, const scheme_t *> schemes_ =
 };
 
 
-inline const scheme_t &get_scheme (const view_t &uri) noexcept
-{
-  auto it = schemes_.find(uri.scheme);
-  if (it != schemes_.end())
-  {
-    return *it->second;
-  }
-  return generic_scheme();
-}
-
-
 inline std::string_view append (const std::string_view &piece, std::string &out)
   noexcept
 {
@@ -193,6 +182,17 @@ void uri_t::register_scheme (std::string_view name, const scheme_t &scheme)
 }
 
 
+const scheme_t &uri_t::scheme () const noexcept
+{
+  auto it = schemes_.find(view_.scheme);
+  if (it != schemes_.end())
+  {
+    return *it->second;
+  }
+  return generic_scheme();
+}
+
+
 void uri_t::init (std::error_code &error) noexcept
 {
   // * during entry, view_ points to original URI
@@ -209,7 +209,7 @@ void uri_t::init (std::error_code &error) noexcept
       view_.scheme = to_lower(append(view_.scheme, uri_));
       uri_ += ':';
     }
-    const auto &scheme = get_scheme(view_);
+    const auto &scheme = this->scheme();
 
     if (view_.has_authority())
     {

@@ -11,7 +11,7 @@ namespace {
 using namespace std::string_literals;
 
 
-using uri = sal_test::fixture;
+using uri_encoding = sal_test::fixture;
 
 
 // decode_success {{{1
@@ -41,14 +41,14 @@ decode_success_t decode_success_data[] =
 };
 
 
-using encoding_decode_success = ::testing::TestWithParam<decode_success_t>;
-INSTANTIATE_TEST_CASE_P(uri,
-  encoding_decode_success,
+using decode_success = ::testing::TestWithParam<decode_success_t>;
+INSTANTIATE_TEST_CASE_P(uri_encoding,
+  decode_success,
   ::testing::ValuesIn(decode_success_data),
 );
 
 
-TEST_P(encoding_decode_success, test)
+TEST_P(decode_success, test)
 {
   auto &test = GetParam();
   EXPECT_EQ(test.expected, sal::uri::decode(test.data));
@@ -85,14 +85,14 @@ decode_fail_t decode_fail_data[] =
 };
 
 
-using encoding_decode_fail = ::testing::TestWithParam<decode_fail_t>;
-INSTANTIATE_TEST_CASE_P(uri,
-  encoding_decode_fail,
+using decode_fail = ::testing::TestWithParam<decode_fail_t>;
+INSTANTIATE_TEST_CASE_P(uri_encoding,
+  decode_fail,
   ::testing::ValuesIn(decode_fail_data),
 );
 
 
-TEST_P(encoding_decode_fail, test)
+TEST_P(decode_fail, test)
 {
   auto &test = GetParam();
   auto expected_error = sal::uri::make_error_code(test.expected);
@@ -111,7 +111,7 @@ TEST_P(encoding_decode_fail, test)
 #if !(_MSC_VER && _DEBUG)
 
 
-TEST_F(uri, encoding_decode_bad_alloc)
+TEST_F(uri_encoding, decode_bad_alloc)
 {
   std::string input(64, 'a');
   sal_test::failing_string output;
@@ -211,14 +211,14 @@ encode_success_t encode_success_data[] =
 };
 
 
-using encoding_encode_success = ::testing::TestWithParam<encode_success_t>;
-INSTANTIATE_TEST_CASE_P(uri,
-  encoding_encode_success,
+using encode_success = ::testing::TestWithParam<encode_success_t>;
+INSTANTIATE_TEST_CASE_P(uri_encoding,
+  encode_success,
   ::testing::ValuesIn(encode_success_data),
 );
 
 
-TEST_P(encoding_encode_success, test)
+TEST_P(encode_success, test)
 {
   auto &test = GetParam();
   EXPECT_EQ(test.expected, test.encoder(test.data));
@@ -234,12 +234,12 @@ TEST_P(encoding_encode_success, test)
 using input_iterator = std::string::const_iterator;
 using output_iterator = std::back_insert_iterator<sal_test::failing_string>;
 
-using encoding_encode_bad_alloc = ::testing::TestWithParam<
+using encode_bad_alloc = ::testing::TestWithParam<
   std::function<output_iterator(input_iterator,input_iterator,output_iterator)>
 >;
 
-INSTANTIATE_TEST_CASE_P(uri,
-  encoding_encode_bad_alloc,
+INSTANTIATE_TEST_CASE_P(uri_encoding,
+  encode_bad_alloc,
   ::testing::Values(
     sal::uri::encode_user_info<input_iterator, output_iterator>,
     sal::uri::encode_path<input_iterator, output_iterator>,
@@ -249,7 +249,7 @@ INSTANTIATE_TEST_CASE_P(uri,
 );
 
 
-TEST_P(encoding_encode_bad_alloc, test)
+TEST_P(encode_bad_alloc, test)
 {
   std::string input(64, 'a');
   sal_test::failing_string output;
@@ -292,7 +292,7 @@ void check_expected_result (const std::string &result)
 }
 
 
-TEST_F(uri, encoding_encode_query_map)
+TEST_F(uri_encoding, encode_query_map)
 {
   auto map = test_data<std::map<std::string, std::string>>();
   auto result = sal::uri::encode_query(map);
@@ -300,7 +300,7 @@ TEST_F(uri, encoding_encode_query_map)
 }
 
 
-TEST_F(uri, encoding_encode_query_map_empty)
+TEST_F(uri_encoding, encode_query_map_empty)
 {
   std::map<std::string, std::string> map =
   { };
@@ -308,7 +308,7 @@ TEST_F(uri, encoding_encode_query_map_empty)
 }
 
 
-TEST_F(uri, encoding_encode_query_unordered_map)
+TEST_F(uri_encoding, encode_query_unordered_map)
 {
   auto map = test_data<std::unordered_map<std::string, std::string>>();
   auto result = sal::uri::encode_query(map);
@@ -316,7 +316,7 @@ TEST_F(uri, encoding_encode_query_unordered_map)
 }
 
 
-TEST_F(uri, encoding_encode_query_unordered_map_empty)
+TEST_F(uri_encoding, encode_query_unordered_map_empty)
 {
   std::unordered_map<std::string, std::string> map =
   { };

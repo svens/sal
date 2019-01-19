@@ -19,5 +19,6 @@ list(APPEND sal_sources
 list(APPEND sal_unittests_sources
   sal/uri/encoding.test.cpp
   sal/uri/uri.test.cpp
+  sal/uri/scheme.test.cpp
   sal/uri/view.test.cpp
 )

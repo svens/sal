@@ -12,6 +12,7 @@
 #include <sal/uri/error.hpp>
 #include <sal/uri/scheme.hpp>
 #include <sal/uri/view.hpp>
+#include <ostream>
 
 
 __sal_begin
@@ -44,6 +45,13 @@ public:
   { }
 
 
+  uri_t (const view_t &view, std::error_code &error) noexcept
+    : view_(view)
+  {
+    init(error);
+  }
+
+
   const view_t &view () const noexcept
   {
     return view_;
@@ -59,8 +67,24 @@ public:
   }
 
 
+  // scheme or generic_scheme() if not found
+  const scheme_t &scheme () const noexcept;
+
+
+  net::ip::port_t port () const noexcept
+  {
+    return view_.port.empty() ? scheme().default_port : view_.port_value();
+  }
+
+
   // it is application responsibility to ensure \a name survives
   static void register_scheme (std::string_view name, const scheme_t &scheme);
+
+
+  friend std::ostream &operator<< (std::ostream &os, const uri_t &uri)
+  {
+    return (os << uri.uri_);
+  }
 
 
 private:
