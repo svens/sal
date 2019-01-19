@@ -228,19 +228,15 @@ void uri_t::init (std::error_code &error) noexcept
 
       if (view_.has_port())
       {
-        if (!view_.port.empty() && view_.port_value != scheme.default_port)
+        if (view_.port.empty() || view_.port_value() == scheme.default_port)
+        {
+          view_.port = {};
+        }
+        else
         {
           uri_ += ':';
           view_.port = append(view_.port, uri_);
         }
-        else
-        {
-          view_.port = {};
-        }
-      }
-      else
-      {
-        view_.port_value = scheme.default_port;
       }
     }
 

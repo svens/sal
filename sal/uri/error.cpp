@@ -13,14 +13,12 @@ namespace {
 
 constexpr std::string_view to_view (errc value) noexcept
 {
-  switch (static_cast<errc>(value))
+  switch (value)
   {
     case errc::invalid_scheme:
       return "invalid scheme";
     case errc::invalid_authority:
       return "invalid authority";
-    case errc::invalid_port:
-      return "invalid port";
     case errc::invalid_path:
       return "invalid path";
     case errc::invalid_query:

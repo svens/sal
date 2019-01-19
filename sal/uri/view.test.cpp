@@ -416,7 +416,6 @@ test_case_t test_cases[] =
   fail(":123//", sal::uri::errc::invalid_scheme),
   fail(":123//path", sal::uri::errc::invalid_scheme),
   fail("s~e:", sal::uri::errc::invalid_scheme),
-  fail("s://h:65536", sal::uri::errc::invalid_port),
   fail("s://h|t", sal::uri::errc::invalid_authority),
   fail("s://h/|p", sal::uri::errc::invalid_path),
   fail("s://h/p?<q", sal::uri::errc::invalid_query),

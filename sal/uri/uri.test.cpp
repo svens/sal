@@ -5,7 +5,7 @@
 namespace {
 
 
-struct ctor_ok_t
+struct ctor_ok_t //{{{1
 {
   std::string input;
 
@@ -27,7 +27,7 @@ struct ctor_ok_t
 };
 
 
-ctor_ok_t success_test[] =
+ctor_ok_t ctor_ok[] =
 {
   {
     "scheme://user%40info@host:12345/path?query#fragment",
@@ -668,11 +668,11 @@ ctor_ok_t success_test[] =
 };
 
 
-using uri_ctor = ::testing::TestWithParam<ctor_ok_t>;
-INSTANTIATE_TEST_CASE_P(uri, uri_ctor, ::testing::ValuesIn(success_test),);
+using uri_ctor_ok = ::testing::TestWithParam<ctor_ok_t>;
+INSTANTIATE_TEST_CASE_P(uri, uri_ctor_ok, ::testing::ValuesIn(ctor_ok),);
 
 
-TEST_P(uri_ctor, test)
+TEST_P(uri_ctor_ok, test)
 {
   const auto &test = GetParam();
   auto uri = sal::uri::make_uri(test.input);
@@ -709,6 +709,49 @@ TEST_P(uri_ctor, test)
     uri.encoded_string()
   );
 }
+
+
+struct ctor_fail_t //{{{1
+{
+  std::string input;
+  std::error_code expected_error;
+
+  friend std::ostream &operator<< (std::ostream &os, const ctor_fail_t &test)
+  {
+    return (os << '\'' << test.input << '\'');
+  }
+};
+
+
+ctor_fail_t ctor_fail[] =
+{
+  {
+    "http://example.com:65536/path",
+    std::make_error_code(std::errc::result_out_of_range),
+  },
+};
+
+
+using uri_ctor_fail = ::testing::TestWithParam<ctor_fail_t>;
+INSTANTIATE_TEST_CASE_P(uri, uri_ctor_fail, ::testing::ValuesIn(ctor_fail),);
+
+
+TEST_P(uri_ctor_fail, test)
+{
+  const auto &test = GetParam();
+
+  std::error_code error;
+  auto uri = sal::uri::make_uri(test.input, error);
+  EXPECT_EQ(test.expected_error, error);
+
+  EXPECT_THROW(
+    sal::uri::make_uri(test.input),
+    std::system_error
+  );
+}
+
+
+//}}}1
 
 
 } // namespace

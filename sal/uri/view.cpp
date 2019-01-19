@@ -22,42 +22,6 @@ namespace {
 using __bits::uri_cc;
 using __bits::is_extended_ascii;
 
-#if __has_include(<charconv>)
-
-  using std::from_chars;
-
-#else
-
-  struct from_chars_result {
-    char *ptr{};
-    std::errc ec{};
-  };
-
-  from_chars_result from_chars (
-    const char *first,
-    const char *last,
-    net::ip::port_t &value,
-    int base = 10) noexcept
-  {
-    from_chars_result result;
-    auto v = std::strtoul(first, &result.ptr, base);
-    if (result.ptr != last)
-    {
-      result.ec = std::errc::invalid_argument;
-    }
-    else if (v > std::numeric_limits<net::ip::port_t>::max())
-    {
-      result.ec = std::errc::result_out_of_range;
-    }
-    else
-    {
-      value = v;
-    }
-    return result;
-  }
-
-#endif
-
 template <typename Filter>
 inline const char *skip_forward (const char *first, const char *last,
   Filter filter) noexcept
@@ -185,20 +149,6 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
       {
         host = to_view(authority_begin, port_begin - 1);
         port = to_view(port_begin, authority_end);
-        if (!port.empty())
-        {
-          auto e = from_chars(
-            port.data(),
-            port.data() + port.length(),
-            port_value,
-            10
-          ).ec;
-          if (e != std::errc{})
-          {
-            error = make_error_code(errc::invalid_port);
-            return;
-          }
-        }
       }
       else
       {
@@ -271,6 +221,57 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
   }
 
   error.clear();
+}
+
+
+namespace {
+
+#if __has_include(<charconv>)
+
+  using std::from_chars;
+
+#else
+
+  struct from_chars_result {
+    char *ptr{};
+    std::errc ec{};
+  };
+
+  from_chars_result from_chars (
+    const char *first,
+    const char *last,
+    net::ip::port_t &value,
+    int base = 10) noexcept
+  {
+    from_chars_result result;
+    auto v = std::strtoul(first, &result.ptr, base);
+    if (result.ptr != last)
+    {
+      result.ec = std::errc::invalid_argument;
+    }
+    else if (v > std::numeric_limits<net::ip::port_t>::max())
+    {
+      result.ec = std::errc::result_out_of_range;
+    }
+    else
+    {
+      value = v;
+    }
+    return result;
+  }
+
+#endif
+
+} // namespace
+
+
+net::ip::port_t view_t::port_value (std::error_code &error) const noexcept
+{
+  net::ip::port_t result{};
+  error = std::make_error_code(
+    from_chars(port.data(), port.data() + port.length(), result).ec
+  );
+  return result;
 }
 
 

@@ -22,7 +22,6 @@ enum class errc
 {
   invalid_scheme = 1,
   invalid_authority,
-  invalid_port,
   invalid_path,
   invalid_query,
   invalid_fragment,

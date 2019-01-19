@@ -25,7 +25,6 @@ struct view_t
   std::string_view user_info{};
   std::string_view host{};
   std::string_view port{};
-  net::ip::port_t port_value{};
   std::string_view path{};
   std::string_view query{};
   std::string_view fragment{};
@@ -69,6 +68,15 @@ struct view_t
   bool has_port () const noexcept
   {
     return port.data() != nullptr;
+  }
+
+
+  net::ip::port_t port_value (std::error_code &error) const noexcept;
+
+
+  net::ip::port_t port_value () const
+  {
+    return port_value(throw_on_error("uri::view::port_value"));
   }
 
 
