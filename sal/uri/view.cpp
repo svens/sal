@@ -83,12 +83,6 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
   auto first = view.data();
   auto last = view.data() + view.length();
 
-  first = skip_forward(first, last, uri_cc::is_space);
-  last = skip_backward(first, last, [](auto ch)
-  {
-    return uri_cc::is_space(ch) || ch == '\0';
-  });
-
   // check whether absolute URI or relative reference
   for (auto it = first;  it != last && *it != '/';  ++it)
   {
@@ -224,6 +218,19 @@ view_t::view_t (const std::string_view &view, std::error_code &error) noexcept
 }
 
 
+int view_t::compare (const view_t &that) const noexcept
+{
+  if (auto r = scheme.compare(that.scheme)) return r;
+  if (auto r = user_info.compare(that.user_info)) return r;
+  if (auto r = host.compare(that.host)) return r;
+  if (auto r = port.compare(that.port)) return r;
+  if (auto r = path.compare(that.path)) return r;
+  if (auto r = query.compare(that.query)) return r;
+  if (auto r = fragment.compare(that.fragment)) return r;
+  return 0;
+}
+
+
 namespace {
 
 #if __has_include(<charconv>)
@@ -271,6 +278,79 @@ net::ip::port_t view_t::port_value (std::error_code &error) const noexcept
   error = std::make_error_code(
     from_chars(port.data(), port.data() + port.length(), result).ec
   );
+  return result;
+}
+
+
+namespace {
+
+inline size_t estimated_length (const view_t &uri) noexcept
+{
+  return uri.scheme.length()
+    + uri.user_info.length()
+    + uri.host.length()
+    + uri.port.length()
+    + uri.path.length()
+    + uri.query.length()
+    + uri.fragment.length()
+    + sizeof("://@:/?#")
+  ;
+}
+
+} // namespace
+
+
+std::string view_t::string () const
+{
+  std::string result;
+  result.reserve(estimated_length(*this));
+
+  if (has_scheme())
+  {
+    result += scheme;
+    result += ':';
+  }
+
+  if (authority.data() != nullptr)
+  {
+    result += "//";
+
+    if (has_user_info())
+    {
+      result += user_info;
+      result += '@';
+    }
+
+    if (has_host())
+    {
+      result += host;
+    }
+
+    if (has_port())
+    {
+      result += ':';
+      result += port;
+    }
+  }
+
+  if (has_path())
+  {
+    result += path;
+  }
+
+  if (has_query())
+  {
+    result += '?';
+    result += query;
+  }
+
+  if (has_fragment())
+  {
+    result += '#';
+    result += fragment;
+  }
+
+  result.shrink_to_fit();
   return result;
 }
 

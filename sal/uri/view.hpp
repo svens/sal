@@ -7,8 +7,11 @@
 
 #include <sal/config.hpp>
 #include <sal/uri/error.hpp>
+#include <sal/hash.hpp>
 #include <sal/memory.hpp>
 #include <sal/net/fwd.hpp>
+#include <ostream>
+#include <string>
 #include <string_view>
 
 
@@ -41,6 +44,32 @@ struct view_t
   { }
 
 
+  void swap (view_t &that) noexcept
+  {
+    scheme.swap(that.scheme);
+    authority.swap(that.authority);
+    user_info.swap(that.user_info);
+    host.swap(that.host);
+    port.swap(that.port);
+    path.swap(that.path);
+    query.swap(that.query);
+    fragment.swap(that.fragment);
+  }
+
+
+  bool empty () const noexcept
+  {
+    return !(has_scheme()
+        || has_user_info()
+        || has_host()
+        || has_port()
+        || has_path()
+        || has_query()
+        || has_fragment()
+    );
+  }
+
+
   bool has_scheme () const noexcept
   {
     return !scheme.empty();
@@ -49,7 +78,10 @@ struct view_t
 
   bool has_authority () const noexcept
   {
-    return authority.data() != nullptr;
+    return has_user_info()
+        || has_host()
+        || has_port()
+    ;
   }
 
 
@@ -96,6 +128,12 @@ struct view_t
   {
     return fragment.data() != nullptr;
   }
+
+
+  int compare (const view_t &that) const noexcept;
+
+
+  std::string string () const;
 };
 
 
@@ -127,7 +165,77 @@ inline view_t make_view (const Data &data)
 }
 
 
+inline void swap (view_t &a, view_t &b) noexcept
+{
+  a.swap(b);
+}
+
+
+inline bool operator== (const view_t &a, const view_t &b) noexcept
+{
+  return a.compare(b) == 0;
+}
+
+
+inline bool operator!= (const view_t &a, const view_t &b) noexcept
+{
+  return a.compare(b) != 0;
+}
+
+
+inline bool operator< (const view_t &a, const view_t &b) noexcept
+{
+  return a.compare(b) < 0;
+}
+
+
+inline bool operator<= (const view_t &a, const view_t &b) noexcept
+{
+  return a.compare(b) <= 0;
+}
+
+
+inline bool operator> (const view_t &a, const view_t &b) noexcept
+{
+  return a.compare(b) > 0;
+}
+
+
+inline bool operator>= (const view_t &a, const view_t &b) noexcept
+{
+  return a.compare(b) >= 0;
+}
+
+
+inline std::ostream &operator<< (std::ostream &os, const view_t &view)
+{
+  return (os << view.string());
+}
+
+
 } // namespace uri
 
 
 __sal_end
+
+
+namespace std {
+
+template <>
+struct hash<sal::uri::view_t>
+{
+  size_t operator() (const sal::uri::view_t &view) const noexcept
+  {
+    hash<std::string_view> h;
+    uint64_t result = h(view.scheme);
+    result = sal::hash_128_to_64(h(view.user_info), result);
+    result = sal::hash_128_to_64(h(view.host), result);
+    result = sal::hash_128_to_64(h(view.port), result);
+    result = sal::hash_128_to_64(h(view.path), result);
+    result = sal::hash_128_to_64(h(view.query), result);
+    result = sal::hash_128_to_64(h(view.fragment), result);
+    return result;
+  }
+};
+
+} // namespace std

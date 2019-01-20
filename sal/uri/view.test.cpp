@@ -4,81 +4,6 @@
 #include <ostream>
 
 
-__sal_begin
-
-namespace uri {
-
-// sal::uri library does not provide inserter or comparison operators,
-// implement here for testing
-
-std::ostream &print (std::ostream &os, const std::string_view &piece)
-{
-  if (!piece.data())
-  {
-    return (os << "{}");
-  }
-  else if (piece.empty())
-  {
-    return (os << "''");
-  }
-  return (os << piece);
-}
-
-std::ostream &operator<< (std::ostream &os, const view_t &uri)
-{
-  print(os, uri.scheme) << '|';
-  print(os, uri.authority) << '|';
-  print(os, uri.user_info) << '|';
-  print(os, uri.host) << '|';
-  print(os, uri.port) << '|';
-  print(os, uri.path) << '|';
-  print(os, uri.query) << '|';
-  print(os, uri.fragment);
-  return os;
-}
-
-bool cmp (const std::string_view &left, const std::string_view &right) noexcept
-{
-  if (left.data() && right.data())
-  {
-    return left == right;
-  }
-  return !left.data() && !right.data();
-}
-
-bool operator== (const view_t &left, const view_t &right) noexcept
-{
-  return left.has_scheme() == right.has_scheme()
-    && cmp(left.scheme, right.scheme)
-
-    && left.has_authority() == right.has_authority()
-    && cmp(left.authority, right.authority)
-
-    && left.has_user_info() == right.has_user_info()
-    && cmp(left.user_info, right.user_info)
-
-    && left.has_host() == right.has_host()
-    && cmp(left.host, right.host)
-
-    && left.has_port() == right.has_port()
-    && cmp(left.port, right.port)
-
-    && left.has_path() == right.has_path()
-    && cmp(left.path, right.path)
-
-    && left.has_query() == right.has_query()
-    && cmp(left.query, right.query)
-
-    && left.has_fragment() == right.has_fragment()
-    && cmp(left.fragment, right.fragment)
-  ;
-}
-
-} // namespace uri
-
-__sal_end
-
-
 namespace {
 
 
@@ -119,18 +44,6 @@ view_ok_t view_ok_data[] =
 {
   {
     "scheme://user:pass@host:12345/path?query#fragment",
-    "scheme",
-    "user:pass@host:12345",
-    "user:pass",
-    "host",
-    "12345",
-    "/path",
-    "query",
-    "fragment",
-  },
-
-  {
-    " \t\r\nscheme://user:pass@host:12345/path?query#fragment\t\r\n ",
     "scheme",
     "user:pass@host:12345",
     "user:pass",
@@ -296,8 +209,6 @@ view_ok_t view_ok_data[] =
 
   // input		scheme	auth	user	host	port	path	query	fragment
   {{},			{},	{},	{},	{},	{},	{},	{},	{}	},
-  {"\t\r\n",		{},	{},	{},	{},	{},	{},	{},	{}	},
-  {"\t\r\n\0\t",	{},	{},	{},	{},	{},	{},	{},	{}	},
 
   {"#f",		{},	{},	{},	{},	{},	{},	{},	"f"	},
   {"?q",		{},	{},	{},	{},	{},	{},	"q",	{}	},
@@ -405,6 +316,24 @@ TEST_P(view_ok, test)
 }
 
 
+TEST_P(view_ok, string)
+{
+  auto &test = GetParam();
+  auto view = sal::uri::make_view(test.input);
+  EXPECT_EQ(test.input, view.string());
+}
+
+
+TEST_P(view_ok, inserter)
+{
+  auto &test = GetParam();
+  auto view = sal::uri::make_view(test.input);
+  std::ostringstream oss;
+  oss << view;
+  EXPECT_EQ(test.input, oss.str());
+}
+
+
 struct view_fail_t //{{{1
 {
   std::string input;
@@ -468,6 +397,201 @@ TEST_P(view_fail, test)
 
   (void)sal::uri::make_view(test.input.begin(), test.input.end(), error);
   EXPECT_EQ(expected_error, error);
+}
+
+
+// uri_view //{{{1
+
+
+struct uri_view
+  : public sal_test::fixture
+{
+  const sal::uri::view_t view{"s://u@h:123/p?q#f"};
+};
+
+
+TEST_F(uri_view, empty)
+{
+  sal::uri::view_t v = view;
+  EXPECT_FALSE(v.empty());
+
+  v.scheme = {};
+  EXPECT_FALSE(v.empty());
+
+  v.user_info = {};
+  EXPECT_FALSE(v.empty());
+
+  v.host = {};
+  EXPECT_FALSE(v.empty());
+
+  v.port = {};
+  EXPECT_FALSE(v.empty());
+
+  v.path = {};
+  EXPECT_FALSE(v.empty());
+
+  v.query = {};
+  EXPECT_FALSE(v.empty());
+
+  v.fragment = {};
+  EXPECT_TRUE(v.empty());
+}
+
+
+TEST_F(uri_view, authority)
+{
+  sal::uri::view_t v = view;
+  EXPECT_TRUE(v.has_authority());
+
+  v.path = {};
+  EXPECT_TRUE(v.has_authority());
+
+  v.query = {};
+  EXPECT_TRUE(v.has_authority());
+
+  v.fragment = {};
+  EXPECT_TRUE(v.has_authority());
+
+  v.scheme = {};
+  EXPECT_TRUE(v.has_authority());
+
+  v.user_info = {};
+  EXPECT_TRUE(v.has_authority());
+
+  v.host = {};
+  EXPECT_TRUE(v.has_authority());
+
+  v.port = {};
+  EXPECT_FALSE(v.has_authority());
+}
+
+
+TEST_F(uri_view, swap)
+{
+  sal::uri::view_t a = view, b{};
+
+  EXPECT_FALSE(a.empty());
+  EXPECT_EQ("s", a.scheme);
+  EXPECT_EQ("u@h:123", a.authority);
+  EXPECT_EQ("u", a.user_info);
+  EXPECT_EQ("h", a.host);
+  EXPECT_EQ("123", a.port);
+  EXPECT_EQ("/p", a.path);
+  EXPECT_EQ("q", a.query);
+  EXPECT_EQ("f", a.fragment);
+
+  EXPECT_TRUE(b.empty());
+
+  sal::uri::swap(a, b);
+
+  EXPECT_TRUE(a.empty());
+
+  EXPECT_FALSE(b.empty());
+  EXPECT_EQ("s", b.scheme);
+  EXPECT_EQ("u@h:123", b.authority);
+  EXPECT_EQ("u", b.user_info);
+  EXPECT_EQ("h", b.host);
+  EXPECT_EQ("123", b.port);
+  EXPECT_EQ("/p", b.path);
+  EXPECT_EQ("q", b.query);
+  EXPECT_EQ("f", b.fragment);
+}
+
+
+TEST_F(uri_view, compare)
+{
+  sal::uri::view_t v = view;
+  EXPECT_EQ(view, v);
+  EXPECT_GE(view, v);
+  EXPECT_LE(view, v);
+
+  v.fragment = {};
+  EXPECT_NE(view, v);
+  EXPECT_GE(view, v);
+  EXPECT_GT(view, v);
+  EXPECT_LE(v, view);
+  EXPECT_LT(v, view);
+
+  v.query = {};
+  EXPECT_NE(view, v);
+  EXPECT_GE(view, v);
+  EXPECT_GT(view, v);
+  EXPECT_LE(v, view);
+  EXPECT_LT(v, view);
+
+  v.path = {};
+  EXPECT_NE(view, v);
+  EXPECT_GE(view, v);
+  EXPECT_GT(view, v);
+  EXPECT_LE(v, view);
+  EXPECT_LT(v, view);
+
+  v.port = {};
+  EXPECT_NE(view, v);
+  EXPECT_GE(view, v);
+  EXPECT_GT(view, v);
+  EXPECT_LE(v, view);
+  EXPECT_LT(v, view);
+
+  v.host = {};
+  EXPECT_NE(view, v);
+  EXPECT_GE(view, v);
+  EXPECT_GT(view, v);
+  EXPECT_LE(v, view);
+  EXPECT_LT(v, view);
+
+  v.user_info = {};
+  EXPECT_NE(view, v);
+  EXPECT_GE(view, v);
+  EXPECT_GT(view, v);
+  EXPECT_LE(v, view);
+  EXPECT_LT(v, view);
+
+  v.scheme = {};
+  EXPECT_NE(view, v);
+  EXPECT_GE(view, v);
+  EXPECT_GT(view, v);
+  EXPECT_LE(v, view);
+  EXPECT_LT(v, view);
+}
+
+
+TEST_F(uri_view, hash)
+{
+  std::hash<sal::uri::view_t> h;
+  std::set<size_t> hashes;
+
+  auto v = view;
+  hashes.insert(h(v));
+  EXPECT_EQ(1U, hashes.size());
+
+  v.scheme = "t";
+  hashes.insert(h(v));
+  EXPECT_EQ(2U, hashes.size());
+
+  v.user_info = "v";
+  hashes.insert(h(v));
+  EXPECT_EQ(3U, hashes.size());
+
+  v.host = "i";
+  hashes.insert(h(v));
+  EXPECT_EQ(4U, hashes.size());
+
+  v.port = "2";
+  hashes.insert(h(v));
+  EXPECT_EQ(5U, hashes.size());
+
+  v.path = "/q";
+  hashes.insert(h(v));
+  EXPECT_EQ(6U, hashes.size());
+
+  v.query = "r";
+  hashes.insert(h(v));
+  EXPECT_EQ(7U, hashes.size());
+
+  v.fragment = "g";
+  hashes.insert(h(v));
+  EXPECT_EQ(8U, hashes.size());
 }
 
 
